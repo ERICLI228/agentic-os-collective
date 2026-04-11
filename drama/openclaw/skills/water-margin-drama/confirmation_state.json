@@ -1,0 +1,36 @@
+{
+  "project_name": "武松打虎",
+  "created_at": "2026-04-10T00:08:32.660652",
+  "updated_at": "2026-04-10T00:08:37.027245",
+  "stages": {
+    "script": {
+      "confirmed": true,
+      "confirmed_at": "2026-04-10T00:08:37.027233",
+      "confirmed_by": "human",
+      "notes": "人工审核通过"
+    },
+    "roles": {
+      "confirmed": false,
+      "confirmed_at": null,
+      "confirmed_by": null,
+      "notes": null
+    },
+    "video": {
+      "confirmed": false,
+      "confirmed_at": null,
+      "confirmed_by": null,
+      "notes": null
+    }
+  },
+  "current_stage": "roles",
+  "progress": [
+    {
+      "time": "2026-04-10T00:08:32.660661",
+      "message": "项目 '武松打虎' 已创建"
+    },
+    {
+      "time": "2026-04-10T00:08:37.027244",
+      "message": "阶段 'script' 已确认 by human"
+    }
+  ]
+}

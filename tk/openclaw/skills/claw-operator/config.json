@@ -1,0 +1,47 @@
+{
+  "name": "claw-operator",
+  "description": "状态机 + 失败分类 + 自动恢复 - 基于 Claude Code 核心逻辑",
+  "version": "1.0.0",
+  "triggers": [
+    "检查任务状态",
+    "查看 worker 状态",
+    "分析失败原因",
+    "自动恢复",
+    "修复错误",
+    "cron 任务",
+    "task failed",
+    "任务失败",
+    "状态机"
+  ],
+  "category": "operator",
+  "auto_route": {
+    "enabled": true,
+    "keywords": [
+      "状态机",
+      "worker status",
+      "failure classification",
+      "auto recovery",
+      "cron",
+      "任务失败",
+      "错误分析"
+    ],
+    "model": "aliyun/MiniMax-M2.5"
+  },
+  "commands": [
+    {
+      "name": "analyze-cron",
+      "description": "分析所有 cron 任务状态",
+      "script": "python3 ~/.agents/skills/claw-operator/claw-operator.py"
+    },
+    {
+      "name": "check-workers",
+      "description": "检查所有 worker 状态",
+      "script": "python3 ~/.agents/skills/claw-operator/claw-operator.py --workers"
+    },
+    {
+      "name": "retry-failed",
+      "description": "重试失败的任务",
+      "script": "python3 ~/.agents/skills/claw-operator/claw-operator.py --retry"
+    }
+  ]
+}

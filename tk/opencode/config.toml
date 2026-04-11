@@ -1,0 +1,102 @@
+# Codex 配置 - 针对 AI数字短剧 + TK运营 优化
+# 更新于 2026-04-11
+
+# ==================== 主配置 ====================
+# 使用本地 Ollama 大模型 (免费，无需API Key)
+model_provider = "ollama_local"
+model = "qwen3.5:35b-a3b"
+personality = "pragmatic"
+
+# ==================== 模型提供商 ====================
+
+# 本地 Ollama (首选 - 免费)
+[model_providers.ollama_local]
+name = "本地 Ollama Qwen3.5-35B"
+base_url = "http://localhost:11434"
+api_key = "ollama-local"
+wire_api = "chat"
+
+# 本地 Ollama - Gemma4 (备用)
+[model_providers.ollama_gemma]
+name = "本地 Ollama Gemma4-26B"
+base_url = "http://localhost:11434"
+api_key = "ollama-local"
+wire_api = "chat"
+
+# 阿里云 - 需要有效的 API Key
+[model_providers.aliyun]
+name = "阿里云-通用"
+base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+api_key = "sk-sp-0750c41054894ae0a50550a884fd9ad4"
+wire_api = "responses"
+
+# 火山引擎 - 免费 GLM (备用)
+[model_providers.volcengine]
+name = "火山引擎-GLM4.7"
+base_url = "https://ark.cn-beijing.volces.com/api/v3"
+env_key = "VOLCENGINE_API_KEY"
+wire_api = "responses"
+
+# ==================== 模型列表 ====================
+# 在 Codex 中可通过 /models 切换
+
+[models.qwen3_35b]
+provider = "ollama_local"
+name = "Qwen3.5-35B (本地)"
+
+[models.gemma4_26b]
+provider = "ollama_gemma"
+name = "Gemma4-26B (本地)"
+
+[models.aliyun_coder]
+provider = "aliyun"
+name = "Qwen-Coder-Plus (阿里云)"
+model_id = "qwen3-coder-plus"
+
+[models.aliyun_general]
+provider = "aliyun"
+name = "Qwen3.5-Plus (阿里云)"
+model_id = "qwen3.5-plus"
+
+[models.volc_glm47]
+provider = "volcengine"
+name = "GLM-4.7 (火山引擎)"
+model_id = "glm-4-7-251222"
+
+# ==================== 场景配置 ====================
+
+# 短剧脚本生成 - 使用本地大模型
+[scene.drama]
+model_provider = "ollama_local"
+model = "qwen3.5:35b-a3b"
+system_prompt = "你是一个专业的水浒传短剧编剧，擅长生成古风对话和情节"
+
+# TK运营 - 使用本地大模型
+[scene.tk_operations]
+model_provider = "ollama_local"
+model = "qwen3.5:35b-a3b"
+system_prompt = "你是TikTok东南亚运营专家，擅长选品、数据分析、广告优化"
+
+# 复杂推理 - 使用 Gemma4
+[scene.complex_reasoning]
+model_provider = "ollama_gemma"
+model = "gemma4:26b"
+
+# 代码开发 - 使用阿里云 coder (需要有效 Key)
+[scene.coding]
+model_provider = "aliyun"
+model = "qwen3-coder-plus"
+
+# ==================== 项目配置 ====================
+
+[projects."/Users/hokeli"]
+trust_level = "trusted"
+
+[projects."/Users/hokeli/.openclaw/workspace"]
+trust_level = "trusted"
+
+[projects."/Users/hokeli/.openclaw/workspace/projects/drama"]
+trust_level = "trusted"
+
+[projects."/Users/hokeli/.openclaw/workspace/projects/tk"]
+trust_level = "trusted"

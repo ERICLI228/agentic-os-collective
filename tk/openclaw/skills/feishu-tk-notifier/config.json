@@ -1,0 +1,22 @@
+{
+  "name": "feishu-tk-notifier",
+  "version": "1.0.0",
+  "description": "TK 运营飞书通知 - 8 群集成",
+  "author": "OpenClaw",
+  "license": "MIT",
+  "entry": "feishu_notifier.py",
+  "tools": ["notify_hot_product", "notify_low_stock", "notify_error", "notify_daily_report"],
+  "config": {
+    "enabled": true,
+    "channels": [
+      "选品作战室",
+      "数据看板",
+      "达人合作",
+      "订单中心",
+      "广告优化",
+      "内容创作",
+      "客服支持",
+      "技术研发"
+    ]
+  }
+}

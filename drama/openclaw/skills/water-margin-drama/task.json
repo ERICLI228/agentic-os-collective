@@ -1,0 +1,121 @@
+{
+  "project": "水浒传AI数字短剧",
+  "description": "基于水浒传原著的AI短剧自动生成平台",
+  "version": "2.1.0",
+  "tasks": [
+    {
+      "id": 1,
+      "title": "剧本生成",
+      "description": "使用GLM-4.7生成短剧剧本",
+      "steps": [
+        "解析用户输入的剧目名称（如'武松打虎'）",
+        "从原著中提取相关情节",
+        "调用GLM-4.7生成剧本",
+        "保存剧本到临时文件"
+      ],
+      "passes": false,
+      "blocking": false
+    },
+    {
+      "id": 2,
+      "title": "人工审核",
+      "description": "推送剧本到飞书等待人工审核",
+      "steps": [
+        "生成飞书卡片消息",
+        "推送剧本内容到指定群",
+        "等待人工确认",
+        "记录审核结果"
+      ],
+      "passes": false,
+      "blocking": true,
+      "blockReason": "需要人工审核，无法自动完成"
+    },
+    {
+      "id": 3,
+      "title": "角色设计",
+      "description": "设计剧中角色形象和提示词",
+      "steps": [
+        "识别剧本中的角色",
+        "调用role_designer生成角色提示词",
+        "保存角色定妆照提示词到role-prompts.md"
+      ],
+      "passes": false,
+      "blocking": false
+    },
+    {
+      "id": 4,
+      "title": "分镜优化",
+      "description": "优化剧本分镜描述",
+      "steps": [
+        "将剧本拆分为多个分镜",
+        "调用GLM-4.7优化每个分镜描述",
+        "生成符合视频生成的提示词"
+      ],
+      "passes": false,
+      "blocking": false
+    },
+    {
+      "id": 5,
+      "title": "视频生成",
+      "description": "使用Seedance 2.0生成视频",
+      "steps": [
+        "遍历所有分镜",
+        "调用火山引擎Seedance API",
+        "上传图片生成视频",
+        "下载生成的视频到本地"
+      ],
+      "passes": false,
+      "blocking": true,
+      "blockReason": "可能API配额不足或服务不可用"
+    },
+    {
+      "id": 6,
+      "title": "TTS配音",
+      "description": "为视频生成中文配音",
+      "steps": [
+        "提取每个分镜的台词",
+        "调用TTS生成语音",
+        "保存配音文件"
+      ],
+      "passes": false,
+      "blocking": false
+    },
+    {
+      "id": 7,
+      "title": "音视频合成",
+      "description": "合并配音和视频",
+      "steps": [
+        "使用FFmpeg合并视频和配音",
+        "添加背景音乐（可选）",
+        "调整音量和时长"
+      ],
+      "passes": false,
+      "blocking": false
+    },
+    {
+      "id": 8,
+      "title": "上传TOS",
+      "description": "上传最终视频到TOS存储",
+      "steps": [
+        "压缩最终视频",
+        "上传到火山引擎TOS",
+        "生成分享链接"
+      ],
+      "passes": false,
+      "blocking": true,
+      "blockReason": "需要有效的TOS配置"
+    },
+    {
+      "id": 9,
+      "title": "飞书通知",
+      "description": "推送完成通知到飞书",
+      "steps": [
+        "生成完成报告",
+        "推送飞书卡片消息",
+        "附带视频分享链接"
+      ],
+      "passes": false,
+      "blocking": false
+    }
+  ]
+}

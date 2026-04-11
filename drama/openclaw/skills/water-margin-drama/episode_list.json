@@ -1,0 +1,102 @@
+{
+  "version": "v1.0",
+  "source": "120回袁无涯本",
+  "selection_criteria": {
+    "观众熟悉度": "民间流传度最高的桥段",
+    "戏剧冲突强度": "情节起伏大、情感张力强",
+    "人物高光时刻": "核心角色的成名战或转折点",
+    "视觉表现力": "适合AI视频生成的场景（打斗、山水、市井）"
+  },
+  "episodes": [
+    {
+      "episode_number": 1,
+      "source_chapter": 23,
+      "title": "武松打虎",
+      "main_character": "武松",
+      "score": 75,
+      "needs_rewrite": false,
+      "status": "ready"
+    },
+    {
+      "episode_number": 2,
+      "source_chapter": 3,
+      "title": "鲁提辖拳打镇关西",
+      "main_character": "鲁智深",
+      "score": 50,
+      "needs_rewrite": false,
+      "status": "ready"
+    },
+    {
+      "episode_number": 3,
+      "source_chapter": 4,
+      "title": "鲁智深倒拔垂杨柳",
+      "main_character": "鲁智深",
+      "score": 50,
+      "needs_rewrite": false,
+      "status": "ready"
+    },
+    {
+      "episode_number": 4,
+      "source_chapter": 27,
+      "title": "武松斗杀西门庆",
+      "main_character": "武松",
+      "score": 50,
+      "needs_rewrite": false,
+      "status": "ready"
+    },
+    {
+      "episode_number": 5,
+      "source_chapter": 43,
+      "title": "李逵沂岭杀四虎",
+      "main_character": "李逵",
+      "score": 50,
+      "needs_rewrite": true,
+      "status": "pending"
+    },
+    {
+      "episode_number": 6,
+      "source_chapter": 7,
+      "title": "花和尚倒拔垂杨柳",
+      "main_character": "鲁智深",
+      "score": 25,
+      "needs_rewrite": false,
+      "status": "ready"
+    },
+    {
+      "episode_number": 7,
+      "source_chapter": 29,
+      "title": "武松醉打蒋门神",
+      "main_character": "武松",
+      "score": 25,
+      "needs_rewrite": false,
+      "status": "ready"
+    },
+    {
+      "episode_number": 8,
+      "source_chapter": 31,
+      "title": "血溅鸳鸯楼",
+      "main_character": "武松",
+      "score": 25,
+      "needs_rewrite": true,
+      "status": "pending"
+    },
+    {
+      "episode_number": 9,
+      "source_chapter": 10,
+      "title": "林冲风雪山神庙",
+      "main_character": "林冲",
+      "score": 25,
+      "needs_rewrite": false,
+      "status": "ready"
+    },
+    {
+      "episode_number": 10,
+      "source_chapter": 11,
+      "title": "林冲雪夜上梁山",
+      "main_character": "林冲",
+      "score": 25,
+      "needs_rewrite": false,
+      "status": "ready"
+    }
+  ]
+}

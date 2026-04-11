@@ -1,0 +1,66 @@
+{
+    "name": "Proactive Operator",
+    "description": "TK东南亚5国 3C大类 全自动运营 Agent",
+    "version": "1.0",
+    
+    "target": {
+        "platform": "TikTok",
+        "region": ["Indonesia", "Vietnam", "Thailand", "Philippines", "Malaysia"],
+        "region_codes": ["id", "vn", "th", "ph", "my"],
+        "category": "3C Electronics"
+    },
+    
+    "watch_categories": [
+        "laptop",
+        "phone case", 
+        "earbuds",
+        "charger",
+        "smart watch",
+        "cable",
+        "usb",
+        "power bank",
+        "keyboard",
+        "mouse",
+        "speaker",
+        "tablet",
+        "screen protector",
+        "phone holder",
+        "ring light",
+        "selfie stick"
+    ],
+    
+    "watch_keywords": [
+        "laptop",
+        "charger",
+        "earbuds",
+        "smartwatch",
+        "phone case",
+        "数据线",
+        "充电宝",
+        "键盘",
+        "鼠标",
+        "音响"
+    ],
+    
+    "notification": {
+        "feishu_webhook": "",
+        "enabled": true
+    },
+    
+    "schedule": {
+        "check_interval_hours": 2,
+        "report_daily": true
+    },
+    
+    "thresholds": {
+        "hot_video_plays": 3000000,
+        "trending_score": 1000,
+        "new_product_plays": 1000000
+    },
+    
+    "filters": {
+        "min_likes": 1000,
+        "min_comments": 50,
+        "exclude_brand": []
+    }
+}

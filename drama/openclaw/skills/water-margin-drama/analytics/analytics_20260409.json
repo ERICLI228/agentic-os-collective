@@ -1,0 +1,27 @@
+{
+  "date": "2026-04-09",
+  "videos": [
+    {
+      "title": "鲁智深倒拔垂杨柳",
+      "views": 125000,
+      "likes": 8500,
+      "comments": 320,
+      "shares": 120,
+      "region": "印尼"
+    },
+    {
+      "title": "武松打虎",
+      "views": 180000,
+      "likes": 12000,
+      "comments": 580,
+      "shares": 200,
+      "region": "越南"
+    }
+  ],
+  "top_performing": "武松打虎",
+  "recommendations": [
+    "武松系列内容表现优异，建议增加武松相关剧集",
+    "动作场景播放量更高，强化动作描写",
+    "印尼、越南市场反响最好，优先发布"
+  ]
+}
