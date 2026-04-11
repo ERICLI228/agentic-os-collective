@@ -184,4 +184,12 @@ td { padding: 16px; border-bottom: 1px solid var(--border); vertical-align: top;
 .card-footer { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); }
 
 .timeline-view { padding: 16px; }
-.timeline { position:
+.timeline { position: relative; padding-left: 24px; }
+.timeline::before { content: ''; position: absolute; left: 7px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+.timeline-item { position: relative; padding: 16px 0 16px 24px; }
+.timeline-dot { position: absolute; left: -20px; top: 20px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--bg-primary); }
+.timeline-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.timeline-time { font-size: 12px; color: var(--text-muted); }
+.timeline-title { font-weight: 500; margin-bottom: 4px; }
+.timeline-desc { font-size: 13px; color: var(--text-secondary); }</style>
