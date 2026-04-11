@@ -1,8 +1,7 @@
-# Agentic OS Collective
+Agentic OS Collective
 
-AI数字短剧 + TK东南亚运营 - 多端协作代码库
+Public code repository initialized locally for collaborative development.
 
-## 目录
-- drama/ - AI数字短剧
-- tk/ - TK东南亚运营
-- shared/ - 共享资源
+Contributions welcome: modules, scripts, tooling, and documentation.
+
+This repository uses the MIT License and a standard .gitignore for common environments.
