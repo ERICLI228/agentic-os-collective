@@ -2,7 +2,8 @@
 import { computed } from 'vue'
 
 const props = defineProps({
-  kpi: { type: Object, default: () => ({}) }
+  kpi: { type: Object, default: () => ({}) },
+  tasks: { type: Array, default: () => [] }
 })
 
 const projects = [
@@ -10,6 +11,7 @@ const projects = [
   { key: 'tk', name: 'TK 运营', color: '#5e6ad2' }
 ]
 
+// 项目 KPI
 const kpiCards = computed(() => {
   return projects.map(p => {
     const data = props.kpi[p.key] || {}
@@ -27,10 +29,44 @@ const kpiCards = computed(() => {
     }
   })
 })
+
+// 总体统计
+const stats = computed(() => {
+  const allTasks = props.tasks || []
+  const total = allTasks.length
+  const running = allTasks.filter(t => t.status === 'running').length
+  const completed = allTasks.filter(t => t.status === 'completed').length
+  const completedRate = total > 0 ? Math.round((completed / total) * 100) : 0
+  
+  return { total, running, completed, completedRate }
+})
 </script>
 
 <template>
   <div class="kpi-panel">
+    <!-- 总体统计 -->
+    <div class="kpi-card stats-card">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-value">{{ stats.total }}</span>
+          <span class="stat-label">总任务</span>
+        </div>
+        <div class="stat-item running">
+          <span class="stat-value">{{ stats.running }}</span>
+          <span class="stat-label">进行中</span>
+        </div>
+        <div class="stat-item success">
+          <span class="stat-value">{{ stats.completed }}</span>
+          <span class="stat-label">已完成</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">{{ stats.completedRate }}%</span>
+          <span class="stat-label">完成率</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 项目 KPI -->
     <div v-for="card in kpiCards" :key="card.key" class="kpi-card">
       <div class="kpi-header">
         <div class="project-icon" :style="{ background: card.color }">
@@ -76,8 +112,43 @@ const kpiCards = computed(() => {
 <style scoped>
 .kpi-panel {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
+}
+
+.stats-card {
+  background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 8px;
+}
+
+.stat-value {
+  display: block;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stat-item.running .stat-value {
+  color: var(--accent-blue);
+}
+
+.stat-item.success .stat-value {
+  color: var(--accent-green);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .kpi-card {

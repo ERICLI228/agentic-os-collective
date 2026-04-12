@@ -5,7 +5,9 @@ import TaskList from './TaskList.vue'
 import DecisionPanel from './DecisionPanel.vue'
 
 const props = defineProps({
-  data: { type: Object, required: true }
+  data: { type: Object, required: true },
+  searchQuery: { type: String, default: '' },
+  statusFilter: { type: String, default: 'all' }
 })
 
 const emit = defineEmits(['resolve-decision'])
@@ -13,7 +15,26 @@ const emit = defineEmits(['resolve-decision'])
 const currentView = ref('table') // table | kanban | timeline
 
 const kpiData = computed(() => props.data?.kpi || {})
-const activeTasks = computed(() => props.data?.active_tasks || [])
+const activeTasks = computed(() => {
+  let tasks = props.data?.active_tasks || []
+  
+  // 按状态筛选
+  if (props.statusFilter && props.statusFilter !== 'all') {
+    tasks = tasks.filter(t => t.status === props.statusFilter)
+  }
+  
+  // 按关键词搜索
+  if (props.searchQuery) {
+    const q = props.searchQuery.toLowerCase()
+    tasks = tasks.filter(t => 
+      (t.name && t.name.toLowerCase().includes(q)) ||
+      (t.description && t.description.toLowerCase().includes(q)) ||
+      (t.id && t.id.toLowerCase().includes(q))
+    )
+  }
+  
+  return tasks.slice(0, 30)
+})
 const pendingDecisions = computed(() => props.data?.pending_decisions || 0)
 
 function handleResolve(taskId, decisionId, choice) {
@@ -24,7 +45,7 @@ function handleResolve(taskId, decisionId, choice) {
 <template>
   <div class="dashboard">
     <!-- KPI 概览 -->
-    <KPIPanel :kpi="kpiData" />
+    <KPIPanel :kpi="kpiData" :tasks="activeTasks" />
 
     <!-- 视图切换 -->
     <div class="view-controls">

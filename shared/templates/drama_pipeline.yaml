@@ -1,0 +1,97 @@
+name: "AI数字短剧制作流水线"
+version: "1.1"
+project: "drama"
+description: "水浒传AI数字短剧全自动制作流水线 (行业最佳实践)"
+
+stages:
+  - id: "MS-1"
+    name: "剧本筛选"
+    executor: "OpenClaw"
+    command: "python3 ~/.openclaw/skills/water-margin-drama/script_selector.py --task {task_id}"
+    expected_artifacts: 
+      - "candidates.json"
+      - "selection_reason.txt"
+    timeout: 300
+    decision_point: false
+    description: "从剧本库筛选候选剧本，评估改编潜力"
+
+  - id: "MS-2"
+    name: "争议检测与改写"
+    executor: "OpenClaw"
+    command: "python3 ~/.openclaw/skills/water-margin-drama/controversy_rewriter.py --task {task_id}"
+    expected_artifacts:
+      - "controversy_report.json"
+      - "rewritten_script.txt"
+    timeout: 180
+    decision_point: false
+    description: "检测敏感内容并自动改写"
+
+  - id: "MS-3"
+    name: "角色设计"
+    executor: "OpenClaw"
+    command: "python3 ~/.openclaw/skills/water-margin-drama/role_designer.py --task {task_id}"
+    expected_artifacts:
+      - "character_designs.json"
+      - "voice_mapping.yaml"
+    timeout: 120
+    decision_point: false
+    description: "设计角色外观与声音"
+
+  - id: "MS-4"
+    name: "GLM剧本生成"
+    executor: "OpenClaw"
+    command: "python3 ~/.openclaw/skills/water-margin-drama/drama_script.py --task {task_id}"
+    expected_artifacts:
+      - "final_script.json"
+      - "scene_breakdown.json"
+    timeout: 300
+    decision_point: false
+    description: "使用GLM生成完整剧本"
+
+  - id: "MS-5"
+    name: "人工审核"
+    executor: "Human"
+    decision_point: true
+    question: "请审核剧本是否通过？"
+    options:
+      - label: "通过"
+        action: "continue"
+        next_stage: "MS-6"
+      - label: "修改意见"
+        action: "request_change"
+        next_stage: "MS-4"
+      - label: "驳回"
+        action: "terminate"
+    description: "人工审核剧本，决定是否继续"
+
+  - id: "MS-6"
+    name: "视频生成"
+    executor: "Seedance"
+    command: "python3 ~/.openclaw/skills/water-margin-drama/drama_video.py --task {task_id}"
+    expected_artifacts:
+      - "scenes/*.mp4"
+      - "video_manifest.json"
+    timeout: 1800
+    decision_point: false
+    description: "使用Seedance生成视频"
+
+  - id: "MS-7"
+    name: "配音合成"
+    executor: "MiniMax"
+    command: "python3 ~/.openclaw/skills/water-margin-drama/drama_audio.py --task {task_id}"
+    expected_artifacts:
+      - "audio/*.mp3"
+      - "audio_manifest.json"
+    timeout: 600
+    decision_point: false
+    description: "使用TTS合成角色配音"
+
+  - id: "MS-8"
+    name: "最终合成"
+    executor: "OpenClaw"
+    command: "python3 ~/.openclaw/skills/water-margin-drama/drama_merge.py --task {task_id}"
+    expected_artifacts:
+      - "final/*.mp4"
+    timeout: 300
+    decision_point: false
+    description: "合并视频与音频，输出最终成品"

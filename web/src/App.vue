@@ -34,11 +34,51 @@ async function resolveDecision(taskId, decisionId, choice) {
   }
 }
 
+// 当前视图 (传递给 Dashboard)
+const currentView = ref('table')
+
+// 搜索关键词
+const searchQuery = ref('')
+
+// 筛选状态
+const statusFilter = ref('all')
+
+// 快捷键
+function handleKeydown(e) {
+  // 忽略输入框中的快捷键
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+  
+  switch(e.key.toLowerCase()) {
+    case 'k':
+      currentView.value = 'kanban'
+      break
+    case 'l':
+      currentView.value = 'table'
+      break
+    case 't':
+      currentView.value = 'timeline'
+      break
+    case '/':
+      e.preventDefault()
+      document.querySelector('.search-input')?.focus()
+      break
+    case 'r':
+      fetchData()
+      break
+    case 'Escape':
+      searchQuery.value = ''
+      statusFilter.value = 'all'
+      break
+  }
+}
+
 onMounted(() => {
   fetchData()
   if (autoRefresh.value) {
     refreshInterval.value = setInterval(fetchData, 30000) // 30秒刷新
   }
+  // 添加键盘监听
+  window.addEventListener('keydown', handleKeydown)
 })
 </script>
 
@@ -47,10 +87,29 @@ onMounted(() => {
     <!-- 顶部导航 -->
     <header class="top-bar">
       <div class="logo">
+        <a href="http://localhost:5002/" class="back-btn" title="返回上层">←</a>
         <span class="logo-icon">⚡</span>
         <span class="logo-text">Agentic OS</span>
       </div>
+      
+      <!-- 搜索框 -->
+      <div class="search-box">
+        <input 
+          v-model="searchQuery" 
+          type="text" 
+          class="search-input" 
+          placeholder="搜索任务... (按 / 聚焦)"
+        />
+        <select v-model="statusFilter" class="status-filter">
+          <option value="all">全部状态</option>
+          <option value="running">运行中</option>
+          <option value="pending">待处理</option>
+          <option value="completed">已完成</option>
+        </select>
+      </div>
+      
       <div class="actions">
+        <span class="shortcut-hint">K:看板 L:列表 T:时间线 R:刷新</span>
         <button @click="fetchData" :disabled="loading" class="btn-refresh">
           {{ loading ? '刷新中...' : '刷新' }}
         </button>
@@ -62,6 +121,8 @@ onMounted(() => {
     <main v-if="data">
       <Dashboard 
         :data="data" 
+        :search-query="searchQuery"
+        :status-filter="statusFilter"
         @resolve-decision="resolveDecision"
       />
     </main>
@@ -133,6 +194,26 @@ body {
   gap: 8px;
 }
 
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 18px;
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+
 .logo-icon {
   font-size: 24px;
 }
@@ -147,6 +228,52 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.shortcut-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  max-width: 400px;
+  margin: 0 24px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.status-filter {
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 14px;
+  cursor: pointer;
 }
 
 .btn-refresh {
