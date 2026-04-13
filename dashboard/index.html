@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic OS v3.1 指挥中心</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:linear-gradient(135deg,#0f172a,#1e293b);min-height:100vh;color:#f1f5f9;padding:20px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.header h1{font-size:28px;color:#38bdf8}
+.project-switcher{margin-left:auto}
+.project-switcher select{padding:8px 16px;border-radius:8px;background:#1e293b;color:#fff;border:1px solid #334155;font-size:14px}
+.header-actions{display:flex;align-items:center;gap:12px;margin-left:auto}
+.dashboard-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;transition:all .2s}
+.dashboard-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(99,102,241,0.4)}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:20px}
+.kpi-card{background:rgba(255,255,255,0.05);border-radius:16px;padding:20px;border:2px solid #334155;cursor:pointer;transition:all .2s}
+.kpi-card:hover{background:rgba(56,189,248,0.1)}
+.kpi-card.active{border-color:#38bdf8;box-shadow:0 0 15px rgba(56,189,248,0.3)}
+.kpi-card .label{color:#94a3b8;font-size:14px;margin-bottom:8px}
+.kpi-card .value{font-size:36px;font-weight:bold}
+.kpi-card .value.green{color:#4ade80}
+.kpi-card .value.yellow{color:#facc15}
+.kpi-card .value.red{color:#f87171}
+.filter-bar{display:flex;align-items:center;margin-bottom:16px}
+.filter-tag{background:#38bdf8;color:#0f172a;padding:4px 12px;border-radius:20px;font-size:14px}
+.filter-tag .clear{cursor:pointer;font-weight:bold;margin-left:8px}
+.section-title{font-size:20px;margin:24px 0 16px;color:#cbd5e1}
+.task-list{background:rgba(0,0,0,0.2);border-radius:16px;overflow:hidden;border:1px solid #334155}
+.task-item{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid #334155;cursor:pointer}
+.task-item:hover{background:rgba(56,189,248,0.1)}
+.task-status{width:12px;height:12px;border-radius:50%;margin-right:16px}
+.task-status.running{background:#38bdf8;animation:pulse 2s infinite}
+.task-status.completed{background:#4ade80}
+.task-status.pending{background:#facc15}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.task-info{flex:1}
+.task-info .title{font-weight:600}
+.task-info .meta{font-size:12px;color:#94a3b8}
+.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center}
+.modal.active{display:flex}
+.modal-content{background:#1e293b;border-radius:20px;padding:30px;max-width:700px;width:90%;max-height:80vh;overflow-y:auto;border:1px solid #38bdf8}
+.close{float:right;cursor:pointer;font-size:24px;color:#94a3b8}
+.milestone-item{padding:10px;border-bottom:1px solid #334155;display:flex;align-items:center}
+.milestone-status{margin-left:auto;padding:2px 10px;border-radius:12px;font-size:12px;background:#334155;color:#fff}
+.milestone-status.completed{background:#4ade80;color:#0f172a}
+.milestone-status.running{background:#38bdf8;color:#0f172a}
+.artifact-item{background:#0f172a;border-radius:8px;padding:12px;margin-bottom:10px}
+.artifact-item .name{font-weight:600;color:#38bdf8}
+.artifact-item .meta{font-size:12px;color:#64748b;margin-top:4px}
+.artifact-link{color:#4ade80;text-decoration:none;margin-right:10px}
+.artifact-link:hover{text-decoration:underline}
+.artifact-preview{max-width:100%;height:auto;border-radius:8px;margin-top:8px}
+.artifact-text{background:#0f172a;border-radius:8px;padding:12px;margin-top:8px;white-space:pre-wrap;overflow-x:auto;font-family:monospace;font-size:13px;line-height:1.5}
+.milestone-status.pending{background:#64748b;color:#fff}
+button{background:#38bdf8;color:#0f172a;border:none;padding:8px 20px;border-radius:8px;font-weight:600;cursor:pointer;margin-right:10px}
+.loading{text-align:center;padding:40px;color:#64748b}
+.empty-state{text-align:center;padding:40px;color:#64748b}
+.milestone-accordion-item{background:#1e293b;border-radius:8px;margin-bottom:8px;transition:all .2s}
+.milestone-accordion-header{display:flex;justify-content:space-between;padding:12px;align-items:center}
+.milestone-accordion-header:hover{background:#334155}
+.expand-icon{color:#64748b;font-size:12px;transition:transform .2s}
+.milestone-accordion-item.expanded .expand-icon{transform:rotate(180deg)}
+.milestone-accordion-content{padding:12px;border-top:1px solid #334155;background:#0f172a}
+.candidate-card{background:#1e293b;padding:12px;border-radius:8px;margin-bottom:8px;border-left:3px solid #667eea}
+.candidate-title{font-weight:600;color:#f1f5f9}
+.candidate-score{color:#facc15;font-size:13px}
+.candidate-summary{color:#94a3b8;font-size:12px;margin-top:6px}
+.selected-badge{background:#4ade80;color:#0f172a;padding:2px 8px;border-radius:4px;font-size:12px}
+.issue-card{padding:12px;border-radius:8px;margin-bottom:8px;border-left:3px solid #f87171;background:rgba(248,113,113,0.1)}
+.issue-card.resolved{border-color:#4ade80;background:rgba(74,222,128,0.1)}
+.character-card{background:#1e293b;padding:12px;border-radius:8px;margin-bottom:8px}
+.character-name{font-weight:600;color:#f1f5f9;font-size:16px;margin-bottom:8px}
+.character-attr{color:#94a3b8;font-size:13px}
+.script-content{background:#0f172a;padding:12px;border-radius:8px;white-space:pre-wrap;font-size:13px;color:#94a3b8;max-height:400px;overflow-y:auto}
+.script-meta{color:#64748b;font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="header"><h1>🎯 Agentic OS v3.1 指挥中心</h1><div class="header-actions"><a href="/tk-center.html" class="dashboard-btn" style="background:linear-gradient(135deg,#22c55e,#16a34a);margin-right:12px">🛒 TK运营中心</a><a href="http://localhost:5173/" target="_blank" class="dashboard-btn">📊 数据面板</a><div class="project-switcher"><select id="projectSelect"><option value="all">🌐 全局</option><option value="drama">🎬 短剧</option><option value="tk">🛒 TK</option></select></div></div></div>
+
+<div class="kpi-grid">
+<div class="kpi-card" data-filter="drama-running"><div class="label">📊 短剧进行中</div><div class="value yellow" id="dramaRunning">-</div></div>
+<div class="kpi-card" data-filter="tk-running"><div class="label">🛒 TK运营中</div><div class="value green" id="tkRunning">-</div></div>
+<div class="kpi-card" data-filter="pending-decisions"><div class="label">⚠️ 待决策</div><div class="value red" id="pendingDecisions">-</div></div>
+<div class="kpi-card" data-filter="all"><div class="label">📋 总任务</div><div class="value" id="totalTasks">-</div></div>
+</div>
+
+<div class="filter-bar" id="filterBar" style="display:none">
+<span class="filter-tag"><span id="filterLabel"></span><span class="clear" onclick="clearFilter()">✕</span></span>
+</div>
+
+<div class="section-title">📌 活跃任务</div>
+<div id="taskList" class="task-list"><div class="loading">加载中...</div></div>
+
+<div id="taskModal" class="modal">
+<div class="modal-content">
+<span class="close" onclick="closeModal()">&times;</span>
+<h2 id="modalTitle"></h2>
+<div id="modalBasicInfo" style="margin-bottom:20px;color:#94a3b8"></div>
+<div id="modalMilestones"></div>
+<div id="modalDecisions"></div>
+<div id="modalArtifacts"></div>
+</div>
+</div>
+
+<script>
+const API_PORTS=[5001,5000,9090];
+let API_BASE="",currentFilter="all",currentProject="all",allTasks=[];
+
+async function detectApiPort(){
+for(let p of API_PORTS){
+try{let r=await fetch(`http://localhost:${p}/api/health`);if(r.ok){API_BASE=`http://localhost:${p}`;return true}}catch(e){}
+}
+return false;
+}
+
+async function fetchData(){
+if(!API_BASE)return;
+try{let r=await fetch(`${API_BASE}/api/dashboard?project=${currentProject}`),d=await r.json();allTasks=d.active_tasks||[];renderDashboard(d)}catch(e){document.getElementById("taskList").innerHTML="<div class='loading'>加载失败</div>"}
+}
+
+function renderDashboard(d){
+const k=d.kpi||{},dr=k.drama||{running:0},tk=k.tk||{running:0};
+document.getElementById("dramaRunning").textContent=dr.running||0;
+document.getElementById("tkRunning").textContent=tk.running||0;
+document.getElementById("pendingDecisions").textContent=d.pending_decisions||0;
+document.getElementById("totalTasks").textContent=allTasks.length;
+applyFilter();
+}
+
+function filterTasks(){
+let f=allTasks;
+// 项目过滤
+if(currentProject!=="all")f=f.filter(t=>t.project_id===currentProject);
+// KPI过滤
+if(currentFilter==="drama-running")f=f.filter(t=>t.project_id==="drama"&&t.status==="running");
+else if(currentFilter==="tk-running")f=f.filter(t=>t.project_id==="tk"&&t.status==="running");
+else if(currentFilter==="pending-decisions")f=f.filter(t=>(t.decision_points||[]).some(d=>d.status==="pending"));
+return f;
+}
+
+function applyFilter(){
+const ft=filterTasks();
+renderTaskList(ft);
+updateActiveCard();
+updateFilterLabel();
+}
+
+function renderTaskList(tasks){
+const c=document.getElementById("taskList");
+if(tasks.length===0){c.innerHTML="<div class='empty-state'>没有符合条件的任务</div>";return}
+let h="";
+tasks.forEach(t=>{
+const sc=t.status||"pending";
+const pd=(t.decision_points||[]).filter(d=>d.status==="pending").length;
+const mt=(t.milestones||[]).length;
+const mc=(t.milestones||[]).filter(m=>m.status==="completed").length;
+const scIcon={"running":"🔵","completed":"🟢","pending":"🟡"}[sc];
+const scColor={"running":"#38bdf8","completed":"#4ade80","pending":"#facc15"}[sc];
+h+=`<div class="task-item" data-task-id="${t.id}"><div class="task-status ${sc}"></div><div class="task-info"><div class="title">${t.project_id==="drama"?"🎬":"🛒"} ${t.title} <span style="color:${scColor}">${scIcon} ${sc}</span></div><div class="meta">${t.id}${mt>0?" | 进度:"+mc+"/"+mt:""}${pd>0?" | ⚠️"+pd+"个待决策":""}</div></div></div>`;
+});
+c.innerHTML=h;
+c.querySelectorAll(".task-item").forEach(el=>el.addEventListener("click",()=>showTaskDetail(el.dataset.taskId)));
+}
+
+function updateActiveCard(){
+document.querySelectorAll(".kpi-card").forEach(c=>c.classList.remove("active"));
+const a=document.querySelector(`.kpi-card[data-filter="${currentFilter}"]`);
+if(a)a.classList.add("active");
+}
+
+function updateFilterLabel(){
+const b=document.getElementById("filterBar"),l=document.getElementById("filterLabel");
+const n={"all":"全部","drama-running":"短剧进行中","tk-running":"TK运营中","pending-decisions":"待决策"};
+if(currentFilter!=="all"){b.style.display="flex";l.textContent="过滤: "+n[currentFilter]}else{b.style.display="none"}
+}
+
+function setFilter(f){currentFilter=f;applyFilter()}
+function clearFilter(){setFilter("all")}
+
+function showTaskDetail(tid){
+const t=allTasks.find(x=>x.id===tid);
+if(!t)return;
+document.getElementById("modalTitle").textContent=t.title;
+const stIcon={"running":"🔵","completed":"🟢","pending":"🟡","failed":"🔴"};
+const stColor={"running":"#38bdf8","completed":"#4ade80","pending":"#facc15","failed":"#f87171"};
+document.getElementById("modalBasicInfo").innerHTML=`<p><strong>项目:</strong>${t.project_id==="drama"?"🎬短剧":"🛒TK"} | <strong>状态:</strong><span style="color:${stColor[t.status]||"#fff"}">${stIcon[t.status]||""} ${t.status}</span></p><p><strong>描述:</strong>${t.description||"无"}</p>`;
+
+const msDiv=document.getElementById("modalMilestones");
+if(t.milestones&&t.milestones.length>0){
+let h="<h3>📌 里程碑</h3><div class='milestone-accordion'>";
+t.milestones.forEach(m=>{const ms=m.status||"pending",msIcon={"completed":"✅","running":"🔄","pending":"⏳"}[ms];
+h+=`<div class="milestone-accordion-item" data-milestone-id="${m.id}" data-task-id="${t.id}" onclick="toggleMilestoneDetail(this)" style="cursor:pointer">
+<div class="milestone-accordion-header">
+<span>${m.name}</span>
+<span class="milestone-status ${ms}">${msIcon} ${ms}</span>
+<span class="expand-icon">▼</span>
+</div>
+<div class="milestone-accordion-content" style="display:none"></div>
+</div>`;});
+h+="</div>";
+msDiv.innerHTML=h;
+}else{msDiv.innerHTML=""}
+
+const dcDiv=document.getElementById("modalDecisions");
+if(t.decision_points&&t.decision_points.length>0){
+let h="<h3>🚨 决策点</h3>";
+t.decision_points.forEach(d=>{
+const opts=(d.options||[]).map(o=>`<button onclick="resolveDecision('${t.id}','${d.id}','${o}')">${o}</button>`).join("");
+h+=`<div class="decision-card"><strong>${d.question}</strong><br><small>状态:${d.status}</small>${d.status==="pending"?`<div>${opts}</div>`:`<p>✅已选择:${d.resolution||"无"}</p>`}</div>`;
+});
+dcDiv.innerHTML=h;
+}else{dcDiv.innerHTML=""}
+
+// 产出物
+const artDiv=document.getElementById("modalArtifacts");
+if(t.artifacts&&t.artifacts.length>0){
+let h="<h3>📦 产出物</h3>";
+t.artifacts.forEach(a=>{const icon={"video":"🎬","script":"📄","data":"📊","image":"🖼️"}[a.type]||"📦";const isVideo=a.type==="video"||a.name.match(/\.(mp4|webm|mov)$/i);const isImage=a.type==="image"||a.name.match(/\.(jpg|jpeg|png|gif|webp)$/i);const isText=a.type==="script"||a.name.match(/\.(txt|md|json|xml|html)$/i);let preview="";if(isVideo)preview=`<div style="color:#f87171;font-size:12px;margin-top:8px">⚠️ 此为测试文件，无法播放。真实视频需运行短剧流水线生成。</div>`;else if(isImage)preview=`<img class="artifact-preview" src="${a.url}" alt="${a.name}"/>`;else if(isText&&a.content)preview=`<div class="artifact-text">${a.content}</div>`;h+=`<div class="artifact-item"><div class="name">${icon} ${a.name}</div><div class="meta">创建于: ${a.created_at?a.created_at.replace("T"," ").substring(0,19):"未知"}</div>${a.url?`<a href="${a.url}" class="artifact-link" download="true">📥 下载</a>`:""}}${preview}${a.path?`<div style="font-size:11px;color:#475569;margin-top:4px">📁 ${a.path}</div>`:""}</div>`});
+artDiv.innerHTML=h;
+}else{artDiv.innerHTML="<h3>📦 产出物</h3><p style='color:#64748b'>暂无产出物</p>"}
+
+document.getElementById("taskModal").classList.add("active");
+}
+
+async function resolveDecision(tid,did,choice){
+try{
+await fetch(`${API_BASE}/api/decision/${tid}/${did}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({choice:choice})});
+closeModal();
+fetchData();
+}catch(e){alert("提交失败")}
+}
+
+function closeModal(){document.getElementById("taskModal").classList.remove("active")}
+
+async function toggleMilestoneDetail(el){
+const mId=el.dataset.milestoneId,tId=el.dataset.taskId;
+const content=el.querySelector(".milestone-accordion-content");
+const isExpanded=el.classList.contains("expanded");
+if(isExpanded){el.classList.remove("expanded");content.style.display="none";return}
+
+el.classList.add("expanded");content.style.display="block";
+content.innerHTML="<div style='color:#64748b'>加载中...</div>";
+
+try{
+const r=await fetch(`${API_BASE}/api/tasks/${tId}/milestone/${mId}`);
+const d=await r.json();
+const m=d.milestone;
+const ed=m.execution_details||{};
+const oc=ed.output_content||{};
+
+let h="";
+// 根据output_content.type显示不同内容
+if(oc.type==="script_selection"&&oc.data?.candidates){
+const cand=oc.data.candidates||[];
+const sel=oc.data.selected;
+const reason=oc.data.selection_reason||"";
+const selector=oc.data.selector||"AI";
+h=`<div style="margin-bottom:12px"><strong style="color:#f1f5f9">📋 候选剧本</strong></div>`;
+cand.forEach(c=>{const isSelected=c.id===sel;h+=`<div class="candidate-card">
+<div class="candidate-title">${c.title}</div>
+<div class="candidate-score">匹配度: ${(c.score*100).toFixed(0)}%</div>
+<div class="candidate-summary">${c.summary||""}</div>
+${isSelected?"<span class='selected-badge'>✅ 已选择</span>":""}
+</div>`;});
+if(reason)h+=`<div style="margin-top:12px;color:#94a3b8;font-size:13px">💡 选择原因: ${reason}</div>`;
+if(selector)h+=`<div style="color:#64748b;font-size:12px">选择者: ${selector}</div>`;
+}
+
+else if(oc.type==="controversy_resolution"&&oc.data?.issues){
+const orig=oc.data.original_script||"";
+const rew=oc.data.rewritten_script||"";
+const iss=oc.data.issues||[];
+h=`<div style="margin-bottom:12px"><strong style="color:#f1f5f9">📄 原始剧本</strong></div>
+<div class="script-content" style="max-height:150px">${orig}</div>`;
+h+=`<div style="margin:12px 0"><strong style="color:#f87171">⚠️ 争议点与解决方案</strong></div>`;
+iss.forEach(i=>{const severity=i.severity||"medium";const resolved=i.resolved;h+=`<div class="issue-card ${resolved?"resolved":""}">
+<strong>${severity.toUpperCase()}</strong>: ${i.description}
+<div style="color:#4ade80;margin-top:6px">💡 解决: ${i.resolution||"待解决"}</div>
+<div style="font-size:12px;color:${resolved?"#4ade80":"#f87171"}">${resolved?"✅ 已解决":"⏳ 待处理"}</div>
+</div>`;});
+if(rew)h+=`<div style="margin-top:12px"><strong style="color:#f1f5f9">✏️ 改写后剧本</strong></div>
+<div class="script-content" style="max-height:150px">${rew}</div>`;
+}
+
+else if(oc.type==="character_design"&&oc.data?.characters){
+const chars=oc.data.characters||[];
+h=`<div style="margin-bottom:12px"><strong style="color:#f1f5f9">👥 角色设计</strong></div>`;
+chars.forEach(c=>{h+=`<div class="character-card">
+<div class="character-name">${c.name}</div>
+<div class="character-attr"><strong>外貌:</strong> ${c.appearance||""}</div>
+<div class="character-attr"><strong>性格:</strong> ${c.personality||""}</div>
+${c.voice_style?`<div class="character-attr"><strong>配音:</strong> ${c.voice_style}</div>`:""}
+${c.designer?`<div style="color:#64748b;font-size:12px">设计者: ${c.designer}</div>`:""}
+</div>`;});
+}
+
+else if(oc.type==="full_script"&&oc.data?.script){
+const script=oc.data.script||"";
+const wc=oc.data.word_count||"未统计";
+const ver=oc.data.version||"v1";
+const gen=oc.data.generated_by||"GLM";
+h=`<div style="margin-bottom:12px"><strong style="color:#f1f5f9">📜 完整剧本</strong></div>
+<div class="script-meta">字数: ${wc} | 版本: ${ver} | 生成者: ${gen}</div>
+<div class="script-content">${script}</div>`;
+}
+
+else if(oc.type==="review_result"&&oc.data){
+const rev=oc.data.reviewer||"用户";
+const result=oc.data.result||"通过";
+const comments=oc.data.comments||"";
+h=`<div><strong style="color:#f1f5f9">审核结果: <span style="color:${result==="通过"?"#4ade80":"#f87171"}">${result}</span></strong></div>
+<div style="color:#94a3b8;font-size:13px">审核者: ${rev}</div>
+${comments?`<div style="margin-top:12px;color:#f1f5f9">意见: ${comments}</div>`:""}`;
+}
+
+else if(oc.type==="video"&&oc.data){
+const dur=oc.data.duration||"未知";
+const res=oc.data.resolution||"1080p";
+const url=oc.data.preview_url||oc.data.download_url||"";
+h=`<div><strong style="color:#f1f5f9">🎬 视频信息</strong></div>
+<div style="color:#94a3b8">时长: ${dur} | 分辨率: ${res}</div>
+${url?`<a href="${url}" style="color:#4ade80" target="_blank">📥 下载/预览</a>`:""}`;
+}
+
+else if(oc.type==="audio"&&oc.data?.voice_mapping){
+const vm=oc.data.voice_mapping||{};
+h=`<div><strong style="color:#f1f5f9">🎙️ 配音映射</strong></div>`;
+Object.keys(vm).forEach(char=>{h+=`<div style="color:#94a3b8;font-size:13px">${char}: ${vm[char]}</div>`;});
+}
+
+else if(oc.type||oc.data){
+// 默认显示原始数据
+h=`<div class="script-content">${JSON.stringify(oc.data||oc,null,2)}</div>`;
+}
+
+else{h="<div style='color:#64748b'>📭 该里程碑暂无详细产出记录</div>"}
+
+// 产出文件
+if(ed.artifacts&&ed.artifacts.length>0){
+h+=`<div style="margin-top:12px"><strong style="color:#f1f5f9">📦 产出文件</strong></div>`;
+ed.artifacts.forEach(a=>{h+=`<a href="${a.url||""}" style="color:#4ade80;font-size:13px;margin-right:12px" target="_blank">${a.name}</a>`;});
+}
+
+// 决策历史
+if(ed.decision_history&&ed.decision_history.length>0){
+h+=`<div style="margin-top:12px"><strong style="color:#f1f5f9">📅 决策历史</strong></div>`;
+ed.decision_history.forEach(d=>{const time=d.decision_at?new Date(d.decision_at).toLocaleString():"未知";h+=`<div style="color:#94a3b8;font-size:12px">${d.decision_type||""} @ ${time} by ${d.decision_by||""}</div>`;});
+}
+
+content.innerHTML=h||"<div style='color:#64748b'>暂无内容</div>";
+}catch(e){content.innerHTML=`<div style='color:#f87171'>加载失败: ${e.message}</div>`}
+}
+
+document.querySelectorAll(".kpi-card").forEach(c=>c.addEventListener("click",()=>{if(c.dataset.filter)setFilter(c.dataset.filter)}));
+document.getElementById("projectSelect").addEventListener("change",(e)=>{currentProject=e.target.value;fetchData()});
+
+(async()=>{if(await detectApiPort()){await fetchData();setInterval(fetchData,30000)}})();
+</script>
+</body>
+</html>
