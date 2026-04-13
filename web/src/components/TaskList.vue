@@ -33,6 +33,35 @@ const recommendedTemplate = ref(null)
 const descriptionGuide = ref([])
 const isValidating = ref(false)
 
+// 时间线过滤
+const timelineFilter = ref({
+  project: 'all',
+  milestoneStatus: 'all',
+  taskId: 'all'
+})
+
+// 过滤后的时间线任务
+const filteredTimelineTasks = computed(() => {
+  let tasks = props.tasks || []
+  if (timelineFilter.value.project !== 'all') {
+    tasks = tasks.filter(t => t.project_id === timelineFilter.value.project)
+  }
+  return tasks
+})
+
+// 时间线任务
+const timelineTasks = computed(() => {
+  let tasks = filteredTimelineTasks.value
+  if (timelineFilter.value.taskId !== 'all') {
+    tasks = tasks.filter(t => t.id === timelineFilter.value.taskId)
+  }
+  // 过滤里程碑状态
+  if (timelineFilter.value.milestoneStatus !== 'all') {
+    tasks = tasks.filter(t => t.milestones?.some(m => m.status === timelineFilter.value.milestoneStatus))
+  }
+  return tasks
+})
+
 // 状态映射
 const statusMap = {
   'running': { label: '运行中', color: '#4caf50' },
@@ -374,7 +403,7 @@ onMounted(() => {
         <span class="column-count">{{ tasksByStatus[col.status]?.length || 0 }}</span>
       </div>
       <div class="column-content">
-        <div v-for="task in tasksByStatus[col.status]" :key="task.id" class="kanban-card">
+        <div v-for="task in tasksByStatus[col.status]" :key="task.id" class="kanban-card" @click="openTaskDrawer(task)">
           <div class="card-header">
             <span class="project-tag small" :class="task.project_id">
               {{ task.project_id === 'drama' ? '短剧' : 'TK' }}
@@ -395,6 +424,61 @@ onMounted(() => {
           <div class="card-footer">
             <span class="mono">{{ truncate(task.id, 6) }}</span>
             <span class="card-date">{{ formatDate(task.created_at) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 时间线视图 -->
+  <div v-else-if="view === 'timeline'" class="timeline-view">
+    <div class="timeline-controls">
+      <div class="filter-group">
+        <label>项目</label>
+        <select v-model="timelineFilter.project" class="filter-select">
+          <option value="all">全部</option>
+          <option value="drama">短剧</option>
+          <option value="tk">TK运营</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>里程碑状态</label>
+        <select v-model="timelineFilter.milestoneStatus" class="filter-select">
+          <option value="all">全部</option>
+          <option value="pending">待处理</option>
+          <option value="running">进行中</option>
+          <option value="completed">已完成</option>
+          <option value="blocked">受阻</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>任务</label>
+        <select v-model="timelineFilter.taskId" class="filter-select">
+          <option value="all">全部任务</option>
+          <option v-for="t in filteredTimelineTasks" :key="t.id" :value="t.id">
+            {{ t.name || truncate(t.id, 10) }}
+          </option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="timeline-content">
+      <div v-if="timelineTasks.length === 0" class="timeline-empty">
+        <p>暂无符合条件的任务时间线</p>
+      </div>
+      <div v-for="task in timelineTasks" :key="task.id" class="timeline-task-block" @click="openTaskDrawer(task)">
+        <div class="timeline-task-header">
+          <span class="project-tag" :class="task.project_id">{{ task.project_id === 'drama' ? '短剧' : 'TK' }}</span>
+          <span class="timeline-task-name">{{ task.name || truncate(task.id, 10) }}</span>
+          <span class="timeline-task-status" :class="task.status">{{ statusMap[task.status]?.label }}</span>
+        </div>
+        <div class="timeline-milestones">
+          <div v-for="m in task.milestones" :key="m.id" class="milestone-node" :class="m.status" @click.stop="onMilestoneClick(task, m)">
+            <div class="milestone-marker"></div>
+            <div class="milestone-info">
+              <span class="milestone-name">{{ m.name }}</span>
+              <span class="milestone-time">{{ formatDate(m.updated_at || m.created_at) }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -798,4 +882,34 @@ td { padding: 16px; border-bottom: 1px solid var(--border); vertical-align: top;
 .issue-item.medium { border-color: #ff9800; background: rgba(255, 152, 0, 0.1); }
 .issue-item .suggestion { display: block; font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
 .role-item:last-child { border-bottom: none; }
+
+/* 时间线视图 */
+.timeline-view { padding: 20px; }
+.timeline-controls { display: flex; gap: 16px; margin-bottom: 24px; padding: 16px; background: var(--bg-secondary); border-radius: 12px; }
+.filter-group { display: flex; align-items: center; gap: 8px; }
+.filter-group label { font-size: 13px; color: var(--text-secondary); }
+.filter-select { padding: 8px 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 14px; min-width: 140px; }
+.timeline-content { display: flex; flex-direction: column; gap: 20px; }
+.timeline-empty { text-align: center; padding: 60px; color: var(--text-muted); }
+.timeline-task-block { background: var(--bg-secondary); border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.2s; border: 1px solid var(--border); }
+.timeline-task-block:hover { border-color: var(--accent-blue); }
+.timeline-task-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.timeline-task-name { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+.timeline-task-status { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+.timeline-task-status.running { background: rgba(76, 175, 80, 0.2); color: '#4caf50'; }
+.timeline-task-status.pending { background: rgba(255, 152, 0, 0.2); color: '#ff9800'; }
+.timeline-task-status.completed { background: rgba(136, 136, 136, 0.2); color: '#888'; }
+.timeline-milestones { display: flex; flex-direction: column; gap: 12px; position: relative; padding-left: 24px; }
+.timeline-milestones::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+.milestone-node { display: flex; align-items: center; gap: 12px; position: relative; padding: 10px 14px; background: var(--bg-card); border-radius: 8px; transition: all 0.2s; cursor: pointer; }
+.milestone-node:hover { background: var(--bg-hover); }
+.milestone-marker { width: 12px; height: 12px; border-radius: 50%; position: absolute; left: -20px; }
+.milestone-node.pending .milestone-marker { background: #ff9800; border: 2px solid var(--bg-secondary); }
+.milestone-node.running .milestone-marker { background: #4caf50; animation: pulse 2s infinite; }
+.milestone-node.completed .milestone-marker { background: #888; }
+.milestone-node.blocked .milestone-marker { background: #f44336; }
+.milestone-info { display: flex; flex-direction: column; gap: 4px; }
+.milestone-name { font-size: 14px; color: var(--text-primary); }
+.milestone-time { font-size: 12px; color: var(--text-muted); }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); } 50% { box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); } }
 </style>
