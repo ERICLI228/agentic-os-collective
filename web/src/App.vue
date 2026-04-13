@@ -88,8 +88,8 @@ onMounted(() => {
     <header class="top-bar">
       <div class="logo">
         <a href="http://localhost:5002/" class="back-btn" title="返回上层">←</a>
-        <span class="logo-icon">⚡</span>
-        <span class="logo-text">Agentic OS</span>
+        <span class="logo-icon">📊</span>
+        <span class="logo-text">数据监控</span>
       </div>
       
       <!-- 搜索框 -->
