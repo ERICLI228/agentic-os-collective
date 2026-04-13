@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.agentic-os.api</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/bin/python3</string>
+        <string>/Users/hokeli/.openclaw/core/dashboard_api_v2.py</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/hokeli/.openclaw/core</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/tmp/agentic-api.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/agentic-api.err</string>
+</dict>
+</plist>
