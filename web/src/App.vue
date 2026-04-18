@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import Dashboard from './components/Dashboard.vue'
+import CommandCenter from './components/CommandCenter.vue'
 
 const API_BASE = 'http://localhost:5001'
 const data = ref(null)
@@ -34,8 +35,13 @@ async function resolveDecision(taskId, decisionId, choice) {
   }
 }
 
-// 当前视图 (传递给 Dashboard)
-const currentView = ref('table')
+// 当前视图
+const currentView = ref('command') // 默认显示指挥中心
+
+// 切换视图
+function switchView(view) {
+  currentView.value = view
+}
 
 // 搜索关键词
 const searchQuery = ref('')
@@ -84,60 +90,66 @@ onMounted(() => {
 
 <template>
   <div class="app-container">
-    <!-- 顶部导航 -->
-    <header class="top-bar">
-      <div class="logo">
-        <a href="http://localhost:5002/" class="back-btn" title="返回上层">←</a>
-        <span class="logo-icon">📊</span>
-        <span class="logo-text">数据监控</span>
-      </div>
-      
-      <!-- 搜索框 -->
-      <div class="search-box">
-        <input 
-          v-model="searchQuery" 
-          type="text" 
-          class="search-input" 
-          placeholder="搜索任务... (按 / 聚焦)"
+    <!-- 指挥中心视图 -->
+    <CommandCenter v-if="currentView === 'command'" />
+
+    <!-- 数据监控视图 -->
+    <template v-else>
+      <!-- 顶部导航 -->
+      <header class="top-bar">
+        <div class="logo">
+          <button @click="switchView('command')" class="back-btn" title="返回指挥中心">←</button>
+          <span class="logo-icon">📊</span>
+          <span class="logo-text">数据监控</span>
+        </div>
+        
+        <!-- 搜索框 -->
+        <div class="search-box">
+          <input 
+            v-model="searchQuery" 
+            type="text" 
+            class="search-input" 
+            placeholder="搜索任务... (按 / 聚焦)"
+          />
+          <select v-model="statusFilter" class="status-filter">
+            <option value="all">全部状态</option>
+            <option value="running">运行中</option>
+            <option value="pending">待处理</option>
+            <option value="completed">已完成</option>
+          </select>
+        </div>
+        
+        <div class="actions">
+          <span class="shortcut-hint">K:看板 L:列表 T:时间线 R:刷新</span>
+          <button @click="fetchData" :disabled="loading" class="btn-refresh">
+            {{ loading ? '刷新中...' : '刷新' }}
+          </button>
+          <span class="status-dot" :class="{ online: !error, offline: error }"></span>
+        </div>
+      </header>
+
+      <!-- 主内容 -->
+      <main v-if="data">
+        <Dashboard 
+          :data="data" 
+          :search-query="searchQuery"
+          :status-filter="statusFilter"
+          @resolve-decision="resolveDecision"
         />
-        <select v-model="statusFilter" class="status-filter">
-          <option value="all">全部状态</option>
-          <option value="running">运行中</option>
-          <option value="pending">待处理</option>
-          <option value="completed">已完成</option>
-        </select>
+      </main>
+
+      <!-- 加载状态 -->
+      <div v-if="loading && !data" class="loading-state">
+        <div class="spinner"></div>
+        <p>加载 Dashboard 数据...</p>
       </div>
-      
-      <div class="actions">
-        <span class="shortcut-hint">K:看板 L:列表 T:时间线 R:刷新</span>
-        <button @click="fetchData" :disabled="loading" class="btn-refresh">
-          {{ loading ? '刷新中...' : '刷新' }}
-        </button>
-        <span class="status-dot" :class="{ online: !error, offline: error }"></span>
+
+      <!-- 错误状态 -->
+      <div v-if="error" class="error-state">
+        <p>⚠️ 连接失败: {{ error }}</p>
+        <button @click="fetchData">重试</button>
       </div>
-    </header>
-
-    <!-- 主内容 -->
-    <main v-if="data">
-      <Dashboard 
-        :data="data" 
-        :search-query="searchQuery"
-        :status-filter="statusFilter"
-        @resolve-decision="resolveDecision"
-      />
-    </main>
-
-    <!-- 加载状态 -->
-    <div v-if="loading && !data" class="loading-state">
-      <div class="spinner"></div>
-      <p>加载 Dashboard 数据...</p>
-    </div>
-
-    <!-- 错误状态 -->
-    <div v-if="error" class="error-state">
-      <p>⚠️ 连接失败: {{ error }}</p>
-      <button @click="fetchData">重试</button>
-    </div>
+    </template>
   </div>
 </template>
 

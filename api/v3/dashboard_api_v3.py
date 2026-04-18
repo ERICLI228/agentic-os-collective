@@ -1,0 +1,574 @@
+#!/usr/bin/env python3
+"""
+Dashboard API v3 - FastAPI 重构版本
+类型安全、异步支持、自动文档、工业级 API 规范
+端口: 5003 (并行运行验证，确认无误后再切换至5001)
+"""
+import json
+import os
+import subprocess
+import threading
+import time
+import sqlite3
+import requests
+from pathlib import Path
+from datetime import datetime
+from typing import Optional, List, Dict, Any
+from contextlib import contextmanager
+
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+
+# ============================================================================
+# 配置与路径
+# ============================================================================
+HOME = Path.home()
+WORKSPACE = HOME / ".openclaw/workspace"
+ACTIVE_DIR = WORKSPACE / "tasks/active"
+COMPLETED_DIR = WORKSPACE / "tasks/completed"
+TEMPLATES_DIR = HOME / "agentic-os-collective/shared/templates"
+EXEC_LOGS_DIR = HOME / "agentic-os-collective/shared/logs/executions"
+DB_PATH = HOME / "agentic-os-collective/shared/data/agentic.db"
+TOKEN_BUDGET_FILE = HOME / ".openclaw/data/token_budget.json"
+FEISHU_WEBHOOK = os.getenv("FEISHU_WEBHOOK_SYSTEM")
+DRAMA_OUTPUT_DIR = HOME / ".openclaw/skills/water-margin-drama/output"
+
+DECISION_TIMEOUT_HOURS = 24
+DECISION_CHECK_INTERVAL = 3600
+
+# ============================================================================
+# FastAPI App
+# ============================================================================
+app = FastAPI(
+    title="Agentic OS API v3",
+    description="工业级任务管理与运营 API (FastAPI 重构版)",
+    version="3.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ============================================================================
+# Pydantic Models (类型安全)
+# ============================================================================
+class DecisionResolve(BaseModel):
+    decision_type: Optional[str] = None
+    choice: Optional[str] = None
+
+class TaskCreate(BaseModel):
+    template: str
+    project: str = "drama"
+    title: str = "新任务"
+    description: str = ""
+
+class TitleValidation(BaseModel):
+    title: str
+
+class TemplateRecommend(BaseModel):
+    topic: str
+    category: str = "drama"
+
+class MilestoneExecute(BaseModel):
+    # placeholder for future extensibility
+    pass
+
+# ============================================================================
+# SQLite Helper
+# ============================================================================
+@contextmanager
+def get_db():
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.row_factory = sqlite3.Row
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+# ============================================================================
+# 工具函数
+# ============================================================================
+def send_feishu_alert(message: str):
+    try:
+        payload = {
+            "msg_type": "text",
+            "content": {"text": f"🤖 Agentic OS 告警\n{message}"}
+        }
+        requests.post(FEISHU_WEBHOOK, json=payload, timeout=5)
+    except Exception:
+        pass
+
+def load_token_budget() -> dict:
+    try:
+        with open(TOKEN_BUDGET_FILE) as f:
+            return json.load(f)
+    except Exception:
+        return {"drama": {"used": 0, "limit": 400000}, "tk": {"used": 0, "limit": 600000}}
+
+def count_tasks(project_id: Optional[str] = None, status: Optional[str] = None) -> list:
+    tasks = []
+    search_dirs = [ACTIVE_DIR] + [d for d in [ACTIVE_DIR / 'drama', ACTIVE_DIR / 'tk'] if d.exists()]
+    for search_dir in search_dirs:
+        for f in search_dir.glob("*.json"):
+            try:
+                with open(f) as fp:
+                    t = json.load(fp)
+                if project_id and t.get('project_id') != project_id:
+                    continue
+                if status and t.get('status') != status:
+                    continue
+                tasks.append(t)
+            except Exception:
+                continue
+    return tasks
+
+def search_task_file(task_id: str) -> Optional[Path]:
+    search_dirs = [ACTIVE_DIR, ACTIVE_DIR / 'drama', ACTIVE_DIR / 'tk']
+    for d in search_dirs:
+        tf = d / f"{task_id}.json"
+        if tf.exists():
+            return tf
+    return None
+
+def load_template(template_id: str) -> Optional[dict]:
+    import yaml
+    for ext in ['.json', '.yaml', '.yml']:
+        tf = TEMPLATES_DIR / f"{template_id}{ext}"
+        if tf.exists():
+            try:
+                if ext == '.json':
+                    with open(tf) as f:
+                        return json.load(f)
+                else:
+                    with open(tf) as f:
+                        return yaml.safe_load(f)
+            except Exception:
+                continue
+    return None
+
+def list_templates() -> list:
+    import yaml
+    templates = []
+    for ext in ['.json', '.yaml', '.yml']:
+        if TEMPLATES_DIR.exists():
+            for f in TEMPLATES_DIR.glob(f'*{ext}'):
+                try:
+                    if ext == '.json':
+                        with open(f) as fp:
+                            data = json.load(fp)
+                    else:
+                        with open(f) as fp:
+                            data = yaml.safe_load(fp)
+                    templates.append({
+                        'id': f.stem,
+                        'name': data.get('name', f.stem),
+                        'project': data.get('project', 'unknown'),
+                        'stages_count': len(data.get('stages', [])),
+                        'description': data.get('description', '')
+                    })
+                except Exception:
+                    continue
+    return templates
+
+# ============================================================================
+# 后台线程: 决策超时监控
+# ============================================================================
+def check_decision_timeouts():
+    while True:
+        try:
+            for task_file in ACTIVE_DIR.glob("*.json"):
+                try:
+                    with open(task_file) as f:
+                        task = json.load(f)
+                    for dp in task.get('decision_points', []):
+                        if dp.get('status') == 'pending':
+                            created = task.get('created_at', '')
+                            if created:
+                                try:
+                                    created_time = datetime.fromisoformat(created.replace('Z', '+00:00'))
+                                    age_hours = (datetime.now() - created_time.replace(tzinfo=None)).total_seconds() / 3600
+                                    if age_hours > DECISION_TIMEOUT_HOURS:
+                                        msg = f"⏰ 决策超时告警！\n任务: {task['id']}\n决策: {dp.get('question', 'N/A')}\n已等待: {age_hours:.1f}小时"
+                                        send_feishu_alert(msg)
+                                except Exception:
+                                    pass
+                except Exception:
+                    continue
+        except Exception as e:
+            print(f"决策超时检查失败: {e}")
+        time.sleep(DECISION_CHECK_INTERVAL)
+
+threading.Thread(target=check_decision_timeouts, daemon=True).start()
+
+# ============================================================================
+# API Endpoints (与原 v2 100% 兼容)
+# ============================================================================
+
+# --- Health ---
+@app.get("/api/health")
+def health_check():
+    return {"status": "ok", "version": "3.0.0-fastapi", "timestamp": datetime.now().isoformat()}
+
+# --- Dashboard ---
+@app.get("/api/dashboard")
+def dashboard_data(project: str = Query(default="all", alias="project")):
+    budget = load_token_budget()
+    drama_tasks = len(count_tasks('drama', 'running'))
+    tk_tasks = len(count_tasks('tk', 'running'))
+    pending_decisions = 0
+    for t in count_tasks():
+        for d in t.get('decision_points', []):
+            if d.get('status') == 'pending':
+                pending_decisions += 1
+    return {
+        'kpi': {
+            'drama': {'running': drama_tasks, 'budget_used': budget.get('drama', {}).get('used', 0), 'budget_limit': budget.get('drama', {}).get('limit', 400000)},
+            'tk': {'running': tk_tasks, 'budget_used': budget.get('tk', {}).get('used', 0), 'budget_limit': budget.get('tk', {}).get('limit', 600000)}
+        },
+        'alerts': [],
+        'pending_decisions': pending_decisions,
+        'active_tasks': [t for t in count_tasks() if (project == 'all' or t.get('project_id') == project)][:20]
+    }
+
+# --- Decision ---
+@app.post("/api/decision/{task_id}/{decision_id}")
+def resolve_decision(task_id: str, decision_id: str, body: DecisionResolve):
+    choice = body.decision_type or body.choice
+    task_file = search_task_file(task_id)
+    if not task_file:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    with open(task_file, 'r+') as f:
+        task = json.load(f)
+        decision_question = ""
+        decision_updated = False
+        for d in task.get('decision_points', []):
+            if d.get('id') == decision_id:
+                d['status'] = 'resolved'
+                d['resolution'] = choice
+                d['resolved_at'] = datetime.now().isoformat()
+                decision_question = d.get('question', "")
+                decision_updated = True
+                break
+        if not decision_updated:
+            raise HTTPException(status_code=404, detail="Decision not found")
+
+        milestone_updated = False
+        if choice == '通过':
+            for m in task.get('milestones', []):
+                if '审核' in decision_question and '审核' in m.get('name', ''):
+                    m['status'] = 'completed'
+                    m['completed_at'] = datetime.now().isoformat()
+                    milestone_updated = True
+                elif '剧本筛选' in decision_question and '剧本' in m.get('name', ''):
+                    m['status'] = 'completed'
+                    m['completed_at'] = datetime.now().isoformat()
+                    milestone_updated = True
+                elif '角色设计' in decision_question and '角色' in m.get('name', ''):
+                    m['status'] = 'completed'
+                    m['completed_at'] = datetime.now().isoformat()
+                    milestone_updated = True
+
+        if task.get('milestones'):
+            all_done = all(m.get('status') == 'completed' for m in task['milestones'])
+            if all_done:
+                task['status'] = 'completed'
+                task['completed_at'] = datetime.now().isoformat()
+
+        f.seek(0)
+        json.dump(task, f, ensure_ascii=False, indent=2)
+        f.truncate()
+
+    event_file = HOME / ".openclaw/workspace/events/decision_received.json"
+    event_file.parent.mkdir(parents=True, exist_ok=True)
+    with open(event_file, 'w') as ef:
+        json.dump({
+            'task_id': task_id, 'decision_id': decision_id, 'choice': choice,
+            'milestone_updated': milestone_updated, 'timestamp': datetime.now().isoformat()
+        }, ef)
+
+    return {'status': 'ok', 'triggered': True, 'milestone_updated': milestone_updated, 'task_status': task.get('status')}
+
+# --- Wizard ---
+@app.post("/api/task/wizard/validate-title")
+def wizard_validate_title(body: TitleValidation):
+    title = body.title
+    errors, suggestions = [], []
+    if len(title) < 5:
+        errors.append("标题过短，建议至少5个字符")
+    elif len(title) > 100:
+        errors.append("标题过长，建议不超过100个字符")
+    if '武松' in title or '水浒' in title:
+        suggestions.append("检测到水浒传主题，建议使用 drama_pipeline 模板")
+    elif 'TK' in title or '东南亚' in title or '3C' in title:
+        suggestions.append("检测到TK运营主题，建议使用 tk_pipeline 模板")
+    elif '爆款' in title or '热门' in title:
+        suggestions.append("建议添加具体品类名称，如 '手机壳爆款分析'")
+    return {"valid": len(errors) == 0, "errors": errors, "suggestions": suggestions}
+
+@app.post("/api/task/wizard/recommend")
+def wizard_recommend_template(body: TemplateRecommend):
+    topic, category = body.topic, body.category
+    if category == 'drama':
+        if '武松' in topic or '水浒' in topic:
+            return {"template": "drama_pipeline", "name": "AI数字短剧制作流程", "description": "剧本生成→审核→分镜→视频→配音→上传", "time_estimate": "2-4小时", "best_practices": ["✅ 剧本字数≥1000字", "✅ 每集时长3-5分钟", "✅ 争议剧情需改写", "✅ 人工审核节点", "✅ 角色一致性检查"]}
+        return {"template": "drama_pipeline", "name": "AI数字短剧标准流程", "description": "7步骤完整短剧制作", "time_estimate": "2-4小时", "best_practices": ["✅ 明确剧情主题", "✅ 目标受众定位", "✅ 角色设计清晰", "✅ 剧本长度适中"]}
+    elif category == 'tk':
+        if '爆款' in topic or '热门' in topic:
+            return {"template": "tk_pipeline", "name": "TK爆款产品运营流程", "description": "14里程碑完整运营流水线", "time_estimate": "自动化执行", "best_practices": ["✅ 数据采集完整性>98%", "✅ 爆款阈值300万播放", "✅ 每周监控热门趋势", "✅ 自动生成分析报告", "✅ 人工决策节点配置"]}
+        return {"template": "tk_pipeline", "name": "TK东南亚运营标准流程", "description": "选品→内容→发布→广告→订单→客服→数据", "time_estimate": "自动化执行", "best_practices": ["✅ 设置监控品类", "✅ 配置爆款阈值", "✅ 定期检查决策点", "✅ API集成准备"]}
+    return {"template": None}
+
+@app.get("/api/task/wizard/description-guide")
+def wizard_description_guide(category: str = Query(default="drama")):
+    if category == 'drama':
+        return {"guide": ["💡 主题明确：如 '武松打虎第2集复仇爽剧'", "💡 目标受众：如 '东南亚男性观众18-35岁'", "💡 剧情亮点：如 '武松拳打猛虎、复仇爽感、正义必胜'", "💡 角色设定：如 '武松(勇敢正义)、老虎(凶猛反派)'", "💡 时长要求：如 '每集3-5分钟，共10集'", "💡 风格定位：如 '古装武侠、热血爽剧、快节奏'"]}
+    elif category == 'tk':
+        return {"guide": ["💡 品类范围：如 '手机壳、充电器、耳机、数据线'", "💡 目标市场：如 '印尼、越南、泰国、菲律宾、马来西亚'", "💡 爆款标准：如 '播放量>300万、评论数>1000'", "💡 监控频率：如 '每2小时检查热门产品'", "💡 数据维度：如 '播放量、点赞数、评论数、分享数'", "💡 输出要求：如 '生成CSV报告、图表分析、趋势预测'"]}
+    return {"guide": []}
+
+# --- Templates ---
+@app.get("/api/templates")
+def api_list_templates():
+    return {'templates': list_templates()}
+
+@app.get("/api/templates/{template_id}")
+def api_get_template(template_id: str):
+    import yaml
+    for ext in ['.json', '.yaml', '.yml']:
+        tf = TEMPLATES_DIR / f"{template_id}{ext}"
+        if tf.exists():
+            try:
+                if ext == '.json':
+                    with open(tf) as f:
+                        return json.load(f)
+                else:
+                    with open(tf) as f:
+                        return yaml.safe_load(f)
+            except Exception:
+                continue
+    raise HTTPException(status_code=404, detail="Template not found")
+
+# --- Tasks ---
+@app.get("/api/tasks")
+def api_get_tasks():
+    tasks = []
+    if not ACTIVE_DIR.exists():
+        return {"tasks": tasks, "count": 0}
+    for tf in ACTIVE_DIR.glob("*.json"):
+        try:
+            with open(tf) as f:
+                t = json.load(f)
+            tasks.append({
+                "id": t.get("id"),
+                "name": t.get("name"),
+                "project_id": t.get("project_id"),
+                "status": t.get("status"),
+                "milestones_count": len(t.get("milestones", [])),
+                "created_at": t.get("created_at"),
+                "milestones": t.get("milestones", []),
+                "decision_points": t.get("decision_points", [])
+            })
+        except Exception:
+            continue
+    return {"tasks": tasks, "count": len(tasks)}
+
+@app.get("/api/task/{task_id}")
+def api_get_task_detail(task_id: str):
+    tf = search_task_file(task_id)
+    if not tf:
+        raise HTTPException(status_code=404, detail="Task not found")
+    with open(tf) as f:
+        return json.load(f)
+
+@app.get("/api/tasks/{task_id}/milestone/{milestone_id}")
+def api_get_milestone_execution(task_id: str, milestone_id: str):
+    task_file = search_task_file(task_id)
+    milestone_details = None
+    if task_file:
+        with open(task_file) as f:
+            task = json.load(f)
+            for m in task.get('milestones', []):
+                if m.get('id') == milestone_id:
+                    details = m.copy()
+                    log_file = EXEC_LOGS_DIR / f"{task_id}_{milestone_id}.log"
+                    if log_file.exists():
+                        with open(log_file) as lf:
+                            details['log_content'] = lf.read()[:5000]
+                    milestone_details = details
+                    break
+    return {'task_id': task_id, 'milestone_id': milestone_id, 'milestone': milestone_details}
+
+@app.post("/api/tasks/create")
+def api_create_task(body: TaskCreate):
+    template = load_template(body.template)
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+
+    project_dir = ACTIVE_DIR / body.project
+    project_dir.mkdir(parents=True, exist_ok=True)
+    task_id = f"{body.project.upper()}-{datetime.now().strftime('%Y%m%d')}-{len(list(ACTIVE_DIR.glob(f'{body.project.upper()}-*')))+1:03d}"
+
+    task = {
+        'id': task_id,
+        'project_id': body.project,
+        'name': body.title,
+        'description': body.description,
+        'template': body.template,
+        'priority': 'P1',
+        'status': 'created',
+        'created_at': datetime.now().isoformat(),
+        'milestones': [
+            {'id': s['id'], 'name': s['name'], 'status': 'pending', 'executor': s.get('executor', 'OpenClaw'), 'expected_artifacts': s.get('expected_artifacts', [])}
+            for s in template.get('stages', [])
+        ],
+        'decision_points': [
+            {'id': f"DP-{s['id']}", 'milestone_id': s['id'], 'question': s.get('question', ''), 'options': s.get('options', []), 'status': 'pending' if s.get('decision_point') else 'auto'}
+            for s in template.get('stages', [])
+            if s.get('decision_point')
+        ],
+        'artifacts': []
+    }
+
+    for tf in [ACTIVE_DIR / f"{task_id}.json", project_dir / f"{task_id}.json"]:
+        with open(tf, 'w') as f:
+            json.dump(task, f, ensure_ascii=False, indent=2)
+
+    return {'task_id': task_id, 'task': task}
+
+@app.post("/api/tasks/{task_id}/execute/{milestone_id}")
+def api_execute_milestone(task_id: str, milestone_id: str):
+    task_file = search_task_file(task_id)
+    if not task_file:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    with open(task_file) as f:
+        task = json.load(f)
+
+    template_id = task.get('template', 'drama_pipeline')
+    template = load_template(template_id)
+    if not template:
+        raise HTTPException(status_code=400, detail="Template not found")
+
+    command = None
+    for s in template.get('stages', []):
+        if s['id'] == milestone_id:
+            command = s.get('command', '').format(task_id=task_id)
+            break
+    if not command:
+        raise HTTPException(status_code=400, detail="Command not found in template")
+
+    start = datetime.now()
+    result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=600)
+    duration = (datetime.now() - start).total_seconds()
+
+    EXEC_LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    log_file = EXEC_LOGS_DIR / f"{task_id}_{milestone_id}.log"
+    with open(log_file, 'w') as f:
+        f.write(f"COMMAND: {command}\nDURATION: {duration:.2f}s\nSTATUS: {'completed' if result.returncode == 0 else 'failed'}\n")
+        f.write("=" * 60 + "\nSTDOUT:\n" + result.stdout)
+        if result.stderr:
+            f.write("\n" + "=" * 60 + "\nSTDERR:\n" + result.stderr)
+
+    with open(task_file, 'r+') as f:
+        task = json.load(f)
+        for m in task.get('milestones', []):
+            if m['id'] == milestone_id:
+                m['status'] = 'completed' if result.returncode == 0 else 'failed'
+                m['execution_details'] = {
+                    'command': command, 'duration': round(duration, 2), 'return_code': result.returncode,
+                    'stdout_preview': result.stdout[:1000], 'stderr_preview': result.stderr[:500], 'log_file': str(log_file)
+                }
+                break
+        if all(m.get('status') == 'completed' for m in task.get('milestones', [])):
+            task['status'] = 'completed'
+        f.seek(0)
+        json.dump(task, f, ensure_ascii=False, indent=2)
+        f.truncate()
+
+    return {'status': 'completed' if result.returncode == 0 else 'failed', 'duration': duration, 'returncode': result.returncode, 'stdout': result.stdout[:500], 'stderr': result.stderr[:200]}
+
+# --- Insights ---
+@app.get("/api/insights")
+def api_cross_project_insights():
+    return {'insights': [{'source': 'tk', 'target': 'drama', 'suggestion': '手机壳搜索量+230% → 短剧选题《穿越卖手机壳》', 'action': 'create_task'}]}
+
+# --- Download ---
+@app.get("/api/download")
+def api_download_file(path: Optional[str] = None, name: Optional[str] = None):
+    if not path and not name:
+        raise HTTPException(status_code=400, detail="Missing path or name parameter")
+    search_dirs = [DRAMA_OUTPUT_DIR, HOME / "drama/output", HOME / "drama/scripts", HOME / "drama/characters", HOME / ".openclaw/drama/output", WORKSPACE / "dramas", HOME / "Downloads"]
+    filename = name or Path(path or "").name
+    for sd in search_dirs:
+        if sd.exists():
+            for f in sd.rglob(filename):
+                if f.is_file() and f.stat().st_size > 1000:
+                    return FileResponse(str(f), filename=filename)
+    raise HTTPException(status_code=404, detail=f"File not found: {filename}")
+
+# --- TK运营 ---
+def csv_endpoint(filepath: Path, key: str):
+    import csv
+    if filepath.exists():
+        try:
+            with open(filepath) as f:
+                data = list(csv.DictReader(f))
+                return {key: data, "count": len(data)}
+        except Exception as e:
+            return {"error": str(e)}
+    return {key: [], "count": 0}
+
+ARTIFACTS_DIR = HOME / ".openclaw/artifacts/reports"
+
+@app.get("/api/tk/products")
+def api_tk_products():
+    return csv_endpoint(ARTIFACTS_DIR / "tk_category_distribution.csv", "products")
+
+@app.get("/api/tk/competitors")
+def api_tk_competitors():
+    return csv_endpoint(ARTIFACTS_DIR / "tk_competitor_analysis.csv", "competitors")
+
+@app.get("/api/tk/trending")
+def api_tk_trending():
+    return csv_endpoint(ARTIFACTS_DIR / "tk_surge_keywords.csv", "trending")
+
+# --- Drama ---
+@app.get("/api/drama/scripts")
+def api_drama_scripts():
+    scripts = []
+    if DRAMA_OUTPUT_DIR.exists():
+        for f in DRAMA_OUTPUT_DIR.glob("*.txt"):
+            scripts.append({"id": f.stem, "name": f.stem, "path": str(f), "size": f.stat().st_size})
+    return {"scripts": scripts, "count": len(scripts)}
+
+@app.get("/api/drama/videos")
+def api_drama_videos():
+    videos = []
+    if DRAMA_OUTPUT_DIR.exists():
+        for f in DRAMA_OUTPUT_DIR.glob("*.mp4"):
+            videos.append({"id": f.stem, "name": f.stem, "path": str(f), "size": f.stat().st_size})
+    return {"videos": videos, "count": len(videos)}
+
+@app.get("/api/drama/audio")
+def api_drama_audio():
+    audio_files = []
+    if DRAMA_OUTPUT_DIR.exists():
+        for f in DRAMA_OUTPUT_DIR.glob("*.mp3"):
+            audio_files.append({"id": f.stem, "name": f.stem, "path": str(f), "size": f.stat().st_size})
+    return {"audio": audio_files, "count": len(audio_files)}
+
+# ============================================================================
+# 启动入口
+# ============================================================================
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=5004, log_level="info")
