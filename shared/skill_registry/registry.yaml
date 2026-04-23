@@ -1,0 +1,65 @@
+# =============================================================
+#  Skill 注册表 (v1.0)
+#  作用：声明所有 skill 的版本、路径、依赖和适用任务范围
+#  执行器在调度前通过 compatible_tasks 校验，防止跨业务线路由错误
+# =============================================================
+
+skills:
+  water-margin-drama:
+    version: "1.2.0"
+    path: "drama/openclaw/skills/water-margin-drama"
+    skill_doc: "SKILL.md"
+    dependencies:
+      - "gpt-sovits>=V2"
+      - "seedance"
+      - "minimax-tts"
+      - "replicate"
+    compatible_tasks:
+      - "DS-*"
+      - "DRAMA-*"
+    stages:
+      - id: MS-1
+        script: "script_selector.py"
+      - id: MS-2
+        script: "controversy_rewriter.py"
+      - id: MS-3
+        script: "role_designer.py"
+      - id: MS-4
+        script: "drama_script.py"
+      - id: MS-6
+        script: "drama_video.py"
+      - id: MS-7
+        script: "drama_audio.py"
+      - id: MS-8
+        script: "drama_merge.py"
+
+  claw-operator:
+    version: "2.1.0"
+    path: "tk/openclaw/skills/claw-operator"
+    skill_doc: "SKILL.md"
+    dependencies:
+      - "feishu-webhook"
+      - "tiktok-api"
+    compatible_tasks:
+      - "TK-*"
+    stages:
+      - id: MS-1
+        script: "proactive_operator.sh"
+      - id: MS-2
+        script: "analyze_trending.py"
+      - id: MS-3
+        script: "generate_content.py"
+      - id: MS-4
+        script: "publish_track.py"
+      - id: MS-5
+        script: "daily_report.sh"
+
+  feishu-tk-notifier:
+    version: "1.0.0"
+    path: "tk/openclaw/skills/feishu-tk-notifier"
+    skill_doc: "SKILL.md"
+    dependencies:
+      - "feishu-webhook"
+    compatible_tasks:
+      - "TK-*"
+      - "DS-*"

@@ -1,20 +1,28 @@
-# Node.js / general project ignore
-node_modules/
-dist/
-build/
-.DS_Store
-*.log
-.env*
-coverage/
-.pytest_cache/
+# ── 敏感配置（严禁提交）────────────────────────────────────────
+.env
+*.env.local
+.env.production
 
-# Editors / IDEs
-.idea/
-.vscode/
-.vscode-insiders/
-.DS_Store
+# ── 数据库文件 ──────────────────────────────────────────────────
+shared/data/*.db
+shared/data/*.db-shm
+shared/data/*.db-wal
 
-# OS / temp
-Thumbs.db
-.cache/
-.tmp/
+# ── 执行日志（包含命令输出，可能含敏感信息）────────────────────
+shared/logs/executions/*.log
+shared/logs/executions/rotated/
+
+# ── Python 编译产物 ─────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# ── 虚拟环境 ────────────────────────────────────────────────────
+venv/
+.venv/
+env/
+
+# ── macOS ────────────────────────────────────────────────────────
+.DS_Store

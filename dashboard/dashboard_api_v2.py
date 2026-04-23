@@ -230,6 +230,44 @@ def resolve_decision(task_id, decision_id):
 def health_check():
     return jsonify({'status': 'ok', 'timestamp': datetime.now().isoformat()})
 
+@app.route('/api/tasks', methods=['GET'])
+def list_tasks():
+    """获取所有任务列表（活跃 + 完成）"""
+    tasks = []
+    
+    # 扫描活跃任务
+    if ACTIVE_DIR.exists():
+        for task_file in ACTIVE_DIR.glob('*.json'):
+            try:
+                with open(task_file) as f:
+                    task = json.load(f)
+                    task['_source'] = 'active'
+                    tasks.append(task)
+            except Exception as e:
+                print(f"Error loading {task_file}: {e}")
+    
+    # 扫描完成任务
+    if COMPLETED_DIR.exists():
+        for task_file in COMPLETED_DIR.glob('*.json'):
+            try:
+                with open(task_file) as f:
+                    task = json.load(f)
+                    task['_source'] = 'completed'
+                    tasks.append(task)
+            except Exception as e:
+                print(f"Error loading {task_file}: {e}")
+    
+    # 按更新时间排序
+    tasks.sort(key=lambda x: x.get('updated_at', x.get('created_at', '')), reverse=True)
+    
+    return jsonify({
+        'status': 'ok',
+        'tasks': tasks,
+        'total': len(tasks),
+        'active_count': len([t for t in tasks if t.get('_source') == 'active']),
+        'completed_count': len([t for t in tasks if t.get('_source') == 'completed'])
+    })
+
 # ========== 执行透明性新增端点 ==========
 
 @app.route('/api/templates', methods=['GET'])
