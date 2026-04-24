@@ -1,0 +1,201 @@
+# =============================================================
+# 水浒传 AI 短剧配置 (从代码中抽取)
+# =============================================================
+name: 水浒传
+id: shuihuzhuan
+genre: 古典武侠
+era: 宋代
+style: 幽默网感
+description: 北宋末年，108位好汉聚义梁山泊，替天行道，反抗压迫的传奇故事
+
+system_prompt: 你是一位资深编剧，熟悉水浒传原著和现代观众审美。请基于以下标准进行剧本筛选和改编。
+
+script_prompt: |
+  生成一个30秒的水浒传短视频剧本：{theme}
+  要求：
+  1. 幽默风格，现代网感，适合抖音/快手
+  2. 包含分镜描述（镜头、画面、对白/旁白、音效）
+  3. 角色设定清晰
+  4. 场景：古代中国风格
+  5. 时长：约30秒
+  6. 输出格式：分镜脚本格式
+
+video_prompt: |
+  从以下剧本中提取3个关键画面描述，用于AI视频生成。
+  每个描述格式："主体 + 动作 + 场景 + 镜头语言 + 氛围"
+  每个描述不超过50字。
+  剧本：{script}
+
+selection_criteria:
+  观众熟悉度: 民间流传度最高的桥段
+  戏剧冲突强度: 情节起伏大、情感张力强
+  人物高光时刻: 核心角色的成名战或转折点
+  视觉表现力: 适合AI视频生成的场景（打斗、山水、市井）
+
+episodes:
+  - id: lutixia_quan_da_zhenguanxi
+    title: 鲁提辖拳打镇关西
+    chapter: 3
+    character: 鲁智深
+    score: 8.5
+    tags: [高光, 动作, 正义]
+
+  - id: lu_zhishen_daoba_chuiyangliu
+    title: 鲁智深倒拔垂杨柳
+    chapter: 4
+    character: 鲁智深
+    score: 8.8
+    tags: [高光, 力量, 视觉强]
+
+  - id: wusong_dahu
+    title: 武松打虎
+    chapter: 23
+    character: 武松
+    score: 9.2
+    tags: [高光, 动作, 经典, 视觉强]
+
+  - id: wusong_dousha_ximenqing
+    title: 武松斗杀西门庆
+    chapter: 27
+    character: 武松
+    score: 7.5
+    tags: [复仇, 动作]
+
+  - id: wusong_zui_da_jiangmenshen
+    title: 武松醉打蒋门神
+    chapter: 29
+    character: 武松
+    score: 8.3
+    tags: [动作, 侠义]
+
+  - id: xuejian_yuanyanglou
+    title: 血溅鸳鸯楼
+    chapter: 31
+    character: 武松
+    score: 7.0
+    tags: [复仇, 冲突强, 需改编]
+
+  - id: linchong_fengxue_shanshenmiao
+    title: 林冲风雪山神庙
+    chapter: 10
+    character: 林冲
+    score: 9.0
+    tags: [转折, 悲情, 视觉强]
+
+  - id: linchong_xueye_shang_liangshan
+    title: 林冲雪夜上梁山
+    chapter: 11
+    character: 林冲
+    score: 8.0
+    tags: [转折, 经典]
+
+  - id: zhiqu_shengchengang
+    title: 智取生辰纲
+    chapter: 16
+    character: 吴用
+    score: 8.6
+    tags: [智慧, 谋略, 经典]
+
+  - id: likui_yiling_sha_sihu
+    title: 李逵沂岭杀四虎
+    chapter: 43
+    character: 李逵
+    score: 7.8
+    tags: [高光, 动作, 需改编]
+
+  - id: songjiang_sha_yanpoxi
+    title: 宋江杀阎婆惜
+    chapter: 22
+    character: 宋江
+    score: 6.5
+    tags: [转折, 争议, 需改编]
+
+  - id: huaheshang_danao_wutaishan
+    title: 花和尚大闹五台山
+    chapter: 4
+    character: 鲁智深
+    score: 7.0
+    tags: [动作, 喜剧, 视觉强]
+
+roles:
+  - id: songjiang
+    name: 宋江
+    traits: [及时雨, 忠义两全, 领袖]
+    voice_style: 男声，沉稳厚重
+    tts_voice: Sin-ji
+    description: 中国古代中年男子，约40岁，面容忠厚慈祥，眉目清秀，身穿暗红色锦袍，头戴纱帽，表情沉稳大气，有领袖气质
+    default_scene: 梁山聚义厅
+
+  - id: wusong
+    name: 武松
+    traits: [打虎英雄, 刚正不阿, 武力高强]
+    voice_style: 男声，有力豪迈
+    tts_voice: Tingting
+    description: 中国古代年轻男子，约25岁，身材魁梧高大，浓眉大眼，膀阔腰圆，身穿粗布短打衣裳，裸露手臂肌肉线条，表情刚毅果敢
+    default_scene: 景阳冈
+
+  - id: luzhishen
+    name: 鲁智深
+    traits: [花和尚, 力大无穷, 豪爽直率]
+    voice_style: 男声，洪亮爽朗
+    tts_voice: Tingting
+    description: 中国古代和尚，约30岁，体型肥胖但肌肉结实，方面大耳，络腮胡须，光头披袈裟，手持禅杖，表情豪爽直接
+    default_scene: 大相国寺菜园
+
+  - id: likui
+    name: 李逵
+    traits: [黑旋风, 鲁莽冲动, 孝顺]
+    voice_style: 男声，粗犷暴躁
+    tts_voice: Tingting
+    description: 中国古代男子，约35岁，皮肤黝黑，身材高大粗壮，环眼豹须，面相凶猛，手持两把板斧，身穿黑色短打衣
+    default_scene: 梁山
+
+  - id: linchong
+    name: 林冲
+    traits: [豹子头, 忍辱负重, 枪法绝伦]
+    voice_style: 男声，沉稳内敛
+    tts_voice: Sin-ji
+    description: 中国古代男子，约30岁，相貌堂堂，豹头环眼，燕颔虎须，身穿白色战袍，手持丈八蛇矛，表情隐忍坚毅
+    default_scene: 风雪山神庙
+
+scenes:
+  梁山聚义厅: 古代中国大厅，红砖金瓦，柱子上雕刻盘龙，设有虎皮交椅，墙上挂替天行道旗帜，两侧摆满酒肉宴席
+  景阳冈: 中国北方山岭，树木茂密，山路崎岖，远处有酒店旗帜，近处有岩石和草丛，夕阳西下
+  风雪山神庙: 古代密林，大雪纷飞，破旧山神庙，周围有草屋燃烧的痕迹，寒冷肃杀氛围
+  大相国寺菜园: 古代寺庙后院，有菜圃、柳树、简陋草屋，周围有围墙，院内有石桌石凳
+
+controversy_rules:
+  - id: zhaoan
+    pattern: 宋江招安
+    severity: high
+    problem: 愚忠价值观，导致兄弟惨死
+    rewrite: 改为"识破奸臣阴谋，保护梁山兄弟"
+    keep: 兄弟情义、反抗压迫的核心精神
+
+  - id: likui_massacre
+    pattern: 李逵滥杀
+    severity: high
+    problem: 不分军民乱砍，滥杀无辜
+    rewrite: 改为"只攻击官兵，不伤百姓"
+    keep: 鲁莽但保留人性底线
+
+  - id: panjinlian
+    pattern: 潘金莲
+    severity: medium
+    problem: 女性角色被极度丑化
+    rewrite: 增加动机合理性（反抗压迫）
+    keep: 避免纯负面单一脸谱
+
+  - id: gore
+    pattern: 血腥暴力
+    severity: high
+    problem: 剖腹挖心、活剐等过度血腥
+    rewrite: 改为暗示或远景处理
+    keep: 戏剧冲突，但减少血腥描写
+
+  - id: feudalism
+    pattern: 封建糟粕
+    severity: medium
+    problem: 愚忠、愚孝、轻视人命
+    rewrite: 弱化或转化价值观
+    keep: 强调"反抗压迫、兄弟情义、替天行道"

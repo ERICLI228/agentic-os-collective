@@ -1,0 +1,165 @@
+# =============================================================
+# 西游记 AI 短剧配置
+# =============================================================
+name: 西游记
+id: xiyou
+genre: 神话冒险
+era: 唐代
+style: 奇幻搞笑
+description: 唐僧师徒四人西天取经，历经九九八十一难的神话冒险
+
+system_prompt: 你是一位资深编剧，熟悉西游记原著和现代观众审美。请基于以下标准进行剧本筛选和改编。
+
+script_prompt: |
+  生成一个30秒的西游记短视频剧本：{theme}
+  要求：
+  1. 奇幻搞笑风格，现代网感，适合抖音/快手
+  2. 包含分镜描述（镜头、画面、对白/旁白、音效）
+  3. 角色设定清晰
+  4. 场景：神话/仙侠风格
+  5. 时长：约30秒
+  6. 输出格式：分镜脚本格式
+
+video_prompt: |
+  从以下剧本中提取3个关键画面描述，用于AI视频生成。
+  每个描述格式："主体 + 动作 + 场景 + 镜头语言 + 氛围"
+  每个描述不超过50字。
+  剧本：{script}
+
+selection_criteria:
+  观众熟悉度: 民间流传度最高的桥段
+  戏剧冲突强度: 妖魔斗法、师徒矛盾
+  人物高光时刻: 孙悟空的名场面
+  视觉表现力: 神话场景（天宫、地府、妖洞）
+
+episodes:
+  - id: dashang_tiangong
+    title: 孙悟空大闹天宫
+    chapter: 7
+    character: 孙悟空
+    score: 9.8
+    tags: [高光, 动作, 经典, 视觉强]
+
+  - id: san_da_baigujing
+    title: 三打白骨精
+    chapter: 27
+    character: 孙悟空
+    score: 9.5
+    tags: [经典, 悬疑, 师徒矛盾]
+
+  - id: wukong_chusheng
+    title: 石猴出世
+    chapter: 1
+    character: 孙悟空
+    score: 8.5
+    tags: [起源, 视觉强, 开篇]
+
+  - id: toudao_renshenguo
+    title: 偷吃人参果
+    chapter: 24
+    character: 孙悟空
+    score: 8.0
+    tags: [搞笑, 冲突, 喜剧]
+
+  - id: zhenyuan_daxian
+    title: 大闹五庄观
+    chapter: 25
+    character: 孙悟空
+    score: 8.2
+    tags: [动作, 搞笑, 视觉强]
+
+  - id: honghaier
+    title: 大战红孩儿
+    chapter: 41
+    character: 红孩儿
+    score: 8.8
+    tags: [动作, 斗法, 视觉强]
+
+  - id: tiejiao_gongzhu
+    title: 三借芭蕉扇
+    chapter: 59
+    character: 铁扇公主
+    score: 8.5
+    tags: [经典, 斗法, 喜剧]
+
+  - id: zhenjia_meihouwang
+    title: 真假美猴王
+    chapter: 58
+    character: 六耳猕猴
+    score: 9.0
+    tags: [悬疑, 经典, 哲学]
+
+  - id: pansi_dong
+    title: 盘丝洞斗蜘蛛精
+    chapter: 72
+    character: 蜘蛛精
+    score: 7.5
+    tags: [动作, 视觉强, 需改编]
+
+  - id: bajie_quqin
+    title: 猪八戒娶亲
+    chapter: 18
+    character: 猪八戒
+    score: 7.8
+    tags: [搞笑, 喜剧, 经典]
+
+roles:
+  - id: sunwukong
+    name: 孙悟空
+    traits: [齐天大圣, 神通广大, 桀骜不驯]
+    voice_style: 男声，尖锐有力，带猴腔
+    tts_voice: Tingting
+    description: 中国古代神话人物，毛脸雷公嘴，身穿虎皮裙，头戴紧箍咒，手持如意金箍棒，身材精瘦矫健，表情灵动狡黠
+    default_scene: 花果山
+
+  - id: tangseng
+    name: 唐僧
+    traits: [慈悲, 迂腐, 坚定]
+    voice_style: 男声，温和缓慢
+    tts_voice: Sin-ji
+    description: 唐代僧人，面容清秀慈善，身穿锦斓袈裟，头戴毗卢帽，手持九环锡杖，骑白龙马，表情慈悲庄严
+    default_scene: 取经路
+
+  - id: zhubajie
+    name: 猪八戒
+    traits: [好吃懒做, 贪色, 忠诚]
+    voice_style: 男声，粗哑憨厚
+    tts_voice: Tingting
+    description: 猪头人身的妖怪，大肚腩，黑脸短毛，长嘴大耳，手持九齿钉耙，表情憨厚又狡黠
+    default_scene: 高老庄
+
+  - id: shawujing
+    name: 沙悟净
+    traits: [老实, 任劳任怨, 沉默]
+    voice_style: 男声，低沉寡言
+    tts_voice: Sin-ji
+    description: 红发蓝脸、身高过丈的妖怪，颈悬九个骷髅头，手持降妖宝杖，表情木讷老实
+    default_scene: 流沙河
+
+scenes:
+  花果山: 东胜神洲仙山，瀑布飞流，桃树成林，石洞水帘，猴子成群
+  天宫: 云海之上，金碧辉煌的凌霄宝殿，仙鹤飞翔，祥云缭绕
+  取经路: 荒山野岭，古道西风，残阳如血，远处有妖怪洞府
+  火焰山: 八百里火焰山，赤地千里，热浪滚滚，寸草不生
+
+controversy_rules:
+  - id: tangseng_weakness
+    pattern: 唐僧懦弱
+    severity: medium
+    problem: 唐僧形象过于懦弱无能
+    rewrite: 增加其坚定信仰与慈悲智慧的一面
+    keep: 师徒矛盾的核心张力
+
+  - id: violence
+    pattern: 妖怪吃人
+    severity: high
+    problem: 妖怪吃人情节过于血腥
+    rewrite: 改为威胁或囚禁，不直接展示吃人
+    keep: 妖怪的威胁感
+
+  - id: gender_stereotypes
+    pattern: 女性妖怪色诱
+    severity: medium
+    problem: 女性妖怪形象单一（色诱）
+    rewrite: 增加女性妖怪的动机和背景故事
+    keep: 保持戏剧冲突和斗法场面

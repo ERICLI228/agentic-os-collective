@@ -1,0 +1,173 @@
+# =============================================================
+# 三国演义 AI 短剧配置
+# =============================================================
+name: 三国演义
+id: sanguo
+genre: 历史战争
+era: 东汉末年
+style: 宏大叙事
+description: 东汉末年，群雄逐鹿，魏蜀吴三国鼎立，英雄辈出的史诗传奇
+
+system_prompt: 你是一位资深编剧，熟悉三国演义原著和现代观众审美。请基于以下标准进行剧本筛选和改编。
+
+script_prompt: |
+  生成一个30秒的三国演义短视频剧本：{theme}
+  要求：
+  1. 宏大叙事风格，英雄气概，适合抖音/快手
+  2. 包含分镜描述（镜头、画面、对白/旁白、音效）
+  3. 角色设定清晰
+  4. 场景：古代战场/宫廷风格
+  5. 时长：约30秒
+  6. 输出格式：分镜脚本格式
+
+video_prompt: |
+  从以下剧本中提取3个关键画面描述，用于AI视频生成。
+  每个描述格式："主体 + 动作 + 场景 + 镜头语言 + 氛围"
+  每个描述不超过50字。
+  剧本：{script}
+
+selection_criteria:
+  观众熟悉度: 民间流传度最高的桥段
+  戏剧冲突强度: 情节起伏大、情感张力强
+  人物高光时刻: 核心角色的成名战或转折点
+  视觉表现力: 适合AI视频生成的场景（战场、宫廷、谋略）
+
+episodes:
+  - id: taoyuan_jieyi
+    title: 桃园三结义
+    chapter: 1
+    character: 刘备
+    score: 9.5
+    tags: [经典, 兄弟情, 开篇]
+
+  - id: wenjiu_zhan_huaxiong
+    title: 温酒斩华雄
+    chapter: 5
+    character: 关羽
+    score: 9.3
+    tags: [高光, 武力, 经典]
+
+  - id: sanying_zhan_lvbu
+    title: 三英战吕布
+    chapter: 5
+    character: 吕布
+    score: 9.0
+    tags: [动作, 经典, 视觉强]
+
+  - id: guandu_zhi_zhan
+    title: 官渡之战
+    chapter: 30
+    character: 曹操
+    score: 8.8
+    tags: [战争, 谋略, 转折]
+
+  - id: changbanpo
+    title: 赵子龙单骑救主
+    chapter: 41
+    character: 赵云
+    score: 9.2
+    tags: [高光, 动作, 忠诚]
+
+  - id: chibi_zhi_zhan
+    title: 赤壁之战
+    chapter: 49
+    character: 周瑜
+    score: 9.8
+    tags: [战争, 经典, 谋略]
+
+  - id: huarongdao
+    title: 华容道关羽义释曹操
+    chapter: 50
+    character: 关羽
+    score: 8.5
+    tags: [情义, 经典, 矛盾]
+
+  - id: kongming_jiemei
+    title: 诸葛亮舌战群儒
+    chapter: 43
+    character: 诸葛亮
+    score: 7.5
+    tags: [智慧, 谋略, 对话强]
+
+  - id: caochuan_jiejian
+    title: 草船借箭
+    chapter: 46
+    character: 诸葛亮
+    score: 9.0
+    tags: [智慧, 经典, 谋略]
+
+  - id: kongchengji
+    title: 空城计
+    chapter: 95
+    character: 诸葛亮
+    score: 9.4
+    tags: [智慧, 经典, 心理战]
+
+roles:
+  - id: liubei
+    name: 刘备
+    traits: [仁德, 枭雄, 兄弟情深]
+    voice_style: 男声，沉稳有磁性
+    tts_voice: Sin-ji
+    description: 中国古代中年男子，约40岁，面如冠玉，唇若涂脂，两耳垂肩，双手过膝，身穿锦袍，表情仁厚但有枭雄之志
+    default_scene: 桃园
+
+  - id: guanyu
+    name: 关羽
+    traits: [武圣, 忠义, 傲气]
+    voice_style: 男声，威严有力
+    tts_voice: Tingting
+    description: 中国古代武将，面如重枣，丹凤眼，卧蚕眉，身长九尺，髯长二尺，手持青龙偃月刀，身穿绿袍金甲，威风凛凛
+    default_scene: 战场
+
+  - id: zhangfei
+    name: 张飞
+    traits: [勇猛, 鲁莽, 重情]
+    voice_style: 男声，粗犷洪亮
+    tts_voice: Tingting
+    description: 中国古代武将，豹头环眼，燕颔虎须，声若巨雷，势如奔马，手持丈八蛇矛，身穿黑甲
+    default_scene: 当阳桥
+
+  - id: zhugeliang
+    name: 诸葛亮
+    traits: [智圣, 鞠躬尽瘁, 神机妙算]
+    voice_style: 男声，温润睿智
+    tts_voice: Sin-ji
+    description: 中国古代军师，面如冠玉，头戴纶巾，身披鹤氅，手持羽扇，飘飘然有神仙之概
+    default_scene: 中军帐
+
+  - id: caocao
+    name: 曹操
+    traits: [枭雄, 奸雄, 文武双全]
+    voice_style: 男声，深沉有城府
+    tts_voice: Sin-ji
+    description: 中国古代中年男子，身长七尺，细眼长髯，身穿锦袍金甲，表情深沉有城府，一代枭雄之相
+    default_scene: 许昌宫殿
+
+scenes:
+  桃园: 桃花盛开的花园，青石供桌，三柱香，乌牛白马祭品，夕阳余晖
+  战场: 广袤平原，万马奔腾，刀枪如林，硝烟弥漫，旌旗招展
+  中军帐: 古代军营大帐，地图悬挂，兵符陈列，烛光摇曳
+  许昌宫殿: 汉代宫殿，高台广殿，铜雀飞檐，文武百官分列
+
+controversy_rules:
+  - id: caocao_villain
+    pattern: 曹操奸雄
+    severity: medium
+    problem: 脸谱化反派，缺乏复杂性
+    rewrite: 展现其文韬武略与理想抱负的一面
+    keep: 权谋斗争的核心冲突
+
+  - id: women_objectification
+    pattern: 女性工具化
+    severity: medium
+    problem: 貂蝉等女性角色被工具化
+    rewrite: 增加女性角色的主动性描写
+    keep: 保留历史背景下的局限性
+
+  - id: excessive_violence
+    pattern: 过度战争暴力
+    severity: medium
+    problem: 斩首、屠杀等残酷描写
+    rewrite: 远景处理，强调兵法谋略
+    keep: 战争场面的视觉张力

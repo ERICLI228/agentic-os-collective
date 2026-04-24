@@ -2,79 +2,36 @@ import sys
 from pathlib import Path
 #!/usr/bin/env python3
 """
-水浒传AI数字短剧 - 角色设计系统
-生成并管理角色定妆照，确保视频生成时角色一致性
-# ⚠️ 完成度: 0% - 待实现（仅框架代码，未接入真实API，无实测输出）
+角色设计系统 (多故事支持 v2.0)
+从 story 配置加载角色库，生成定妆照提示词与视频提示词
 """
-
-import os
-import sys
-import json
-import base64
+import os, sys, json, base64, argparse
+from pathlib import Path
 from datetime import datetime
 
-# 配置
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 from shared.config import config
+from shared.story_loader import load_story, list_available
+
 ARK_API_KEY = config.ARK_API_KEY
 SEEDANCE_MODEL = "doubao-seedance-2-0-fast-260128"
 SEEDANCE_IMAGE_API = "https://ark.cn-beijing.volces.com/api/v3/images/generations"
 
-# 角色库
-ROLES = {
-    "宋江": {
-        "description": "中国古代中年男子，约40岁，面容忠厚慈祥，眉目清秀，身穿暗红色锦袍，头戴纱帽，表情沉稳大气，有领袖气质",
-        "traits": ["及时雨", "忠义两全", "领袖"],
-        "voice": "男声，沉稳厚重",
-        "default_scene": "梁山聚义厅"
-    },
-    "武松": {
-        "description": "中国古代年轻男子，约25岁，身材魁梧高大，浓眉大眼，膀阔腰圆，身穿粗布短打衣裳，裸露手臂肌肉线条，表情刚毅果敢",
-        "traits": ["打虎英雄", "刚正不阿", "武力高强"],
-        "voice": "男声，有力豪迈",
-        "default_scene": "景阳冈"
-    },
-    "鲁智深": {
-        "description": "中国古代和尚，约30岁，体型肥胖但肌肉结实，方面大耳，络腮胡须，光头披袈裟，手持禅杖，表情豪爽直接",
-        "traits": ["花和尚", "力大无穷", "豪爽直率"],
-        "voice": "男声，洪亮爽朗",
-        "default_scene": "大相国寺菜园"
-    },
-    "李逵": {
-        "description": "中国古代男子，约35岁，皮肤黝黑，身材高大粗壮，环眼豹须，面相凶猛，手持两把板斧，身穿黑色短打衣",
-        "traits": ["黑旋风", "鲁莽冲动", "孝顺"],
-        "voice": "男声，粗犷暴躁",
-        "default_scene": "梁山"
-    },
-    "林冲": {
-        "description": "中国古代男子，约30岁，相貌堂堂，豹头环眼，燕颔虎须，身穿白色战袍，手持丈八蛇矛，表情隐忍坚毅",
-        "traits": ["豹子头", "忍辱负重", "枪法绝伦"],
-        "voice": "男声，沉稳内敛",
-        "default_scene": "风雪山神庙"
-    }
-}
-
-# 场景库
-SCENES = {
-    "梁山聚义厅": "古代中国大厅，红砖金瓦，柱子上雕刻盘龙，设有虎皮交椅，墙上挂替天行道旗帜，两侧摆满酒肉宴席",
-    "景阳冈": "中国北方山岭，树木茂密，山路崎岖，远处有酒店旗帜，近处有岩石和草丛，夕阳西下",
-    "风雪山神庙": "古代密林，大雪纷飞，破旧山神庙，周围有草屋燃烧的痕迹，寒冷肃杀氛围",
-    "大相国寺菜园": "古代寺庙后院，有菜圃、柳树、简陋草屋，周围有围墙，院内有石桌石凳"
-}
+STORY = None  # 由 main() 设置
 
 def generate_role_prompt(role_name: str, scene: str = None, action: str = None) -> str:
     """
     生成完整的角色提示词
     """
-    role = ROLES.get(role_name)
+    role = STORY.role(role_name)
     if not role:
         return None
     
     base = role["description"]
     
     if scene:
-        scene_desc = SCENES.get(scene, scene)
+        scene_desc = STORY.scenes.get(scene, scene)
         base = f"{base}，场景：{scene_desc}"
     
     if action:
@@ -115,25 +72,24 @@ def save_role_library(output_path: str = None):
 
 def list_roles():
     """列出所有可用角色"""
-    print("🎭 水浒传角色库:")
+    print(f"🎭 {STORY.name}角色库:")
     print("=" * 50)
-    for name, info in ROLES.items():
-        traits = ", ".join(info["traits"])
-        print(f"\n📌 {name}")
-        print(f"   特征: {traits}")
-        print(f"   描述: {info['description'][:50]}...")
-        print(f"   默认场景: {info['default_scene']}")
-    
+    for r in STORY.roles():
+        print(f"\n📌 {r.name}")
+        print(f"   特征: {', '.join(r.traits)}")
+        print(f"   描述: {r.description[:50]}...")
+        print(f"   默认场景: {r.default_scene}")
+
     print("\n" + "=" * 50)
     print("📍 可用场景:")
-    for scene, desc in SCENES.items():
-        print(f"   - {scene}: {desc[:30]}...")
+    for name, desc in STORY.scenes.items():
+        print(f"   - {name}: {desc[:30]}...")
 
 def generate_character_image_prompt(role_name: str) -> str:
     """
     生成角色定妆照提示词（用于图像生成）
     """
-    role = ROLES.get(role_name)
+    role = STORY.role(role_name)
     if not role:
         print(f"❌ 角色 '{role_name}' 不存在")
         return None
@@ -141,14 +97,14 @@ def generate_character_image_prompt(role_name: str) -> str:
     prompt = f"""
 请生成一张{role_name}的定妆照，用于后续AI视频生成的角色一致性参考。
 
-角色描述：{role['description']}
+角色描述：{role.description}
 
 要求：
 1. 正面照，表情自然
 2. 服装和特征清晰可见
 3. 电影质感，写实风格
 4. 中景构图（能看到上半身和部分背景）
-5. 场景：{role['default_scene']}
+5. 场景：{role.default_scene}
 
 负面提示词：distorted, messy, low quality, blurred, deformed face, extra limbs
 """
@@ -166,7 +122,7 @@ def batch_generate_prompts(output_dir: str = None):
     print("🎭 批量生成角色定妆照提示词...")
     print("=" * 50)
     
-    for role_name in ROLES.keys():
+    for role_name in [r.name for r in STORY.roles()]:
         prompt = generate_character_image_prompt(role_name)
         filepath = os.path.join(output_dir, f"{role_name}_定妆照.txt")
         
@@ -176,7 +132,7 @@ def batch_generate_prompts(output_dir: str = None):
         print(f"✅ {role_name}: {filepath}")
     
     print("=" * 50)
-    print(f"🎉 完成，共 {len(ROLES)} 个角色")
+    print(f"🎉 完成，共 {len(STORY.roles())} 个角色")
 
 def get_video_prompt(role_name: str, scene: str, action: str) -> str:
     """
@@ -199,7 +155,7 @@ def generate_image(role_name: str, output_dir: str = None) -> str:
     调用 Seedance/ARK API 生成角色定妆照 (FR-DR-003)
     返回图片路径，失败返回空字符串
     """
-    role = ROLES.get(role_name)
+    role = STORY.role(role_name)
     if not role:
         print(f"❌ 角色 '{role_name}' 不存在")
         return ""
@@ -251,54 +207,48 @@ def generate_image(role_name: str, output_dir: str = None) -> str:
 def batch_generate_images(output_dir: str = None) -> dict:
     """批量生成所有角色的定妆照"""
     results = {}
-    for role_name in ROLES.keys():
+    for role_name in [r.name for r in STORY.roles()]:
         path = generate_image(role_name, output_dir)
         results[role_name] = path
     return results
 
 
 def main():
-    if len(sys.argv) < 2:
-        print(__doc__)
-        print("\n📖 用法:")
-        print("  python role_designer.py --list          # 列出所有角色")
-        print("  python role_designer.py --prompt 武松   # 生成角色提示词")
-        print("  python role_designer.py --image 武松    # 生成角色定妆照 (调用 API)")
-        print("  python role_designer.py --batch         # 批量生成提示词")
-        print("  python role_designer.py --batch-img     # 批量生成定妆照")
-        print("  python role_designer.py --save          # 保存角色库JSON")
+    stories_avail = ", ".join(list_available())
+    parser = argparse.ArgumentParser(description=f"角色设计系统 (可用: {stories_avail})")
+    parser.add_argument("--story", default="shuihuzhuan", help=f"故事 ID")
+    parser.add_argument("action", nargs="?", choices=["list", "prompt", "image", "batch", "batch-img", "save"])
+    parser.add_argument("extra", nargs="*", help="角色名等")
+    args = parser.parse_args()
+
+    global STORY
+    STORY = load_story(args.story)
+
+    if not args.action:
+        parser.print_help()
         sys.exit(1)
-    
-    action = sys.argv[1]
-    
-    if action == "--list":
+
+    action = args.action
+
+    if action == "list":
         list_roles()
-    elif action == "--prompt":
-        if len(sys.argv) >= 3:
-            role = sys.argv[2]
-            prompt = generate_character_image_prompt(role)
-            print(prompt)
+    elif action == "prompt":
+        role = args.extra[0] if args.extra else None
+        if role:
+            print(generate_character_image_prompt(role))
         else:
-            print("用法: --prompt 角色名")
-    elif action == "--video":
-        if len(sys.argv) >= 5:
-            role = sys.argv[2]
-            scene = sys.argv[3]
-            action_desc = sys.argv[4]
-            prompt = get_video_prompt(role, scene, action_desc)
-            print(prompt)
-        else:
-            print("用法: --video 角色名 场景 动作")
-    elif action == "--batch":
+            print("用法: prompt 角色名")
+    elif action == "batch":
         batch_generate_prompts()
-    elif action == "--batch-img":
+    elif action == "batch-img":
         batch_generate_images()
-    elif action == "--image":
-        if len(sys.argv) >= 3:
-            generate_image(sys.argv[2])
+    elif action == "image":
+        role = args.extra[0] if args.extra else None
+        if role:
+            generate_image(role)
         else:
-            print("用法: --image 角色名")
-    elif action == "--save":
+            print("用法: image 角色名")
+    elif action == "save":
         save_role_library()
 
 if __name__ == "__main__":

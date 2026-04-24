@@ -1,56 +1,28 @@
 #!/usr/bin/env python3
 """
-水浒传AI数字短剧 - 争议剧情改写系统
+争议剧情改写系统 (多故事支持 v2.0)
 基于广电总局AI魔改治理标准，自动改写争议内容
-# ⚠️ 完成度: 20% - MOCK 未实测（有基础逻辑但未接入真实API，未跑通全流程）
+从 story 配置加载争议规则
 """
-
-import os
-import sys
-import json
-import urllib.request
+import os, sys, json, urllib.request, argparse
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 from shared.config import config
+from shared.story_loader import load_story, list_available
+
 ARK_API_KEY = config.ARK_API_KEY
 GLM_MODEL = "glm-4-7-251222"
 
-# 争议剧情改写规则
-CONTROVERSY_RULES = {
-    "宋江招安": {
-        "问题": "愚忠价值观，导致兄弟惨死",
-        "改写方向": "改为'识破奸臣阴谋，保护梁山兄弟'",
-        "保留": "兄弟情义、反抗压迫的核心精神"
-    },
-    "李逵滥杀": {
-        "问题": "不分军民乱砍，滥杀无辜",
-        "改写方向": "改为'只攻击官兵，不伤百姓'",
-        "保留": "鲁莽但保留人性底线"
-    },
-    "潘金莲": {
-        "问题": "女性角色被极度丑化",
-        "改写方向": "增加动机合理性（反抗压迫）",
-        "保留": "避免纯负面单一脸谱"
-    },
-    "血腥暴力": {
-        "问题": "剖腹挖心、活剐等过度血腥",
-        "改写方向": "改为暗示或远景处理",
-        "保留": "戏剧冲突，但减少血腥描写"
-    },
-    "封建糟粕": {
-        "问题": "愚忠、愚孝、轻视人命",
-        "改写方向": "弱化或转化价值观",
-        "保留": "强调'反抗压迫、兄弟情义、替天行道'"
-    }
-}
+STORY = None  # 由 main() 设置
 
-# 改写Prompt模板
-REWRITE_PROMPT_TEMPLATE = """
+# 改写Prompt模板 (由 story 配置决定)
+def story_rewrite_prompt():
+    return STORY.rewrite_prompt if hasattr(STORY, 'rewrite_prompt') else f"""
 你是一位资深编剧，熟悉现代观众审美和广电总局AI魔改治理要求。
 
-请将以下水浒传章节进行改编，要求：
+请将以下{STORY.name}章节进行改编，要求：
 1. **保留核心冲突和人物性格**
 2. **删除或弱化原著中以下争议内容**：
    - 滥杀无辜、歧视女性、愚忠愚孝的情节
@@ -229,35 +201,46 @@ def save_rewritten_scripts(output_dir: str = None):
     print(f"🎉 改写完成，共 {len(need_rewrite)} 个章节")
 
 def main():
-    if len(sys.argv) < 2:
-        print(__doc__)
-        print("\n📖 用法:")
-        print("  python controversy_rewriter.py --rewrite \"血溅鸳鸯楼\" 武松")
-        print("  python controversy_rewriter.py --batch")
-        print("  python controversy_rewriter.py --rules  # 显示改写规则")
-        sys.exit(1)
-    
-    action = sys.argv[1]
-    
-    if action == "--rewrite":
-        if len(sys.argv) >= 4:
-            title = sys.argv[2]
-            character = sys.argv[3]
-            controversy = identify_controversy(title)
-            result = rewrite_chapter(title, character, controversy)
-            print(result)
-            
-    elif action == "--batch":
-        save_rewritten_scripts()
-        
-    elif action == "--rules":
-        print("⚖️ 争议剧情改写规则:")
+    stories_avail = ", ".join(list_available())
+    parser = argparse.ArgumentParser(description=f"争议改写系统 (可用: {stories_avail})")
+    parser.add_argument("--story", default="shuihuzhuan", help=f"故事 ID")
+    parser.add_argument("action", nargs="?", choices=["list", "rewrite", "batch", "rules"])
+    parser.add_argument("extra", nargs="*")
+    args = parser.parse_args()
+
+    global STORY
+    STORY = load_story(args.story)
+
+    if not args.action:
+        parser.print_help()
+        return
+
+    action = args.action
+
+    if action == "list":
+        print(f"⚖️ [{STORY.name}] 争议规则:")
         print("=" * 50)
-        for key, rule in CONTROVERSY_RULES.items():
-            print(f"\n📌 {key}")
-            print(f"   问题: {rule['问题']}")
-            print(f"   改写: {rule['改写方向']}")
-            print(f"   保留: {rule['保留']}")
+        for c in STORY.controversies:
+            print(f"\n📌 {c.pattern} (严重度: {c.severity})")
+            print(f"   问题: {c.problem}")
+            print(f"   改写: {c.rewrite}")
+            print(f"   保留: {c.keep}")
+
+    elif action == "rules":
+        print(f"⚖️ [{STORY.name}] 争议剧情改写规则:")
+        for c in STORY.controversies:
+            print(f"\n📌 {c.pattern} (严重度: {c.severity}): {c.problem}")
+
+    elif action == "rewrite":
+        title = args.extra[0] if args.extra else "武松打虎"
+        character = args.extra[1] if len(args.extra) > 1 else "武松"
+        controversy = identify_controversy(title)
+        result = rewrite_chapter(title, character, controversy)
+        print(result)
+
+    elif action == "batch":
+        save_rewritten_scripts()
+
 
 if __name__ == "__main__":
     main()

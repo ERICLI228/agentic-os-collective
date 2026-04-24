@@ -246,8 +246,8 @@ def main():
     elif args.text:
         script_text = args.text
     else:
-        # 示例剧本
-        script_text = """
+        if not args.json_only:
+            print("⚠️  未提供剧本，使用示例文本", file=sys.stderr)
 场景一：景阳冈山脚
 武松：(背行李上) 这店家说冈上有虎，我看不过是吓唬人罢了。
 酒保：客官留步！冈上真有猛虎，天色已晚，不如明日再走。
@@ -268,7 +268,8 @@ def main():
 (猛虎挣扎渐弱，最终倒地)
 武松：(喘气) 这大虫果然凶猛...好在此番除了它。
 """
-        print("⚠️  未提供剧本，使用示例文本")
+        if not args.json_only:
+            print("⚠️  未提供剧本，使用示例文本")
 
     report = evaluate_and_flow(script_text, args.task, args.threshold, args.json_only)
 
