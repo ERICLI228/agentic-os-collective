@@ -25,16 +25,19 @@ skills:
       - id: MS-3
         script: "role_designer.py"
       - id: MS-4
-        script: "drama_script.py"
+        script: "water_margin_drama.py"
+        note: "脚本生成 (--script) + 视频生成 (--video)"
       - id: MS-6
-        script: "drama_video.py"
+        script: "water_margin_drama.py"
+        note: "视频生成 (Seedance 2.0)"
       - id: MS-7
         script: "drama_audio.py"
       - id: MS-8
-        script: "drama_merge.py"
+        script: "drama_audio.py"
+        note: "最终合成 (FFmpeg merge)"
 
   claw-operator:
-    version: "2.1.0"
+    version: "2.2.0"
     path: "tk/openclaw/skills/claw-operator"
     skill_doc: "SKILL.md"
     dependencies:
@@ -52,7 +55,8 @@ skills:
       - id: MS-4
         script: "publish_track.py"
       - id: MS-5
-        script: "daily_report.sh"
+        script: "daily_business_summary.py"
+        note: "实际路径在 tk/openclaw/core/daily_business_summary.py"
 
   feishu-tk-notifier:
     version: "1.0.0"

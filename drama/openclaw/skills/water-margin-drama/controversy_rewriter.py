@@ -2,14 +2,19 @@
 """
 水浒传AI数字短剧 - 争议剧情改写系统
 基于广电总局AI魔改治理标准，自动改写争议内容
+# ⚠️ 完成度: 20% - MOCK 未实测（有基础逻辑但未接入真实API，未跑通全流程）
 """
 
 import os
 import sys
 import json
-import subprocess
+import urllib.request
+from pathlib import Path
 
-ARK_API_KEY = "f25a15bc-b109-40d4-976b-e2bb71cf9bf3"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+from shared.config import config
+ARK_API_KEY = config.ARK_API_KEY
 GLM_MODEL = "glm-4-7-251222"
 
 # 争议剧情改写规则
@@ -89,8 +94,7 @@ def rewrite_chapter(chapter_title: str, character: str, controversy: str) -> str
     print(f"   主角: {character}")
     print(f"   争议点: {controversy}")
     print("-" * 50)
-    
-    # 使用env -i调用API避免代理问题
+
     data = {
         "model": GLM_MODEL,
         "messages": [
@@ -100,33 +104,29 @@ def rewrite_chapter(chapter_title: str, character: str, controversy: str) -> str
         "temperature": 0.7,
         "max_tokens": 2000
     }
-    
-    import urllib.request
+
     api_endpoint = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
-    
-    cmd = [
-        'env', '-i',
-        f'ARK_API_KEY={ARK_API_KEY}',
-        f'HOME={os.environ.get("HOME")}',
-        f'USER={os.environ.get("USER")}',
-        f'PATH=/usr/bin:/bin:/opt/homebrew/bin',
-        'python3', '-c',
-        f'''import urllib.request, json, os
-data = json.loads('{json.dumps(data).replace("'", '"')}')
-req = urllib.request.Request("{api_endpoint}", data=json.dumps(data).encode('utf-8'), headers={"Authorization": "Bearer {ARK_API_KEY}", "Content-Type": "application/json"})
-resp = urllib.request.urlopen(req, timeout=60)
-result = json.loads(resp.read().decode('utf-8'))
-print(result.get('choices', [{}])[0].get('message', {}).get('content', ''))
-'''
-    ]
-    
+
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
-        if result.returncode == 0 and result.stdout:
-            return result.stdout.strip()
+        req = urllib.request.Request(
+            api_endpoint,
+            data=json.dumps(data).encode('utf-8'),
+            headers={
+                "Authorization": f"Bearer {ARK_API_KEY}",
+                "Content-Type": "application/json"
+            }
+        )
+        resp = urllib.request.urlopen(req, timeout=60)
+        body = json.loads(resp.read().decode('utf-8'))
+        content = body.get('choices', [{}])[0].get('message', {}).get('content', '')
+        if content:
+            return content.strip()
         else:
-            print(f"⚠️ API调用失败，使用手动改写模板")
+            print("⚠️ API 返回空内容，使用手动改写模板")
             return generate_manual_rewrite(chapter_title, character, controversy)
+    except Exception as e:
+        print(f"⚠️ API 调用失败: {e}")
+        return generate_manual_rewrite(chapter_title, character, controversy)
     except Exception as e:
         print(f"⚠️ 错误: {e}")
         return generate_manual_rewrite(chapter_title, character, controversy)

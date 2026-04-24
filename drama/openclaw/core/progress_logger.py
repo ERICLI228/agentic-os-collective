@@ -1,27 +1,7 @@
 #!/usr/bin/env python3
-"""
-进度日志写入器 - 支持分项目追加
-"""
-from datetime import datetime
+"""已迁移至 shared/core/ —— 此文件为兼容性重导出 shim"""
+import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+from shared.core.progress_logger import *  # noqa: F401, F403
 
-WORKSPACE = Path.home() / ".openclaw/workspace"
-PROGRESS_LOG = WORKSPACE / "tasks/progress.txt"
-
-def log_progress(project_id: str, task_id: str, action: str, result: str = "", notes: str = ""):
-    """追加一条进度记录"""
-    PROGRESS_LOG.parent.mkdir(parents=True, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    entry = f"[{timestamp}] [{project_id.upper()}] [{task_id}] {action}"
-    if result:
-        entry += f" | 结果: {result}"
-    if notes:
-        entry += f" | 备注: {notes}"
-    entry += "\n"
-    
-    with open(PROGRESS_LOG, 'a', encoding='utf-8') as f:
-        f.write(entry)
-    print(f"✅ 进度已记录: {entry.strip()}")
-
-if __name__ == "__main__":
-    log_progress("drama", "DRAMA-20260410-001", "完成剧本筛选", "3个候选剧本", "人工审核中")

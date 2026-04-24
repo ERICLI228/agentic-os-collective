@@ -1,7 +1,10 @@
+import sys
+from pathlib import Path
 #!/usr/bin/env python3
 """
 水浒传AI数字短剧 - 剧本筛选与精华提取系统
 基于行业最佳实践：观众熟悉度、戏剧冲突、人物高光、视觉表现力
+# ⚠️ 完成度: 25% - MOCK 未实测（有框架但依赖 mock 数据，未跑通真实流程）
 """
 
 import os
@@ -11,7 +14,10 @@ import urllib.request
 import urllib.parse
 
 # 配置
-ARK_API_KEY = os.environ.get("ARK_API_KEY", "f25a15bc-b109-40d4-976b-e2bb71cf9bf3")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+from shared.config import config
+ARK_API_KEY = config.ARK_API_KEY
 GLM_MODEL = "glm-4-7-251222"
 API_ENDPOINT = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
 
@@ -40,7 +46,7 @@ CHAPTERS = [
 ]
 
 def call_glm(prompt: str) -> str:
-    """调用GLM-4.7 API"""
+    """调用 GLM-4.7 API (直连，无代理)"""
     data = {
         "model": GLM_MODEL,
         "messages": [
@@ -50,38 +56,22 @@ def call_glm(prompt: str) -> str:
         "temperature": 0.7,
         "max_tokens": 2000
     }
-    
-    req = urllib.request.Request(
-        API_ENDPOINT,
-        data=json.dumps(data).encode('utf-8'),
-        headers={
-            "Authorization": f"Bearer {ARK_API_KEY}",
-            "Content-Type": "application/json"
-        }
-    )
-    
-    # 清除代理环境变量
-    env = os.environ.copy()
-    for key in ['http_proxy', 'https_proxy', 'ALL_PROXY', 'all_proxy', 'HTTP_PROXY', 'HTTPS_PROXY']:
-        env.pop(key, None)
-    
+
     try:
-        # 使用env -i 的方式运行
-        import subprocess
-        cmd = ['env', '-i', f'ARK_API_KEY={ARK_API_KEY}', 'python3', '-c', 
-               f'''import urllib.request, json, os
-data = {json.dumps(data)}
-req = urllib.request.Request("{API_ENDPOINT}", data=json.dumps(data).encode('utf-8'), headers={"Authorization": "Bearer {ARK_API_KEY}", "Content-Type": "application/json"})
-resp = urllib.request.urlopen(req, timeout=60)
-print(resp.read().decode('utf-8'))
-''']
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=90)
-        if result.returncode == 0:
-            resp_json = json.loads(result.stdout)
-            return resp_json.get('choices', [{}])[0].get('message', {}).get('content', '')
-        else:
-            print(f"API调用失败: {result.stderr}")
-            return None
+        req = urllib.request.Request(
+            API_ENDPOINT,
+            data=json.dumps(data).encode('utf-8'),
+            headers={
+                "Authorization": f"Bearer {ARK_API_KEY}",
+                "Content-Type": "application/json"
+            }
+        )
+        resp = urllib.request.urlopen(req, timeout=60)
+        body = json.loads(resp.read().decode('utf-8'))
+        return body.get('choices', [{}])[0].get('message', {}).get('content', '')
+    except Exception as e:
+        print(f"GLM API 调用失败: {e}")
+        return None
     except Exception as e:
         print(f"错误: {e}")
         return None

@@ -40,13 +40,13 @@ stages:
   - id: "MS-4"
     name: "GLM剧本生成"
     executor: "OpenClaw"
-    command: "python3 ~/.openclaw/skills/water-margin-drama/drama_script.py --task {task_id}"
+    command: "python3 ~/.openclaw/skills/water-margin-drama/water_margin_drama.py --script --task {task_id}"
     expected_artifacts:
       - "final_script.json"
       - "scene_breakdown.json"
     timeout: 300
     decision_point: false
-    description: "使用GLM生成完整剧本"
+    description: "使用 GLM 生成完整剧本"
 
   - id: "MS-5"
     name: "人工审核"
@@ -67,7 +67,7 @@ stages:
   - id: "MS-6"
     name: "视频生成"
     executor: "Seedance"
-    command: "python3 ~/.openclaw/skills/water-margin-drama/drama_video.py --task {task_id}"
+    command: "python3 ~/.openclaw/skills/water-margin-drama/water_margin_drama.py --video --task {task_id}"
     expected_artifacts:
       - "scenes/*.mp4"
       - "video_manifest.json"
@@ -89,7 +89,7 @@ stages:
   - id: "MS-8"
     name: "最终合成"
     executor: "OpenClaw"
-    command: "python3 ~/.openclaw/skills/water-margin-drama/drama_merge.py --task {task_id}"
+    command: "python3 ~/.openclaw/skills/water-margin-drama/drama_audio.py --merge --task {task_id}"
     expected_artifacts:
       - "final/*.mp4"
     timeout: 300

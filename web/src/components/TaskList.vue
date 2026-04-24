@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import ReviewPanel from './ReviewPanel.vue'
 
 const props = defineProps({
   tasks: { type: Array, default: () => [] },
@@ -15,6 +16,13 @@ const milestoneDetails = ref(null)
 const showTaskModal = ref(false)
 const showMilestoneDrawer = ref(false)
 const isExecuting = ref(false)
+const showReviewPanel = ref(false)
+
+function onReviewResolved({ type, comment }) {
+  console.log('Review resolved:', type, comment)
+  showReviewPanel.value = false
+  showMilestoneDrawer.value = false
+}
 
 // 新建任务表单
 const newTask = ref({
@@ -734,6 +742,11 @@ onMounted(() => {
             </div>
           </div>
         </div>
+
+        <!-- 审核面板按钮 -->
+        <div v-if="milestoneDetails.decision_required && milestoneDetails.execution_details?.output_content" class="review-actions">
+          <button class="btn-review" @click="showReviewPanel = true">🎬 打开审核面板 (增强视图)</button>
+        </div>
         
         <!-- 执行按钮 -->
         <div class="action-buttons" v-if="!milestoneDetails.decision_required && milestoneDetails.status !== 'completed'">
@@ -746,6 +759,19 @@ onMounted(() => {
           </button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- 审核面板 (FR-DR-006) -->
+  <div v-if="showReviewPanel" class="modal-overlay" @click.self="showReviewPanel = false">
+    <div class="review-modal">
+      <ReviewPanel
+        :task-id="selectedTask?.id"
+        :milestone-id="selectedMilestone"
+        :output-content="milestoneDetails?.execution_details?.output_content"
+        @resolved="onReviewResolved"
+        @close="showReviewPanel = false"
+      />
     </div>
   </div>
 </template>
@@ -912,4 +938,11 @@ td { padding: 16px; border-bottom: 1px solid var(--border); vertical-align: top;
 .milestone-name { font-size: 14px; color: var(--text-primary); }
 .milestone-time { font-size: 12px; color: var(--text-muted); }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); } 50% { box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); } }
+
+/* 审核面板 */
+.review-actions { padding: 12px 0; text-align: center; }
+.btn-review { padding: 10px 24px; background: linear-gradient(135deg, #5e6ad2, #764ba2); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btn-review:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(94, 106, 210, 0.4); }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+.review-modal { width: 90%; max-width: 800px; max-height: 95vh; }
 </style>

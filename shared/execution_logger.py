@@ -141,50 +141,34 @@ STDERR:
     
     return str(log_file)
 
-def run_and_log(project: str, task_id: str, milestone_id: str, 
+def run_and_log(project: str, task_id: str, milestone_id: str,
                 command: str, timeout: int = 3600, executor: str = "OpenClaw"):
-    """执行命令并自动记录（生产安全版本）"""
+    """执行命令并自动记录 — 委托 base_executor (shell=False)"""
     init_dirs()
-    
-    # 命令安全验证
-    is_valid, msg = validate_command(command)
-    if not is_valid:
-        logger.error(f"Command validation failed: {msg}")
-        return {"status": "error", "error": msg}
-    
+
+    from shared.core.base_executor import run_command as safe_run
+
     start = datetime.now()
-    
-    try:
-        result = subprocess.run(
-            command,
-            shell=True,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            cwd=WORKSPACE
-        )
-        
+    result = safe_run(command, timeout=timeout, cwd=WORKSPACE)
+
+    if result["status"] == "error":
         duration = (datetime.now() - start).total_seconds()
-        log_execution(project, task_id, milestone_id, command, 
-                     result.stdout, result.stderr, duration, executor=executor)
-        
-        return {
-            "status": "completed" if result.returncode == 0 else "failed",
-            "return_code": result.returncode,
-            "duration": duration,
-            "stdout": result.stdout[:5000],
-            "stderr": result.stderr[:2000]
-        }
-    except subprocess.TimeoutExpired:
-        duration = (datetime.now() - start).total_seconds()
-        log_execution(project, task_id, milestone_id, command, 
-                     "", "执行超时", duration, executor=executor)
-        return {"status": "timeout", "duration": duration}
-    except Exception as e:
-        duration = (datetime.now() - start).total_seconds()
-        log_execution(project, task_id, milestone_id, command, 
-                     "", str(e), duration, executor=executor)
-        return {"status": "error", "error": str(e), "duration": duration}
+        log_execution(project, task_id, milestone_id, command,
+                      "", result.get("error", ""), duration, executor=executor)
+        return {"status": "error", "error": result.get("error", ""), "duration": duration}
+
+    duration = result.get("duration", (datetime.now() - start).total_seconds())
+    log_execution(project, task_id, milestone_id, command,
+                  result.get("stdout", ""), result.get("stderr", ""),
+                  duration, executor=executor)
+
+    return {
+        "status": result["status"],
+        "return_code": result.get("return_code", -1),
+        "duration": duration,
+        "stdout": result.get("stdout", "")[:5000],
+        "stderr": result.get("stderr", "")[:2000],
+    }
 
 # ========== 第九阶段：全透明流水线功能 ==========
 

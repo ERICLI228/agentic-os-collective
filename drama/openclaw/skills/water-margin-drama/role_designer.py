@@ -1,17 +1,25 @@
+import sys
+from pathlib import Path
 #!/usr/bin/env python3
 """
 水浒传AI数字短剧 - 角色设计系统
 生成并管理角色定妆照，确保视频生成时角色一致性
+# ⚠️ 完成度: 0% - 待实现（仅框架代码，未接入真实API，无实测输出）
 """
 
 import os
 import sys
 import json
-import subprocess
+import base64
+from datetime import datetime
 
 # 配置
-ARK_API_KEY = "f25a15bc-b109-40d4-976b-e2bb71cf9bf3"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+from shared.config import config
+ARK_API_KEY = config.ARK_API_KEY
 SEEDANCE_MODEL = "doubao-seedance-2-0-fast-260128"
+SEEDANCE_IMAGE_API = "https://ark.cn-beijing.volces.com/api/v3/images/generations"
 
 # 角色库
 ROLES = {
@@ -186,14 +194,78 @@ def get_video_prompt(role_name: str, scene: str, action: str) -> str:
 """
     return video_prompt.strip()
 
+def generate_image(role_name: str, output_dir: str = None) -> str:
+    """
+    调用 Seedance/ARK API 生成角色定妆照 (FR-DR-003)
+    返回图片路径，失败返回空字符串
+    """
+    role = ROLES.get(role_name)
+    if not role:
+        print(f"❌ 角色 '{role_name}' 不存在")
+        return ""
+
+    prompt = generate_character_image_prompt(role_name)
+    if not prompt:
+        return ""
+
+    print(f"🖼️  生成 {role_name} 定妆照...")
+
+    try:
+        import urllib.request
+        data = json.dumps({
+            "model": SEEDANCE_MODEL,
+            "prompt": prompt,
+            "n": 1,
+            "size": "1024x1024",
+            "response_format": "b64_json"
+        }).encode('utf-8')
+        req = urllib.request.Request(
+            SEEDANCE_IMAGE_API,
+            data=data,
+            headers={"Authorization": f"Bearer {ARK_API_KEY}", "Content-Type": "application/json"}
+        )
+        resp = urllib.request.urlopen(req, timeout=120)
+        body = json.loads(resp.read().decode('utf-8'))
+
+        # 提取 base64 图片
+        b64 = body.get("data", [{}])[0].get("b64_json", "")
+        if not b64:
+            print(f"⚠️  API 返回无图片数据")
+            return ""
+
+        if output_dir is None:
+            output_dir = str(Path(__file__).parent / "output" / "characters")
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
+        output_path = f"{output_dir}/{role_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+
+        import base64
+        Path(output_path).write_bytes(base64.b64decode(b64))
+        print(f"✅ {role_name}: {output_path}")
+        return output_path
+
+    except Exception as e:
+        print(f"⚠️  图像生成失败: {e}")
+        return ""
+
+
+def batch_generate_images(output_dir: str = None) -> dict:
+    """批量生成所有角色的定妆照"""
+    results = {}
+    for role_name in ROLES.keys():
+        path = generate_image(role_name, output_dir)
+        results[role_name] = path
+    return results
+
+
 def main():
     if len(sys.argv) < 2:
         print(__doc__)
         print("\n📖 用法:")
         print("  python role_designer.py --list          # 列出所有角色")
         print("  python role_designer.py --prompt 武松   # 生成角色提示词")
-        print("  python role_designer.py --video 武松 景阳冈 打虎")
-        print("  python role_designer.py --batch         # 批量生成")
+        print("  python role_designer.py --image 武松    # 生成角色定妆照 (调用 API)")
+        print("  python role_designer.py --batch         # 批量生成提示词")
+        print("  python role_designer.py --batch-img     # 批量生成定妆照")
         print("  python role_designer.py --save          # 保存角色库JSON")
         sys.exit(1)
     
@@ -219,6 +291,13 @@ def main():
             print("用法: --video 角色名 场景 动作")
     elif action == "--batch":
         batch_generate_prompts()
+    elif action == "--batch-img":
+        batch_generate_images()
+    elif action == "--image":
+        if len(sys.argv) >= 3:
+            generate_image(sys.argv[2])
+        else:
+            print("用法: --image 角色名")
     elif action == "--save":
         save_role_library()
 

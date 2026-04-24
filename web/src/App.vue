@@ -4,7 +4,7 @@ import axios from 'axios'
 import Dashboard from './components/Dashboard.vue'
 import CommandCenter from './components/CommandCenter.vue'
 
-const API_BASE = 'http://localhost:5001'
+const API_BASE = 'http://localhost:5004'
 const data = ref(null)
 const loading = ref(true)
 const error = ref(null)

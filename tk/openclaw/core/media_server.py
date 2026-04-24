@@ -1,16 +1,7 @@
 #!/usr/bin/env python3
-"""多目录文件服务器"""
-import http.server
-import socketserver
+"""已迁移至 shared/core/ —— 此文件为兼容性重导出 shim"""
+import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+from shared.core.media_server import *  # noqa: F401, F403
 
-PORT = 8080
-BASE_DIR = Path.home()
-
-class MultiDirHandler(http.server.SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=str(BASE_DIR), **kwargs)
-
-with socketserver.TCPServer(("", PORT), MultiDirHandler) as httpd:
-    print(f"📁 文件服务器已启动: http://localhost:{PORT}")
-    httpd.serve_forever()

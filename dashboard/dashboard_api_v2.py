@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Dashboard API v2 - 支持多项目 KPI 聚合与决策处理
-增强：日志轮转、决策超时告警
+Dashboard API v2 — ⚠️ 已废弃，请使用 api/v3/dashboard_api_v3.py (FastAPI, port 5004)
+此文件仅保留作为备援，新开发请使用 FastAPI v3。
 """
 import json
 import os
@@ -36,8 +36,20 @@ PROGRESS_LOG = WORKSPACE / "tasks/progress.txt"
 MEMORY_DIR = WORKSPACE / "memory"
 TOKEN_BUDGET_FILE = Path.home() / ".openclaw/data/token_budget.json"
 
-# 飞书告警 Webhook (技术研发群)
-FEISHU_WEBHOOK = "https://open.feishu.cn/open-apis/bot/v2/hook/148cb666-4573-4ef6-a03e-a9008b0c972c"
+# 飞书告警 Webhook — 从 .env 读取，不再硬编码
+def _get_feishu_webhook():
+    url = os.environ.get("FEISHU_WEBHOOK_URL", "")
+    if not url:
+        try:
+            import sys
+            sys.path.insert(0, str(Path(__file__).parent.parent))
+            from shared.config import config
+            url = config.FEISHU_WEBHOOK_URL
+        except Exception:
+            pass
+    return url
+
+FEISHU_WEBHOOK = _get_feishu_webhook()
 
 def send_feishu_alert(message: str):
     """发送飞书告警"""

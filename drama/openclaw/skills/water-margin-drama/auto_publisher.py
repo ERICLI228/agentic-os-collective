@@ -2,6 +2,7 @@
 """
 水浒传AI数字短剧 - 发布运营系统
 自动发布 + 数据回流 + 闭环优化
+# ⚠️ 完成度: 0% - 待实现（仅框架代码，未实现真实发布功能）
 """
 
 import os
@@ -259,6 +260,7 @@ def main():
         print("  python auto_publisher.py --list        # 列出待发布视频")
         print("  python auto_publisher.py --plan        # 生成发布计划")
         print("  python auto_publisher.py --simulate    # 模拟发布流程")
+        print("  python auto_publisher.py --dev         # 开发模式 (模拟+日志，不调用API)")
         print("  python auto_publisher.py --analytics   # 数据回流分析")
         print("  python auto_publisher.py --cycle       # 闭环报告")
         print("  python auto_publisher.py --full        # 完整流程")
@@ -277,6 +279,19 @@ def main():
         videos = list_videos()
         if videos:
             simulate_publish(videos[0]["path"])
+    elif action == "--dev":
+        print("🛠️  开发模式 (不调用真实API)")
+        print("=" * 60)
+        videos = list_videos()
+        if videos:
+            print("\n1️⃣ 生成发布计划 (dev)...")
+            plan = generate_publish_plan(videos)
+            save_publish_plan(plan)
+            print("\n2️⃣ 模拟发布 (dev)...")
+            simulate_publish(videos[0]["path"])
+        else:
+            print("⚠️  没有找到视频，跳过发布")
+        print("\n✅ 开发模式完成 (未调用任何外部API)")
     elif action == "--analytics":
         collect_analytics_mock()
     elif action == "--cycle":

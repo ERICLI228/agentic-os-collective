@@ -9,7 +9,10 @@
       "name": "热门监控",
       "executor": "OpenClaw",
       "command": "bash ~/.agents/skills/proactive-operator/proactive-operator.sh",
-      "expected_artifacts": ["report_*.md", "trending_products.json"],
+      "expected_artifacts": [
+        "report_*.md",
+        "trending_products.json"
+      ],
       "timeout": 600,
       "decision_point": false,
       "description": "监控TikTok热门3C产品"
@@ -19,13 +22,24 @@
       "name": "爆款分析",
       "executor": "OpenClaw",
       "command": "python3 ~/.openclaw/scripts/analyze_trending.py",
-      "expected_artifacts": ["analysis_report.json", "product_recommendations.yaml"],
+      "expected_artifacts": [
+        "analysis_report.json",
+        "product_recommendations.yaml"
+      ],
       "timeout": 300,
       "decision_point": true,
       "question": "是否选择以下产品进行推广？",
       "options": [
-        {"label": "确认", "action": "continue", "next_stage": "MS-3"},
-        {"label": "重新分析", "action": "retry", "next_stage": "MS-1"}
+        {
+          "label": "确认",
+          "action": "continue",
+          "next_stage": "MS-3"
+        },
+        {
+          "label": "重新分析",
+          "action": "retry",
+          "next_stage": "MS-1"
+        }
       ],
       "description": "分析爆款特征，生成选品建议"
     },
@@ -34,7 +48,10 @@
       "name": "内容制作",
       "executor": "OpenClaw",
       "command": "python3 ~/.openclaw/scripts/generate_content.py",
-      "expected_artifacts": ["video_scripts.json", "content_calendar.yaml"],
+      "expected_artifacts": [
+        "video_scripts.json",
+        "content_calendar.yaml"
+      ],
       "timeout": 300,
       "decision_point": false,
       "description": "生成短视频脚本"
@@ -44,20 +61,26 @@
       "name": "发布与追踪",
       "executor": "OpenClaw",
       "command": "python3 ~/.openclaw/scripts/publish_track.py",
-      "expected_artifacts": ["publish_status.json", "performance_data.json"],
+      "expected_artifacts": [
+        "publish_status.json",
+        "performance_data.json"
+      ],
       "timeout": 600,
       "decision_point": false,
       "description": "自动发布并追踪数据"
     },
     {
       "id": "MS-5",
-      "name": "周报生成",
+      "name": "日报生成与推送",
       "executor": "OpenClaw",
-      "command": "bash ~/.openclaw/scripts/feishu/daily-report.sh",
-      "expected_artifacts": ["weekly_report.md"],
+      "command": "python3 ~/agentic-os-collective/tk/openclaw/core/daily_business_summary.py",
+      "expected_artifacts": [
+        "daily_summary_*.md",
+        "daily_summary_*.json"
+      ],
       "timeout": 120,
       "decision_point": false,
-      "description": "生成周报并推送到飞书"
+      "description": "聚合TK运营数据，生成日报并推送到飞书8个群"
     }
   ]
 }

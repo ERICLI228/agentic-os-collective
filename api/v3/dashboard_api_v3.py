@@ -567,6 +567,119 @@ def api_drama_audio():
     return {"audio": audio_files, "count": len(audio_files)}
 
 # ============================================================================
+# 决策端点 (v3.3 迁移新增)
+# ============================================================================
+
+class DecisionRequest(BaseModel):
+    task_id: str
+    milestone_id: str
+    decision_type: str = Field(..., description="approve | modify | reject")
+    comment: str = ""
+
+
+class RetryRequest(BaseModel):
+    task_id: str
+    milestone_id: str
+    comment: str = ""
+
+
+@app.post("/api/decision/submit")
+def api_submit_decision(req: DecisionRequest):
+    """提交决策 - 通过/修改/驳回 (对应 FR-DR-006 审核面板)"""
+    search_dirs = [ACTIVE_DIR, ACTIVE_DIR / "drama", ACTIVE_DIR / "tk"]
+    task_file = None
+    for d in search_dirs:
+        tf = d / f"{req.task_id}.json"
+        if tf.exists():
+            task_file = tf
+            break
+    if not task_file:
+        raise HTTPException(404, "Task not found")
+
+    with open(task_file, "r+") as f:
+        task = json.load(f)
+        for m in task.get("milestones", []):
+            if m.get("id") == req.milestone_id:
+                m.setdefault("decision_history", []).append({
+                    "decision_type": req.decision_type,
+                    "decision_at": datetime.now().isoformat(),
+                    "decision_by": "human",
+                    "comment": req.comment,
+                })
+                if req.decision_type == "approve":
+                    m["status"] = "completed"
+                elif req.decision_type == "modify":
+                    m["status"] = "pending"
+                elif req.decision_type == "reject":
+                    m["status"] = "rejected"
+                break
+
+        if all(mm.get("status") == "completed" for mm in task.get("milestones", [])):
+            task["status"] = "completed"
+
+        f.seek(0)
+        json.dump(task, f, ensure_ascii=False, indent=2)
+        f.truncate()
+
+    return {"status": "ok", "decision_type": req.decision_type}
+
+
+@app.post("/api/decision/retry")
+def api_retry_milestone(req: RetryRequest):
+    """重新执行里程碑 (修改后重试)"""
+    search_dirs = [ACTIVE_DIR, ACTIVE_DIR / "drama", ACTIVE_DIR / "tk"]
+    task_file = None
+    for d in search_dirs:
+        tf = d / f"{req.task_id}.json"
+        if tf.exists():
+            task_file = tf
+            break
+    if not task_file:
+        raise HTTPException(404, "Task not found")
+
+    with open(task_file, "r+") as f:
+        task = json.load(f)
+        for m in task.get("milestones", []):
+            if m.get("id") == req.milestone_id:
+                m["status"] = "running"
+                m["retry_comment"] = req.comment
+                m["retried_at"] = datetime.now().isoformat()
+                break
+        f.seek(0)
+        json.dump(task, f, ensure_ascii=False, indent=2)
+        f.truncate()
+
+    return {"status": "retry_triggered"}
+
+
+@app.get("/api/tasks/{task_id}/pending-decisions")
+def api_pending_decisions(task_id: str):
+    """获取任务的待决策里程碑列表"""
+    search_dirs = [ACTIVE_DIR, ACTIVE_DIR / "drama", ACTIVE_DIR / "tk"]
+    task_file = None
+    for d in search_dirs:
+        tf = d / f"{task_id}.json"
+        if tf.exists():
+            task_file = tf
+            break
+    if not task_file:
+        raise HTTPException(404, "Task not found")
+
+    task = json.loads(task_file.read_text())
+    pending = []
+    for m in task.get("milestones", []):
+        if m.get("decision_required") and m.get("status") in ("pending", "pending_decision"):
+            pending.append({
+                "milestone_id": m.get("id"),
+                "milestone_name": m.get("name"),
+                "status": m.get("status"),
+                "output_content": m.get("execution_details", {}).get("output_content"),
+                "deadline": m.get("decision_deadline"),
+            })
+    return {"pending_decisions": pending, "count": len(pending)}
+
+
+# ============================================================================
 # 启动入口
 # ============================================================================
 if __name__ == "__main__":

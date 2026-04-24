@@ -6,20 +6,19 @@
     <string>com.agentic-os.dashboard</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/usr/bin/python3</string>
-        <string>-m</string>
-        <string>http.server</string>
-        <string>5002</string>
+        <string>/usr/local/bin/npm</string>
+        <string>run</string>
+        <string>dev</string>
     </array>
     <key>WorkingDirectory</key>
-    <string>/Users/hokeli/.openclaw/dashboard</string>
+    <string>/Users/hokeli/agentic-os-collective/web</string>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
     <true/>
     <key>StandardOutPath</key>
-    <string>/tmp/agentic-dashboard.log</string>
+    <string>/tmp/vite.log</string>
     <key>StandardErrorPath</key>
-    <string>/tmp/agentic-dashboard.err</string>
+    <string>/tmp/vite.err</string>
 </dict>
 </plist>

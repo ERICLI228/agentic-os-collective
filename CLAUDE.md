@@ -1,8 +1,9 @@
 # agentic-os-collective 项目架构说明
 
-> 版本：2026-04-23
+> 版本：v3.3 诚实修订版 | 2026-04-24 (第4轮修订)
+> ⚠️ 总体完成度：约 **45%**（↑35% → 核心循环已闭合）
 > 仓库：~/agentic-os-collective/
-> 状态：生产环境
+> 状态：活跃开发中
 
 ## 🎯 项目概述
 
@@ -19,51 +20,55 @@
 ```
 agentic-os-collective/
 ├── drama/                    # AI短剧自动化
-│   ├── openclaw/
-│   │   ├── core/             # 核心引擎模块
-│   │   │   ├── download_server.py        # 下载服务
-│   │   │   ├── decision_listener.py      # 决策监听器
-│   │   │   ├── token_governor_v1.py      # Token治理v1
-│   │   │   ├── token_governor_v2.py      # Token治理v2
-│   │   │   ├── safe_router.py            # 安全路由
-│   │   │   ├── progress_logger.py        # 进度日志
-│   │   │   ├── dashboard_api_v2.py       # Dashboard API
-│   │   │   └── media_server.py           # 媒体服务
-│   │   └── skills/
-│   │       └── water-margin-drama/       # 水浒传短剧Skill
-│   │           ├── water_margin_drama.py # 主脚本
-│   │           ├── script_selector.py    # 剧本筛选
-│   │           ├── role_designer.py      # 角色设计
-│   │           ├── auto_publisher.py     # 自动发布
-│   │           └── SKILL.md              # Skill说明
-│
+│   └── openclaw/
+│       ├── core/             # → 已迁至 shared/core/ (shim)
+│       └── skills/
+│           ├── water-margin-drama/  # 水浒传短剧Skill
+│           │   ├── water_margin_drama.py    # 主脚本 (script+video+audio)
+│           │   ├── script_selector.py       # 剧本筛选 (GLM规则)
+│           │   ├── role_designer.py         # 角色设计 (Seedance图像API)
+│           │   ├── quality_assessor.py      # 🆕 AI质量自评 (FR-DR-005)
+│           │   ├── controversy_rewriter.py  # 争议改写 (GLM直连)
+│           │   ├── drama_audio.py           # TTS+FFmpeg合成
+│           │   ├── audio_generator.py       # 🆕 多角色配音 (FR-DR-007)
+│           │   ├── auto_publisher.py        # 自动发布 (+dev模式)
+│           │   ├── confirmation.py          # 三阶段确认门禁
+│           │   └── SKILL.md
+│           └── proactive-operator/  # TK热门监控 (Shell)
 ├── tk/                       # TK运营自动化
-│   ├── openclaw/
-│   │   ├── core/             # 核心引擎（与drama共享结构）
-│   │   └ skills/
-│   │       ├── claw-operator/            # TK运营Operator
-│   │       └── feishu-tk-notifier/       # 飞书通知
-│
+│   └── openclaw/
+│       ├── core/             # → 已迁至 shared/core/ (shim)
+│       │   └── daily_business_summary.py  # 🆕 运营日报 (FR-TK-012)
+│       └── skills/
+│           ├── claw-operator/           # 基础设施运维
+│           │   ├── proactive_operator.sh  # MS-1 热门监控
+│           │   ├── analyze_trending.py    # MS-2 爆款分析
+│           │   ├── generate_content.py    # MS-3 内容制作
+│           │   └── publish_track.py       # MS-4 发布追踪
+│           └── feishu-tk-notifier/      # 8频道飞书通知
 ├── shared/                   # 共享基础设施
-│   ├── mcp_task_server.py    # MCP任务服务器
-│   ├── execution_logger.py   # 执行日志器
-│   ├── task_wizard.py        # 任务向导
-│   ├── data/
-│   │   └ init_db.py          # 数据库初始化
-│   ├── knowledge/
-│   │   └ best_practices.yaml # 最佳实践知识库
-│   └── templates/
-│       ├── tk_pipeline.yaml   # TK流水线模板
-│       ├── drama_pipeline.yaml # 短剧流水线模板
-│
-├── dashboard/                # Dashboard UI
-├── api/                      # API服务
-├── gateway/                  # Gateway配置
-├── hooks/                    # Git Hooks
-├── tests/                    # 测试套件
-└ reports/                   # 审查报告输出
-
-```
+│   ├── config.py             # 统一配置 (.env + Webhook ID)
+│   ├── core/                 # 跨业务基类 (去重后唯一源)
+│   │   ├── base_executor.py  # 安全命令执行 (shell=False)
+│   │   ├── base_pipeline.py  # 流水线抽象基类
+│   │   ├── task_helper.py    # 任务创建+决策
+│   │   ├── task_updater.py   # 里程碑更新
+│   │   ├── safe_router.py    # 模型路由
+│   │   ├── token_governor_v1.py  # Token预算v1
+│   │   ├── token_governor_v2.py  # Token预算v2 (自适应)
+│   │   └── *_server.py       # HTTP服务 (端口已去重)
+│   ├── skill_registry/       # Skill注册+路由校验
+│   ├── execution_logger.py   # 执行日志 (已集成base_executor)
+│   ├── mcp_task_server.py    # MCP桥接
+│   └── templates/            # 流水线模板 (YAML+JSON)
+├── dashboard/                # Dashboard API v2 (⚠️ 废弃→FastAPI v3)
+├── api/v3/                   # FastAPI v3 (主API, port 5004)
+├── web/                      # Vue 3 SPA (port 5173)
+│   └── src/components/
+│       └── ReviewPanel.vue   # 🆕 审核面板 (FR-DR-006)
+├── ecosystem.config.js       # 🆕 pm2 进程管理 (7服务)
+├── gateway/nginx.conf        # NGINX 反向代理
+└── reports/                  # 审查报告 + PRD
 
 ---
 
@@ -132,12 +137,16 @@ agentic-os-collective/
 | 水浒传剧本库 | `drama/openclaw/skills/water-margin-drama/episode_list.json` | 剧本索引 |
 | 角色库 | `drama/openclaw/skills/water-margin-drama/role_library.json` | 角色+配音配置 |
 
-### 文档文件
+### 相关文档
 
-| 文件 | 路径 | 用途 |
-|------|------|------|
-| 水浒传Skill说明 | `drama/openclaw/skills/water-margin-drama/SKILL.md` | Skill使用指南 |
-| TK Operator Skill | `tk/openclaw/skills/claw-operator/SKILL.md` | TK运营指南 |
+| 文档 | 位置 |
+|------|------|
+| PRD v3.3 (诚实修订版) | `reports/PRD-v3.3.md` |
+| 终版审查报告 (2026-04-24) | `reports/project-review-2026-04-24-final.md` |
+| 前置审查报告 (2026-04-23) | `reports/project-review-2026-04-23.md` |
+| 安全审查报告 | `reports/claude-desktop-review-20260423.md` |
+| TK 运营 SOP | `TK-OPERATION-SOP.md` |
+| 配置模板 | `.env.example` |
 
 ---
 
@@ -205,4 +214,5 @@ agentic-os-collective/
 
 ---
 
-*更新于 2026-04-23 00:50 PDT*
+*更新于 2026-04-24 00:25 PDT | v3.3 诚实修订版*
+*重要变更：完成度从 85% 下调至约 35%；P0 优先级调整为止血优先；GSTACK/自进化搁置*

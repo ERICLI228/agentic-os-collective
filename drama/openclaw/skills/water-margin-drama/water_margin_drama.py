@@ -1,3 +1,5 @@
+import sys
+from pathlib import Path
 #!/usr/bin/env python3
 """
 水浒传AI数字短剧 - 自动制作系统
@@ -13,7 +15,10 @@ import urllib.request
 import urllib.parse
 
 # 配置
-ARK_API_KEY = "f25a15bc-b109-40d4-976b-e2bb71cf9bf3"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+from shared.config import config
+ARK_API_KEY = config.ARK_API_KEY
 GLM_MODEL = "glm-4-7-251222"
 SEEDANCE_MODEL = "doubao-seedance-2-0-fast-260128"
 ARK_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3"
@@ -127,7 +132,16 @@ def main():
         print("\n" + "="*60)
         print("🎬 水浒传AI数字短剧 - 全自动制作流水线")
         print("="*60)
-        
+
+        # 0. 确认门禁初始化
+        try:
+            from confirmation import ConfirmationState
+            confirm = ConfirmationState()
+            confirm.start_project(f"water_margin_{theme[:10]}")
+            confirm.confirm_stage("script", "system", "自动确认 — 流水线模式")
+        except Exception:
+            pass
+
         # 1. 生成剧本
         print("\n📝 第1步：剧本生成 (GLM-4.7)")
         print("-"*40)
@@ -158,17 +172,35 @@ def main():
         print("\n🎥 第3步：生成视频 (Seedance 2.0)")
         print("-"*40)
         video_url = generate_video(video_prompt.split('\n')[0] if '\n' in video_prompt else video_prompt[:100])
-        
+
+        # 自动确认视频+角色阶段
+        try:
+            confirm.confirm_stage("roles", "system", "自动确认")
+            confirm.confirm_stage("video", "system", "自动确认")
+        except Exception:
+            pass
+
+        # 4. 配音合成
+        print("\n🎙️ 第4步：配音合成 (macOS TTS + FFmpeg)")
+        print("-"*40)
+        try:
+            from drama_audio import full_workflow
+            audio_result = full_workflow(video_url, script[:500])
+            print(f"  配音结果: {audio_result}")
+        except Exception as e:
+            print(f"  ⚠️  配音失败: {e} (视频仍可用)")
+
         print(f"\n✅ 视频生成完成！")
         print(f"🔗 视频链接: {video_url}")
-        
-        # 4. 输出交付清单
+
+        # 5. 输出交付清单
         print("\n" + "="*60)
         print("📦 交付清单")
         print("="*60)
         print(f"🎬 主题: {theme}")
         print(f"📝 剧本: (见上方)")
         print(f"🎥 视频: {video_url}")
+        print(f"🎙️ 配音: macOS TTS (单角色)")
         print(f"💾 存储: TOS (火山引擎对象存储)")
         
     else:

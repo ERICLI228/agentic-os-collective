@@ -57,11 +57,12 @@ stages:
     description: "自动发布并追踪数据"
 
   - id: "MS-5"
-    name: "周报生成"
+    name: "日报生成与推送"
     executor: "OpenClaw"
-    command: "bash ~/.openclaw/scripts/feishu/daily-report.sh"
+    command: "python3 ~/agentic-os-collective/tk/openclaw/core/daily_business_summary.py"
     expected_artifacts:
-      - "weekly_report.md"
+      - "daily_summary_*.md"
+      - "daily_summary_*.json"
     timeout: 120
     decision_point: false
-    description: "生成周报并推送到飞书"
+    description: "聚合TK运营数据，生成日报并推送到飞书8个群"

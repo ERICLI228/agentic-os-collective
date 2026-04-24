@@ -15,7 +15,11 @@ echo ""
 
 # 环境准备
 SEEDANCE_DIR=$(ls -d ~/Seedance*/*/ 2>/dev/null | head -1)
-ARK_API_KEY="f25a15bc-b109-40d4-976b-e2bb71cf9bf3"
+# ARK_API_KEY 从 .env 或环境变量读取
+if [ -f "$HOME/agentic-os-collective/.env" ]; then
+    export $(grep -v '^#' "$HOME/agentic-os-collective/.env" | grep ARK_API_KEY | xargs)
+fi
+ARK_API_KEY="${ARK_API_KEY:-}"
 
 echo "📝 第1步: 生成剧本 (GLM-4.7)"
 echo "----------------------------"
