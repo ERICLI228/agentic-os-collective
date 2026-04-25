@@ -1,218 +1,104 @@
-# agentic-os-collective 项目架构说明
+# Agentic OS v3.3 — Agent Quick Reference
 
-> 版本：v3.3 诚实修订版 | 2026-04-24 (第4轮修订)
-> ⚠️ 总体完成度：约 **45%**（↑35% → 核心循环已闭合）
-> 仓库：~/agentic-os-collective/
-> 状态：活跃开发中
+> 最后更新: 2026-04-24 | 完成度 ~45% | `~/agentic-os-collective/`
 
-## 🎯 项目概述
+## 路径速查
 
-本项目包含两个核心业务线：
-1. **AI数字短剧自动化系统** (drama/)
-2. **TK东南亚运营自动化系统** (tk/)
+```bash
+ROOT=~/agentic-os-collective
+DRAMA=$ROOT/drama/openclaw/skills/water-margin-drama
+TK=$ROOT/tk/openclaw
+SHARED=$ROOT/shared/core              # ← 14个模块唯一源，drama/tk core 已是 shim
+STORIES=$ROOT/stories                 # 3个YAML: shuihuzhuan/sanguo/xiyou
+FEISHU_V3=~/.openclaw/workspace/scripts/send-feishu-v3.py
+```
 
-共享基础设施位于 `shared/` 目录。
+## 端口
 
----
+| 端口 | 服务 | 文件 |
+|:--:|------|------|
+| 5004 | FastAPI v3 主API | `api/v3/dashboard_api_v3.py` |
+| 5001 | Flask v2 (⚠️废弃) | `dashboard/dashboard_api_v2.py` |
+| 5173 | Vue 3 SPA | `web/` (npm run dev) |
+| 8080 | 下载服务 | `shared/core/download_server.py` |
+| 8083 | 媒体服务 | `shared/core/media_server.py` |
+| 8084 | UTF-8 服务 | `shared/core/utf8_server.py` |
+| 8081 | NGINX 网关 | `gateway/nginx.conf` |
 
-## 📁 目录结构
+## 常用命令
+
+```bash
+# 故事切换 (三个故事不改代码)
+python3 $DRAMA/water_margin_drama.py --story sanguo --theme "桃园结义" --mode script
+python3 $DRAMA/script_selector.py --story xiyou select
+
+# 任务
+python3 $DRAMA/quality_assessor.py --json-only          # AI评分
+python3 $TK/core/daily_business_summary.py --dry-run    # 日报预览
+python3 $TK/core/daily_business_summary.py --all-channels
+
+# 开发
+python3 -m py_compile <file>          # 写后验证
+ruff check --select E,F,W,B,S --ignore S101 $ROOT/drama $ROOT/tk $ROOT/shared
+pytest $ROOT/tests/ -v
+
+# 运维
+pm2 start $ROOT/ecosystem.config.js
+pm2 logs agentic-api-v3
+```
+
+## 代码架构
 
 ```
-agentic-os-collective/
-├── drama/                    # AI短剧自动化
-│   └── openclaw/
-│       ├── core/             # → 已迁至 shared/core/ (shim)
-│       └── skills/
-│           ├── water-margin-drama/  # 水浒传短剧Skill
-│           │   ├── water_margin_drama.py    # 主脚本 (script+video+audio)
-│           │   ├── script_selector.py       # 剧本筛选 (GLM规则)
-│           │   ├── role_designer.py         # 角色设计 (Seedance图像API)
-│           │   ├── quality_assessor.py      # 🆕 AI质量自评 (FR-DR-005)
-│           │   ├── controversy_rewriter.py  # 争议改写 (GLM直连)
-│           │   ├── drama_audio.py           # TTS+FFmpeg合成
-│           │   ├── audio_generator.py       # 🆕 多角色配音 (FR-DR-007)
-│           │   ├── auto_publisher.py        # 自动发布 (+dev模式)
-│           │   ├── confirmation.py          # 三阶段确认门禁
-│           │   └── SKILL.md
-│           └── proactive-operator/  # TK热门监控 (Shell)
-├── tk/                       # TK运营自动化
-│   └── openclaw/
-│       ├── core/             # → 已迁至 shared/core/ (shim)
-│       │   └── daily_business_summary.py  # 🆕 运营日报 (FR-TK-012)
-│       └── skills/
-│           ├── claw-operator/           # 基础设施运维
-│           │   ├── proactive_operator.sh  # MS-1 热门监控
-│           │   ├── analyze_trending.py    # MS-2 爆款分析
-│           │   ├── generate_content.py    # MS-3 内容制作
-│           │   └── publish_track.py       # MS-4 发布追踪
-│           └── feishu-tk-notifier/      # 8频道飞书通知
-├── shared/                   # 共享基础设施
-│   ├── config.py             # 统一配置 (.env + Webhook ID)
-│   ├── core/                 # 跨业务基类 (去重后唯一源)
-│   │   ├── base_executor.py  # 安全命令执行 (shell=False)
-│   │   ├── base_pipeline.py  # 流水线抽象基类
-│   │   ├── task_helper.py    # 任务创建+决策
-│   │   ├── task_updater.py   # 里程碑更新
-│   │   ├── safe_router.py    # 模型路由
-│   │   ├── token_governor_v1.py  # Token预算v1
-│   │   ├── token_governor_v2.py  # Token预算v2 (自适应)
-│   │   └── *_server.py       # HTTP服务 (端口已去重)
-│   ├── skill_registry/       # Skill注册+路由校验
-│   ├── execution_logger.py   # 执行日志 (已集成base_executor)
-│   ├── mcp_task_server.py    # MCP桥接
-│   └── templates/            # 流水线模板 (YAML+JSON)
-├── dashboard/                # Dashboard API v2 (⚠️ 废弃→FastAPI v3)
-├── api/v3/                   # FastAPI v3 (主API, port 5004)
-├── web/                      # Vue 3 SPA (port 5173)
-│   └── src/components/
-│       └── ReviewPanel.vue   # 🆕 审核面板 (FR-DR-006)
-├── ecosystem.config.js       # 🆕 pm2 进程管理 (7服务)
-├── gateway/nginx.conf        # NGINX 反向代理
-└── reports/                  # 审查报告 + PRD
+shared/core/  ← 14模块唯一源 (drama/core + tk/core 已去重为shim)
+├── base_executor.py    # run_command(shell=False, shlex.split) — 所有命令走这里
+├── task_helper.py      # create_task(project_id)
+├── task_updater.py     # update_milestone(task_id, milestone_id, status)
+├── safe_router.py      # 模型路由
+├── *_server.py          # HTTP服务 (端口已去冲突)
+└── __init__.py          # 导出 validate_command, run_command, BasePipeline
 
----
+water-margin-drama/
+├── water_margin_drama.py   # 主入口 --story --theme --mode
+├── script_selector.py      # 从story.episodes评分排序 (去硬编码CHAPTERS)
+├── role_designer.py        # 从story.roles()加载角色 (去硬编码ROLES/SCENES)
+├── controversy_rewriter.py # 从story.controversies加载规则 (去硬编码CONTROVERSY_RULES)
+├── quality_assessor.py     # FR-DR-005 AI评分 (GLM 4维 + 规则引擎降级)
+├── audio_generator.py      # FR-DR-007 多角色TTS
+├── auto_publisher.py       # --dev模式可用
+└── confirmation.py         # 3阶段确认门禁
 
-## 🧩 核心模块说明
+TK pipeline (MS-1~MS-5):
+├── tk/.../proactive-operator/  # MS-1 Shell脚本 (+data/+logs)
+├── tk/.../claw-operator/       # MS-2/3/4 Python脚本
+└── tk/core/daily_business_summary.py  # MS-5 日报
 
-### 1. drama/openclaw/core/ (AI短剧核心引擎)
+shared/extras:
+├── config.py              # 统一配置 (.env + 8 Webhook ID + ARK_API_KEY)
+├── story_loader.py        # 多故事加载: load_story("sanguo")
+├── execution_logger.py    # 已委托base_executor.run_command()
+└── mcp_task_server.py     # MCP桥接
+```
 
-| 模块 | 功能 | 关键特性 |
-|------|------|---------|
-| `download_server.py` | 视频下载服务 | 支持多平台、断点续传 |
-| `decision_listener.py` | 决策监听器 | 异步事件驱动 |
-| `token_governor_v1.py` | Token治理v1 | 简单限额控制 |
-| `token_governor_v2.py` | Token治理v2 | 智能预算分配 |
-| `safe_router.py` | 安全路由 | 权限验证、流量控制 |
-| `progress_logger.py` | 进度日志 | 实时监控、状态追踪 |
-| `dashboard_api_v2.py` | Dashboard API | RESTful接口、数据聚合 |
-| `media_server.py` | 媒体服务 | 视频处理、格式转换 |
+## 已闭合的安全边界
 
-### 2. drama/openclaw/skills/water-margin-drama/ (水浒传短剧Skill)
+- **命令执行**: `base_executor.run_command()` — shell=False + shlex.split + 双白名单
+- **API密钥**: `config.py` 统一管理, .env 覆盖, 代码0硬编码
+- **跨业务路由**: `skill_loader.py` + `registry.yaml` + fnmatch
 
-| 模块 | 功能 | 输入/输出 |
-|------|------|----------|
-| `water_margin_drama.py` | 主脚本 | 剧本→视频 |
-| `script_selector.py` | 剧本筛选 | 原文→精选片段 |
-| `role_designer.py` | 角色设计 | 角色→配音/形象 |
-| `controversy_rewriter.py` | 争议改写 | 敏感剧情→合规版本 |
-| `auto_publisher.py` | 自动发布 | 视频→平台上传 |
-| `drama_audio.py` | 配音合成 | 文本→武松语音 |
+## 飞书 Webhook (8频道, 无需环境变量)
 
-### 3. tk/openclaw/core/ (TK运营核心引擎)
+```python
+from shared.config import config
+url = config.get_feishu_webhook("数据看板")
+# 频道: 选品作战室/数据看板/达人运营/订单中心/广告指挥室/内容工坊/客服中心/技术研发
+```
 
-与 drama 共享相同的架构模板，但业务逻辑不同。
+## 硬编码已消除
 
-| 模块 | 功能 | TK特定特性 |
-|------|------|-----------|
-| `download_server.py` | 视频下载 | TK平台适配 |
-| `decision_listener.py` | 决策监听 | 运营策略决策 |
-| `token_governor_v2.py` | Token治理 | 运营预算控制 |
-
-### 4. shared/ (共享基础设施)
-
-| 模块 | 功能 | 服务范围 |
-|------|------|---------|
-| `mcp_task_server.py` | MCP任务服务器 | drama + tk |
-| `execution_logger.py` | 执行日志器 | 全项目 |
-| `task_wizard.py` | 任务向导 | 任务创建流程 |
-| `data/init_db.py` | 数据库初始化 | 数据库Schema |
-
----
-
-## 🔑 关键文件路径
-
-### 配置文件
-
-| 文件 | 路径 | 用途 |
-|------|------|------|
-| TK流水线配置 | `shared/templates/tk_pipeline.yaml` | TK运营流程定义 |
-| 短剧流水线配置 | `shared/templates/drama_pipeline.yaml` | 短剧生成流程定义 |
-| 最佳实践知识库 | `shared/knowledge/best_practices.yaml` | 通用最佳实践 |
-| TK Operator配置 | `tk/openclaw/skills/claw-operator/config.json` | TK运营参数 |
-
-### 数据文件
-
-| 文件 | 路径 | 用途 |
-|------|------|------|
-| 水浒传剧本库 | `drama/openclaw/skills/water-margin-drama/episode_list.json` | 剧本索引 |
-| 角色库 | `drama/openclaw/skills/water-margin-drama/role_library.json` | 角色+配音配置 |
-
-### 相关文档
-
-| 文档 | 位置 |
-|------|------|
-| PRD v3.3 (诚实修订版) | `reports/PRD-v3.3.md` |
-| 终版审查报告 (2026-04-24) | `reports/project-review-2026-04-24-final.md` |
-| 前置审查报告 (2026-04-23) | `reports/project-review-2026-04-23.md` |
-| 安全审查报告 | `reports/claude-desktop-review-20260423.md` |
-| TK 运营 SOP | `TK-OPERATION-SOP.md` |
-| 配置模板 | `.env.example` |
-
----
-
-## 📋 命名约定
-
-### 文件命名
-
-| 类型 | 约定 | 示例 |
-|------|------|------|
-| Python模块 | `snake_case.py` | `download_server.py` |
-| 配置文件 | `snake_case.yaml/json` | `tk_pipeline.yaml` |
-| Skill文档 | `SKILL.md` | 固定名称 |
-| 状态文件 | `*_state.json` | `confirmation_state.json` |
-
-### 目录命名
-
-| 类型 | 约定 | 示例 |
-|------|------|------|
-| Skill目录 | `skill-name/` | `water-margin-drama/` |
-| 核心模块 | `core/` | 固定名称 |
-| 共享目录 | `shared/` | 固定名称 |
-
----
-
-## 🔗 依赖关系
-
-### 外部依赖
-
-| 依赖 | 用途 | 版本要求 |
-|------|------|---------|
-| OpenClaw | 核心框架 | 最新版 |
-| GPT-SoVITS | 配音合成 | V3或V2 |
-| Replicate | 动态视频生成 | 需余额 |
-| 飞书 API | 通知推送 | Webhook配置 |
-
-### 内部依赖
-
-| 模块 | 依赖模块 | 依赖类型 |
-|------|---------|---------|
-| `drama/core/*` | `shared/mcp_task_server.py` | 强依赖 |
-| `tk/core/*` | `shared/mcp_task_server.py` | 强依赖 |
-| `water_margin_drama.py` | `drama/core/*` | 强依赖 |
-| `claw-operator.py` | `tk/core/*` | 强依赖 |
-
----
-
-## ⚠️ 已知问题
-
-1. **架构重复**: `drama/core/` 与 `tk/core/` 结构相似，可能存在代码重复
-2. **CLAUDE.md缺失**: 项目根目录缺少架构说明文档
-3. **SOP文档缺失**: 未找到 TK-OPERATION-SOP.md 文件
-4. **配置分散**: 配置文件分散在多个目录，缺少统一管理
-
----
-
-## 📊 项目统计
-
-| 类型 | 数量 |
-|------|------|
-| 总文件数 | 2831 |
-| Python文件 | 55 |
-| 配置文件 | 613 |
-| 文档文件 | 118 |
-| Skill数 | 2 (drama) + 2 (tk) |
-
----
-
-*更新于 2026-04-24 00:25 PDT | v3.3 诚实修订版*
-*重要变更：完成度从 85% 下调至约 35%；P0 优先级调整为止血优先；GSTACK/自进化搁置*
+| 原位置 | 原问题 | 现状态 |
+|--------|--------|:--:|
+| 4个py + make-drama.sh | ARK_API_KEY 硬编码 | config.py 默认值 (.env覆盖) |
+| dashboard_api_v2.py | FEISHU_WEBHOOK_URL | config.py Webhook ID字典 |
+| 4个drama模块 | 水浒传专有数据 | stories/*.yaml 配置驱动 |
+| execution_logger/auto_sync | shell=True | base_executor.run_command() |
