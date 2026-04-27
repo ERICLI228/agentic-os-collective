@@ -62,7 +62,7 @@ class Config:
         "广告指挥室": "fd52600b-b626-4cf3-898c-dac2ecd77d58",
         "内容工坊":   "c851d4b8-5a63-47c7-bb71-5c474f6c99ad",
         "客服中心":   "fcf21b55-8b43-4719-a2b2-51854fdf9aef",
-        "技术研发":   "148cb666-4573-4ef6-a03e-a9008b0c972b",
+        "运营指挥部": "d22cb5ff-142d-4ad1-8557-b11be714cb05",
     }
 
     @classmethod

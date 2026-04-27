@@ -72,7 +72,19 @@ TK运营最佳实践:
     - "避免：空格/特殊字符"
     - "长度限制: 不超过50字符"
 
-提醒设置:
-  决策超时: 24
-  执行超时: 3600
-  检查间隔: 3600
+会话归档最佳实践:
+  推荐工具: "scripts/archive-session.sh"
+  描述: "基于Clicky/CPR理念的会话归档机制"
+  核心功能:
+    决策提取: "从会话中自动提取含关键词的决策语句"
+    结构化日志: "YAML frontmatter + [[wikilinks]] 格式"
+    自动归档: "会话结束或输入/archive时触发"
+  输出:
+    - "wiki/log.md": 结构化操作日志
+    - "wiki/outputs/session-{timestamp}.md": 完整归档
+    - "workspace/memory/timeline.md": 决策时间线
+  最佳实践:
+    - "使用[[wikilinks]]标注概念和实体"
+    - "每次回答后标记关键决策"
+    - "会话结束时执行archive-session.sh"
+  时间预估: "30秒 - 2分钟"
