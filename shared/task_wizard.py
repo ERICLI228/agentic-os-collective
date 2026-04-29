@@ -185,5 +185,157 @@ def api_create_task():
     
     return jsonify({'task_id': task_id, 'task': task})
 
+# ========== V3.5 新增：系统状态 + 决策接口 ==========
+
+def _load_all_tasks():
+    """加载所有活跃任务"""
+    tasks = []
+    ACTIVE_DIR.mkdir(parents=True, exist_ok=True)
+    for f in sorted(ACTIVE_DIR.glob('*.json')):
+        try:
+            with open(f) as fh:
+                tasks.append(json.load(fh))
+        except Exception:
+            pass
+    return tasks
+
+
+@app.route('/api/status', methods=['GET'])
+def api_status():
+    """系统状态总览 — v3.5 新增"""
+    tasks = _load_all_tasks()
+    tasks_list = []
+    decision_pending_count = 0
+    for t in tasks:
+        status = t.get('status', 'unknown')
+        is_pending = status in ('waiting_approval', 'waiting_decision')
+        if is_pending:
+            decision_pending_count += 1
+        tasks_list.append({
+            'id': t.get('id'),
+            'name': t.get('name'),
+            'status': status,
+            'decision_pending': is_pending,
+            'priority': t.get('priority', 'P1'),
+            'created_at': t.get('created_at', ''),
+            'milestones': [
+                {'id': m.get('id', ''), 'name': m.get('title', m.get('name', '')), 'status': m.get('status', 'pending')}
+                for m in t.get('milestones', [])
+            ]
+        })
+
+    # 里程碑状态（从任务中提取决策点）
+    milestones = []
+    for t in tasks:
+        for dp in t.get('decision_points', []):
+            milestones.append({
+                'task_id': t.get('id'),
+                'ms': dp.get('id', dp.get('milestone_id', '')),
+                'name': dp.get('name', ''),
+                'decision_point': True,
+                'locked': dp.get('status') != 'approved'
+            })
+
+    # 系统健康检查
+    health_checks = {
+        'api': 'ok',
+        'database': 'ok',
+        'knowledge': 'ok' if (WORKSPACE / 'shared/knowledge/best_practices.yaml').exists() else 'missing'
+    }
+    system_health = 'ok' if all(v == 'ok' for v in health_checks.values()) else 'degraded'
+
+    return jsonify({
+        'tasks': tasks_list,
+        'total': len(tasks_list),
+        'completed': len([t for t in tasks_list if t['status'] == 'completed']),
+        'decision_pending': decision_pending_count,
+        'milestones': milestones,
+        'system_health': system_health,
+        'health_checks': health_checks,
+        'timestamp': datetime.now().isoformat()
+    })
+
+
+def _find_task_file(task_id: str):
+    """按 task_id 查找任务文件（文件名可能与 id 不同）"""
+    ACTIVE_DIR.mkdir(parents=True, exist_ok=True)
+    # 先试精确匹配
+    exact = ACTIVE_DIR / f'{task_id}.json'
+    if exact.exists():
+        return exact
+    # 再遍历所有 JSON 文件匹配 id 字段
+    for f in ACTIVE_DIR.glob('*.json'):
+        try:
+            with open(f) as fh:
+                data = json.load(fh)
+                if data.get('id') == task_id:
+                    return f
+        except Exception:
+            pass
+    return None
+
+
+@app.route('/api/decision', methods=['POST'])
+def api_decision():
+    """人工审批接口 — v3.5 新增
+
+    请求体:
+    {
+        "task_id": "TK-20260429-001",
+        "action": "approved" | "rejected" | "modify",
+        "reason": "可选备注"
+    }
+    """
+    data = request.json
+    task_id = data.get('task_id', '')
+    action = data.get('action', '')
+    reason = data.get('reason', '')
+
+    if not task_id or action not in ('approved', 'rejected', 'modify'):
+        return jsonify({'error': '需要 task_id 和 action (approved/rejected/modify)'}), 400
+
+    task_file = _find_task_file(task_id)
+    if not task_file:
+        return jsonify({'error': f'任务 {task_id} 不存在'}), 404
+
+    with open(task_file) as f:
+        task = json.load(f)
+
+    # 更新状态
+    if action == 'approved':
+        task['human_approved'] = True
+        task['decision_status'] = 'approved'
+        task['status'] = 'approved' if task.get('status') == 'waiting_approval' else task.get('status')
+    elif action == 'rejected':
+        task['human_approved'] = False
+        task['decision_status'] = 'rejected'
+        task['status'] = 'rejected'
+    else:  # modify
+        task['decision_status'] = 'modify_requested'
+        task['status'] = 'waiting_modification'
+
+    task['decision_at'] = datetime.now().isoformat()
+    task['decision_reason'] = reason
+    task['decision_by'] = 'human'
+
+    with open(task_file, 'w') as f:
+        json.dump(task, f, ensure_ascii=False, indent=2)
+
+    return jsonify({
+        'task_id': task_id,
+        'action': action,
+        'status': task['status'],
+        'human_approved': task.get('human_approved'),
+        'timestamp': datetime.now().isoformat()
+    })
+
+
+# 兼容旧版 task_wizard 入口
+@app.route('/api/tasks', methods=['GET'])
+def api_list_tasks():
+    """任务列表（兼容别名，指向 /api/status）"""
+    return api_status()
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=False)
