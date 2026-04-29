@@ -124,8 +124,9 @@ MIAOSHOW_PUBLISH_ENABLED=true python3 shared/publish_gate.py <task_id>
 | openclaw-video | `.env` | `ALIYUN_ACCESS_KEY_ID/ SECRET/ APP_KEY` |
 | TK video-generation | `tts.py` + `local-tts.py` | 环境变量 |
 
-凭证: RAM用户 `tts-service-user` (LTAI5t92pPDVgFvSWEWKuWZS), AppKey EO3zZigsTGKIUL1y
+NLS凭证: 从 `.env` 读取 `ALIYUN_ACCESS_KEY_ID / ALIYUN_ACCESS_KEY_SECRET / ALIYUN_APP_KEY` — 禁止硬编码
 可用男声: zhiming/zhiyuan/zhihao/zhilin | 女声: xiaoyun/zhiqi | (zhifeng 不通 NLS 网关)
+资源包余量: ~29817/30000 字符 (2026-04-29)，单集预算 <500 字符
 
 ## 飞书 Webhook (8频道, 无需环境变量)
 
