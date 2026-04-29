@@ -117,6 +117,19 @@ SCENARIO_PRESETS = {
         "rework_threshold": 6.0,
         "max_rework_cycles": 3,
     },
+    # Sprint 3.2: TK 广告全维度审核（合规/转化/本地化/品牌）
+    "tk_ad_review": {
+        "name": "TK 广告全维度对抗审核",
+        "dimensions": [
+            "合规",           # TK 广告政策/禁投品类/敏感词/版权
+            "转化",           # CTA力度/价值主张/紧迫感/落地页一致性
+            "本地化",         # 目标国语言/文化禁忌/本地支付习惯/节日适配
+            "品牌",           # 品牌一致性/视觉规范/调性匹配/长期价值
+        ],
+        "threshold": 8.0,
+        "rework_threshold": 6.0,
+        "max_rework_cycles": 3,
+    },
     "drama_script": {
         "name": "短剧剧本对抗审核",
         "dimensions": [
@@ -124,6 +137,20 @@ SCENARIO_PRESETS = {
             "场景完整性",     # 场景数量/对话长度是否达标？
             "剧情节奏",       # 节奏是否合理？有无拖沓？
             "逻辑一致性",     # 是否有逻辑漏洞？
+        ],
+        "threshold": 8.0,
+        "rework_threshold": 6.0,
+        "max_rework_cycles": 3,
+    },
+    # Sprint 3.3: 剧本生成后即时预审（生成→视频前拦截）
+    "drama_script_review": {
+        "name": "短剧剧本即时预审",
+        "dimensions": [
+            "角色一致性",     # 角色行为/台词是否符合人设？
+            "剧情张力",       # 冲突是否尖锐？钩子是否有效？
+            "台词自然度",     # 是否AI味重？符合角色身份？
+            "时长适配",       # 预估时长是否符合单集要求（60-90s）？
+            "合规",           # 无违规内容（血腥/暴力/敏感话题）？
         ],
         "threshold": 8.0,
         "rework_threshold": 6.0,
