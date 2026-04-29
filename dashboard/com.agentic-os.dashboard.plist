@@ -12,13 +12,20 @@
     </array>
     <key>WorkingDirectory</key>
     <string>/Users/hokeli/agentic-os-collective/web</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin</string>
+        <key>NODE_ENV</key>
+        <string>production</string>
+    </dict>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
     <true/>
     <key>StandardOutPath</key>
-    <string>/tmp/vite.log</string>
+    <string>/Users/hokeli/.agentic-os/logs/vite.log</string>
     <key>StandardErrorPath</key>
-    <string>/tmp/vite.err</string>
+    <string>/Users/hokeli/.agentic-os/logs/vite-error.log</string>
 </dict>
 </plist>
