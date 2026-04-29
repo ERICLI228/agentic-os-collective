@@ -207,8 +207,6 @@ class LLMClient:
         },
     }
 
-    CODING_FALLBACK_KEY = "sk-sp-cf788796ee574f12abbbe8e3f2899fba"
-
     def __init__(self, model: str = "coding/qwen3.6-plus"):
         self.model = model
         self.provider, self.model_name = self._parse_model(model)
@@ -222,19 +220,13 @@ class LLMClient:
         return "aliyun", model
 
     def _get_api_key(self) -> str:
-        """获取 API Key — 优先环境变量，无则使用 CODING 备用"""
+        """获取 API Key — 从环境变量读取"""
         env_key = self.PROVIDERS.get(self.provider, {}).get("key_env", "")
         key = os.environ.get(env_key, "")
         if key:
             return key
-        if self.provider == "coding":
-            return self.CODING_FALLBACK_KEY
-        coding_key = os.environ.get("CODING_API_KEY", self.CODING_FALLBACK_KEY)
-        if coding_key:
-            return coding_key
         raise RuntimeError(
-            f"未配置 {self.provider} API Key，请设置环境变量 {env_key}\n"
-            f"或直接用默认 coding/qwen3.6-plus"
+            f"未配置 {self.provider} API Key，请在 .env 设置 {env_key}"
         )
 
     def _get_url(self) -> str:
