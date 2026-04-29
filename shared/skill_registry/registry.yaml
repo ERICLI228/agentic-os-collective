@@ -67,3 +67,4 @@ skills:
     compatible_tasks:
       - "TK-*"
       - "DS-*"
+    note: "跨线通知 skill，仅推送飞书卡片，不执行业务逻辑。兼容 TK/DS 两个业务线"

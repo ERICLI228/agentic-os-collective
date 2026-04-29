@@ -7,6 +7,7 @@ Skill 加载器 (v1.0)
 import fnmatch
 import yaml
 from pathlib import Path
+from typing import Optional, Tuple
 
 _REGISTRY_FILE = Path(__file__).parent / "registry.yaml"
 
@@ -16,7 +17,7 @@ def _load_registry() -> dict:
         return yaml.safe_load(f) or {}
 
 
-def get_skill_for_task(task_id: str) -> str | None:
+def get_skill_for_task(task_id: str) -> Optional[str]:
     """根据任务ID匹配对应的 skill 名称"""
     registry = _load_registry()
     for skill_name, skill_cfg in registry.get("skills", {}).items():
@@ -26,7 +27,7 @@ def get_skill_for_task(task_id: str) -> str | None:
     return None
 
 
-def validate_task_skill(task_id: str, skill_name: str) -> tuple:
+def validate_task_skill(task_id: str, skill_name: str) -> Tuple[bool, str]:
     """
     校验 task_id 与 skill_name 是否匹配。
     返回 (True, "OK") 或 (False, 错误原因)
@@ -48,7 +49,7 @@ def validate_task_skill(task_id: str, skill_name: str) -> tuple:
     return True, "OK"
 
 
-def get_stage_script(skill_name: str, stage_id: str) -> str | None:
+def get_stage_script(skill_name: str, stage_id: str) -> Optional[str]:
     """获取指定 skill + 阶段的脚本文件名"""
     registry = _load_registry()
     skill    = registry.get("skills", {}).get(skill_name, {})

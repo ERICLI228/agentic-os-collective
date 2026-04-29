@@ -373,4 +373,5 @@ def api_list_tasks():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=False)
+    from shared.config import config
+    app.run(host=config.API_HOST, port=config.API_PORT, debug=False)

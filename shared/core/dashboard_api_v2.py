@@ -158,5 +158,6 @@ def cross_project_insights():
     })
 
 if __name__ == '__main__':
+    from shared.config import config
     ACTIVE_DIR.mkdir(parents=True, exist_ok=True)
-    app.run(host='0.0.0.0', port=5001, debug=False)
+    app.run(host=config.API_HOST, port=config.API_PORT, debug=False)

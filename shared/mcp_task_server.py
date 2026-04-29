@@ -7,7 +7,8 @@ import sys
 import requests
 from typing import Dict, Any
 
-API_BASE = "http://localhost:5001"
+from shared.config import config
+API_BASE = f"http://{config.API_HOST}:{config.API_PORT}"
 
 def get_tasks() -> Dict[str, Any]:
     """获取任务列表"""
