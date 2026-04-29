@@ -1,11 +1,12 @@
-name: "TK东南亚3C电商选品发布流水线"
-version: "3.5"
+name: "TK东南亚3C电商全链路流水线"
+version: "3.5.1"
 project: "tk"
-description: "TikTok东南亚5国3C品类选品→发布→审核全流程（感知控制优先）"
+description: "TikTok东南亚5国3C品类 — 选品→内容→合规→定价→物流→发布→运营 全链路自动化"
 
-# v3.5 核心变更：新增三个决策节点 + publish_gate 硬约束
+# v3.5.1 核心变更: 补8个硬缺口(行业基准对照) + 2个后台守护
 
 stages:
+  # ── Phase 1: 数据采集 & 市场判断 ──
   - id: "MS-1"
     name: "数据采集"
     executor: "OpenClaw"
@@ -15,7 +16,7 @@ stages:
       - "shop_status.json"
     timeout: 300
     decision_point: false
-    description: "从妙手ERP采集箱拉取1688商品数据到本地"
+    description: "从妙手ERP采集箱拉取1688商品数据+店铺状态到本地"
 
   - id: "MS-1.5"
     name: "市场判断"
@@ -23,7 +24,6 @@ stages:
     command: "python3 shared/core/adversarial_review.py --scene market_assessment"
     expected_artifacts:
       - "market_assessment.json"
-      - "category_ranking.json"
     timeout: 600
     decision_point: true
     decision_type: "market_assessment"
@@ -36,24 +36,22 @@ stages:
         next_stage: "MS-1"
       - action: "不做"
         label: "❌ 不做"
-        next_stage: null
     decision_timeout_hours: 48
-    description: "五维市场分析（竞品饱和度/利润空间/供应链/季节性/达人潜力），等用户决策后才推进到选品"
 
+  # ── Phase 2: 选品 & 审核 ──
   - id: "MS-2"
     name: "选品分析"
     executor: "OpenClaw + Human"
     command: "python3 shared/core/adversarial_review.py --scene tk_product_review"
     expected_artifacts:
       - "product_recommendations.json"
-      - "selection_review_*.json"
     timeout: 600
     decision_point: true
     decision_type: "selection_review"
     decision_options:
       - action: "approved"
         label: "✅ 通过TOP3"
-        next_stage: "MS-3"
+        next_stage: "MS-2.1"
       - action: "modify"
         label: "✏️ 修改条件"
         next_stage: "MS-2"
@@ -61,8 +59,78 @@ stages:
         label: "❌ 驳回"
         next_stage: "MS-1.5"
     decision_timeout_hours: 24
-    description: "五维选品对抗审核（8分阈值），生成TOP3推荐，等用户通过后才进入发布准备"
 
+  # ── Phase 3: 内容本地化（8硬缺口 #1）──
+  - id: "MS-2.1"
+    name: "内容本地化"
+    executor: "OpenClaw (MiniMax/DeepSeek)"
+    command: "python3 shared/core/content_localizer.py"
+    expected_artifacts:
+      - "localized_product.json"
+      - "seo_keywords.json"
+    timeout: 300
+    decision_point: false
+    description: "1688中文→TK本地化: 标题SEO关键词+EN翻译+SKU变体名翻译+卖点文案+描述生成"
+
+  # ── Phase 4: 类目映射 & 属性填充（8硬缺口 #2）──
+  - id: "MS-2.2"
+    name: "类目映射 & 属性"
+    executor: "OpenClaw"
+    command: "python3 shared/core/category_mapper.py"
+    expected_artifacts:
+      - "category_mapping.json"
+      - "attributes_filled.json"
+    timeout: 300
+    decision_point: false
+    description: "1688类目→TK类目树映射 + 必填属性自动填充(电池/功率/电压/材质/尺寸)"
+
+  # ── Phase 5: 图像适配（8硬缺口 #3）──
+  - id: "MS-2.3"
+    name: "图像适配优化"
+    executor: "OpenClaw (RemBG + ComfyUI)"
+    command: "python3 shared/core/image_processor.py"
+    expected_artifacts:
+      - "processed_images/"
+      - "main_images.json"
+    timeout: 900
+    decision_point: false
+    description: "1688源图→TK合规: 去水印+白底抠图+1:1(1000x1000)+补图至5-9张+无中文/无Logo检查"
+
+  # ── Phase 6: 定价策略（8硬缺口 #4）──
+  - id: "MS-2.4"
+    name: "定价策略"
+    executor: "OpenClaw"
+    command: "python3 shared/core/pricing_calculator.py"
+    expected_artifacts:
+      - "pricing_result.json"
+    timeout: 120
+    decision_point: false
+    description: "定价公式: (1688进价+头程运费)×(1+退货率)÷(1-佣金率-广告率-利润率) → 建议售价。含各国汇率换算(MYR/PHP/VND/THB/SGD)"
+
+  # ── Phase 7: 物流模板（8硬缺口 #5）──
+  - id: "MS-2.5"
+    name: "物流模板"
+    executor: "OpenClaw"
+    command: "python3 shared/core/logistics_calculator.py"
+    expected_artifacts:
+      - "logistics_template.json"
+    timeout: 120
+    decision_point: false
+    description: "包裹重量/体积测算 + 头程/尾程运费估算(PH/TH/VN/MY/SG) + 物流商比价"
+
+  # ── Phase 8: 合规检查（8硬缺口 #6+7）──
+  - id: "MS-2.6"
+    name: "合规检查"
+    executor: "OpenClaw"
+    command: "python3 shared/core/compliance_checker.py"
+    expected_artifacts:
+      - "compliance_report.json"
+    timeout: 180
+    decision_point: false
+    description: "多重检查: 危险品(锂电池/含磁/液体) + 违禁词(TK政策) + 类目合规 + 主图白底 + 认证要求(CE/FCC/UN38.3)"
+    gate: "compliance_pass 必须=true 才允许进入 MS-3"
+
+  # ── Phase 9: 发布准备 ──
   - id: "MS-3"
     name: "发布准备"
     executor: "OpenClaw"
@@ -71,8 +139,8 @@ stages:
       - "publish_preview.json"
     timeout: 300
     decision_point: false
-    description: "准备商品发布数据（不真正发布），生成发布预览"
 
+  # ── Phase 10: 发布审批 ──
   - id: "MS-4"
     name: "发布审批"
     executor: "OpenClaw + Human"
@@ -91,12 +159,12 @@ stages:
         next_stage: "MS-5"
       - action: "rejected"
         label: "❌ 拒绝"
-        next_stage: "MS-3"
+        next_stage: "MS-2.1"
     decision_timeout_hours: 24
     publish_gate: true
     publish_gate_env: "MIAOSHOW_PUBLISH_ENABLED"
-    description: "硬性发布门禁：必须MIAOSHOW_PUBLISH_ENABLED=true且human_approved=true才允许发布"
 
+  # ── Phase 11: 日报 ──
   - id: "MS-5"
     name: "日报生成与推送"
     executor: "OpenClaw"
@@ -105,4 +173,24 @@ stages:
       - "daily_summary_*.md"
     timeout: 120
     decision_point: false
-    description: "聚合TK运营数据（GMV/订单/库存/物流），生成日报并推送到飞书群"
+
+# ═══════════════════════════════════════════
+# 🖥️ 后台守护进程（独立运行，非pipeline阶段）
+# ═══════════════════════════════════════════
+
+daemons:
+  - id: "DAEMON-1"
+    name: "1688价格+库存监控"
+    command: "python3 shared/core/supplier_monitor.py --daemon"
+    interval_minutes: 60
+    description: "每小时检查1688采集商品的价格变动和库存变化，超阈值(%)飞书推送告警"
+    alerts:
+      price_change_pct: 10      # 价格变动超10%告警
+      stock_below: 50           # 库存低于50告警
+      stock_zero: true          # 库存归零立即告警
+
+  - id: "DAEMON-2"
+    name: "店铺健康度监控"
+    command: "python3 shared/core/shop_health_monitor.py --daemon"
+    interval_minutes: 120
+    description: "每2小时检查TK店铺违规点/扣分/处罚状态，飞书推送告警"
