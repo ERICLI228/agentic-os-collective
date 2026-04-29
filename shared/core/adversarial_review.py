@@ -92,6 +92,19 @@ class AdversarialReviewConfig:
 # ============================================================
 
 SCENARIO_PRESETS = {
+    "market_assessment": {
+        "name": "TK 市场判断 (MS-1.5)",
+        "dimensions": [
+            "竞品饱和度",       # 头部卖家占比？新品进入门槛？广告竞争？
+            "利润空间",         # 1688进价vsTK售价？毛利率？退货成本？
+            "供应链",           # 货源稳定性？头程时效？库存风险？
+            "季节性",           # 品类是否受季节影响？Q1-Q4 波动？
+            "达人潜力",         # 该品类达人丰富度？佣金接受度？
+        ],
+        "threshold": 8.0,
+        "rework_threshold": 6.0,
+        "max_rework_cycles": 3,
+    },
     "tk_product": {
         "name": "TK 选品对抗审核",
         "dimensions": [
