@@ -1,68 +1,108 @@
-name: "TK东南亚3C运营流水线"
-version: "1.1"
+name: "TK东南亚3C电商选品发布流水线"
+version: "3.5"
 project: "tk"
-description: "TikTok东南亚5国3C品类自动运营流水线"
+description: "TikTok东南亚5国3C品类选品→发布→审核全流程（感知控制优先）"
+
+# v3.5 核心变更：新增三个决策节点 + publish_gate 硬约束
 
 stages:
   - id: "MS-1"
-    name: "热门监控"
+    name: "数据采集"
     executor: "OpenClaw"
-    command: "bash ~/.agents/skills/proactive-operator/proactive-operator.sh"
+    command: "python3 shared/core/miaoshou_sync.py"
     expected_artifacts:
-      - "report_*.md"
-      - "trending_products.json"
-    timeout: 600
+      - "miaoshou_products.json"
+      - "shop_status.json"
+    timeout: 300
     decision_point: false
-    description: "监控TikTok热门3C产品"
+    description: "从妙手ERP采集箱拉取1688商品数据到本地"
+
+  - id: "MS-1.5"
+    name: "市场判断"
+    executor: "OpenClaw + Human"
+    command: "python3 shared/core/adversarial_review.py --scene market_assessment"
+    expected_artifacts:
+      - "market_assessment.json"
+      - "category_ranking.json"
+    timeout: 600
+    decision_point: true
+    decision_type: "market_assessment"
+    decision_options:
+      - action: "值得做"
+        label: "✅ 值得做"
+        next_stage: "MS-2"
+      - action: "换品类"
+        label: "🔄 换品类"
+        next_stage: "MS-1"
+      - action: "不做"
+        label: "❌ 不做"
+        next_stage: null
+    decision_timeout_hours: 48
+    description: "五维市场分析（竞品饱和度/利润空间/供应链/季节性/达人潜力），等用户决策后才推进到选品"
 
   - id: "MS-2"
-    name: "爆款分析"
-    executor: "OpenClaw"
-    command: "python3 ~/.openclaw/scripts/analyze_trending.py"
+    name: "选品分析"
+    executor: "OpenClaw + Human"
+    command: "python3 shared/core/adversarial_review.py --scene tk_product_review"
     expected_artifacts:
-      - "analysis_report.json"
-      - "product_recommendations.yaml"
-    timeout: 300
+      - "product_recommendations.json"
+      - "selection_review_*.json"
+    timeout: 600
     decision_point: true
-    question: "是否选择以下产品进行推广？"
-    options:
-      - label: "确认"
-        action: "continue"
+    decision_type: "selection_review"
+    decision_options:
+      - action: "approved"
+        label: "✅ 通过TOP3"
         next_stage: "MS-3"
-      - label: "重新分析"
-        action: "retry"
-        next_stage: "MS-1"
-    description: "分析爆款特征，生成选品建议"
+      - action: "modify"
+        label: "✏️ 修改条件"
+        next_stage: "MS-2"
+      - action: "rejected"
+        label: "❌ 驳回"
+        next_stage: "MS-1.5"
+    decision_timeout_hours: 24
+    description: "五维选品对抗审核（8分阈值），生成TOP3推荐，等用户通过后才进入发布准备"
 
   - id: "MS-3"
-    name: "内容制作"
+    name: "发布准备"
     executor: "OpenClaw"
-    command: "python3 ~/.openclaw/scripts/generate_content.py"
+    command: "python3 shared/core/miaoshou_publish.py --prepare-only"
     expected_artifacts:
-      - "video_scripts.json"
-      - "content_calendar.yaml"
+      - "publish_preview.json"
     timeout: 300
     decision_point: false
-    description: "生成短视频脚本"
+    description: "准备商品发布数据（不真正发布），生成发布预览"
 
   - id: "MS-4"
-    name: "发布与追踪"
-    executor: "OpenClaw"
-    command: "python3 ~/.openclaw/scripts/publish_track.py"
+    name: "发布审批"
+    executor: "OpenClaw + Human"
+    command: "python3 shared/publish_gate.py"
     expected_artifacts:
-      - "publish_status.json"
-      - "performance_data.json"
+      - "publish_result.json"
     timeout: 600
-    decision_point: false
-    description: "自动发布并追踪数据"
+    decision_point: true
+    decision_type: "publish_approval"
+    decision_options:
+      - action: "approved"
+        label: "✅ 批准发布"
+        next_stage: "MS-5"
+      - action: "test_one"
+        label: "🧪 仅测试1条"
+        next_stage: "MS-5"
+      - action: "rejected"
+        label: "❌ 拒绝"
+        next_stage: "MS-3"
+    decision_timeout_hours: 24
+    publish_gate: true
+    publish_gate_env: "MIAOSHOW_PUBLISH_ENABLED"
+    description: "硬性发布门禁：必须MIAOSHOW_PUBLISH_ENABLED=true且human_approved=true才允许发布"
 
   - id: "MS-5"
     name: "日报生成与推送"
     executor: "OpenClaw"
-    command: "python3 ~/agentic-os-collective/tk/openclaw/core/daily_business_summary.py"
+    command: "python3 shared/feishu_daily.py"
     expected_artifacts:
       - "daily_summary_*.md"
-      - "daily_summary_*.json"
     timeout: 120
     decision_point: false
-    description: "聚合TK运营数据，生成日报并推送到飞书8个群"
+    description: "聚合TK运营数据（GMV/订单/库存/物流），生成日报并推送到飞书群"

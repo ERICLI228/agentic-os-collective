@@ -1,6 +1,6 @@
-# Agentic OS v3.3 — Agent Quick Reference
+# Agentic OS v3.5 — Agent Quick Reference
 
-> 最后更新: 2026-04-24 | 完成度 ~45% | `~/agentic-os-collective/`
+> 最后更新: 2026-04-29 | 完成度 ~55% | `~/agentic-os-collective/`
 
 ## 路径速查
 
@@ -17,12 +17,8 @@ FEISHU_V3=~/.openclaw/workspace/scripts/send-feishu-v3.py
 
 | 端口 | 服务 | 文件 |
 |:--:|------|------|
+| 5001 | Flask 任务管理 API | `shared/task_wizard.py` (v3.5 新增 /api/status + /api/decision) |
 | 5004 | FastAPI v3 主API | `api/v3/dashboard_api_v3.py` |
-| 5001 | Flask v2 (⚠️废弃) | `dashboard/dashboard_api_v2.py` |
-| 5173 | Vue 3 SPA | `web/` (npm run dev) |
-| 8080 | 下载服务 | `shared/core/download_server.py` |
-| 8083 | 媒体服务 | `shared/core/media_server.py` |
-| 8084 | UTF-8 服务 | `shared/core/utf8_server.py` |
 | 8081 | NGINX 网关 | `gateway/nginx.conf` |
 
 ## 常用命令
@@ -51,12 +47,18 @@ pm2 logs agentic-api-v3
 
 ```
 shared/core/  ← 14模块唯一源 (drama/core + tk/core 已去重为shim)
-├── base_executor.py    # run_command(shell=False, shlex.split) — 所有命令走这里
-├── task_helper.py      # create_task(project_id)
-├── task_updater.py     # update_milestone(task_id, milestone_id, status)
-├── safe_router.py      # 模型路由
-├── *_server.py          # HTTP服务 (端口已去冲突)
-└── __init__.py          # 导出 validate_command, run_command, BasePipeline
+├── base_executor.py       # run_command(shell=False, shlex.split) — 所有命令走这里
+├── task_helper.py         # create_task(project_id)
+├── task_updater.py        # update_milestone(task_id, milestone_id, status)
+├── safe_router.py         # 模型路由
+├── adversarial_review.py  # v3.5 通用对抗审核框架 (从 AI_Short_Drama_Pipeline 搬迁)
+├── *_server.py            # HTTP服务 (端口已去冲突)
+└── __init__.py            # 导出 validate_command, run_command, BasePipeline
+
+shared/ (根级, v3.5 新增)
+├── feishu_status_push.py  # 飞书状态推送 (Sprint 0.2)
+├── publish_gate.py        # 发布审批硬约束 (Sprint 0.4, 双条件检查)
+└── config.py              # 统一配置 (.env + 8 Webhook ID + ARK_API_KEY)
 
 water-margin-drama/
 ├── water_margin_drama.py   # 主入口 --story --theme --mode
@@ -74,10 +76,34 @@ TK pipeline (MS-1~MS-5):
 └── tk/core/daily_business_summary.py  # MS-5 日报
 
 shared/extras:
-├── config.py              # 统一配置 (.env + 8 Webhook ID + ARK_API_KEY)
 ├── story_loader.py        # 多故事加载: load_story("sanguo")
 ├── execution_logger.py    # 已委托base_executor.run_command()
 └── mcp_task_server.py     # MCP桥接
+
+妙手数据:
+└── ~/.agentic-os/miaoshou_products.json  # 100商品 (2026-04-28)
+```
+
+## v3.5 新增决策接口
+
+### GET /api/status (5001)
+返回任务列表 + 决策状态 + 系统健康检查
+```bash
+curl http://localhost:5001/api/status
+```
+
+### POST /api/decision (5001)
+人工审批任务，支持 approved/rejected/modify
+```bash
+curl -X POST http://localhost:5001/api/decision \
+  -H 'Content-Type: application/json' \
+  -d '{"task_id":"TK-xxx","action":"approved","reason":"通过"}'
+```
+
+### 发布审批 (publish_gate.py)
+```bash
+MIAOSHOW_PUBLISH_ENABLED=true python3 shared/publish_gate.py <task_id>
+# 双条件: env=true AND human_approved=true
 ```
 
 ## 已闭合的安全边界
@@ -106,7 +132,7 @@ shared/extras:
 ```python
 from shared.config import config
 url = config.get_feishu_webhook("数据看板")
-# 频道: 选品作战室/数据看板/达人运营/订单中心/广告指挥室/内容工坊/客服中心/技术研发
+# 频道: 选品作战室/数据看板/达人运营/订单中心/广告指挥室/内容工坊/客服中心/运营指挥部/技术研发
 ```
 
 ## 硬编码已消除
