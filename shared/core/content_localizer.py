@@ -94,6 +94,21 @@ def localize_product(product: dict, countries: list = None) -> dict:
     return result
 
 
+def review_localization_quality(result: dict) -> dict:
+    """对本地化结果做对抗审核评分"""
+    try:
+        from shared.core.adversarial_review import quick_review
+        content = json.dumps(result, ensure_ascii=False)[:2000]
+        review = quick_review(content, "tk_ad_review", content_type="本地化listing")
+        result["review_score"] = review.total_score
+        result["review_decision"] = review.decision
+        result["review_dimensions"] = [d.to_dict() for d in review.dimensions]
+    except Exception as e:
+        result["review_score"] = None
+        result["review_error"] = str(e)
+    return result
+
+
 def main():
     if "--single" in sys.argv:
         idx = sys.argv.index("--single")
@@ -117,6 +132,7 @@ def main():
         results = []
         for p in products[:top_n]:
             result = localize_product(p)
+            result = review_localization_quality(result)
             results.append(result)
             print(f"✅ {p.get('title', '?')[:40]} → {result['localized']['PH']['title'][:60]}...")
 

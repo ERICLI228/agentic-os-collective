@@ -104,7 +104,7 @@ def run_compliance(title: str, category_mapped: dict = None, country: str = "PH"
     critical = [i for i in issues if i.get("severity") == "critical"]
     warnings = [i for i in issues if i.get("severity") == "warning"]
 
-    return {
+    result = {
         "pass": len(critical) == 0,
         "total_issues": len(issues),
         "critical": len(critical),
@@ -112,6 +112,19 @@ def run_compliance(title: str, category_mapped: dict = None, country: str = "PH"
         "issues": issues,
         "summary": f"{'✅' if len(critical)==0 else '❌'} {len(critical)} critical, {len(warnings)} warnings"
     }
+
+    # 对抗审核增强: 合规维度单独评分
+    try:
+        from shared.core.adversarial_review import quick_review
+        content = json.dumps({"title": title, "category": category_mapped, "issues": issues}, ensure_ascii=False)[:2000]
+        review = quick_review(content, "tk_ad_review", content_type="合规清单")
+        result["adversarial_score"] = review.total_score
+        result["adversarial_dimensions"] = {d.dimension: d.score for d in review.dimensions}
+    except Exception as e:
+        result["adversarial_score"] = None
+        result["adversarial_error"] = str(e)
+
+    return result
 
 
 def main():
