@@ -26,6 +26,11 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
+# ffmpeg 路径
+FFMPEG_PATH = "/opt/homebrew/Cellar/ffmpeg/8.1_1/bin/ffmpeg"
+import os
+os.environ["PATH"] = f"{Path(FFMPEG_PATH).parent}:{os.environ.get('PATH', '')}"
+
 
 def check_ffmpeg():
     """检查 ffmpeg 是否可用"""
@@ -94,10 +99,46 @@ def merge_video_audio(video_files, audio_file, output_file, subtitle_file=None):
     return True
 
 
+def run_full_pipeline(episode_id="wusong_dahu"):
+    """
+    --run 模式: 调用 pipeline_ep01.py 跑通完整管线
+    剧本 → 角色设计 → 配音 → 视频 → 合成 → final.mp4
+    """
+    pipeline_script = Path(__file__).parent / "pipeline_ep01.py"
+    if not pipeline_script.exists():
+        print(f"❌ 管线脚本不存在: {pipeline_script}")
+        sys.exit(1)
+    
+    # 直接执行管线
+    result = subprocess.run(
+        [sys.executable, str(pipeline_script)],
+        cwd=str(PROJECT_ROOT),
+        timeout=300
+    )
+    
+    # 验证输出
+    output_file = Path.home() / ".agentic-os" / "episode_01" / "final.mp4"
+    if output_file.exists() and output_file.stat().st_size > 0:
+        print(f"\n✅ 验证通过: {output_file} ({output_file.stat().st_size:,} bytes)")
+        return True
+    else:
+        print("\n❌ final.mp4 未生成或为空")
+        return False
+
+
 def main():
     if "--help" in sys.argv or "-h" in sys.argv or len(sys.argv) < 2:
         print(__doc__)
         return
+
+    if "--run" in sys.argv:
+        if not check_ffmpeg():
+            print("❌ ffmpeg 不可用，请安装: brew install ffmpeg")
+            sys.exit(1)
+        print("\n🚀 Sprint 1.5: 短剧第一集端到端管线")
+        print("   剧本 → 角色设计 → 配音 → 视频 → 合成\n")
+        success = run_full_pipeline()
+        sys.exit(0 if success else 1)
 
     if "--check" in sys.argv:
         ok = check_ffmpeg()
