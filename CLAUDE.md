@@ -86,6 +86,21 @@ shared/extras:
 - **API密钥**: `config.py` 统一管理, .env 覆盖, 代码0硬编码
 - **跨业务路由**: `skill_loader.py` + `registry.yaml` + fnmatch
 
+## TTS 策略 (NLS-only, 2026-04-27)
+
+所有 TTS 只能走阿里云 NLS 资源包 `NLSTTSBAG-xxx` (余额 29817/30000)。
+严禁使用 ElevenLabs、macOS `say`、DashScope CosyVoice、OpenAI TTS 等可能产生额外扣费的方案。
+
+| 项目 | 文件 | 凭证 |
+|------|------|------|
+| Clicky (macOS App) | `AliyunNLSClient.swift` + `ElevenLabsTTSClient.swift` | `~/.clicky/config.json` |
+| water-margin-drama | `aliyun_nls.py` + `audio_generator.py` + `drama_audio.py` | 环境变量 `ALIYUN_*` |
+| openclaw-video | `.env` | `ALIYUN_ACCESS_KEY_ID/ SECRET/ APP_KEY` |
+| TK video-generation | `tts.py` + `local-tts.py` | 环境变量 |
+
+凭证: RAM用户 `tts-service-user` (LTAI5t92pPDVgFvSWEWKuWZS), AppKey EO3zZigsTGKIUL1y
+可用男声: zhiming/zhiyuan/zhihao/zhilin | 女声: xiaoyun/zhiqi | (zhifeng 不通 NLS 网关)
+
 ## 飞书 Webhook (8频道, 无需环境变量)
 
 ```python

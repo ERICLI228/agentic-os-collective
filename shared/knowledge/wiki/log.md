@@ -121,3 +121,75 @@ Sender (untrusted metadata):
 - **Pages consulted**: test, wikilink
 - **Summary**: AI query result saved to wiki outputs
 
+## [2026-04-27] lint | 健康检查
+- **Report**: `wiki/outputs/lint-report-2026-04-27.md`
+- **Pages**: 5
+- **Orphans**: 1
+- **Broken links**: 7
+
+
+## 2026-04-27 — NLS TTS 全面集成
+
+- **背景**: 用户购买的阿里云 NLS 资源包 NLSTTSBAG-xxx (30000次, 剩余29817次)
+- **决策**: 禁用旧密钥 LTAI5t7yk35KYVBjCLTY1b9i → 新建专用 RAM 用户 `tts-service-user` (LTAI5t92pPDVgFvSWEWKuWZS)
+- **变更**:
+  - Clicky: `ElevenLabsTTSClient` + `AliyunNLSClient` → NLS-only, 移除 `say` 回退
+  - openclaw-video `.env`: 修复为正确 LTAI 格式凭证
+  - water-margin-drama: `audio_generator.py` + `drama_audio.py` → 移除 ElevenLabs + macos say, 统一 NLS
+  - `.openclaw/workspace/scripts/local-tts.py`: DashScope CosyVoice → NLS
+  - `.openclaw/workspace/skills/video-generation/tts.py`: 重写为 NLS-only
+- **新文件**: `drama/openclaw/skills/water-margin-drama/aliyun_nls.py` (共享 NLS 模块)
+- **凭证存储**: `~/.clicky/config.json` (Clicky), 环境变量 (Python 项目)
+- **可用男声**: `zhiming` (知明), `zhiyuan` (知远), `zhihao` (志浩), `zhilin` (志林)
+- **可用女声**: `xiaoyun` (晓芸), `zhiqi` (知琪)
+- **注意**: `zhifeng` (知锋) 是 CosyVoice 模型, 不兼容 NLS 网关, 不能走资源包
+
+## 2026-04-28 Miaoshou ERP Product API Investigation
+
+### What was done
+- Full reverse-engineering of Miaoshou ERP API (login, shops, collection box, products)
+- Auto captcha OCR via Apple Vision framework (Swift, `VNRecognizeTextRequest`) → 95% accuracy
+- All major APIs tested; collection box works (50 items), product listing API returns empty
+- Root cause: shops have 0 products (never operated), need to find publish-to-shop API
+
+### Key findings
+| API | Status | Notes |
+|-----|--------|-------|
+| `POST /api/auth/account/login` | ✅ | AES-CBC encrypt mobile+password, captcha required |
+| `GET /api/auth/shop/getAllShopV2` | ✅ | Returns 6 TikTok shops (SG/VN/TH/PH/MY/Global) |
+| `POST /api/move/common_collect_box/searchDetailList` | ✅ | 50 items, needs `X-Breadcrumb: item-common-commonCollectBox` |
+| `POST /api/item/item/searchItemList` | ❌ | Empty (0 products in shops) |
+| `POST /api/order/package/searchOrderPackageList` | ✅ | 0 orders (normal for new shops) |
+| Claim/Publish to shop API | 🔴 | **NOT FOUND** - 19 guessed endpoints all returned empty |
+
+### Blocking issue
+- TikTok shops registered but never operated → 0 products in Miaoshou listings
+- 50 items in collection box (1688-sourced, `copyType: alibabaAir`, `platformItemId: None`)
+- Missing: API endpoint to publish collection box items to specific TikTok shop
+- Need browser automation or deeper JS analysis to find the publish API
+
+### Next steps (when user unblocks)
+1. Use `agent-browser` (installed at `/Users/hokeli/.npm-global/bin/agent-browser`) to open Miaoshou web UI
+2. Navigate to collection box, click "发布到店铺/publish to shop"
+3. Capture the exact API call via network tracing
+4. Implement the publish flow
+
+### Files created/modified
+- `/tmp/ocr_captcha3.swift` — Swift OCR script (Apple Vision)
+- `~/Desktop/miaoshou_product_sync.py` — auto sync script
+
+### Credentials (for automation)
+- Username: `19864839993` / Password: `A@magic9`
+- AES Key: `@3438jj;siduf832`
+- OCR: Swift `VNRecognizeTextRequest`, `recognitionLevel: .accurate`, `usesLanguageCorrection: false`
+- Login token lifetime: ~24h
+
+## [2026-04-28 06:42] session | d67d41f5-cdfb-43d3-abb8-f930b2676490.jsonl
+- 消息数: 11
+- 主题:
+  - [cron:ba76a5d2-72ba-4d4d-958e-5813a2907d4d 视频合成完成检查] 检查 20 个 wandering_v3 视频是否全部完成：
+1. ls /Users/hokeli/ComfyUI/output/wandering_v3_*.mp4 | wc -l
+2. 如果 < 20 个，检查 ComfyUI 队列状态和进度，汇报当前完成数/剩余数/预计时间，回复 NO
+- 决策:
+
+- 归档: wiki/outputs/session-20260428-064211.md

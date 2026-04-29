@@ -45,3 +45,4 @@ total_pages: 10
 ## 概念
 
 - [[test-raw-note]] — Ingested from test-raw-note.md
+- [[miaoshou-erp-api]] — Miaoshou ERP API documentation (login, shops, collection box, pending publish API)
