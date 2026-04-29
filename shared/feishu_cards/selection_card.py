@@ -52,13 +52,15 @@ def load_products():
     return products
 
 def try_score(product):
-    """尝试用对抗审核给商品评分，失败返回 mock 分数"""
+    """用对抗审核引擎给商品评分，失败返回 mock 分数"""
     try:
-        from shared.core.adversarial_review import run_review
+        from shared.core.adversarial_review import quick_review
         title = product.get("title", "未知商品")
-        price = product.get("price")
-        result = run_review("tk_product_review", {"title": title, "price": price}, {})
-        return result.get("score", 5.0)
+        price = product.get("price") or "?"
+        source = product.get("source", "1688")
+        content = f"{title} | 来源:{source} | 价格:{price}"
+        result = quick_review(content, "tk_product")
+        return round(result.total_score, 1)
     except Exception:
         return round(random.uniform(6.0, 9.0), 1)
 

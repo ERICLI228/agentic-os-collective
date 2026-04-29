@@ -275,6 +275,41 @@ def _find_task_file(task_id: str):
     return None
 
 
+@app.route('/api/dashboard', methods=['GET'])
+def api_dashboard():
+    """驾驶舱仪表盘 — v3.5 新增（CommandCenter.vue 的数据接口）"""
+    status_data = api_status().get_json()
+    tasks_data = api_list_tasks().get_json()
+
+    # 补充 milestones 数据
+    milestones_path = Path.home() / ".agentic-os/milestones.json"
+    milestones = []
+    if milestones_path.exists():
+        with open(milestones_path) as f:
+            ms_data = json.load(f)
+        for mid, ms in ms_data.get("milestones", {}).items():
+            milestones.append({
+                "id": mid,
+                "name": ms.get("name", mid),
+                "status": ms.get("status", "pending"),
+                "decision_point": ms.get("decision_point", False),
+                "decision": ms.get("decision"),
+            })
+
+    return jsonify({
+        "total": status_data.get("total", 0),
+        "running": len([t for t in status_data.get("tasks", []) if t.get("status") == "running"]),
+        "completed": status_data.get("completed", 0),
+        "pending": len([t for t in status_data.get("tasks", []) if t.get("status") == "pending"]),
+        "failed": len([t for t in status_data.get("tasks", []) if t.get("status") == "failed"]),
+        "decision_pending": status_data.get("decision_pending", 0),
+        "tasks": tasks_data.get("tasks", []),
+        "milestones": milestones,
+        "system_health": status_data.get("system_health", "unknown"),
+        "timestamp": status_data.get("timestamp", ""),
+    })
+
+
 @app.route('/api/decision', methods=['POST'])
 def api_decision():
     """人工审批接口 — v3.5 新增
