@@ -510,6 +510,12 @@ def api_script_detail(ep_num):
         result = get_episode_detail(ep_num)
         if result is None:
             return jsonify({"error": f"Episode not found: {ep_num}"}), 404
+        # 补充渲染统计字段，和列表端点对齐
+        from script_manager import _count_renders, _get_render_dir, CURRENT_EPISODES
+        char = CURRENT_EPISODES.get(ep_num, {}).get("character", "")
+        renders = _count_renders(_get_render_dir(char))
+        result["scene_count"] = len(renders)
+        result["render_files"] = [p.name for p in renders]
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e), "ep_num": ep_num}), 500
