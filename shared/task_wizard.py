@@ -585,6 +585,27 @@ def api_render_image(char_id, filename):
     return send_file(str(path), mimetype="image/png")
 
 
+# EP → character 映射（用于 /api/render/epXX/shot_X.png 别名路由）
+_EP_CHAR_MAP = {
+    "01": "luzhishen", "02": "luzhishen",
+    "03": "linchong", "04": "songjiang",
+    "05": "likui", "06": "wuyong",
+}
+
+@app.route('/api/render/ep<ep_num>/shot_<shot_num>.png')
+def api_render_episode(ep_num, shot_num):
+    """渲染图别名路由：/api/render/ep03/shot_01.png → /api/render/linchong/ep03_shot_01.png"""
+    char_id = _EP_CHAR_MAP.get(ep_num)
+    if not char_id:
+        return "Not found", 404
+    filename = f"ep{ep_num}_shot_{shot_num}.png"
+    path = Path.home() / ".agentic-os" / "character_designs" / "renders" / char_id / filename
+    if not path.exists():
+        return "Not found", 404
+    from flask import send_file
+    return send_file(str(path), mimetype="image/png")
+
+
 # ========== 商品图片 API ==========
 
 @app.route('/api/images', methods=['GET'])
