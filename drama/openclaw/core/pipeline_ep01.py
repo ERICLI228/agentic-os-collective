@@ -5,9 +5,11 @@
 管线: 剧本 → 角色设计 → 配音 → 视频 → 合成
 
 用法:
-  python3 drama/openclaw/core/pipeline_ep01.py          # 跑完整管线
-  python3 drama/openclaw/core/pipeline_ep01.py --dry-run # 只打印计划
-  python3 drama/openclaw/core/pipeline_ep01.py --test    # 验证依赖
+  python3 pipeline_ep01.py                  # 跑完整管线 (macOS say)
+  python3 pipeline_ep01.py --voice nls      # 阿里云 NLS 真人配音
+  python3 pipeline_ep01.py --silent         # 纯视频(无声)
+  python3 pipeline_ep01.py --dry-run        # 只打印计划
+  python3 pipeline_ep01.py --test           # 验证依赖
 """
 
 import json
@@ -139,43 +141,59 @@ def generate_script():
     return script
 
 
-def generate_audio(script):
-    """Step 2: 生成旁白音频 (macOS say fallback)"""
+def generate_audio(script, voice_mode="say"):
+    """Step 2: 生成旁白音频 (say/nls)"""
     narration_files = []
 
     for i, shot in enumerate(script["shots"]):
         text = shot["narration"]
-        audio_file = AUDIO_DIR / f"narration_{shot['id']}.aiff"
+        audio_file = AUDIO_DIR / f"narration_{shot['id']}.aiff" if voice_mode != "nls" else AUDIO_DIR / f"narration_{shot['id']}.mp3"
 
-        # 用 macOS say 生成旁白
-        cmd = [
-            "say", "-v", "Tingting",  # 中文女声
-            "-o", str(audio_file),
-            text
-        ]
+        if voice_mode == "nls":
+            _generate_nls(text, audio_file, voice="zhiqi")
+        else:
+            _generate_say(text, audio_file)
 
-        try:
-            result = subprocess.run(cmd, capture_output=True, timeout=30)
-            if audio_file.exists() and audio_file.stat().st_size > 0:
-                narration_files.append(str(audio_file))
-                print(f"  ✅ 旁白 {shot['id']}: {audio_file.name} ({audio_file.stat().st_size} bytes)")
-            else:
-                print(f"  ⚠️ 旁白 {shot['id']} 生成失败")
-        except Exception as e:
-            print(f"  ❌ 旁白 {shot['id']} 错误: {e}")
+        if audio_file.exists() and audio_file.stat().st_size > 0:
+            narration_files.append(str(audio_file))
+            print(f"  ✅ 旁白 {shot['id']}: {audio_file.name} ({audio_file.stat().st_size} bytes)")
+        else:
+            print(f"  ⚠️ 旁白 {shot['id']} 生成失败")
 
     if not narration_files:
         print("  ⚠️ 无旁白音频,使用静音替代")
         # 生成静音
-        silent_file = AUDIO_DIR / "silence.aiff"
-        subprocess.run([
-            FFMPEG, "-y", "-f", "lavfi", "-i", "anullsrc=duration=30:sample_rate=44100",
-            "-acodec", "pcm_s16le", str(silent_file)
-        ], capture_output=True, check=True)
-        narration_files = [str(silent_file)]
+        silence_file = AUDIO_DIR / "silence.aiff"
+        subprocess.run([FFMPEG, "-f", "lavfi", "-i", "anullsrc=duration=3", "-y", str(silence_file)], capture_output=True)
+        narration_files.append(str(silence_file))
 
     print(f"  ✅ Step 2: 音频生成 → {len(narration_files)} 段旁白")
     return narration_files
+
+
+def _generate_say(text, audio_file):
+    """macOS say TTS"""
+    subprocess.run(
+        ["say", "-v", "Tingting", "-o", str(audio_file), text],
+        capture_output=True, timeout=30
+    )
+
+
+def _generate_nls(text, audio_file, voice="zhiqi"):
+    """阿里云 NLS TTS"""
+    try:
+        import importlib.util
+        nls_path = PROJECT_ROOT / "drama/openclaw/skills/water-margin-drama/aliyun_nls.py"
+        spec = importlib.util.spec_from_file_location("aliyun_nls", str(nls_path))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        result = mod.synthesize(text, voice=voice, output_path=str(audio_file))
+        if not result:
+            print(f"  ⚠️ NLS 返回空，降级到 macOS say")
+            _generate_say(text, audio_file)
+    except Exception as e:
+        print(f"  ⚠️ NLS 异常: {e}, 降级到 macOS say")
+        _generate_say(text, audio_file)
 
 
 def generate_video(script):
@@ -303,6 +321,17 @@ def merge_to_final(video_files, audio_files):
 
 def main():
     silent_mode = "--silent" in sys.argv
+    voice_mode = "nls" if "--voice" in sys.argv and sys.argv[sys.argv.index("--voice") + 1] == "nls" else "say"
+
+    # 加载 .env (NLS keys)
+    env_path = PROJECT_ROOT / ".env"
+    if env_path.exists():
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    k, v = line.split('=', 1)
+                    os.environ.setdefault(k.strip(), v.strip())
 
     if "--test" in sys.argv:
         deps = check_dependencies()
@@ -322,6 +351,8 @@ def main():
         print("  Step 1: 从 shuihuzhuan.yaml 生成 EP01 (武松打虎) 剧本 JSON")
         if silent_mode:
             print("  Step 2: [SILENT] 跳过音频生成")
+        elif voice_mode == "nls":
+            print("  Step 2: 用 NLS TTS 生成旁白音频 (旁白: zhiqi 女声, 5段)")
         else:
             print("  Step 2: 用 macOS say TTS 生成旁白音频 (5段)")
         print("  Step 3: 用 ffmpeg 生成视频片段 (5段)")
@@ -332,7 +363,14 @@ def main():
         print(f"\n  输出目录: {OUTPUT_DIR}")
         return
 
-    mode_label = "SILENT (无声)" if silent_mode else "有声"
+    mode_parts = []
+    if voice_mode == "nls":
+        mode_parts.append("NLS 真人")
+    elif silent_mode:
+        mode_parts.append("SILENT (无声)")
+    else:
+        mode_parts.append("有声")
+    mode_label = "+".join(mode_parts)
     print(f"\n{'='*60}")
     print(f"  🎬 Sprint 1.5: 水浒传 EP01 端到端管线 [{mode_label}]")
     print(f"  📖 武松打虎 | {datetime.now().strftime('%Y-%m-%d %H:%M')}")
@@ -347,8 +385,8 @@ def main():
         print("\n⏭️ Step 2: [SILENT] 跳过音频")
         audio_files = []
     else:
-        print("\n🎙️ Step 2: 生成旁白音频...")
-        audio_files = generate_audio(script)
+        print(f"\n🎙️ Step 2: 生成旁白音频 [voice={voice_mode}]...")
+        audio_files = generate_audio(script, voice_mode=voice_mode)
 
     # Step 3
     print("\n🎥 Step 3: 生成视频片段...")
