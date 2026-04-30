@@ -24,7 +24,7 @@ ALLOWED_COMMAND_PREFIXES = [
     'python3 ~/.agents/skills/',
     'bash ~/.agents/skills/',
     'python3 ~/agentic-os-collective/',
-    'echo ',  # 简单测试命令
+    # 注: 'echo ' 已从白名单移除，防止 shell 注入
 ]
 
 # 危险命令黑名单
@@ -70,19 +70,9 @@ def cleanup_old_logs():
             logger.warning(f"Failed to delete {old}: {e}")
 
 def validate_command(command: str) -> tuple[bool, str]:
-    """命令安全验证 - 防止注入攻击"""
-    # 检查黑名单
-    for blocked in BLOCKED_COMMANDS:
-        if blocked in command.lower():
-            return False, f"危险命令被阻止: {blocked}"
-    
-    # 检查白名单前缀
-    if not any(command.strip().startswith(prefix) for prefix in ALLOWED_COMMAND_PREFIXES):
-        # 允许不带前缀的命令（如简单的echo）
-        if not command.strip().startswith('echo ') and not command.strip().startswith('ls '):
-            return False, f"命令不在白名单: {command[:50]}..."
-    
-    return True, "OK"
+    """命令安全验证 — 已委托 base_executor (shell=False + shlex + 危险字符)"""
+    from shared.core.base_executor import validate_command as safe_validate
+    return safe_validate(command)
 
 def log_execution(project: str, task_id: str, milestone_id: str, 
                   command: str, stdout: str, stderr: str, duration: float,

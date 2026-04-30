@@ -7,7 +7,28 @@ from pathlib import Path
 SCRIPT = Path.home() / ".agentic-os" / "episode_01" / "script" / "script_ep01.json"
 IMG_DIR = Path.home() / ".agentic-os" / "episode_01" / "pillow_v2"
 IMG_DIR.mkdir(parents=True, exist_ok=True)
-FFMPEG = "/opt/homebrew/Cellar/ffmpeg/8.1_1/bin/ffmpeg"
+import shutil
+
+def _find_ffmpeg():
+    """动态查找 ffmpeg，避免 brew 升级后路径失效"""
+    candidates = [
+        shutil.which("ffmpeg"),
+        "/opt/homebrew/bin/ffmpeg",
+        "/usr/local/bin/ffmpeg",
+    ]
+    cellar = Path("/opt/homebrew/Cellar/ffmpeg")
+    if cellar.exists():
+        for d in sorted(cellar.iterdir(), reverse=True):
+            f = d / "bin" / "ffmpeg"
+            if f.exists():
+                candidates.append(str(f))
+                break
+    for p in candidates:
+        if p and Path(p).exists():
+            return p
+    return "ffmpeg"
+
+FFMPEG = _find_ffmpeg()
 FONT_PATH = "/System/Library/Fonts/Hiragino Sans GB.ttc"
 W, H = 1280, 720
 

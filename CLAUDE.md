@@ -175,3 +175,35 @@ python3 ~/.openclaw/workspace/knowledge-base/sync_tasks_to_obsidian.py
 - 任何一方完成修改后，另一方应运行 `python3 -m py_compile <file>` 验证语法
 - 如果一方遇到问题（死循环/路径错误/依赖缺失），另一方**主动协助协同解决**，不等用户介入
 - 关键数据（EPISODE_MAP、角色名、PRD行数）双方交叉验证后才 commit
+
+---
+
+## 铁则: 假成功判定 (Fake Success Rule, 2026-04-30)
+
+> **`"无效命令"` + `STATUS: completed` = ⚠️ MOCK/FAILED，必须重标记为失败。**
+
+### 背景
+- `shared/logs/executions/` 中 11/21 条 `STATUS: completed` 日志 stdout 含 `无效命令`
+- 根因：旧执行器以 exit code=0 判定完成，忽略 stdout 内容
+- 受影响脚本：`script_selector.py`, `role_designer.py` 等（无效参数导致打印 `无效命令` 但仍 exit 0）
+
+### 规则
+1. 任何脚本 stdout 包含 `无效命令` → 本次执行标记为 **⚠️ MOCK**，不得标 ✅
+2. 所有 WBS/PRD 中依赖这些日志的 `STATUS: completed` 里程碑 → 重置为 ⚠️ 待重跑
+3. 新脚本必须有非零退出码验证：`sys.exit(1)` on error, 不吞异常
+4. WBS/PRD 完成度统计必须排除 ⚠️ MOCK 条目
+
+### WBS 日志审计状态
+- ❌ 已过时：`drama_merge.py 不存在` / `ffmpeg 未安装` / `Dashboard 不存在` / `task_wizard 0.0.0.0`（已修）
+- ⚠️ 待修复：假成功清洗 (11条) / GLM_API_KEY 空值 / skill 入口验证模板
+
+---
+
+## 当前阻塞项 (2026-04-30)
+
+| 项 | 状态 |
+|---|------|
+| fal.ai 视频生成 | 待用户充值 |
+| 妙手发布 API | `MIAOSHOW_PUBLISH_ENABLED=false` |
+| TK 达人联盟 | 紫鸟手动操作 |
+| GLM API | `GLM_API_KEY=` 空值，当前管线走 NLS，GLM 暂不可用 |
