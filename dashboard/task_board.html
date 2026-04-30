@@ -145,6 +145,47 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 /* P1: Toast color variants */
 .toast.error{background:#ef4444;color:#fff}
 .toast.warn{background:#f59e0b;color:#000}
+
+/* UX-1: Image compare split view */
+.compare-view{display:flex;gap:8px;margin:8px 0}
+.compare-view .compare-col{flex:1;min-width:0}
+.compare-view .compare-col .comp-label{font-size:9px;color:#888;margin-bottom:4px;text-align:center}
+.compare-view .compare-col img{width:100%;border-radius:4px;display:block}
+.compare-toggle{font-size:9px;padding:2px 8px;border-radius:3px;border:1px solid #3b82f6;color:#3b82f6;cursor:pointer;background:transparent}
+.compare-toggle:hover{background:#3b82f6;color:#fff}
+.compare-toggle.active{background:#3b82f6;color:#fff}
+
+/* UX-3: Keyboard shortcuts hint */
+.kbd-hint{position:fixed;bottom:16px;left:16px;background:#1a1d27;border:1px solid #333;border-radius:6px;padding:8px 12px;font-size:9px;color:#666;z-index:50;display:none;max-width:240px;line-height:1.6}
+.kbd-hint.show{display:block}
+.kbd{background:#111;border:1px solid #444;border-radius:3px;padding:1px 4px;font-family:monospace;color:#aaa;font-size:9px}
+
+/* UX-4: Pipeline monitor panel */
+.pipeline-monitor{background:#1a1d27;border-radius:6px;padding:12px;margin:8px 0}
+.svc-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #111;font-size:11px}
+.svc-row:last-child{border-bottom:none}
+.svc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.svc-dot.online{background:#22c55e;box-shadow:0 0 6px #22c55e}
+.svc-dot.offline{background:#ef4444;box-shadow:0 0 6px #ef4444}
+.svc-dot.unknown{background:#555}
+.svc-name{flex:1;font-weight:600}
+.svc-detail{color:#666;font-size:9px}
+
+/* UX-5: Detail panel header */
+.detail-hdr{display:flex;align-items:center;gap:8px;padding:8px 0;margin-bottom:8px;border-bottom:1px solid #222}
+.back-btn{font-size:11px;color:#3b82f6;cursor:pointer;padding:2px 8px;border-radius:4px;border:1px solid #3b82f6;background:transparent}
+.back-btn:hover{background:#3b82f6;color:#fff}
+.breadcrumb{font-size:11px;color:#666}
+
+/* UX-6: Refresh status indicator */
+.refresh-status{font-size:9px;color:#444;margin-left:4px}
+.refresh-status.syncing{color:#f59e0b;animation:pulse 1.5s infinite}
+
+/* UX-8: Left panel keyboard focus */
+.ms-item.kb-focus{outline:2px solid #3b82f6;outline-offset:-2px;background:#1e2a3a}
+
+/* UX-10: Search highlight */
+mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 </style>
 </head>
 <body>
@@ -155,6 +196,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
     <button class="tab" id="tabDM" onclick="switchTab('drama')">数字短剧 <span id="dmCount" style="font-size:9px;color:#666"></span></button>
   </div>
   <span style="font-size:10px;color:#444;margin-left:auto" id="lastRefresh"></span>
+  <span class="refresh-status" id="refreshStatus"></span>
+  <span class="compare-toggle" id="kbdToggle" onclick="toggleKbdHint()">⌨ 快捷键</span>
 </div>
 <div class="main">
   <div class="left">
@@ -183,9 +226,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 </div>
 <div class="loading-bar" id="loadingBar"></div>
 <div class="toast" id="toast"></div>
-<div class="modal" id="modal" onclick="this.classList.remove('on')">
+<div class="modal" id="modal" onclick="closeModal()">
   <span class="modal-close">&times;</span>
   <img id="modalImg" src="" alt="zoom" />
+</div>
+<div class="kbd-hint" id="kbdHint">
+  <b>键盘快捷键</b><br>
+  <span class="kbd">←/→</span> 切换 TK/短剧 Tab<br>
+  <span class="kbd">↑/↓</span> 导航左侧列表<br>
+  <span class="kbd">Enter</span> 打开选中项详情<br>
+  <span class="kbd">Esc</span> 关闭弹窗/返回<br>
+  <span class="kbd">R</span> 手动刷新<br>
+  <span class="kbd">/</span> 聚焦搜索框<br>
+  <span class="kbd">?</span> 显示/隐藏此提示
 </div>
 
 <script>
@@ -986,9 +1039,272 @@ async function renderDMEpisode(msId,detail,ms){
 }
 
 // ================================================================
+// UX-1: Image Compare Mode
+// ================================================================
+let compareMode = false;
+function toggleCompare(imgs) {
+  if (!imgs || imgs.length < 2) { toastMsg('需要至少 2 张图片才能对比', 2000, 'warn'); return; }
+  compareMode = !compareMode;
+  const gal = document.querySelector('.img-gallery');
+  if (!gal) return;
+  if (compareMode) {
+    let h = '<div class="compare-view">';
+    const labels = ['原始', '处理后', '去背景', '最终'];
+    imgs.forEach((img, i) => {
+      h += `<div class="compare-col"><div class="comp-label">${labels[i] || '图'+(i+1)}</div><img src="${img.url||img}" onclick="zoomImg('${img.url||img}')"/></div>`;
+    });
+    h += '</div>';
+    gal.outerHTML = h;
+    document.getElementById('kbdToggle').textContent = '🔲 退出对比';
+  } else {
+    renderDetail();
+    document.getElementById('kbdToggle').textContent = '⌨ 快捷键';
+  }
+}
+
+// ================================================================
+// UX-3: Keyboard Shortcuts + Navigation
+// ================================================================
+let kbFocusIdx = -1;
+function toggleKbdHint() {
+  const el = document.getElementById('kbdHint');
+  el.classList.toggle('show');
+}
+
+document.addEventListener('keydown', e => {
+  // Don't capture when typing in input/textarea
+  const tag = e.target.tagName.toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') {
+    if (e.key === 'Escape') e.target.blur();
+    return;
+  }
+
+  const modal = document.getElementById('modal');
+  const kbdHint = document.getElementById('kbdHint');
+
+  if (e.key === 'Escape') {
+    if (kbdHint.classList.contains('show')) { kbdHint.classList.remove('show'); return; }
+    if (modal.classList.contains('on')) { closeModal(); return; }
+    if (sel) { sel = null; render(); return; } // back to list
+    return;
+  }
+
+  if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+    e.preventDefault();
+    toggleKbdHint();
+    return;
+  }
+
+  if (e.key === '/') {
+    e.preventDefault();
+    document.getElementById('searchInput').focus();
+    return;
+  }
+
+  if (e.key === 'r' || e.key === 'R') {
+    e.preventDefault();
+    refresh();
+    toastMsg('🔄 刷新中...', 1500);
+    return;
+  }
+
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    e.preventDefault();
+    switchTab(e.key === 'ArrowLeft' ? 'tk' : 'drama');
+    return;
+  }
+
+  // ↑↓ navigation in left panel
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const items = document.querySelectorAll('.ms-item');
+    if (!items.length) return;
+    if (kbFocusIdx < 0) kbFocusIdx = 0;
+    else if (e.key === 'ArrowDown') kbFocusIdx = Math.min(kbFocusIdx + 1, items.length - 1);
+    else kbFocusIdx = Math.max(kbFocusIdx - 1, 0);
+    items.forEach(it => it.classList.remove('kb-focus'));
+    items[kbFocusIdx].classList.add('kb-focus');
+    items[kbFocusIdx].scrollIntoView({ block: 'nearest' });
+    return;
+  }
+
+  if (e.key === 'Enter' && kbFocusIdx >= 0) {
+    e.preventDefault();
+    const items = document.querySelectorAll('.ms-item');
+    if (items[kbFocusIdx]) items[kbFocusIdx].click();
+    return;
+  }
+});
+
+// ================================================================
+// UX-5: Modal close helper (click outside)
+// ================================================================
+function closeModal() {
+  document.getElementById('modal').classList.remove('on');
+}
+
+// ================================================================
+// UX-4: Pipeline Monitor Panel
+// ================================================================
+async function renderPipelineMonitor() {
+  const detailEl = document.getElementById('detail');
+  if (!detailEl) return;
+  let sec = `<div class="sec"><h3>🔧 管线服务状态</h3><div class="pipeline-monitor" id="svcMonitor"><span class="loading">检测中...</span></div></div>`;
+  detailEl.insertAdjacentHTML('beforeend', sec);
+
+  const checks = [
+    { name: 'Flask 决策 API', url: '/api/status', port: 5001, detail: 'task_wizard.py' },
+    { name: 'GPT-SoVITS TTS', url: 'http://localhost:9880', port: 9880, detail: '推理服务' },
+    { name: 'ComfyUI', url: 'http://localhost:8188', port: 8188, detail: '图像渲染' },
+  ];
+
+  let rows = '';
+  for (const svc of checks) {
+    let status = 'unknown', detail = '';
+    try {
+      const r = await fetch(svc.url, { method: 'HEAD', mode: 'no-cors' });
+      status = 'online';
+      detail = `端口 ${svc.port} 可达`;
+    } catch (e) {
+      status = 'offline';
+      detail = `端口 ${svc.port} 不可达`;
+    }
+    rows += `<div class="svc-row">
+      <span class="svc-dot ${status}"></span>
+      <span class="svc-name">${svc.name}</span>
+      <span class="svc-detail">${detail} · ${svc.detail}</span>
+    </div>`;
+  }
+  // Add pipeline output check
+  try {
+    const r = await fetch('/api/dashboard');
+    const d = await r.json();
+    const ms = d.milestones || [];
+    const done = ms.filter(m => m.status === 'completed' || m.status === 'approved').length;
+    const total = ms.length;
+    const pct = total ? Math.round(done / total * 100) : 0;
+    rows += `<div class="svc-row">
+      <span class="svc-dot ${pct > 50 ? 'online' : 'unknown'}"></span>
+      <span class="svc-name">管线总进度</span>
+      <span class="svc-detail">${done}/${total} 里程碑 · ${pct}%</span>
+    </div>`;
+  } catch (e) {
+    rows += `<div class="svc-row">
+      <span class="svc-dot unknown"></span>
+      <span class="svc-name">管线总进度</span>
+      <span class="svc-detail">无法获取</span>
+    </div>`;
+  }
+  document.getElementById('svcMonitor').innerHTML = rows;
+}
+
+// ================================================================
+// UX-6: Refresh status indicator + toast on auto-refresh
+// ================================================================
+let _lastRefreshCount = 0;
+function setRefreshStatus(syncing) {
+  const el = document.getElementById('refreshStatus');
+  if (syncing) {
+    el.textContent = '同步中...';
+    el.className = 'refresh-status syncing';
+  } else {
+    el.textContent = '';
+    el.className = 'refresh-status';
+  }
+}
+
+// Override refresh() to add status feedback
+const _origRefresh = refresh;
+refresh = async function () {
+  setRefreshStatus(true);
+  try {
+    const r = await fetch('/api/dashboard');
+    lastData = await r.json();
+    const newAll = (lastData?.milestones || []).map(m => ({ ...m, pipeline: (String(m.ms_id || '').startsWith('DM') ? 'drama' : 'tk') }));
+    // Detect changes
+    const changed = newAll.length !== all.length || newAll.some((m, i) => m.status !== (all[i]?.status));
+    all = newAll;
+    render();
+    document.getElementById('lastRefresh').textContent = new Date().toLocaleTimeString();
+    // Auto-refresh toast (only if changed)
+    if (changed && all.length > 0) {
+      const waiting = all.filter(m => m.status === 'waiting_approval');
+      if (waiting.length > 0) {
+        toastMsg(`⚡ ${waiting.length} 项待决策: ` + waiting.map(m => m.ms_id).join(', '), 4000, 'warn');
+      }
+    }
+  } catch (e) {
+    document.getElementById('lastRefresh').textContent = '离线';
+  }
+  setRefreshStatus(false);
+};
+
+// ================================================================
+// UX-9: Stats Tooltip on Hover
+// ================================================================
+(function initStatTooltips() {
+  const tooltips = {
+    statDone: '已完成(含已批准)的里程碑数',
+    statPending: '等待人工决策的里程碑数',
+    statMock: '数据源为模拟/推算的条目(⚠️非真实API)',
+    statTotal: '当前 Tab 下的总里程碑数'
+  };
+  for (const [id, tip] of Object.entries(tooltips)) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    el.title = tip;
+    el.style.cursor = 'help';
+  }
+})();
+
+// ================================================================
+// UX-10: Search Highlight Helper
+// ================================================================
+function highlightText(text, query) {
+  if (!query || !text) return text;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escaped})`, 'gi');
+  return text.replace(regex, '<mark class="search-hl">$1</mark>');
+}
+
+// Apply highlight in render() list items - patch the render function
+const _origRender = render;
+render = function () {
+  _origRender();
+  // Apply search highlights to list items
+  if (searchQ) {
+    const listEl = document.getElementById('list');
+    if (listEl) {
+      listEl.querySelectorAll('.nm').forEach(el => {
+        const text = el.textContent;
+        if (text.toLowerCase().includes(searchQ)) {
+          el.innerHTML = highlightText(text, searchQ);
+        }
+      });
+    }
+  }
+};
+
+// ================================================================
+// UX-11: Enhanced Empty State with Action Guidance
+// ================================================================
+const _origRenderSummary = renderSummary;
+renderSummary = function () {
+  _origRenderSummary();
+  const view = document.getElementById('summaryView');
+  if (!view) return;
+  // Add action hints at bottom
+  const hints = cur === 'tk' ?
+    ['💡 点击左侧「待决策」里程碑进行审批', '💡 按 / 快速搜索，←→ 切换 Tab'] :
+    ['💡 点击 DM-0 查看故事板 + AI 审核结果', '💡 按 R 刷新，? 查看快捷键'];
+  view.innerHTML += `<div style="margin-top:16px;font-size:10px;color:#444;line-height:1.8">${hints.join('<br>')}</div>`;
+};
+
+// ================================================================
 // v3.6: Init - auto-refresh every 30 seconds
 // ================================================================
-refresh();setInterval(refresh,30000);
+refresh();
+setInterval(refresh, 30000);
 </script>
 </body>
 </html>
