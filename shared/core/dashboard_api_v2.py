@@ -158,6 +158,14 @@ def cross_project_insights():
     })
 
 if __name__ == '__main__':
-    from shared.config import config
+    import sys, os
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+    try:
+        from shared.config import config
+        host = config.API_HOST
+        port = config.API_PORT
+    except ImportError:
+        host = os.environ.get("API_HOST", "127.0.0.1")
+        port = int(os.environ.get("API_PORT", "5001"))
     ACTIVE_DIR.mkdir(parents=True, exist_ok=True)
-    app.run(host=config.API_HOST, port=config.API_PORT, debug=False)
+    app.run(host=host, port=port, debug=False)

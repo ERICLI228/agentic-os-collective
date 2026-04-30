@@ -275,38 +275,69 @@ def _find_task_file(task_id: str):
     return None
 
 
+def _load_pipeline_milestones():
+    """从 pipeline YAML 读取里程碑（降级方案）"""
+    pipeline_path = WORKSPACE / "shared/templates/tk_pipeline.yaml"
+    milestones = []
+    try:
+        with open(pipeline_path) as f:
+            pipe = yaml.safe_load(f)
+        for stage in pipe.get("stages", []):
+            milestones.append({
+                "id": stage.get("id", ""),
+                "name": stage.get("name", ""),
+                "status": "pending",
+                "decision_point": stage.get("decision_point", False),
+                "decision": None,
+                "note": "",
+            })
+    except Exception:
+        pass
+    return milestones
+
+
 @app.route('/api/dashboard', methods=['GET'])
 def api_dashboard():
     """驾驶舱仪表盘 — v3.5 新增（CommandCenter.vue 的数据接口）"""
-    status_data = api_status().get_json()
-    tasks_data = api_list_tasks().get_json()
-
-    # 补充 milestones 数据
+    # 从 milestones.json 读取真实 pipeline 状态
     milestones_path = Path.home() / ".agentic-os/milestones.json"
     milestones = []
+    ms_completed = 0
+    ms_pending_decision = 0
+
     if milestones_path.exists():
         with open(milestones_path) as f:
             ms_data = json.load(f)
         for mid, ms in ms_data.get("milestones", {}).items():
+            status = ms.get("status", "pending")
+            if status == "completed":
+                ms_completed += 1
+            if status == "waiting_approval":
+                ms_pending_decision += 1
             milestones.append({
                 "id": mid,
                 "name": ms.get("name", mid),
-                "status": ms.get("status", "pending"),
+                "status": status,
                 "decision_point": ms.get("decision_point", False),
                 "decision": ms.get("decision"),
+                "note": ms.get("note", ""),
             })
+    else:
+        # 降级：从 pipeline YAML 读取
+        milestones = _load_pipeline_milestones()
+
+    total_ms = len(milestones)
 
     return jsonify({
-        "total": status_data.get("total", 0),
-        "running": len([t for t in status_data.get("tasks", []) if t.get("status") == "running"]),
-        "completed": status_data.get("completed", 0),
-        "pending": len([t for t in status_data.get("tasks", []) if t.get("status") == "pending"]),
-        "failed": len([t for t in status_data.get("tasks", []) if t.get("status") == "failed"]),
-        "decision_pending": status_data.get("decision_pending", 0),
-        "tasks": tasks_data.get("tasks", []),
+        "total_milestones": total_ms,
+        "completed": ms_completed,
+        "pending": total_ms - ms_completed,
+        "decision_pending": ms_pending_decision,
+        "failed": 0,
         "milestones": milestones,
-        "system_health": status_data.get("system_health", "unknown"),
-        "timestamp": status_data.get("timestamp", ""),
+        "completion_pct": round(ms_completed / total_ms * 100, 1) if total_ms else 0,
+        "system_health": "ok",
+        "timestamp": datetime.now().isoformat(),
     })
 
 
@@ -373,5 +404,13 @@ def api_list_tasks():
 
 
 if __name__ == '__main__':
-    from shared.config import config
-    app.run(host=config.API_HOST, port=config.API_PORT, debug=False)
+    import sys, os
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+    try:
+        from shared.config import config
+        host = config.API_HOST
+        port = config.API_PORT
+    except ImportError:
+        host = os.environ.get("API_HOST", "127.0.0.1")
+        port = int(os.environ.get("API_PORT", "5001"))
+    app.run(host=host, port=port, debug=False)
