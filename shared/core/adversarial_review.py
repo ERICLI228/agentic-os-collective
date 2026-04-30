@@ -24,6 +24,12 @@ from pathlib import Path
 from datetime import datetime
 from dataclasses import dataclass, asdict, field
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
+except ImportError:
+    pass
+
 
 # ============================================================
 # 数据模型
@@ -32,8 +38,8 @@ from dataclasses import dataclass, asdict, field
 @dataclass
 class MultiAgentConfig:
     """3-Agent 对抗审核配置 (DRM-03)"""
-    critic_model: str = "aliyun/qwen3.6-plus"
-    judge_model: str = "aliyun/qwen3-coder-plus"
+    critic_model: str = "coding/qwen3.6-plus"
+    judge_model: str = "coding/qwen3-coder-plus"
     critic_temp: float = 0.4
     judge_temp: float = 0.2
     enabled: bool = True
