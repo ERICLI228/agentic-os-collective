@@ -87,6 +87,7 @@ def get_all_episodes():
     for num in EP_ORDER:
         info = CURRENT_EPISODES[num]
         ep_data = all_eps.get(info["id"], {})
+        renders = _count_renders(_get_render_dir(info["character"]))
         result.append({
             "episode": int(num),
             "number": num,
@@ -97,7 +98,9 @@ def get_all_episodes():
             "score": ep_data.get("score", 5.0),
             "tags": ep_data.get("tags", []),
             "character_info": ROLE_OVERVIEW.get(info["character"], {}),
-            "has_render": bool(_count_renders(_get_render_dir(info["character"]))),
+            "has_render": bool(renders),
+            "scene_count": len(renders),
+            "render_files": [p.name for p in renders],
         })
     return result
 

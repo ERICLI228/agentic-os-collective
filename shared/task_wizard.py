@@ -376,13 +376,29 @@ def api_decision():
     task_id = data.get('task_id', '')
     action = data.get('action', '')
     reason = data.get('reason', '')
+    milestone_id = data.get('milestone_id', '')
 
     if not task_id or action not in ('approved', 'rejected', 'modify'):
         return jsonify({'error': '需要 task_id 和 action (approved/rejected/modify)'}), 400
 
     task_file = _find_task_file(task_id)
     if not task_file:
-        return jsonify({'error': f'任务 {task_id} 不存在'}), 404
+        # 宽容模式：任务文件不存在时，写入 decisions 目录
+        from pathlib import Path
+        decisions_dir = Path.home() / ".agentic-os" / "decisions"
+        decisions_dir.mkdir(parents=True, exist_ok=True)
+        decision_record = {
+            "task_id": task_id,
+            "action": action,
+            "reason": reason,
+            "milestone_id": milestone_id,
+            "timestamp": datetime.now().isoformat(),
+            "status": "recorded",
+        }
+        dec_path = decisions_dir / f"{task_id}_{milestone_id or 'unknown'}.json"
+        with open(dec_path, "w") as f:
+            json.dump(decision_record, f, ensure_ascii=False, indent=2)
+        return jsonify({"status": "recorded", "decision": decision_record}), 200
 
     with open(task_file) as f:
         task = json.load(f)
@@ -481,6 +497,9 @@ def api_script_detail(ep_num):
     # Strip "ep" prefix if present: ep06 → 06
     if ep_num.lower().startswith("ep"):
         ep_num = ep_num[2:]
+    # Zero-pad: 3 → "03"
+    if len(ep_num) == 1:
+        ep_num = ep_num.zfill(2)
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     try:
         from script_manager import get_episode_detail, update_episode
