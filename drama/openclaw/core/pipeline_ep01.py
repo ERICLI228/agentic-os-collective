@@ -26,12 +26,18 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 # Episode 映射 (按 shuihuzhuan.yaml 顺序)
 EPISODE_MAP = {
-    "01": {"idx": 0, "dir": "episode_01"},
-    "02": {"idx": 1, "dir": "episode_02"},
-    "03": {"idx": 2, "dir": "episode_03", "scene_key": "景阳冈"},
-    "04": {"idx": 3, "dir": "episode_04"},
-    "05": {"idx": 4, "dir": "episode_05"},
-    "06": {"idx": 5, "dir": "episode_06"},
+    "01": {"idx": 0, "title": "鲁提辖拳打镇关西", "character": "鲁智深",
+           "dir": "episode_01", "scene_key": "渭州城"},
+    "02": {"idx": 1, "title": "鲁智深倒拔垂杨柳", "character": "鲁智深",
+           "dir": "episode_02", "scene_key": "菜园"},
+    "03": {"idx": 7, "title": "林冲风雪山神庙", "character": "林冲",
+           "dir": "episode_03", "scene_key": "山神庙"},
+    "04": {"idx": 8, "title": "宋江怒杀阎婆惜", "character": "宋江",
+           "dir": "episode_04", "scene_key": "宋宅"},
+    "05": {"idx": 9, "title": "杨志卖刀", "character": "杨志",
+           "dir": "episode_05", "scene_key": "东京市集"},
+    "06": {"idx": 10, "title": "智取生辰纲", "character": "晁盖",
+           "dir": "episode_06", "scene_key": "黄泥岗"},
 }
 
 # ── ffmpeg 路径 (Mac brew 不在默认 PATH) ──
@@ -216,22 +222,81 @@ def _generate_nls(text, audio_file, voice="zhiqi"):
 
 
 def generate_video(script, video_dir=None):
-    """Step 3: 生成视频片段 (ffmpeg 静态帧+文字叠加)"""
+    """Step 3: 生成视频片段 (Pillow 字幕帧 → ffmpeg)"""
     if video_dir is None:
         video_dir = VIDEO_DIR
     video_files = []
-    colors = ["0x1a1a2e", "0x16213e", "0x0f3460", "0x533483", "0x2c3e50"]
+    episode = script.get("episode", "")
+
+    from PIL import Image, ImageDraw, ImageFont
+
+    w, h = 1280, 720
+    try:
+        font_title = ImageFont.truetype("/System/Library/Fonts/PingFang.ttc", 48)
+        font_sub = ImageFont.truetype("/System/Library/Fonts/PingFang.ttc", 28)
+        font_small = ImageFont.truetype("/System/Library/Fonts/PingFang.ttc", 20)
+    except Exception:
+        font_title = font_sub = font_small = ImageFont.load_default()
+
+    chars = script.get("characters") or [script.get("character", "")] * len(script["shots"])
+    character_palettes = {
+        "武松": ("#1a1a2e", "#8b0000"),
+        "鲁智深": ("#4a3728", "#c4a35a"),
+        "林冲": ("#1c1c2a", "#8b0000"),
+        "宋江": ("#1a3a1a", "#ffd700"),
+        "杨志": ("#2d5016", "#d4a574"),
+        "晁盖": ("#4a0080", "#8b7355"),
+    }
 
     for i, shot in enumerate(script["shots"]):
         video_file = video_dir / f"{shot['id']}.mp4"
-        duration = 5 if i < 4 else 3  # 前4个各5s,最后一个3s
-        bg_color = colors[i % len(colors)]
+        duration = 5 if i < 4 else 3
 
-        # 用 ffmpeg 生成纯色视频片段 (drawtext 需要 libfreetype, 用简单颜色过渡代替)
+        char_name = chars[i] if i < len(chars) else ""
+        colors = character_palettes.get(char_name, ("#1a1a2e", "#e0e0e0"))
+        bg_color = colors[0]
+        accent_color = colors[1]
+
+        narration = shot.get("narration", "")
+        scene_label = shot.get("scene", "")
+
+        img = Image.new("RGB", (w, h), bg_color)
+        draw = ImageDraw.Draw(img)
+
+        # Top: Episode + Shot info
+        draw.text((40, 30), f"{episode}  {shot['id']}", fill="#888888", font=font_small)
+
+        # Center: Character name
+        if char_name:
+            bbox = draw.textbbox((0, 0), char_name, font=font_title)
+            tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
+            draw.text(((w - tw) // 2, 200), char_name, fill=accent_color, font=font_title)
+
+        # Bottom: Scene description
+        if scene_label:
+            scene_font = font_sub
+            lines = [scene_label[i:i+30] for i in range(0, len(scene_label), 30)]
+            for j, line in enumerate(lines[:2]):
+                bbox = draw.textbbox((0, 0), line, font=scene_font)
+                lw = bbox[2] - bbox[0]
+                draw.text(((w - lw) // 2, 520 + j * 36), line, fill="#cccccc", font=scene_font)
+
+        # Bottom: Narration subtitle
+        if narration:
+            sub_lines = [narration[i:i+45] for i in range(0, len(narration), 45)]
+            for j, line in enumerate(sub_lines[:2]):
+                bbox = draw.textbbox((0, 0), line, font=font_small)
+                lw = bbox[2] - bbox[0]
+                draw.text(((w - lw) // 2, 620 + j * 26), line, fill="#999999", font=font_small)
+
+        frame_path = video_dir / f"_frame_{shot['id']}.png"
+        img.save(str(frame_path))
+
         cmd = [
             FFMPEG, "-y",
-            "-f", "lavfi", "-i", f"color=c={bg_color}:s=1280x720:d={duration},format=yuv420p",
+            "-loop", "1", "-i", str(frame_path),
             "-c:v", "libx264", "-pix_fmt", "yuv420p",
+            "-t", str(duration),
             "-preset", "ultrafast",
             str(video_file)
         ]
@@ -240,13 +305,15 @@ def generate_video(script, video_dir=None):
             result = subprocess.run(cmd, capture_output=True, timeout=30)
             if video_file.exists() and video_file.stat().st_size > 1000:
                 video_files.append(str(video_file))
-                print(f"  ✅ 片段 {shot['id']}: {video_file.name} ({video_file.stat().st_size} bytes, {duration}s)")
+                print(f"  ✅ 片段 {shot['id']}: {video_file.name} ({video_file.stat().st_size} bytes, {duration}s) [{char_name}]")
             else:
                 print(f"  ⚠️ 片段 {shot['id']} 生成失败")
         except subprocess.TimeoutExpired:
             print(f"  ⚠️ 片段 {shot['id']} 超时")
         except Exception as e:
             print(f"  ❌ 片段 {shot['id']} 错误: {e}")
+        finally:
+            frame_path.unlink(missing_ok=True)
 
     print(f"  ✅ Step 3: 视频生成 → {len(video_files)} 个片段")
     return video_files
