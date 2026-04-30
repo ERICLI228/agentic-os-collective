@@ -134,15 +134,26 @@ class SFXEngine:
         with open(self.cache_file, "w") as f:
             json.dump(self.cache, f, indent=2, ensure_ascii=False)
 
-    def search_sfx(self, query: str, license: str = "cc0", max_results: int = 5) -> List[Dict]:
-        """搜索 freesound 音效 (需 API Key)"""
+    def search_sfx(self, query: str, license: str = "attribution", max_results: int = 5) -> List[Dict]:
+        """搜索 freesound 音效
+        license 可选: 'cc0'(完全免费), 'attribution'(需署名), 'sampling+'(采样+)
+        默认用 attribution，因为 CC0 音效极少
+        """
         if not self.api_key:
             print("  ⚠️ 未设置 FREESOUND_API_KEY, 跳过搜索")
             return []
 
+        # freesound filter 格式: license:"Attribution" / license:"Creative Commons 0"
+        license_map = {
+            'cc0': 'license:"Creative Commons 0"',
+            'attribution': 'license:"Attribution"',
+            'sampling+': 'license:"Sampling+"',
+        }
+        filter_str = license_map.get(license, license_map['attribution'])
+
         params = urllib.parse.urlencode({
             'query': query,
-            'filter': f'license:{license}',
+            'filter': filter_str,
             'fields': 'id,name,duration,previews,license,download',
             'page_size': max_results,
         })
@@ -285,17 +296,32 @@ class SFXEngine:
             print(f"  ℹ️ EP{ep_id} 无预配置音效")
             return None
 
-        # 找到主旁白音频文件 (合并后的)
+        # Step 1: 先合并旁白音频（如果 _temp_audio.aac 不存在）
         main_audio = output_dir / "_temp_audio.aac"
         if not main_audio.exists():
-            # 找第一个旁白文件
             narrations = sorted(audio_dir.glob("narration_*.mp3")) or sorted(audio_dir.glob("narration_*.aiff"))
             if not narrations:
                 print("  ⚠️ 无旁白音频, 跳过SFX")
                 return None
-            main_audio = narrations[0]
 
+            # 创建 concat list
+            concat_file = output_dir / "_audio_concat.txt"
+            with open(concat_file, "w") as f:
+                for n in narrations:
+                    f.write(f"file '{n}'\n")
+
+            concat_cmd = [FFMPEG, "-y", "-f", "concat", "-safe", "0",
+                         "-i", str(concat_file),
+                         "-c:a", "aac",
+                         str(main_audio)]
+            subprocess.run(concat_cmd, capture_output=True, check=True)
+            concat_file.unlink(missing_ok=True)
+            print(f"  📎 旁白已合并: {main_audio.name}")
+
+        # Step 2: 逐个混入音效
         output_audio = output_dir / "final_with_sfx.aac"
+        current_audio = main_audio
+        sfx_step = 0
 
         for shot_cfg in ep_sfx["shots"]:
             scene_type = shot_cfg["scene"]
@@ -307,24 +333,25 @@ class SFXEngine:
                 continue
 
             scene_cfg = SCENE_SFX_MAP[scene_type]
-            temp_out = output_dir / "_sfx_temp.aac"
+            sfx_step += 1
+            temp_out = output_dir / f"_sfx_step{sfx_step}.aac"
 
             try:
                 self.mix_sfx(
-                    main_audio, sfx_file, temp_out,
+                    current_audio, sfx_file, temp_out,
                     start_offset=start,
                     duration=dur,
                     volume=scene_cfg["volume"],
                     fade_in=scene_cfg["fade_in"],
                     fade_out=scene_cfg["fade_out"],
                 )
-                main_audio = temp_out
+                current_audio = temp_out
             except subprocess.CalledProcessError as e:
                 print(f"  ⚠️ 混音失败: {e}")
                 continue
 
-        if main_audio != output_dir / "_temp_audio.aac":
-            main_audio.rename(output_audio)
+        if current_audio != main_audio:
+            current_audio.rename(output_audio)
             print(f"  ✅ SFX 混音完成 → {output_audio.name}")
             return output_audio
 
