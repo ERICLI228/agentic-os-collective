@@ -263,7 +263,7 @@ Flask :5001 (shared/task_wizard.py)
 │   ├── /api/character/<name> — 角色设计查看/修改 (CN+PY双通)
 │   └── /api/render/<char>/<file> — ComfyUI渲染图 (25 PNG)
 ├── 图片 (NEW v3.6)
-│   ├── /api/images          — 产品图列表 (4件)
+│   ├── /api/images          — 产品图列表 (1产品6变体)
 │   ├── /api/images/<id>     — 单张产品图 (orig/nobg/final, 404)
 │   ├── /api/images/file/<f> — 图片文件
 │   └── /api/images/<id>/process — 图片处理 (rembg/full/check/push_erp)
@@ -287,7 +287,7 @@ Flask :5001 (shared/task_wizard.py)
 |------|------|-----------|------|
 | `shared/task_wizard.py` | 740 | **UPDATED** | Flask主服务·30端点·CORS·sys/ep_num/download修复 |
 | `shared/detail_engine.py` | 779 | **UPDATED** | 14里程碑·DM-V/DM-F/DM-10新增·含图片URL |
-| `shared/script_manager.py` | 452 | **UPDATED** | 剧本查看/编辑/导出·6集故事板·YAML同步·_export_srt |
+| `shared/script_manager.py` | 454 | **UPDATED** | 剧本查看/编辑/导出·6集故事板·YAML同步·_export_srt·EP05李逵/EP06吴用
 | `shared/comfyui_renderer.py` | 259 | — | ComfyUI SDXL 渲染器·25张全面渲染 |
 | `shared/core/image_processor.py` | 240 | **UPDATED** | rembg·resize·compliance·push_to_erp_draft |
 | `shared/core/tk_pipeline_db.py` | 441 | **UPDATED** | orders扩展+fulfillment_events·4条测试数据 |
