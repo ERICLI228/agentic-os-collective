@@ -181,9 +181,9 @@ def render_episode(bible, episode_id, opts=None):
         "01": "luzhishen",  # 鲁提辖拳打镇关西
         "02": "luzhishen",  # 鲁智深倒拔垂杨柳 (同角色不同集)
         "03": "linchong",   # 林冲风雪山神庙
-        "04": "songjiang",  # 宋江怒杀阎婆惜
-        "05": "yangzhi",    # 杨志卖刀
-        "06": "chaogai",    # 智取生辰纲
+        "04": "songjiang",  # 宋江杀阎婆惜
+        "05": "likui",      # 李逵沂岭杀四虎
+        "06": "wuyong",     # 智取生辰纲
     }
     ep_num = str(episode_id).zfill(2)
     char_id = ep_map.get(ep_num)
