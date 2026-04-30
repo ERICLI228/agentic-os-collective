@@ -298,8 +298,17 @@ def _load_pipeline_milestones():
 
 @app.route('/api/dashboard', methods=['GET'])
 def api_dashboard():
-    """驾驶舱仪表盘 — v3.5 新增（CommandCenter.vue 的数据接口）"""
-    # 从 milestones.json 读取真实 pipeline 状态
+    """驾驶舱仪表盘 — v3.5 (SQLite 主存储, JSON 降级)"""
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent / "core"))
+        from tk_pipeline_db import get_dashboard as db_dashboard
+        data = db_dashboard()
+        if data.get("total_milestones", 0) > 0:
+            return jsonify(data)
+    except Exception:
+        pass
+
+    # 降级: JSON
     milestones_path = Path.home() / ".agentic-os/milestones.json"
     milestones = []
     ms_completed = 0
@@ -323,7 +332,6 @@ def api_dashboard():
                 "note": ms.get("note", ""),
             })
     else:
-        # 降级：从 pipeline YAML 读取
         milestones = _load_pipeline_milestones()
 
     total_ms = len(milestones)
