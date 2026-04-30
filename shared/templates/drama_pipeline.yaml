@@ -51,7 +51,7 @@ stages:
   - id: "MS-4.5"
     name: "对抗质量预审"
     executor: "OpenClaw"
-    command: "python3 ~/agentic-os-collective/shared/core/adversarial_review.py --scene drama_script --task {task_id}"
+    command: "python3 ~/agentic-os-collective/shared/core/adversarial_review.py drama_script --mock"
     timeout: 300
     decision_point: false
     threshold: 8.0

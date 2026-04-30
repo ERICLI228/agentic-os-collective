@@ -25,22 +25,6 @@ from datetime import datetime
 # ── 路径 ──
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
-# Episode 映射 (按 shuihuzhuan.yaml 索引)
-EPISODE_MAP = {
-    "01": {"idx": 0, "title": "鲁提辖拳打镇关西", "character": "鲁智深",
-            "dir": "episode_01", "scene_key": "渭州"},
-    "02": {"idx": 1, "title": "鲁智深倒拔垂杨柳", "character": "鲁智深",
-            "dir": "episode_02", "scene_key": "大相国寺菜园"},
-    "03": {"idx": 6, "title": "林冲风雪山神庙", "character": "林冲",
-            "dir": "episode_03", "scene_key": "风雪山神庙"},
-    "04": {"idx": 10, "title": "宋江杀阎婆惜", "character": "宋江",
-            "dir": "episode_04", "scene_key": "梁山聚义厅"},
-    "05": {"idx": 9, "title": "李逵沂岭杀四虎", "character": "李逵",
-            "dir": "episode_05", "scene_key": "梁山"},
-    "06": {"idx": 8, "title": "智取生辰纲", "character": "吴用",
-            "dir": "episode_06", "scene_key": "景阳冈"},
-}
-
 # ── ffmpeg 路径 (Mac brew 不在默认 PATH) ──
 from shared.core.utils import _find_ffmpeg
 
@@ -92,12 +76,20 @@ def check_dependencies():
 
 
 def _import_script_manager():
-    import sys
-    sys.path.insert(0, str(PROJECT_ROOT))
-    from shared.script_manager import _build_storyboard, CURRENT_EPISODES
-    return _build_storyboard, CURRENT_EPISODES
+    """动态导入 shared.script_manager"""
+    import importlib
+    spec = importlib.util.spec_from_file_location(
+        "script_manager",
+        str(PROJECT_ROOT / "shared" / "script_manager.py")
+    )
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
 
-
+_SM = _import_script_manager()
+EPISODE_MAP = {ep: {"idx": cfg["idx"], "title": cfg["title"], "character": cfg["character"],
+                     "dir": cfg["dir"], "scene_key": cfg["scene_key"]}
+               for ep, cfg in _SM.CURRENT_EPISODES.items()}
 ACT_TYPE_MAP = {
     "开场": "establishing",
     "发展": "action",
@@ -110,7 +102,7 @@ ACT_TYPE_MAP = {
 def generate_script(ep_id="03", script_dir=None):
     """Step 1: 生成剧本 JSON (动态从 script_manager 加载分镜)"""
     import yaml
-    _build_storyboard, CURRENT_EPISODES = _import_script_manager()
+    _build_storyboard = _SM._build_storyboard
 
     ep_cfg = EPISODE_MAP.get(ep_id, EPISODE_MAP["03"])
     story_file = PROJECT_ROOT / "stories" / "shuihuzhuan.yaml"
@@ -244,23 +236,16 @@ def generate_video(script, video_dir=None, render_mode="pillow", ep_id="03"):
 
     chars = script.get("characters") or [script.get("character", "")] * len(script["shots"])
     character_palettes = {
-        "武松": ("#1a1a2e", "#8b0000"),
-        "鲁智深": ("#4a3728", "#c4a35a"),
-        "林冲": ("#1c1c2a", "#8b0000"),
-        "宋江": ("#1a3a1a", "#ffd700"),
-        "李逵": ("#2a1a0a", "#cc4400"),
-        "吴用": ("#1a2a3a", "#66ccff"),
+        ch: _SM.get_color_palette(ch)
+        for ch in set(ep_cfg["character"] for ep_cfg in EPISODE_MAP.values())
     }
 
-    # ComfyUI render path config
-    RENDER_CHAR_MAP = {"01": "luzhishen", "02": "luzhishen", "03": "linchong",
-                       "04": "songjiang", "05": "likui", "06": "wuyong"}
     RENDER_BASE = Path.home() / ".agentic-os" / "character_designs" / "renders"
 
     # Render mapping
     use_comfyui = (render_mode == "comfyui")
     ep_num = ep_id
-    char_id = RENDER_CHAR_MAP.get(ep_num, "linchong")
+    char_id = _SM.CHARACTER_ID_MAP.get(ep_cfg["character"], "linchong").lower()
 
     for i, shot in enumerate(script["shots"]):
         video_file = video_dir / f"{shot['id']}.mp4"

@@ -18,12 +18,18 @@ SCRIPT_JSON = Path.home() / ".agentic-os" / "shorthands.json"
 
 # EPISODE_MAP: 当前6集短剧选定的故事集
 CURRENT_EPISODES = {
-    "01": {"id": "lutixia_quan_da_zhenguanxi", "title": "鲁提辖拳打镇关西", "chapter": 3, "character": "鲁智深"},
-    "02": {"id": "lu_zhishen_daoba_chuiyangliu", "title": "鲁智深倒拔垂杨柳", "chapter": 4, "character": "鲁智深"},
-    "03": {"id": "linchong_fengxue_shanshenmiao", "title": "林冲风雪山神庙", "chapter": 10, "character": "林冲"},
-    "04": {"id": "songjiang_sha_yanpoxi", "title": "宋江杀阎婆惜", "chapter": 22, "character": "宋江"},
-    "05": {"id": "likui_yiling_sha_sihu", "title": "李逵沂岭杀四虎", "chapter": 43, "character": "李逵"},
-    "06": {"id": "zhiqu_shengchengang", "title": "智取生辰纲", "chapter": 16, "character": "吴用"},
+    "01": {"id": "lutixia_quan_da_zhenguanxi", "title": "鲁提辖拳打镇关西", "chapter": 3, "character": "鲁智深",
+            "idx": 0, "dir": "episode_01", "scene_key": "渭州"},
+    "02": {"id": "lu_zhishen_daoba_chuiyangliu", "title": "鲁智深倒拔垂杨柳", "chapter": 4, "character": "鲁智深",
+            "idx": 1, "dir": "episode_02", "scene_key": "大相国寺菜园"},
+    "03": {"id": "linchong_fengxue_shanshenmiao", "title": "林冲风雪山神庙", "chapter": 10, "character": "林冲",
+            "idx": 6, "dir": "episode_03", "scene_key": "风雪山神庙"},
+    "04": {"id": "songjiang_sha_yanpoxi", "title": "宋江杀阎婆惜", "chapter": 22, "character": "宋江",
+            "idx": 10, "dir": "episode_04", "scene_key": "梁山聚义厅"},
+    "05": {"id": "likui_yiling_sha_sihu", "title": "李逵沂岭杀四虎", "chapter": 43, "character": "李逵",
+            "idx": 9, "dir": "episode_05", "scene_key": "梁山"},
+    "06": {"id": "zhiqu_shengchengang", "title": "智取生辰纲", "chapter": 16, "character": "吴用",
+            "idx": 8, "dir": "episode_06", "scene_key": "景阳冈"},
 }
 
 ROLE_OVERVIEW = {
@@ -47,6 +53,12 @@ CHARACTER_ID_MAP = {
     "武松": "wusong", "鲁智深": "luzhishen", "林冲": "linchong",
     "宋江": "songjiang", "李逵": "likui", "吴用": "wuyong",
 }
+
+def get_color_palette(character_name):
+    role = ROLE_OVERVIEW.get(character_name, {})
+    color = role.get("color", "#1a1a2e+#8b0000")
+    parts = color.split("+")
+    return tuple(parts) if len(parts) == 2 else ("#1a1a2e", "#8b0000")
 
 def _get_render_dir(character_name):
     """获取角色的渲染图目录"""
