@@ -21,7 +21,7 @@ stages:
   - id: "MS-1.5"
     name: "市场判断"
     executor: "OpenClaw + Human"
-    command: "python3 shared/core/adversarial_review.py --scene market_assessment"
+    command: "python3 shared/core/adversarial_review.py market_assessment --mock"
     expected_artifacts:
       - "market_assessment.json"
     timeout: 600
@@ -42,7 +42,7 @@ stages:
   - id: "MS-2"
     name: "选品分析"
     executor: "OpenClaw + Human"
-    command: "python3 shared/core/adversarial_review.py --scene tk_product_review"
+    command: "python3 shared/core/adversarial_review.py tk_product --mock"
     expected_artifacts:
       - "product_recommendations.json"
     timeout: 600
