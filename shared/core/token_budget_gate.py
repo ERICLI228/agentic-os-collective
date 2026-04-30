@@ -73,6 +73,15 @@ def consume_tokens(tokens: int, desc: str = ""):
 
 
 def main():
+    if "--test" in sys.argv:
+        budget = {"daily_limit": 500000, "daily_used": 0, "status": "ok", "test": True}
+        print(json.dumps(budget, ensure_ascii=False, indent=2))
+        ok, rem, total, msg = check_budget("test_step", 100000)
+        assert ok, f"Budget check failed: {msg}"
+        consume_tokens(1000, "test consumption")
+        print("✅ --test PASS: token_budget_gate")
+        return
+
     budget = load_budget()
     remaining = budget.get("daily_limit", DEFAULT_DAILY_LIMIT) - budget.get("daily_used", 0)
     pct = 100 - (budget.get("daily_used", 0) / budget.get("daily_limit", DEFAULT_DAILY_LIMIT) * 100)
