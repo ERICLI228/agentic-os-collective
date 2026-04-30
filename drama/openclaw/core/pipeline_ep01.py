@@ -27,17 +27,17 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 # Episode 映射 (按 shuihuzhuan.yaml 顺序)
 EPISODE_MAP = {
     "01": {"idx": 0, "title": "鲁提辖拳打镇关西", "character": "鲁智深",
-           "dir": "episode_01", "scene_key": "渭州城"},
+            "dir": "episode_01", "scene_key": "渭州城"},
     "02": {"idx": 1, "title": "鲁智深倒拔垂杨柳", "character": "鲁智深",
-           "dir": "episode_02", "scene_key": "菜园"},
+            "dir": "episode_02", "scene_key": "菜园"},
     "03": {"idx": 7, "title": "林冲风雪山神庙", "character": "林冲",
-           "dir": "episode_03", "scene_key": "山神庙"},
+            "dir": "episode_03", "scene_key": "山神庙"},
     "04": {"idx": 8, "title": "宋江怒杀阎婆惜", "character": "宋江",
-           "dir": "episode_04", "scene_key": "宋宅"},
+            "dir": "episode_04", "scene_key": "宋宅"},
     "05": {"idx": 9, "title": "杨志卖刀", "character": "杨志",
-           "dir": "episode_05", "scene_key": "东京市集"},
+            "dir": "episode_05", "scene_key": "东京市集"},
     "06": {"idx": 10, "title": "智取生辰纲", "character": "晁盖",
-           "dir": "episode_06", "scene_key": "黄泥岗"},
+            "dir": "episode_06", "scene_key": "黄泥岗"},
 }
 
 # ── ffmpeg 路径 (Mac brew 不在默认 PATH) ──

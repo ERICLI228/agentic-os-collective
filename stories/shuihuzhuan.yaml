@@ -100,7 +100,7 @@ episodes:
   - 悲情
   - 视觉强
 - id: linchong_xueye_shang_liangshan
-  title: 林冲雪夜上梁山
+  title: 林冲风雪山神庙
   chapter: 11
   character: 林冲
   score: 8.0
@@ -108,27 +108,27 @@ episodes:
   - 转折
   - 经典
 - id: zhiqu_shengchengang
-  title: 智取生辰纲
+  title: 宋江怒杀阎婆惜
   chapter: 16
-  character: 吴用
+  character: 宋江
   score: 8.6
   tags:
   - 智慧
   - 谋略
   - 经典
 - id: likui_yiling_sha_sihu
-  title: 李逵沂岭杀四虎
+  title: 杨志卖刀
   chapter: 43
-  character: 李逵
+  character: 杨志
   score: 7.8
   tags:
   - 高光
   - 动作
   - 需改编
 - id: songjiang_sha_yanpoxi
-  title: 宋江杀阎婆惜
+  title: 智取生辰纲
   chapter: 22
-  character: 宋江
+  character: 晁盖
   score: 6.5
   tags:
   - 转折

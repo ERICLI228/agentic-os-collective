@@ -33,6 +33,8 @@ ROLE_OVERVIEW = {
     "宋江": {"traits": ["及时雨", "领袖"], "height": 175, "face": "黑矮·细眉沉稳", "weapon": "短刀", "voice": "zhilun(沉稳内敛)", "color": "#1a3a1a+#4a0080"},
     "杨志": {"traits": ["青面兽", "将门之后"], "height": 185, "face": "刀削面庞·青记", "weapon": "祖传宝刀", "voice": "zhiqiang(深沉自尊)", "color": "#2d5016+#8b0000"},
     "晁盖": {"traits": ["托塔天王", "义薄云天"], "height": 180, "face": "宽额浓眉·三绺须", "weapon": "朴刀", "voice": "zhiming(稳重威严)", "color": "#4a0080+#1a3a1a"},
+    "吴用": {"traits": ["智多星", "神机妙算"], "height": 176, "face": "清瘦长须·羽扇纶巾", "weapon": "铜链", "voice": "zhilun(睿智从容)", "color": "#1a3a4a+#c0a060"},
+    "李逵": {"traits": ["黑旋风", "天真烂漫"], "height": 190, "face": "漆黑面皮·环眼暴突", "weapon": "板斧(双)", "voice": "zhiqiang(暴烈炽热)", "color": "#0a0a0a+#8b0000"},
 }
 
 CHARACTER_DESIGNS_DIR = Path.home() / ".agentic-os" / "character_designs"

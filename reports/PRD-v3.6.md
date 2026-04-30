@@ -27,7 +27,7 @@
 | v3.5.3 | 2026-04-29 | 阿牛 + OpenClaw | P0/P1 全线攻克 — NLS/3-Agent/SQLite/6角色圣经/10模块覆盖 |
 | v3.5.4 | 2026-04-29 | 阿牛 | 交互驾驶舱 v2 — 双业务线Tab/决策联动/智能决策引擎 |
 | **v3.6** | **2026-04-30** | **阿牛** | **细节展开系统 — 所有明细点返回实体数据(非状态标签) · 剧本查看/编辑/导出API · 角色ComfyUI渲染器 · 商品图片处理API · 全球信息摘要 · 27端点Flask · 26/27 PASS** |
-| **v3.6.1** | **2026-04-30** | **阿牛** | **QA全绿(80/80) · 6集管线全通(ComfyUI+NLS) · 25张角色渲染 · 30端点 + Download API · 字符集修复(sys/ep_num/export返回) · DM-V/DM-F细节展开 · 订单DB 4条/履约事件 · Image 404+push_erp · Dashboard smart routing完整 · 80/80 PASS** |
+| **v3.6.1** | **2026-04-30** | **阿牛** | **QA全绿(80/80)·6集管线全通(ComfyUI+NLS)·25张角色渲染(6角色含武松/鲁智深/林冲/宋江/杨志/晁盖)·30端点+Download API·10项修复(sys/ep_num/export/Image404/拼音双通/DM-V-F/push_erp/SRT/订单)·EPISODE_MAP YAML对齐(idx 7/8/9/10修正)·Dashboard smart routing·80/80 PASS** |
 
 ---
 
@@ -57,15 +57,15 @@
 |----|------|------|------|-----------|
 | **DM-0** | **剧本审核** | 自动 | **🏗️ 进行中** | **完整剧本查看/编辑/导出·5段式分镜故事板·LLM审核命令路径修正·shuihuzhuan.yaml实时同步** |
 | **DM-1** | **角色设计** | 自动 | **🏗️ 进行中** | **ComfyUI渲染器已生成鲁智深3镜+晁盖3镜·6角色设计可编辑·NLS音色/配色选择·POST /api/character/{name}** |
-| DM-2 | EP01 鲁提辖拳打镇关西 | 自动 | ✅ | final.mp4 231KB/23s NLS |
-| DM-3 | EP02 鲁智深倒拔垂杨柳 | 自动 | ✅ | final.mp4 231KB/23s NLS |
-| DM-4 | EP03 林冲风雪山神庙 | 自动 | ⏳ | 管线就绪·待运行 |
-| DM-5 | EP04 宋江怒杀阎婆惜 | 自动 | ⏳ | 管线就绪·待运行 |
-| DM-6 | EP05 杨志卖刀 | 自动 | ⏳ | 管线就绪·待运行 |
-| DM-7 | EP06 晁盖智取生辰纲 | 自动 | ⏳ | **管线就绪·ComfyUI角色图3镜已生成·建议首发(非暴力)** |
-| DM-V | AI视频升级 | **你决策** | ⏸️ | **推荐Kling(微信¥15/EP)·ComfyUI静态图作为过渡方案已就绪** |
+| DM-2 | EP01 鲁提辖拳打镇关西 | 自动 | ✅ | final.mp4 2.3MB/23s ComfyUI+NLS |
+| DM-3 | EP02 鲁智深倒拔垂杨柳 | 自动 | ✅ | final.mp4 2.3MB/23s ComfyUI+NLS |
+| DM-4 | EP03 林冲风雪山神庙 | 自动 | ✅ | **final.mp4 2.0MB/23s ComfyUI+NLS** |
+| DM-5 | EP04 宋江怒杀阎婆惜 | 自动 | ✅ | **final.mp4 1.9MB/23s ComfyUI+NLS** |
+| DM-6 | EP05 杨志卖刀 | 自动 | ✅ | **final.mp4 2.0MB/23s ComfyUI+NLS** |
+| DM-7 | EP06 智取生辰纲 | 自动 | ✅ | **final.mp4 1.8MB/23s ComfyUI+NLS·非暴力·首发推荐** |
+| DM-V | AI视频升级 | **你决策** | ⏸️ | 推荐Kling(微信¥15/EP)·ComfyUI静态图过渡方案已就绪 |
 | DM-S | NLS配音引擎 | 自动 | ✅ | 阿里云TTS 4音色 ~29817/30000字符 |
-| DM-F | 视频合成管线 | 自动 | ✅ | Pillow+ffmpeg --episode切换 |
+| DM-F | 视频合成管线 | 自动 | ✅ | ComfyUI+Pillow+ffmpeg --episode切换 |
 
 ---
 
@@ -86,21 +86,21 @@
 ## ⚠️ 当前真实完成度（v3.6.1 诚实评估）
 
 > **双口径**: 基础设施脚本(脚本存在、CLI可运行) vs 核心控制功能(感知/决策/控制真实可用)
-> **新增口径**: QA自动化测试 (80/80 PASS)
+> **QA口径**: 自动化测试 (80/80 PASS)
 
 | 模块 | v3.6 基础设施 | v3.6 核心控制 | v3.6.1 基础设施 | v3.6.1 核心控制 | 变化说明 |
 |------|-------------|-------------|---------------|---------------|----------|
-| 剧本生成/管理 | 85% | 70% | **90%** | **80%** | Download API(txt/html/srt/json) + ep_num路由修复 |
-| 角色设计 | 80% | 65% | **90%** | **80%** | 拼音/中文双通 + 25张渲染图(6角色) + voice/color POST |
-| 图像适配 (MS-2.3) | 65% | 50% | **80%** | **65%** | push_erp → 妙手草稿箱 + 4 action + 404边界 |
-| 对抗审核框架 | 75% | 60% | 75% | **65%** | DM-V/DM-F/DM-10 detail新增 + import路径修正 |
-| 驾驶舱决策界面 | 75% | 60% | **85%** | **70%** | Dashboard smart routing (DM-0/DM-1/MS-2.3) + inline编辑 |
-| 信息订阅 | 80% | — | **85%** | — | 139 items + 来源标注 |
-| Dashboard HTML | 70% | — | **85%** | — | 图片画廊 + 故事板展开/TXT+SRT下载 + zoom modal |
-| 订单履约 | 60% | — | **80%** | **60%** | fulfillment_events表 + tracking + stats + 4条测试数据 |
+| 剧本生成/管理 | 85% | 70% | 85% | 75% | Download API + ep_num路由修复 |
+| 角色设计 | 80% | 65% | 85% | 75% | 拼音/中文双通 + 25张渲染图(6角色) + voice/color POST |
+| 图像适配 (MS-2.3) | 65% | 50% | 75% | 60% | push_erp→妙手草稿箱 + 4 action + 404边界 (1产品6变体) |
+| 对抗审核框架 | 75% | 60% | 75% | 60% | DM-V/DM-F/DM-10新增 + import路径修正 |
+| 驾驶舱决策界面 | 75% | 60% | 80% | 65% | Dashboard smart routing (DM-0/DM-1/MS-2.3) + inline编辑 |
+| 信息订阅 | 80% | — | 85% | — | 139 items + 来源标注 |
+| Dashboard HTML | 70% | — | 80% | — | 图片画廊 + 故事板展开/TXT+SRT下载 + zoom modal |
+| 订单履约 | 60% | — | 75% | 55% | fulfillment_events表 + tracking + stats + 4条测试数据 |
 | 6集管线 (ComfyUI+NLS) | — | — | **100%** | **100%** | EP01-06 ALL final.mp4 (1.8-2.4MB, 23s/集) |
-| **总体（基础设施）** | **~78%** | — | **~86%** | — | 30端点 + ~6200行 |
-| **总体（核心控制）** | — | **~62%** | — | **~72%** | QA 80/80 PASS · 全部端点+边界验证 |
+| **总体（基础设施）** | **~78%** | — | **~82%** | — | 30端点 + ~6200行 |
+| **总体（核心控制）** | — | **~62%** | — | **~68%** | QA 80/80 PASS·全部端点+边界验证 |
 | **QA自动化** | — | — | — | **80/80** | 端点/文件/DB/边界 全覆盖 |
 
 ---
@@ -285,11 +285,11 @@ Flask :5001 (shared/task_wizard.py)
 
 | 文件 | 行数 | v3.6.1状态 | 说明 |
 |------|------|-----------|------|
-| `shared/task_wizard.py` | 739 | **UPDATED** | Flask主服务·30端点·CORS·sys/ep_num/download修复 |
-| `shared/detail_engine.py` | 817 | **UPDATED** | 14里程碑·DM-V/DM-F/DM-10新增·含图片URL |
-| `shared/script_manager.py` | 435 | **UPDATED** | 剧本查看/编辑/导出·6集故事板·YAML同步·_export_srt |
-| `shared/comfyui_renderer.py` | 215 | — | ComfyUI SDXL 渲染器·25张全面渲染 |
-| `shared/core/image_processor.py` | 289 | **UPDATED** | rembg·resize·compliance·push_to_erp_draft |
+| `shared/task_wizard.py` | 740 | **UPDATED** | Flask主服务·30端点·CORS·sys/ep_num/download修复 |
+| `shared/detail_engine.py` | 779 | **UPDATED** | 14里程碑·DM-V/DM-F/DM-10新增·含图片URL |
+| `shared/script_manager.py` | 452 | **UPDATED** | 剧本查看/编辑/导出·6集故事板·YAML同步·_export_srt |
+| `shared/comfyui_renderer.py` | 259 | — | ComfyUI SDXL 渲染器·25张全面渲染 |
+| `shared/core/image_processor.py` | 240 | **UPDATED** | rembg·resize·compliance·push_to_erp_draft |
 | `shared/core/tk_pipeline_db.py` | 441 | **UPDATED** | orders扩展+fulfillment_events·4条测试数据 |
 | `shared/analytics_engine.py` | 525 | — | TK利润/竞品/供应链·Drama脚本/成本 |
 | `shared/localization_reviewer.py` | 268 | — | 5国LLM翻译·禁忌词过滤·可读性评分 |
@@ -297,12 +297,13 @@ Flask :5001 (shared/task_wizard.py)
 | `shared/core/adversarial_review.py` | 886 | — | 3-Agent对抗审核框架·6场景 |
 | `dashboard/task_board.html` | 790 | **UPDATED** | v3.6 smart routing·DM-0/DM-1/MS-2.3专用渲染·图片画廊·inline编辑·下载 |
 | `dashboard/info_board.html` | 300+ | — | 全球信息摘要·科学清新风格·筛选Tabs |
-| `drama/openclaw/core/pipeline_ep01.py` | 226 | — | --render comfyui|pillow·--voice nls·6集全通 |
-| `reports/PRD-v3.6.md` | 400+ | **UPDATED** | v3.6.1注释版·完成度矩阵·QA报告 |
+| `drama/openclaw/core/pipeline_ep01.py` | 554 | — | --render comfyui|pillow·--voice nls·6集全通 |
+| `stories/shuihuzhuan.yaml` | — | **UPDATED** | YAML idx 7/8/9/10 对齐 EPISODE_MAP |
+| `reports/PRD-v3.6.md` | 400+ | **UPDATED** | v3.6.1 注释版·完成度矩阵·QA报告 |
 | `~/.agentic-os/pipeline.db` | — | — | orders(4) + fulfillment_events(3) |
-| `~/.agentic-os/character_designs/renders/` | — | — | 6角色·25 PNG |
+| `~/.agentic-os/character_designs/renders/` | — | — | 6角色(武松/鲁智深/林冲/宋江/杨志/晁盖)·25 PNG |
 | `~/.agentic-os/episode_*/final.mp4` | — | **NEW** | EP01-06 全量输出 (1.8-2.4MB/23s) |
-| `~/.agentic-os/products/` | — | — | catalog.json + images/ 4张产品图 |
+| `~/.agentic-os/products/` | — | — | catalog.json + images/ 1产品6变体图(jpg/nobg/final) |
 | `~/.agentic-os/miaoshou_draft/` | — | **NEW** | 妙手ERP草稿箱同步 (phone_case_main.json+jpg) |
 | `~/.agentic-os/info_subscriber/items.json` | — | — | 123条信息摘要 |
 
