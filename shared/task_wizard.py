@@ -406,6 +406,17 @@ def api_decision():
     with open(task_file, 'w') as f:
         json.dump(task, f, ensure_ascii=False, indent=2)
 
+    # 同步更新 SQLite 里程碑
+    try:
+        ms_id = data.get('milestone_id', '')
+        if ms_id:
+            from tk_pipeline_db import update_milestone, resolve_decision
+            status = {'approved': 'completed', 'rejected': 'pending', 'modify': 'waiting_approval'}.get(action, 'pending')
+            update_milestone(ms_id, status=status, decision=action, note=reason)
+            resolve_decision(task_id, action, reason)
+    except Exception:
+        pass
+
     return jsonify({
         'task_id': task_id,
         'action': action,
