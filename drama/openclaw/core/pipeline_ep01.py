@@ -42,25 +42,7 @@ EPISODE_MAP = {
 }
 
 # ── ffmpeg 路径 (Mac brew 不在默认 PATH) ──
-def _find_ffmpeg():
-    """动态查找 ffmpeg，避免 brew 升级后路径失效"""
-    candidates = [
-        shutil.which("ffmpeg"),  # PATH
-        "/opt/homebrew/bin/ffmpeg",
-        "/usr/local/bin/ffmpeg",
-    ]
-    # 也扫 brew Cellar
-    cellar = Path("/opt/homebrew/Cellar/ffmpeg")
-    if cellar.exists():
-        for d in sorted(cellar.iterdir(), reverse=True):
-            f = d / "bin" / "ffmpeg"
-            if f.exists():
-                candidates.append(str(f))
-                break
-    for p in candidates:
-        if p and Path(p).exists():
-            return p
-    return "ffmpeg"  # fallback
+from shared.core.utils import _find_ffmpeg
 
 FFMPEG = _find_ffmpeg()
 FFPROBE = str(Path(FFMPEG).parent / "ffprobe") if Path(FFMPEG).parent.name == "bin" else (FFMPEG.replace("ffmpeg", "ffprobe") if "ffmpeg" in FFMPEG else "ffprobe")

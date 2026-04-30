@@ -30,20 +30,7 @@ SFX_LIBRARY_DIR = Path(os.path.expanduser("~/.agentic-os/sfx_library"))
 SFX_LIBRARY_DIR.mkdir(parents=True, exist_ok=True)
 
 # FFmpeg
-def _find_ffmpeg():
-    import shutil
-    candidates = [shutil.which("ffmpeg"), "/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg"]
-    cellar = Path("/opt/homebrew/Cellar/ffmpeg")
-    if cellar.exists():
-        for d in sorted(cellar.iterdir(), reverse=True):
-            f = d / "bin" / "ffmpeg"
-            if f.exists():
-                candidates.append(str(f))
-                break
-    for p in candidates:
-        if p and Path(p).exists():
-            return p
-    return "ffmpeg"
+from shared.core.utils import _find_ffmpeg
 
 FFMPEG = _find_ffmpeg()
 

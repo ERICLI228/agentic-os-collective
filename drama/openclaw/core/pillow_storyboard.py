@@ -1,36 +1,30 @@
 #!/usr/bin/env python3
 """Pillow v2: 渐变背景 + 情绪配色 + 角色名叠加 → final_pillow.mp4"""
-import json, subprocess, sys
+import json, subprocess, sys, argparse
 from PIL import Image, ImageDraw, ImageFont
 from pathlib import Path
-
-SCRIPT = Path.home() / ".agentic-os" / "episode_01" / "script" / "script_ep01.json"
-IMG_DIR = Path.home() / ".agentic-os" / "episode_01" / "pillow_v2"
-IMG_DIR.mkdir(parents=True, exist_ok=True)
-import shutil
-
-def _find_ffmpeg():
-    """动态查找 ffmpeg，避免 brew 升级后路径失效"""
-    candidates = [
-        shutil.which("ffmpeg"),
-        "/opt/homebrew/bin/ffmpeg",
-        "/usr/local/bin/ffmpeg",
-    ]
-    cellar = Path("/opt/homebrew/Cellar/ffmpeg")
-    if cellar.exists():
-        for d in sorted(cellar.iterdir(), reverse=True):
-            f = d / "bin" / "ffmpeg"
-            if f.exists():
-                candidates.append(str(f))
-                break
-    for p in candidates:
-        if p and Path(p).exists():
-            return p
-    return "ffmpeg"
+from shared.core.utils import _find_ffmpeg
 
 FFMPEG = _find_ffmpeg()
 FONT_PATH = "/System/Library/Fonts/Hiragino Sans GB.ttc"
 W, H = 1280, 720
+
+
+def get_episode_paths(episode: str) -> tuple:
+    """根据剧集号获取脚本和图片目录路径"""
+    ep_num = episode.zfill(2)
+    script = Path.home() / ".agentic-os" / f"episode_{ep_num}" / "script" / f"script_ep{ep_num}.json"
+    img_dir = Path.home() / ".agentic-os" / f"episode_{ep_num}" / "pillow_v2"
+    output = Path.home() / ".agentic-os" / f"episode_{ep_num}" / "final_pillow.mp4"
+    return script, img_dir, output
+
+
+parser = argparse.ArgumentParser(description="Pillow v2: 渐变背景分镜图生成")
+parser.add_argument("--episode", default="01", help="剧集号，如 01, 02, 03 (默认: 01)")
+args = parser.parse_args()
+
+SCRIPT, IMG_DIR, OUTPUT = get_episode_paths(args.episode)
+IMG_DIR.mkdir(parents=True, exist_ok=True)
 
 shots = json.loads(SCRIPT.read_text())["shots"]
 
@@ -83,7 +77,8 @@ for i, shot in enumerate(shots):
     draw = ImageDraw.Draw(img)
 
     # 顶部标题区
-    draw.text((60, 40), f"水浒传 · EP01  {'武松打虎'}", fill=accent, font=fonts["md"])
+    ep_title = shots[0].get('episode_title', '') if shots else ''
+    draw.text((60, 40), f"水浒传 · EP{args.episode.zfill(2)}  {ep_title}", fill=accent, font=fonts["md"])
     draw.line([(60, 90), (W - 60, 90)], fill=accent, width=1)
 
     # 分镜标签
@@ -92,7 +87,8 @@ for i, shot in enumerate(shots):
 
     # 角色名 (大字居中)
     cx, cy = W // 2, 240
-    char_name = "武松" if i < 4 else "武松 & 猛虎"
+    ep_char = shots[0].get('character', '') if shots else ''
+    char_name = ep_char if i < 4 else f"{ep_char} & 对手"
     tw = fonts["xl"].getlength(char_name)
     draw.text((cx - tw // 2, cy - 30), char_name, fill="#ffffff", font=fonts["xl"])
 
@@ -119,7 +115,8 @@ for i, shot in enumerate(shots):
 
     # 底部信息栏
     draw.line([(60, H - 80), (W - 60, H - 80)], fill="#333333", width=1)
-    draw.text((60, H - 60), f"景阳冈 · {shot['time_range']}", fill="#555555", font=fonts["xs"])
+    scene = shots[0].get('scene', '') if shots else ''
+    draw.text((60, H - 60), f"{scene} · {shot['time_range']}", fill="#555555", font=fonts["xs"])
     draw.text((W - 140, H - 60), f"⏱ {DURATIONS[i]}s", fill=accent, font=fonts["md"])
 
     out = IMG_DIR / f"{shot['id']}.png"
@@ -135,7 +132,7 @@ with open(concat, "w") as f:
     for img_path, dur in zip(img_files, DURATIONS):
         f.write(f"file '{img_path}'\nduration {dur}\n")
 
-output = Path.home() / ".agentic-os" / "episode_01" / "final_pillow.mp4"
+output = OUTPUT
 cmd = [
     FFMPEG, "-y", "-f", "concat", "-safe", "0",
     "-i", str(concat),

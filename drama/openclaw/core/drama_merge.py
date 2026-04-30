@@ -26,27 +26,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
-import shutil
-
-
-def _find_ffmpeg():
-    """动态查找 ffmpeg，避免 brew 升级后路径失效"""
-    candidates = [
-        shutil.which("ffmpeg"),
-        "/opt/homebrew/bin/ffmpeg",
-        "/usr/local/bin/ffmpeg",
-    ]
-    cellar = Path("/opt/homebrew/Cellar/ffmpeg")
-    if cellar.exists():
-        for d in sorted(cellar.iterdir(), reverse=True):
-            f = d / "bin" / "ffmpeg"
-            if f.exists():
-                candidates.append(str(f))
-                break
-    for p in candidates:
-        if p and Path(p).exists():
-            return p
-    return "ffmpeg"
+from shared.core.utils import _find_ffmpeg
 
 
 FFMPEG_PATH = _find_ffmpeg()
