@@ -1,13 +1,13 @@
-# 🎬 Agentic OS v3.6.3 产品需求文档 (PRD) — PHASE1-4完成版
+# 🎬 Agentic OS v3.6.5 产品需求文档 (PRD) — LLM审核集成版
 
-> **文档类型**: 产品需求文档 (Product Requirements Document)  
-> **版本**: v3.6.4 PHASE2-Cockpit完成版  
-> **日期**: 2026 年 4 月 30 日 (v3.6.4)  
-> **产品名称**: Agentic OS v3.5 双业务线自动化系统  
-> **产品愿景**: 一个指令启动 → 全程自动执行 → **关键节点等你决策** → 输出可发布成果  
-> **目标用户**: TK 跨境电商运营人员、AI短剧创作者、技术开发团队  
-> **文档状态**: ✅ 已定稿（v3.6.4: PHASE1安全止血+PHASE2 Cockpit 10/10 API对齐+PHASE3管线v1.2+PHASE4 Dashboard+sys.path修复+role_designer清理）
-> **前置版本**: v3.5（2026-04-29 感知控制优先版）→ v3.5.4（2026-04-29 交互驾驶舱 v2）
+> **文档类型**: 产品需求文档 (Product Requirements Document)
+> **版本**: v3.6.5 LLM审核管线集成版
+> **日期**: 2026 年 4 月 30 日 (v3.6.5)
+> **产品名称**: Agentic OS v3.5 双业务线自动化系统
+> **产品愿景**: 一个指令启动 → 全程自动执行 → **关键节点等你决策** → 输出可发布成果
+> **目标用户**: TK 跨境电商运营人员、AI短剧创作者、技术开发团队
+> **文档状态**: ✅ 已定稿（v3.6.5: LLM对抗审核CODING路线跑通+pipeline --review集成+DM-0状态升级）
+> **前置版本**: v3.6.4（2026-04-30 PHASE2 Cockpit完成版）
 
 ---
 
@@ -31,6 +31,7 @@
 | **v3.6.2** | **2026-04-30** | **阿牛 + OpenClaw** | **P0清零: DM-1角色卡杨志→李逵/晁盖→吴用·EPISODE_MAP ep05李逵/ep06吴用·generate_script()动态化(script_manager加载)·MS-0/1/3/5 stub补实(·SFX 11类型6集全配·29stale引用清除·get_dummy_ms移除·pipeline_ep01.py全硬编码迁入script_manager(EPISODE_MAP/character_palettes/RENDER_CHAR_MAP)·MS-4.5对抗审核命令修正** |
 | **v3.6.3** | **2026-04-30** | **阿牛 + OpenClaw + OpenCode** | **PHASE1止血: 假成功清洗11条·execution_logger安全加固(shell=False)·ffmpeg动态路径(drama_merge+pillow)·quality_assessor语法修复·skill脚本软链接7就位+drama_script/drama_video恢复·CLAUDE同步v3.6.2/82%。PHASE3管线: drama_pipeline.yaml v1.2(Seedance/MiniMax→OpenClaw·MS-4.5对抗审核·9阶段编译验证)。PHASE4 Dashboard: 待决策黄色高亮·MS-2.3修改意见+实时刷新·决策面板增强** |
 | **v3.6.4** | **2026-04-30** | **阿牛** | **PHASE2 Cockpit: 10/10 API 200·/api/script list scene_count+render_fields·/api/script/3 zero-pad修复·/api/decision宽容模式·/api/render别名路由(b030875)·详情端点渲染统计补齐·sys.path跨路径修复(d6f71c0)·role_designer过期副本清理(67b01ba)·CLAUDE.md v3.6.2同步** |
+| **v3.6.5** | **2026-04-30** | **阿牛** | **LLM对抗审核突破: CODING免费额度路线通(单Agent~87s/3-Agent~100s)·综合评分3.8/10→reject·4维度真实审计·adversarial_review.py模型aliyun/→coding/+env加载·pipeline_ep01.py --review(mock/coding)开关·DM-0 Dashboard命令修正·drama_pipeline.yaml MS-4.5命令修正·CODING Plan余48%/48天** |
 ---
 
 ## 📊 PHASE 1-4 完成记录 (v3.6.4 新增)
@@ -77,6 +78,17 @@
 | P4-03 实时刷新 | ✅ |
 | P4-04 决策面板增强 | ✅ |
 
+### PHASE 5: LLM对抗审核管线集成 (v3.6.5)
+
+| 任务 | 修复内容 | 验证 |
+|------|---------|------|
+| CODING 路线打通 | `adversarial_review.py` 模型 `aliyun/` → `coding/` + `.env` 自动加载 | 单Agent ~87s, 3-Agent ~100s, 0费用 |
+| Dashboard 命令修正 | `detail_engine.py:480` 从 `--mode multi-agent` → `drama_script --mock` | 用户可见命令已同步 |
+| pipeline 集成 | `pipeline_ep01.py` 新增 `--review mock/coding` 参数 | py_compile ✅ · dry-run 展示 Step 5 |
+| drama_pipeline.yaml | MS-4.5 命令修正为 `drama_script --mock` | 防止 100s 超时 |
+| 审核结果示例 | EP03 shot_01: 综合评分 3.8/10 → reject | 4维度真实审计: 编剧/分镜/逻辑/节奏 |
+| CODING 额度 | Plan 剩余 48 天 / 48% | 足够日常审核使用 |
+
 
 ## 附录 A：双业务线里程碑矩阵（v3.6 更新）
 
@@ -102,7 +114,7 @@
 
 | ID | 名称 | 类型 | 状态 | v3.6 更新 |
 |----|------|------|------|-----------|
-| **DM-0** | **剧本审核** | 自动 | **🏗️ 进行中** | **完整剧本查看/编辑/导出·5段式分镜故事板·LLM审核命令路径修正·shuihuzhuan.yaml实时同步** |
+| **DM-0** | **剧本审核** | 自动 | **✅ 管线就绪** | **完整剧本查看/编辑/导出·5段式分镜故事板·LLM审核CODING路线通(~90s/0费)·pipeline --review 开关·shuihuzhuan.yaml实时同步** |
 | **DM-1** | **角色设计** | 自动 | **🏗️ 进行中** | **ComfyUI渲染器已生成鲁智深3镜+晁盖3镜·6角色设计可编辑·NLS音色/配色选择·POST /api/character/{name}** |
 | DM-2 | EP01 鲁提辖拳打镇关西 | 自动 | ✅ | final.mp4 2.3MB/23s ComfyUI+NLS |
 | DM-3 | EP02 鲁智深倒拔垂杨柳 | 自动 | ✅ | final.mp4 2.3MB/23s ComfyUI+NLS |

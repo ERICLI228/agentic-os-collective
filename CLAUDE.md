@@ -199,6 +199,36 @@ python3 ~/.openclaw/workspace/knowledge-base/sync_tasks_to_obsidian.py
 
 ---
 
+## LLM 对抗审核 (2026-04-30 突破)
+
+| 模式 | 命令 | 耗时 | 费用 | 用途 |
+|------|------|------|------|------|
+| `--mock` | `drama_script --mock` | <1s | ¥0 | pipeline MS-4.5 管线默认 |
+| `--mode multi-agent` | `python3 shared/core/adversarial_review.py drama_script <json>` | ~100s | ¥0 (CODING) | 最终质量闸门，人工审核前 |
+
+### 管线集成
+- **文件**: `shared/core/adversarial_review.py` — 模型路由 `aliyun/` → `coding/` (CODING 免费额度)
+- **.env 加载**: 已补充 `dotenv.load_dotenv()` 自动加载
+- **drama_pipeline.yaml**: 命令修正为 `drama_script --mock` (防止 100s 超时)
+- **CODING Plan**: 剩余 48 天 / 48% 额度
+
+### 审核结果示例 (EP03 shot_01)
+```
+综合评分: ~3.8/10 | 裁决: reject (驳回)
+```
+| 维度 | 发现 |
+|------|------|
+| 编剧规则合规 | 旁白与动作指令混淆、缺少标准场次编号 |
+| 工业级分镜 | 缺景别/机位/运镜/时长参数 |
+| 逻辑一致性 | "肩扛花枪+没膝积雪中踉跄"重心力学冲突 |
+| 节奏控制 | 单镜头无内部调度、无戏剧钩子 |
+
+### Dashboard 命令提示修正
+- `detail_engine.py:480`: 从 `--mode multi-agent` → `drama_script --mock`
+- `tk_pipeline.yaml`: 场景命令统一加 `--mock` 后缀
+
+---
+
 ## 当前阻塞项 (2026-04-30)
 
 | 项 | 状态 |

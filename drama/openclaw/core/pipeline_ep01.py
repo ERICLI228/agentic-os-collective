@@ -359,6 +359,44 @@ def merge_to_silent(video_files, output_dir):
     return output_file
 
 
+def run_review(script_file, review_mode="mock", output_dir=None):
+    """Step 5: LLM对抗审核 (mock 或 coding 模式)"""
+    import subprocess
+    review_script = PROJECT_ROOT / "shared" / "core" / "adversarial_review.py"
+    if not review_script.exists():
+        print(f"  ⚠️ adversarial_review.py 不存在, 跳过审核")
+        return None
+
+    if review_mode == "mock":
+        cmd = ["python3", str(review_script), "drama_script", "--mock"]
+        print(f"  📋 LLM审核 [MOCK] <1s...")
+    else:
+        cmd = ["python3", str(review_script), "drama_script", str(script_file)]
+        print(f"  📋 LLM审核 [CODING] ~90s...")
+
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=180,
+                               cwd=str(PROJECT_ROOT))
+        if result.stdout:
+            # 提取关键结果
+            for line in result.stdout.split('\n'):
+                if any(k in line for k in ['综合评分', '裁决', 'reject', 'approve', 'dimension']):
+                    print(f"  📊 {line.strip()}")
+        if result.returncode == 0:
+            print(f"  ✅ LLM审核完成 [{review_mode}]")
+        else:
+            print(f"  ⚠️ LLM审核返回码 {result.returncode}")
+            if result.stderr:
+                print(f"  错误: {result.stderr[:200]}")
+        return result.stdout
+    except subprocess.TimeoutExpired:
+        print(f"  ⚠️ LLM审核超时 (>180s)")
+        return None
+    except Exception as e:
+        print(f"  ⚠️ LLM审核异常: {e}")
+        return None
+
+
 def merge_to_final(video_files, audio_files, output_dir):
     """Step 4: 合并视频+音频 → final.mp4"""
     output_file = output_dir / "final.mp4"
@@ -422,6 +460,8 @@ def main():
     parser.add_argument("--render", choices=["pillow", "comfyui"], default="pillow", help="视频渲染引擎: pillow=字帧(2/10) comfyui=AI渲染图(5/10)")
     parser.add_argument("--silent", action="store_true")
     parser.add_argument("--sfx", action="store_true", help="启用环境音效混音 (freesound)")
+    parser.add_argument("--review", choices=["mock", "coding"], default=None,
+                        help="LLM对抗审核: mock=<1s / coding=~90s(CODING免费额度)")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--test", action="store_true")
     args = parser.parse_args()
@@ -476,6 +516,8 @@ def main():
             print("  Step 4: 拼接视频 → final_silent.mp4 (无声)")
         else:
             print("  Step 4: 拼接视频+音频 → final.mp4")
+        if args.review:
+            print(f"  Step 5: LLM对抗审核 [--review {args.review}] ({'<1s' if args.review == 'mock' else '~90s CODING'})")
         print(f"\n  输出目录: {output_dir}")
         return
 
@@ -498,6 +540,8 @@ def main():
         mode_parts.append("Pillow字帧")
     if args.sfx:
         mode_parts.append("SFX音效")
+    if args.review:
+        mode_parts.append(f"LLM审核({args.review})")
     mode_label = "+".join(mode_parts)
     print(f"\n{'='*60}")
     print(f"  🎬 Sprint 1.5: 水浒传 EP{ep_id} 端到端管线 [{mode_label}]")
@@ -543,6 +587,12 @@ def main():
     else:
         print("\n🔗 Step 4: 合并为 final.mp4...")
         final_file = merge_to_final(video_files, audio_files, output_dir)
+
+    # Step 5: LLM对抗审核
+    if args.review:
+        print(f"\n🔍 Step 5: LLM对抗审核 [mode={args.review}]...")
+        script_json = script_dir / f"script_ep{ep_id}.json"
+        run_review(script_json, review_mode=args.review, output_dir=output_dir)
 
     # 验证
     size = final_file.stat().st_size
