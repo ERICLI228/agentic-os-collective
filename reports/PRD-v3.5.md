@@ -24,6 +24,7 @@
 | v3.4+ | 2026-04-29 | 阿牛 | 实际完成度标注：妙手API登录/采集箱/OCR就绪，5店重新授权完成，TTS全线迁移NLS |
 | **v3.5** | **2026-04-29** | **外部评审 + 阿牛** | **感知控制优先：重建决策节点架构，Sprint 0-4 替代 Stage 1-4，驾驶舱先于脚本** |
 | **v3.5.2** | **2026-04-29** | **阿牛** | **Sprint 1.5 完成 — Pillow v2 渐变分镜卡、--silent 模式、四版本管线汇总、GitHub 全量同步** |
+| **v3.5.3** | **2026-04-29** | **阿牛 + OpenClaw** | **P0/P1 全线攻克 — NLS真人声、3-Agent审核、SQLite运行库、6角色视觉圣经、10模块全覆盖测试、GAP 12/16完成、13 commits/+3020 lines** |
 
 ---
 
@@ -358,14 +359,17 @@ Agentic OS v3.5
 | 纯色有声 | final.mp4 | 5色纯块 | macOS say | 244KB | 23s |
 | 无色无声 | final_silent.mp4 | 5色纯块 | 无 | 27KB | 23s |
 | Pillow v1 | final_silent_ai.mp4 | 卡片布局 | 无 | 187KB | 34s |
-| **Pillow v2** | **final_pillow.mp4** | **渐变分镜卡** | **无** | **176KB** | **34s** |
+| Pillow v2 | final_pillow.mp4 | 渐变分镜卡 | 无 | 176KB | 34s |
+| **NLS 真人** | **final.mp4** | **Pillow字幕帧** | **阿里云NLS** | **231KB** | **23s** |
 
 **管线能力**:
+- ✅ `--voice nls`: 阿里云 NLS TTS 真人配音（别名: zhiming/zhiqi/zhiqiang/zhilun）
+- ✅ `--voice say`: macOS 系统语音降级
 - ✅ `--silent`: 跳过 TTS，纯视频输出
-- ✅ `--run`: 一键跑通管线
-- ✅ Pillow 降级：零 API 生成渐变分镜卡
-- ⏸️ DashScope 万相：Key 未就绪
-- ⏸️ NLS TTS：.env 缺 ALIYUN_* 三件套
+- ✅ `--episode 01-06`: 6 集动态切换（argparse 重写）
+- ✅ Pillow 降级：角色名 + 场景描述 + 旁白字幕，零 API
+- ✅ NLS 键从 `.env` 读取，fallback 到 macOS say
+- ⏸️ fal.ai Seedance：用户支付问题待解决
 
 ---
 
