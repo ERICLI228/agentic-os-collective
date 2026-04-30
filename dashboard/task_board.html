@@ -146,6 +146,68 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 .toast.error{background:#ef4444;color:#fff}
 .toast.warn{background:#f59e0b;color:#000}
 
+/* DM-1: Character Bible Panel v3.6.7 */
+.char-bible{background:#14161d;border-radius:6px;padding:12px;margin:8px 0;position:relative;transition:background .15s}
+.char-bible:hover{background:#1a1d27}
+.char-bible-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.char-bible-header .cb-name{font-size:14px;font-weight:700;color:#e4e6eb}
+.char-bible-header .cb-title{font-size:11px;color:#888}
+.char-bible-header .cb-edit-btn{margin-left:auto;font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid #3b82f6;color:#3b82f6;cursor:pointer;background:transparent}
+.char-bible-header .cb-edit-btn:hover{background:#3b82f6;color:#fff}
+.cb-body{display:flex;gap:12px}
+.cb-left{width:180px;flex-shrink:0}
+.cb-left img{width:100%;border-radius:4px;cursor:pointer}
+.cb-left .cb-thumbnails{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
+.cb-left .cb-thumb{width:50px;height:50px;border-radius:3px;cursor:pointer;border:2px solid transparent;object-fit:cover}
+.cb-left .cb-thumb.active{border-color:#3b82f6}
+.cb-right{flex:1;min-width:0}
+.cb-section{margin-bottom:8px}
+.cb-section-title{font-size:10px;color:#888;margin-bottom:3px;display:flex;align-items:center;gap:4px}
+.cb-section-title .cb-icon{font-size:11px}
+.cb-section-content{font-size:11px;color:#c4c8d0;line-height:1.5}
+.cb-traits{display:flex;flex-wrap:wrap;gap:4px}
+.cb-trait{background:#1e2a3a;color:#93c5fd;padding:1px 6px;border-radius:8px;font-size:9px}
+.cb-catchphrase{font-style:italic;color:#fbbf24;font-size:10px;margin:2px 0;padding-left:8px;border-left:2px solid #fbbf24}
+.cb-habits{font-size:10px;color:#aaa;margin:2px 0}
+.cb-colors{display:flex;gap:6px;align-items:center;margin:4px 0}
+.cb-color-swatch{width:20px;height:20px;border-radius:4px;border:1px solid #333}
+.cb-color-label{font-size:9px;color:#666}
+.cb-relations{font-size:10px;color:#aaa}
+.cb-relations .rel-name{color:#93c5fd}
+.cb-actions{display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid #222;flex-wrap:wrap}
+.cb-actions .cb-btn{font-size:10px;padding:3px 10px;border-radius:4px;cursor:pointer;border:1px solid #333;color:#aaa;background:#1a1a2e;display:flex;align-items:center;gap:4px}
+.cb-actions .cb-btn:hover{background:#2563eb;color:#fff;border-color:#2563eb}
+.cb-actions .cb-btn.busy{opacity:.5;pointer-events:none}
+.cb-edit-mode{display:none}
+.cb-edit-mode.show{display:block}
+.cb-edit-mode .cb-field{margin-bottom:8px}
+.cb-edit-mode .cb-field label{font-size:9px;color:#888;display:block;margin-bottom:2px}
+.cb-edit-mode .cb-field input[type="text"],.cb-edit-mode .cb-field textarea{width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px 6px;border-radius:4px;font-size:10px;outline:none;font-family:inherit}
+.cb-edit-mode .cb-field input:focus,.cb-edit-mode .cb-field textarea:focus{border-color:#3b82f6}
+.cb-edit-mode .cb-field textarea{min-height:40px;resize:vertical}
+.cb-edit-mode .cb-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.cb-edit-mode .cb-chip{background:#1e2a3a;color:#93c5fd;padding:2px 8px;border-radius:12px;font-size:9px;cursor:pointer;display:flex;align-items:center;gap:4px}
+.cb-edit-mode .cb-chip:hover{background:#dc2626;color:#fff}
+.cb-edit-mode .cb-chip::after{content:'×';font-size:12px}
+.cb-edit-mode .cb-add-chip{background:transparent;border:1px dashed #333;color:#555;padding:2px 8px;border-radius:12px;font-size:9px;cursor:pointer}
+.cb-edit-mode .cb-add-chip:hover{border-color:#3b82f6;color:#3b82f6}
+.cb-edit-mode .cb-color-input{display:flex;gap:6px;align-items:center}
+.cb-edit-mode .cb-color-input input[type="color"]{width:32px;height:24px;border:1px solid #333;border-radius:4px;cursor:pointer;background:#111;padding:0}
+.cb-edit-mode .cb-color-input input[type="text"]{width:80px}
+.cb-edit-mode .cb-edit-btns{display:flex;gap:6px;margin-top:10px;align-items:center}
+.cb-edit-mode .cb-edit-btns .btn{font-size:10px;padding:4px 14px;border-radius:5px;cursor:pointer;border:none}
+.cb-edit-mode .cb-edit-btns .btn-save{background:#2563eb;color:#fff}
+.cb-edit-mode .cb-edit-btns .btn-save:hover{background:#1d4ed8}
+.cb-edit-mode .cb-edit-btns .btn-cancel{background:#333;color:#aaa}
+.cb-edit-mode .cb-edit-btns .btn-cancel:hover{background:#444}
+.cb-edit-mode .cb-edit-btns .btn-ai{background:#7c2d12;color:#fbbf24;margin-left:auto}
+.cb-edit-mode .cb-edit-btns .btn-ai:hover{background:#9a3412}
+.cb-rerender-progress{display:none;margin-top:6px}
+.cb-rerender-progress.show{display:block}
+.cb-rerender-progress .cb-prog-bar{height:4px;background:#222;border-radius:2px;overflow:hidden}
+.cb-rerender-progress .cb-prog-fill{height:100%;background:#3b82f6;width:0;transition:width .5s}
+.cb-rerender-progress .cb-prog-text{font-size:9px;color:#888;margin-top:2px}
+
 /* UX-1: Image compare split view */
 .compare-view{display:flex;gap:8px;margin:8px 0}
 .compare-view .compare-col{flex:1;min-width:0}
@@ -744,52 +806,313 @@ function downloadScript(epNum,fmt){
 }
 
 // ================================================================
-// v3.6: renderDM1 - DM-1: 6角色视觉设计
 // ================================================================
-function renderDM1(detail,ms){
-  const detailEl=document.getElementById('detail');
-  let sec=`<div class="sec" id="dm1-sec"><h3>&#127917; 6角色视觉设计</h3>`;
-  sec+=`<div id="dm1-characters"><span class="loading">加载角色资料...</span></div>`;
-  sec+=`</div>`;
-  detailEl.insertAdjacentHTML('beforeend',sec);
+// v3.6.7: renderDM1 - 角色档案系统 (Character Bible)
+// ================================================================
+async function renderDM1(detail, ms) {
+  const detailEl = document.getElementById('detail');
+  let sec = `<div class="sec" id="dm1-sec"><h3>🎭 角色档案系统 (DM-1)</h3>
+    <p style="font-size:10px;color:#555;margin-bottom:8px">点击「编辑档案」修改角色设定 · 修改后自动检测是否需重新渲染</p>
+    <div id="dm1-characters"><span class="loading">加载角色档案...</span></div>
+  </div>`;
+  detailEl.insertAdjacentHTML('beforeend', sec);
+  const container = document.getElementById('dm1-characters');
 
-  let chH='';
-  CHAR_NAMES.forEach(name=>{
-    const fid=CHAR_MAP[name]||name;
-    const role=CHAR_ROLES[name]||'';
-    chH+=`<div class="char-row" id="charrow-${fid}">
-      <div class="char-header">
-        <span class="char-name">${name}</span>
-        <span class="char-role">${role}</span>
+  // Fetch all characters in parallel
+  const fetches = CHAR_NAMES.map(name => {
+    const fid = CHAR_MAP[name] || name;
+    return fetch('/api/character/' + fid).then(r => r.json()).catch(() => null);
+  });
+  const results = await Promise.all(fetches);
+
+  let html = '';
+  results.forEach((data, i) => {
+    if (!data) return;
+    const name = data.name || CHAR_NAMES[i];
+    const fid = data.pinyin || CHAR_MAP[name] || name;
+    const profile = data.profile || {};
+    const renders = data.renders || [];
+    const basic = profile.basic_info || {};
+    const personality = profile.personality || {};
+    const appearance = profile.appearance || {};
+    const background = profile.background || {};
+    const voice = profile.voice || {};
+    const title = profile.title || CHAR_ROLES[name] || '';
+    const cp = appearance.color_palette || {};
+    const mainRender = renders.length > 0 ? renders[0] : `/api/render/${fid}/shot_01.png`;
+
+    html += `<div class="char-bible" id="charbible-${fid}">
+      <div class="char-bible-header">
+        <span class="cb-name">${name}</span>
+        <span class="cb-title">${title}</span>
+        <button class="cb-edit-btn" onclick="toggleCharBibleEdit('${fid}')">✏️ 编辑档案</button>
       </div>
-      <div class="char-gallery" id="chargal-${fid}">
-        <span class="loading" id="chargal-status-${fid}">加载中...</span>
-      </div>
-      <div class="char-actions">
-        <button class="mini-btn" onclick="toggleCharEdit('${fid}')">&#9998; 编辑属性</button>
-        <button class="mini-btn" id="rerender-btn-${fid}" onclick="reRender('${fid}')">&#128260; 重新生成</button>
-      </div>
-      <div class="inline-edit" id="charedit-${fid}">
-        <div style="font-size:10px;color:#888;margin:4px 0">音色:
-          <select id="voice-${fid}">`;
-    VOICE_OPTS.forEach(v=>{chH+=`<option value="${v}">${v}</option>`;});
-    chH+=`</select></div>
-        <div style="font-size:10px;color:#888;margin:4px 0">配色:
-          <input id="color-${fid}" type="text" placeholder="#1a1a2e+#8b0000" style="width:180px" />
+      <div class="cb-body">
+        <div class="cb-left">
+          <img src="${mainRender}" onclick="zoomImg('${mainRender}')" onerror="this.src='';this.parentElement.innerHTML='<div class=img-placeholder-text></div>'" />
+          <div class="cb-thumbnails" id="cbthumbs-${fid}">`;
+    renders.forEach((r, ri) => {
+      const url = typeof r === 'string' ? r : (r.url || r.src || '');
+      if (url) html += `<img class="cb-thumb${ri === 0 ? ' active' : ''}" src="${url}" onclick="swapCharImg('${fid}','${url}',this)" />`;
+    });
+    // fallback thumbnails
+    if (renders.length === 0) {
+      for (let si = 1; si <= 3; si++) {
+        const shot = String(si).padStart(2, '0');
+        const url = `/api/render/${fid}/shot_${shot}.png`;
+        html += `<img class="cb-thumb" src="${url}" onclick="swapCharImg('${fid}','${url}',this)" onerror="this.style.display='none'" />`;
+      }
+    }
+    html += `</div>
         </div>
-        <div class="edit-btns">
-          <button class="mini-btn" onclick="saveChar('${fid}')">保存</button>
-          <button class="mini-btn" onclick="toggleCharEdit('${fid}')">取消</button>
+        <div class="cb-right">
+          <!-- 基本信息 -->
+          <div class="cb-section">
+            <div class="cb-section-title"><span class="cb-icon">📏</span> 基本信息</div>
+            <div class="cb-section-content">${basic.height || ''} · ${basic.build || ''} · ${basic.face || ''} · ${basic.age || ''}</div>
+          </div>
+          <!-- 性格特征 -->
+          <div class="cb-section">
+            <div class="cb-section-title"><span class="cb-icon">🎨</span> 性格特征</div>
+            <div class="cb-section-content">
+              <div class="cb-traits">${(personality.core_traits || []).map(t => `<span class="cb-trait">${t}</span>`).join('')}</div>
+              <div style="font-size:10px;color:#888;margin-top:4px">${personality.emotional_range || ''}</div>
+              <div style="font-size:10px;color:#666">${personality.speech_style || ''}</div>
+            </div>
+          </div>
+          <!-- 口头禅 -->
+          ${(personality.catchphrases || []).length > 0 ? `<div class="cb-section">
+            <div class="cb-section-title"><span class="cb-icon">🗣️</span> 口头禅</div>
+            <div class="cb-section-content">${(personality.catchphrases || []).map(c => `<div class="cb-catchphrase">${c}</div>`).join('')}</div>
+          </div>` : ''}
+          <!-- 习性 -->
+          ${(personality.habits || []).length > 0 ? `<div class="cb-section">
+            <div class="cb-section-title"><span class="cb-icon">🍺</span> 习性</div>
+            <div class="cb-section-content">${(personality.habits || []).map(h => `<div class="cb-habits">• ${h}</div>`).join('')}</div>
+          </div>` : ''}
+          <!-- 服饰设计 -->
+          <div class="cb-section">
+            <div class="cb-section-title"><span class="cb-icon">👔</span> 服饰设计</div>
+            <div class="cb-section-content">
+              ${appearance.costume || '待补充'}
+              <div class="cb-colors">${cp.primary ? `<div class="cb-color-swatch" style="background:${cp.primary}" title="主色"></div><span class="cb-color-label">主</span>` : ''}${cp.secondary ? `<div class="cb-color-swatch" style="background:${cp.secondary}" title="辅色"></div><span class="cb-color-label">辅</span>` : ''}${cp.accent ? `<div class="cb-color-swatch" style="background:${cp.accent}" title="点缀"></div><span class="cb-color-label">点缀</span>` : ''}</div>
+              ${(appearance.accessories || []).length > 0 ? `<div style="font-size:9px;color:#666">配饰: ${(appearance.accessories || []).join(' · ')}</div>` : ''}
+            </div>
+          </div>
+          <!-- 角色背景 -->
+          <div class="cb-section">
+            <div class="cb-section-title"><span class="cb-icon">📖</span> 角色背景</div>
+            <div class="cb-section-content">
+              ${background.origin ? `<div style="font-size:10px">出身: ${background.origin}</div>` : ''}
+              ${(background.key_events || []).length > 0 ? `<div style="font-size:10px">关键事件: ${(background.key_events || []).join(' → ')}</div>` : ''}
+              ${Object.keys(background.relationships || {}).length > 0 ? `<div class="cb-relations">关系: ${Object.entries(background.relationships || {}).map(([k, v]) => `<span class="rel-name">${k}</span>: ${v}`).join(' · ')}</div>` : ''}
+            </div>
+          </div>
+          <!-- 音色 -->
+          <div class="cb-section">
+            <div class="cb-section-title"><span class="cb-icon">🎤</span> 音色</div>
+            <div class="cb-section-content">${voice.nls_speaker || ''} — ${voice.description || ''}</div>
+          </div>
+          <!-- Actions -->
+          <div class="cb-actions">
+            <button class="cb-btn" onclick="auditionVoice('${fid}')">🎤 试听音色</button>
+            <button class="cb-btn" id="rerender-btn-${fid}" onclick="reRenderChar('${fid}')">🔄 重新生成角色图</button>
+            <button class="cb-btn" onclick="generateAIProfile('${fid}')">✨ AI 生成档案</button>
+          </div>
+          <div class="cb-rerender-progress" id="rerender-prog-${fid}">
+            <div class="cb-prog-bar"><div class="cb-prog-fill" id="rerender-fill-${fid}"></div></div>
+            <div class="cb-prog-text" id="rerender-text-${fid}">渲染中...</div>
+          </div>
+        </div>
+      </div>
+      <!-- Edit mode (hidden by default) -->
+      <div class="cb-edit-mode" id="cbedit-${fid}">
+        <div class="cb-field"><label>📏 身高</label><input id="edit-basic_height-${fid}" type="text" value="${basic.height || ''}" /></div>
+        <div class="cb-field"><label>💪 体型</label><input id="edit-basic_build-${fid}" type="text" value="${basic.build || ''}" /></div>
+        <div class="cb-field"><label>👤 面相</label><input id="edit-basic_face-${fid}" type="text" value="${basic.face || ''}" /></div>
+        <div class="cb-field"><label>🎨 核心性格 (逗号分隔)</label><input id="edit-traits-${fid}" type="text" value="${(personality.core_traits || []).join(',')}" /></div>
+        <div class="cb-field"><label>💭 情感层次</label><textarea id="edit-emotion-${fid}">${personality.emotional_range || ''}</textarea></div>
+        <div class="cb-field"><label>🗣️ 说话风格</label><input id="edit-speech-${fid}" type="text" value="${personality.speech_style || ''}" /></div>
+        <div class="cb-field"><label>💬 口头禅 (一行一句)</label><textarea id="edit-catchphrases-${fid}">${(personality.catchphrases || []).join('\n')}</textarea></div>
+        <div class="cb-field"><label>🍺 习性 (一行一条)</label><textarea id="edit-habits-${fid}">${(personality.habits || []).join('\n')}</textarea></div>
+        <div class="cb-field"><label>👔 服饰描述</label><textarea id="edit-costume-${fid}">${appearance.costume || ''}</textarea></div>
+        <div class="cb-field"><label>🎨 配色</label>
+          <div class="cb-color-input">
+            <span class="cb-color-label">主</span><input type="color" id="edit-cp-primary-${fid}" value="${cp.primary || '#1a1a2e'}" />
+            <span class="cb-color-label">辅</span><input type="color" id="edit-cp-secondary-${fid}" value="${cp.secondary || '#8b0000'}" />
+            <span class="cb-color-label">点缀</span><input type="color" id="edit-cp-accent-${fid}" value="${cp.accent || '#d4a574'}" />
+          </div>
+        </div>
+        <div class="cb-field"><label>📖 出身</label><input id="edit-origin-${fid}" type="text" value="${background.origin || ''}" /></div>
+        <div class="cb-field"><label>🔑 关键事件 (逗号分隔)</label><input id="edit-events-${fid}" type="text" value="${(background.key_events || []).join(',')}" /></div>
+        <div class="cb-field"><label>🎤 音色 Speaker</label><input id="edit-voice-${fid}" type="text" value="${voice.nls_speaker || ''}" /></div>
+        <div class="cb-field"><label>🎤 音色描述</label><input id="edit-voice-desc-${fid}" type="text" value="${voice.description || ''}" /></div>
+        <div class="cb-edit-btns">
+          <button class="btn btn-save" onclick="saveCharBible('${fid}')">💾 保存修改</button>
+          <button class="btn btn-cancel" onclick="toggleCharBibleEdit('${fid}')">取消</button>
+          <button class="btn btn-ai" onclick="generateAIProfile('${fid}')">✨ AI 生成</button>
         </div>
       </div>
     </div>`;
   });
-  document.getElementById('dm1-characters').innerHTML=chH;
+  container.innerHTML = html;
+}
 
-  CHAR_NAMES.forEach(name=>{
-    const fid=CHAR_MAP[name]||name;
-    loadCharGal(fid);
-  });
+// ================================================================
+// DM-1: Toggle edit mode for character bible
+// ================================================================
+function toggleCharBibleEdit(fid) {
+  const el = document.getElementById('cbedit-' + fid);
+  if (!el) return;
+  el.classList.toggle('show');
+}
+
+// ================================================================
+// DM-1: Save character bible changes
+// ================================================================
+async function saveCharBible(fid) {
+  const toast = document.getElementById('toast');
+  // Collect all form values
+  const data = {};
+  const basic = {};
+  const personality = {};
+  const appearance = {};
+  const background = {};
+  const voice = {};
+
+  // Basic info
+  const basicH = document.getElementById('edit-basic_height-' + fid);
+  if (basicH) basic.height = basicH.value;
+  const basicB = document.getElementById('edit-basic_build-' + fid);
+  if (basicB) basic.build = basicB.value;
+  const basicF = document.getElementById('edit-basic_face-' + fid);
+  if (basicF) basic.face = basicF.value;
+  if (Object.keys(basic).length > 0) data.basic_info = basic;
+
+  // Personality
+  const traits = document.getElementById('edit-traits-' + fid);
+  if (traits) personality.core_traits = traits.value.split(',').map(s => s.trim()).filter(Boolean);
+  const emotion = document.getElementById('edit-emotion-' + fid);
+  if (emotion) personality.emotional_range = emotion.value;
+  const speech = document.getElementById('edit-speech-' + fid);
+  if (speech) personality.speech_style = speech.value;
+  const cp = document.getElementById('edit-catchphrases-' + fid);
+  if (cp) personality.catchphrases = cp.value.split('\n').map(s => s.trim()).filter(Boolean);
+  const hab = document.getElementById('edit-habits-' + fid);
+  if (hab) personality.habits = hab.value.split('\n').map(s => s.trim()).filter(Boolean);
+  if (Object.keys(personality).length > 0) data.personality = personality;
+
+  // Appearance
+  const costume = document.getElementById('edit-costume-' + fid);
+  if (costume) appearance.costume = costume.value;
+  const cpP = document.getElementById('edit-cp-primary-' + fid);
+  const cpS = document.getElementById('edit-cp-secondary-' + fid);
+  const cpA = document.getElementById('edit-cp-accent-' + fid);
+  if (cpP || cpS || cpA) {
+    appearance.color_palette = {};
+    if (cpP) appearance.color_palette.primary = cpP.value;
+    if (cpS) appearance.color_palette.secondary = cpS.value;
+    if (cpA) appearance.color_palette.accent = cpA.value;
+  }
+  if (Object.keys(appearance).length > 0) data.appearance = appearance;
+
+  // Background
+  const origin = document.getElementById('edit-origin-' + fid);
+  if (origin) background.origin = origin.value;
+  const events = document.getElementById('edit-events-' + fid);
+  if (events) background.key_events = events.value.split(',').map(s => s.trim()).filter(Boolean);
+  if (Object.keys(background).length > 0) data.background = background;
+
+  // Voice
+  const vs = document.getElementById('edit-voice-' + fid);
+  if (vs) voice.nls_speaker = vs.value;
+  const vd = document.getElementById('edit-voice-desc-' + fid);
+  if (vd) voice.description = vd.value;
+  if (Object.keys(voice).length > 0) data.voice = voice;
+
+  if (Object.keys(data).length === 0) { toastMsg('⚠️ 无修改内容', 1500, 'warn'); return; }
+
+  // Save
+  try {
+    const r = await fetch('/api/character/' + fid, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const res = await r.json();
+    toastMsg('✅ 保存成功', 2000);
+    // Check rerender suggestion
+    if (res.rerender && res.rerender.need_rerender) {
+      toastMsg('⚡ ' + res.rerender.reason + ' — 建议重新渲染', 4000, 'warn');
+    }
+    // Refresh the detail view
+    setTimeout(() => renderDetail(), 1500);
+  } catch (e) {
+    toastMsg('❌ 保存失败: ' + e.message, 3000, 'error');
+  }
+}
+
+// ================================================================
+// DM-1: Re-render character with progress
+// ================================================================
+async function reRenderChar(fid) {
+  const btn = document.getElementById('rerender-btn-' + fid);
+  const prog = document.getElementById('rerender-prog-' + fid);
+  const fill = document.getElementById('rerender-fill-' + fid);
+  const text = document.getElementById('rerender-text-' + fid);
+  if (!btn || !prog) return;
+
+  btn.classList.add('busy');
+  btn.textContent = '⏳ 渲染中...';
+  prog.classList.add('show');
+  fill.style.width = '0%';
+  text.textContent = '提交渲染任务...';
+
+  try {
+    fill.style.width = '20%';
+    text.textContent = '渲染中...';
+    const r = await fetch('/api/character/' + fid + '/regenerate', { method: 'POST' });
+    const res = await r.json();
+    fill.style.width = '80%';
+    text.textContent = res.message || '渲染任务已提交';
+    fill.style.width = '100%';
+    toastMsg('✅ 渲染任务已提交', 2000);
+  } catch (e) {
+    text.textContent = '渲染失败: ' + e.message;
+    toastMsg('❌ 渲染失败', 3000, 'error');
+  }
+  btn.classList.remove('busy');
+  btn.textContent = '🔄 重新生成角色图';
+  setTimeout(() => prog.classList.remove('show'), 3000);
+}
+
+// ================================================================
+// DM-1: AI generate character profile
+// ================================================================
+async function generateAIProfile(fid) {
+  toastMsg('✨ AI 生成中...', 2000);
+  // TODO: call /api/character/generate endpoint (future)
+  // For now, just show a message
+  toastMsg('⚠️ AI 生成功能待后端接口就绪', 3000, 'warn');
+}
+
+// ================================================================
+// DM-1: Audition voice
+// ================================================================
+function auditionVoice(fid) {
+  toastMsg('🎤 试听功能待 TTS 服务接入', 2000, 'warn');
+}
+
+// ================================================================
+// DM-1: Swap character image from thumbnails
+// ================================================================
+function swapCharImg(fid, url, thumbEl) {
+  const bible = document.getElementById('charbible-' + fid);
+  if (!bible) return;
+  const img = bible.querySelector('.cb-left img');
+  if (img) img.src = url;
+  bible.querySelectorAll('.cb-thumb').forEach(t => t.classList.remove('active'));
+  if (thumbEl) thumbEl.classList.add('active');
 }
 
 // ================================================================

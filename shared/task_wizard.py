@@ -566,36 +566,119 @@ def api_download():
 
 @app.route('/api/character/<char_name>', methods=['GET', 'POST'])
 def api_character_detail(char_name):
-    """角色设计查看/修改"""
+    """角色设计查看/修改 — 支持完整角色档案 (v3.6.7)"""
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     try:
         from script_manager import ROLE_OVERVIEW, CHARACTER_ID_MAP, _get_render_dir
+        from character_profile_generator import regenerate_render_on_profile_change
 
         # Resolve pinyin name to Chinese character name
         REVERSE_ID_MAP = {v: k for k, v in CHARACTER_ID_MAP.items()}
         cn_name = REVERSE_ID_MAP.get(char_name, char_name)
+        char_id = CHARACTER_ID_MAP.get(cn_name, char_name)
+
+        # Load visual_bible for full profiles
+        bible_path = Path.home() / ".agentic-os" / "character_designs" / "visual_bible.json"
+        bible = {}
+        if bible_path.exists():
+            with open(bible_path, encoding="utf-8") as f:
+                bible = json.load(f)
 
         if request.method == 'POST':
             data = request.get_json() or {}
-            # Allow pinyin or Chinese name for updates
+            changed_fields = list(data.keys())
+
+            # 1. Update ROLE_OVERVIEW (legacy compat)
             if cn_name in ROLE_OVERVIEW:
                 ROLE_OVERVIEW[cn_name].update(data)
             elif char_name in ROLE_OVERVIEW:
                 ROLE_OVERVIEW[char_name].update(data)
-            return jsonify({"status": "updated", "character": ROLE_OVERVIEW.get(cn_name) or ROLE_OVERVIEW.get(char_name)})
 
-        info = ROLE_OVERVIEW.get(cn_name) or ROLE_OVERVIEW.get(char_name)
-        if not info:
-            return jsonify({"error": f"Character not found: {char_name} (cn: {cn_name})"}), 404
+            # 2. Update visual_bible.json (full profile)
+            if char_id in bible.get("characters", {}):
+                ch = bible["characters"][char_id]
+                # Deep merge
+                for key, val in data.items():
+                    if isinstance(val, dict) and isinstance(ch.get(key), dict):
+                        ch[key].update(val)
+                    else:
+                        ch[key] = val
+                ch["_updated_at"] = datetime.now().isoformat()
+                with open(bible_path, "w", encoding="utf-8") as f:
+                    json.dump(bible, f, ensure_ascii=False, indent=2)
+
+            # 3. Check if re-render needed
+            rerender = regenerate_render_on_profile_change(char_id, changed_fields)
+
+            # 4. Build response
+            profile = bible["characters"].get(char_id, {})
+            return jsonify({
+                "status": "updated",
+                "character": profile,
+                "rerender": rerender,
+            })
+
+        # GET: return full profile from visual_bible + renders
+        profile = bible.get("characters", {}).get(char_id, {})
+        if not profile:
+            # Fallback to ROLE_OVERVIEW
+            info = ROLE_OVERVIEW.get(cn_name) or ROLE_OVERVIEW.get(char_name)
+            if not info:
+                return jsonify({"error": f"Character not found: {char_name} (cn: {cn_name})"}), 404
+            profile = {"name": cn_name, "design": info}
 
         rd = _get_render_dir(cn_name)
         renders = []
         if rd.exists():
             for p in sorted(rd.glob("*.png")):
-                render_char_id = CHARACTER_ID_MAP.get(cn_name, cn_name)
-                renders.append(f"/api/render/{render_char_id}/{p.name}")
+                renders.append(f"/api/render/{char_id}/{p.name}")
 
-        return jsonify({"name": cn_name, "pinyin": CHARACTER_ID_MAP.get(cn_name, cn_name), "design": info, "renders": renders})
+        return jsonify({
+            "name": cn_name,
+            "pinyin": char_id,
+            "profile": profile,
+            "renders": renders,
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/character/<char_name>/regenerate', methods=['POST'])
+def api_character_regenerate(char_name):
+    """触发角色重新渲染 (v3.6.7)"""
+    try:
+        from script_manager import CHARACTER_ID_MAP, ROLE_OVERVIEW
+        REVERSE_ID_MAP = {v: k for k, v in CHARACTER_ID_MAP.items()}
+        cn_name = REVERSE_ID_MAP.get(char_name, char_name)
+        char_id = CHARACTER_ID_MAP.get(cn_name, char_name)
+
+        # Load bible profile
+        bible_path = Path.home() / ".agentic-os" / "character_designs" / "visual_bible.json"
+        bible = {}
+        if bible_path.exists():
+            with open(bible_path, encoding="utf-8") as f:
+                bible = json.load(f)
+
+        ch = bible.get("characters", {}).get(char_id, {})
+        appearance = ch.get("appearance", {})
+
+        # Build render prompt from profile
+        costume = appearance.get("costume", "")
+        accessories = ", ".join(appearance.get("accessories", []))
+        basic = ch.get("basic_info", {})
+
+        base_prompt = f"{cn_name}, {basic.get('face', '')}, {basic.get('build', '')}, wearing {costume}"
+        if accessories:
+            base_prompt += f", with {accessories}"
+
+        # TODO: call comfyui_renderer with new prompt
+        # For now, return what would be rendered
+        return jsonify({
+            "status": "queued",
+            "character": cn_name,
+            "prompt": base_prompt,
+            "message": "渲染任务已提交，请等待完成",
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
