@@ -1,12 +1,12 @@
 # 🎬 Agentic OS v3.6.3 产品需求文档 (PRD) — PHASE1-4完成版
 
 > **文档类型**: 产品需求文档 (Product Requirements Document)  
-> **版本**: v3.6.3 PHASE1-4完成版  
-> **日期**: 2026 年 4 月 30 日 (v3.6.2)  
+> **版本**: v3.6.4 PHASE2-Cockpit完成版  
+> **日期**: 2026 年 4 月 30 日 (v3.6.4)  
 > **产品名称**: Agentic OS v3.5 双业务线自动化系统  
 > **产品愿景**: 一个指令启动 → 全程自动执行 → **关键节点等你决策** → 输出可发布成果  
 > **目标用户**: TK 跨境电商运营人员、AI短剧创作者、技术开发团队  
-> **文档状态**: ✅ 已定稿（v3.6.2: P0清零 + 动态管线 + MS-0/1/3/5 stub全补实 + generate_script动态化）
+> **文档状态**: ✅ 已定稿（v3.6.4: PHASE1安全止血+PHASE2 Cockpit 10/10 API对齐+PHASE3管线v1.2+PHASE4 Dashboard+sys.path修复+role_designer清理）
 > **前置版本**: v3.5（2026-04-29 感知控制优先版）→ v3.5.4（2026-04-29 交互驾驶舱 v2）
 
 ---
@@ -30,8 +30,53 @@
 | **v3.6.1** | **2026-04-30** | **阿牛** | **QA全绿(80/80)·6集管线全通(ComfyUI+NLS)·25张角色渲染(6角色含武松/鲁智深/林冲/宋江/李逵/吴用)·30端点+Download API·10项修复(sys/ep_num/export/Image404/拼音双通/DM-V-F/push_erp/SRT/订单)·EPISODE_MAP YAML对齐(idx 7/8/9/10修正)·Dashboard smart routing·80/80 PASS** |
 | **v3.6.2** | **2026-04-30** | **阿牛 + OpenClaw** | **P0清零: DM-1角色卡杨志→李逵/晁盖→吴用·EPISODE_MAP ep05李逵/ep06吴用·generate_script()动态化(script_manager加载)·MS-0/1/3/5 stub补实(门禁/采集/发布/日报)·SFX 11类型6集全配·29stale引用清除·get_dummy_ms移除** |
 | **v3.6.3** | **2026-04-30** | **阿牛 + OpenClaw + OpenCode** | **PHASE1止血: 假成功清洗11条·execution_logger安全加固(shell=False)·ffmpeg动态路径(drama_merge+pillow)·quality_assessor语法修复·skill脚本软链接7就位+drama_script/drama_video恢复·CLAUDE同步v3.6.2/82%。PHASE3管线: drama_pipeline.yaml v1.2(Seedance/MiniMax→OpenClaw·MS-4.5对抗审核·9阶段编译验证)。PHASE4 Dashboard: 待决策黄色高亮·MS-2.3修改意见+实时刷新·决策面板增强** |
-
+| **v3.6.4** | **2026-04-30** | **阿牛** | **PHASE2 Cockpit: 10/10 API 200·/api/script list scene_count+render_fields·/api/script/3 zero-pad修复·/api/decision宽容模式·/api/render别名路由(b030875)·详情端点渲染统计补齐·sys.path跨路径修复(d6f71c0)·role_designer过期副本清理(67b01ba)·CLAUDE.md v3.6.2同步** |
 ---
+
+## 📊 PHASE 1-4 完成记录 (v3.6.4 新增)
+
+### PHASE 1: 安全止血与数据卫生 (commits 040e061, 8208b6f, 28a4bd2)
+
+| 任务 | 修复内容 | 验证 |
+|------|---------|------|
+| 假成功清洗 | 11条 `STATUS: completed` → `⚠️ MOCK` | `shared/logs/executions/` 全部修正 |
+| execution_logger 加固 | 移除 `echo`/`ls` 允许前缀, 委托 base_executor `shell=False` | `validate_command()` 统一安全策略 |
+| ffmpeg PATH 对齐 | `_find_ffmpeg()` 动态解析, 替代 Cellar 硬编码 | `drama_merge.py`, `pillow_storyboard.py` |
+| quality_assessor 语法 | py_compile 验证通过 | 恢复至 `skills/water-margin-drama/` |
+| CLAUDE.md 同步 | v3.6.2 标题 + 铁则: 假成功判定 | 完成度 82%/68% |
+
+### PHASE 2: 前端 Cockpit API 对接 (commits b030875, 8cd42df, ada684c, d6f71c0, 67b01ba)
+
+| 端点 | 修复前 | 修复后 | commit |
+|------|--------|--------|--------|
+| `/api/render/ep<ep>/shot_<n>.png` | 404 (前端按 episode 请求, 后端按 character 存储) | 200 → 别名路由 | b030875 |
+| `/api/script` list | 无 `scene_count`/`render_files` | 返回渲染统计 | 8cd42df |
+| `/api/script/3` | 404 (前端 `parseInt` 去零, 后端只认 "03") | `zfill(2)` 自动补零 | 8cd42df |
+| `/api/decision` | 404 (任务文件不存在) | 宽容模式 → 写入 decisions 目录 | 8cd42df |
+| `/api/script/3` 详情 | 无渲染统计 | 补充 `scene_count` + `render_files` | ada684c |
+| `drama_merge.py` | `ModuleNotFoundError` (非项目根调用) | `sys.path.insert(PROJECT_ROOT)` | d6f71c0 |
+| `pillow_storyboard.py` | 同上 | 同上 | d6f71c0 |
+| `role_designer.py` | core/ 和 skills/ 双副本(内容不同) | 删除 core/ 过期副本(318行) | 67b01ba |
+
+**端到端验证**: 10/10 API 端点 200 ✅
+
+### PHASE 3: 管线修复 (commit 197591a)
+
+| 修复 | 内容 |
+|------|------|
+| `drama_pipeline.yaml` v1.2 | 路径修正 + MS-4.5 对抗审核 |
+| 9 阶段干跑 | MS-1~MS-8 全部 `--help`/`py_compile` 通过 |
+| `shared/core/utils.py` | `_find_ffmpeg`/`_find_ffprobe` 共享工具 |
+
+### PHASE 4: Dashboard 增强 (commit 197591a)
+
+| 功能 | 状态 |
+|------|------|
+| P4-01 待决策黄色高亮 | ✅ |
+| P4-02 MS-2.3 修改意见面板 | ✅ |
+| P4-03 实时刷新 | ✅ |
+| P4-04 决策面板增强 | ✅ |
+
 
 ## 附录 A：双业务线里程碑矩阵（v3.6 更新）
 
