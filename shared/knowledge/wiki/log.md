@@ -198,8 +198,27 @@ Sender (untrusted metadata):
 - 消息数: 15
 - 主题:
   - [cron:0fbcb3bd-797c-4fdc-a212-f84c92281d9b GPT-SoVITS TTS 推理就绪检查] 检查 GPT-SoVITS TTS 推理服务是否就绪。执行：
-1. `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:9880/` 检查服务是否在线（400=正常，说明服务在运行）
-2. `ps aux 
+ 1. `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:9880/` 检查服务是否在线（400=正常，说明服务在运行）
+ 2. `ps aux 
 - 决策:
   - **结论：✅ TTS 推理已就绪，可正常使用！**
 - 归档: wiki/outputs/session-20260429-190052.md
+
+## [2026-04-30] session | v3.6.1 全系统QA + PRD注释 + GitHub同步 + Obsidian登记
+
+- **会话类型**: OpenCode (quick-cabin worktree)
+- **主题**:
+  - v3.6→v3.6.1 10项关键修复 (sys import / ep_num prefix / export tuple / Image404 / 拼音双通 / DM-V/F / push_erp / SRT导出 / 订单履约 / 6集管线)
+  - 80/80 QA全绿验证 (30端点 + 全部边界 + 全部文件)
+  - PRD-v3.6.md 注释更新: 完成度矩阵 (86%/72%) + GAP表 + 端点全景 + 测试报告
+  - GitHub: df10af7→240a068 推送到 main (+591/-294, 7 files)
+- **关键决策**:
+  - Dashboard smart routing 就绪 (DM-0/DM-1/MS-2.3 专用渲染器)
+  - 6集全管线 ComfyUI+NLS 全部通过 (EP01-06 final.mp4)
+  - 决策: 保持30端点 Flasket稳定, 不再新增端点
+  - GAP: AI视频支付/达人联盟/5国字幕/环境音效 待用户决策
+- **知识库产出**:
+  - 创建: `wiki/entities/agentic-os-v3.6-architecture.md`
+  - 更新: `wiki/index.md` (total_pages: 10→14, 新增实体+综合分析)
+  - 更新: `wiki/log.md` (本条目)
+  - 更新: `reports/PRD-v3.6.md` (v3.6.1 注释版)
