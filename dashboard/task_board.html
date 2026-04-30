@@ -149,7 +149,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 </head>
 <body>
 <div class="topbar">
-  <h1>Agentic OS 指挥中心 v3.6</h1>
+  <h1 id="appTitle">Agentic OS 指挥中心 v3.6</h1>
   <div class="tabs">
     <button class="tab active" id="tabTK" onclick="switchTab('tk')">TK运营 <span id="tkCount" style="font-size:9px;color:#666"></span></button>
     <button class="tab" id="tabDM" onclick="switchTab('drama')">数字短剧 <span id="dmCount" style="font-size:9px;color:#666"></span></button>
@@ -158,6 +158,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 </div>
 <div class="main">
   <div class="left">
+    <!-- P1-12: Search & filter bar -->
+    <div style="padding:4px 8px;display:flex;gap:4px">
+      <input id="searchInput" placeholder="🔍 搜索..." style="flex:1;background:#111;border:1px solid #333;color:#e4e6eb;padding:3px 6px;border-radius:4px;font-size:10px;outline:none" oninput="onSearch(this.value)" />
+      <select id="filterSelect" style="background:#111;border:1px solid #333;color:#e4e6eb;padding:2px 4px;border-radius:4px;font-size:10px" onchange="onFilter(this.value)">
+        <option value="all">全部</option>
+        <option value="waiting_approval">待决策</option>
+        <option value="completed">已完成</option>
+        <option value="pending">待执行</option>
+      </select>
+    </div>
     <div class="stats">
       <div class="stat"><div class="num" id="statDone" style="color:#22c55e">-</div><div class="lbl">已完成</div></div>
       <div class="stat"><div class="num" id="statPending" style="color:#f59e0b">-</div><div class="lbl">待决策</div></div>
@@ -187,7 +197,20 @@ const VOICE_OPTS=['zhiming(浑厚有力)','zhiming(粗犷豪迈)','zhiming(稳�
 const CHAR_NAMES=['武松','鲁智深','林冲','宋江','李逵','吴用'];
 const CHAR_ROLES={武松:'行者・打虎英雄',鲁智深:'花和尚・倒拔垂杨柳',林冲:'豹子头・八十万禁军教头',宋江:'及时雨・呼保义',李逵:'黑旋风・沂岭杀四虎',吴用:'智多星・智取生辰纲'};
 
+let searchQ='',filterSt='all';
 let cur='tk',sel=null,all=[],lastData=null;
+
+// P2-13: Dynamic version from API
+async function fetchVersion(){
+  try{
+    const r = await fetch('/api/status');
+    const d = await r.json();
+    if(d.version){
+      document.getElementById('appTitle').textContent='Agentic OS 指挥中心 '+d.version;
+    }
+  }catch(e){}
+}
+fetchVersion();
 
 // ================================================================
 // EXISTING: refresh
@@ -203,6 +226,9 @@ async function refresh(){
   hideLoading();
 }
 
+function onSearch(v){ searchQ=v.toLowerCase(); render(); }
+function onFilter(v){ filterSt=v; render(); }
+
 // ================================================================
 // EXISTING: switchTab
 // ================================================================
@@ -217,7 +243,10 @@ function switchTab(t){
 // EXISTING: render
 // ================================================================
 function render(){
-  const f=all.filter(m=>m.pipeline===cur);
+  let f=all.filter(m=>m.pipeline===cur);
+  // P1-12: apply search & filter
+  if(searchQ) f=f.filter(m=>(m.ms_id+' '+(m.name||'')+' '+(m.task_id||'')).toLowerCase().includes(searchQ));
+  if(filterSt!=='all') f=f.filter(m=>m.status===filterSt);
   document.getElementById('tkCount').textContent=all.filter(m=>m.pipeline=='tk').length;
   document.getElementById('dmCount').textContent=all.filter(m=>m.pipeline=='drama').length;
 
@@ -228,6 +257,11 @@ function render(){
   document.getElementById('statPending').textContent=pnd;
   document.getElementById('statMock').textContent=mck;
   document.getElementById('statTotal').textContent=f.length;
+  // P1-12: filter indicator
+  if(searchQ||filterSt!=='all'){
+    const total=all.filter(m=>m.pipeline===cur).length;
+    h+=`<div style="font-size:9px;color:#555;padding:2px 8px">筛选: ${f.length}/${total} 项</div>`;
+  }
 
   const g={};
   f.forEach(m=>{const tid=m.task_id||'_';if(!g[tid])g[tid]=[];g[tid].push(m)});
@@ -262,10 +296,12 @@ function render(){
 function select(id){sel=id;render()}
 
 // ================================================================
-// EXISTING: renderSummary
+// v3.6: renderSummary — P1-12: also respects search/filter
 // ================================================================
 function renderSummary(){
-  const f=all.filter(m=>m.pipeline===cur);
+  let f=all.filter(m=>m.pipeline===cur);
+  if(searchQ) f=f.filter(m=>(m.ms_id+' '+(m.name||'')+' '+(m.task_id||'')).toLowerCase().includes(searchQ));
+  if(filterSt!=='all') f=f.filter(m=>m.status===filterSt);
   const w=f.filter(m=>m.status=='waiting_approval');
   let h='<div style="max-width:700px;margin:0 auto;"><h3 style="color:#888;margin-bottom:12px;font-size:13px;">&#9873; 决策面板</h3>';
   if(!w.length){h+='<div style="color:#444;padding:20px;text-align:center;background:#1a1d27;border-radius:6px;">无待决策项</div>'}
@@ -737,6 +773,62 @@ async function loadCharGal(charName){
     galleryEl.innerHTML='<span style="font-size:10px;color:#555;">加载失败</span>';
     if(statusEl)statusEl.remove();
   }
+}
+
+// P1-11: Storyboard edit undo support
+let _sbUndo={};
+function startEditSB(epNum,seq){
+  const bodyEl=document.getElementById('sb-body-'+epNum+'-'+seq);
+  const btn=document.getElementById('sb-editbtn-'+epNum+'-'+seq);
+  if(!bodyEl||!btn)return;
+  const actEl=bodyEl.querySelector('.sb-act');
+  const nameEl=bodyEl.querySelector('.sb-name');
+  const descEl=bodyEl.querySelector('.sb-desc');
+  const dialEl=bodyEl.querySelector('.sb-dialogue');
+  _sbUndo[epNum+'-'+seq]={
+    act:actEl?actEl.textContent:'',
+    name:nameEl?nameEl.textContent:'',
+    desc:descEl?descEl.textContent:'',
+    dialogue:dialEl?dialEl.textContent:''
+  };
+  btn.textContent='↩ 撤销';
+  btn.onclick=()=>undoSB(epNum,seq);
+  bodyEl.innerHTML=`<div class="inline-edit show">
+    <textarea id="sb-new-act" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px;border-radius:4px;font-size:10px" placeholder="动作">${_sbUndo[epNum+'-'+seq].act}</textarea>
+    <textarea id="sb-new-name" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px;border-radius:4px;font-size:10px" placeholder="角色">${_sbUndo[epNum+'-'+seq].name}</textarea>
+    <textarea id="sb-new-desc" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px;border-radius:4px;font-size:10px;min-height:40px" placeholder="场景">${_sbUndo[epNum+'-'+seq].desc}</textarea>
+    <textarea id="sb-new-dialogue" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px;border-radius:4px;font-size:10px;min-height:30px" placeholder="台词">${_sbUndo[epNum+'-'+seq].dialogue}</textarea>
+    <div class="edit-btns">
+      <button class="mini-btn" onclick="saveSB(${epNum},${seq})">保存</button>
+      <button class="mini-btn" onclick="cancelSB(${epNum},${seq})">取消</button>
+    </div>
+  </div>`;
+}
+function undoSB(epNum,seq){
+  const u=_sbUndo[epNum+'-'+seq];if(!u)return;
+  const bodyEl=document.getElementById('sb-body-'+epNum+'-'+seq);
+  const btn=document.getElementById('sb-editbtn-'+epNum+'-'+seq);
+  if(bodyEl)bodyEl.innerHTML=`<div class="sb-act">${u.act}</div><div class="sb-name">${u.name}</div><div class="sb-desc">${u.desc}</div>${u.dialogue?`<div class="sb-dialogue">${u.dialogue}</div>`:''}`;
+  if(btn){btn.textContent='✏ 编辑';btn.onclick=()=>startEditSB(epNum,seq);}
+  delete _sbUndo[epNum+'-'+seq];
+  toastMsg('已撤销',1500);
+}
+function cancelSB(epNum,seq){
+  const btn=document.getElementById('sb-editbtn-'+epNum+'-'+seq);
+  if(btn){btn.textContent='✏ 编辑';btn.onclick=()=>startEditSB(epNum,seq);}
+  delete _sbUndo[epNum+'-'+seq];
+  loadStoryboard(epNum);
+}
+async function saveSB(epNum,seq){
+  const act=document.getElementById('sb-new-act')?.value||'';
+  const name=document.getElementById('sb-new-name')?.value||'';
+  const desc=document.getElementById('sb-new-desc')?.value||'';
+  const dialogue=document.getElementById('sb-new-dialogue')?.value||'';
+  try{
+    const r=await fetch('/api/script/'+epNum,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenes:[{seq,act,name,desc,dialogue}]})});
+    if(r.ok){toastMsg('分镜已更新: 第'+epNum+'集 #'+seq,2000);delete _sbUndo[epNum+'-'+seq];loadStoryboard(epNum);}
+    else toastMsg('保存失败',2000);
+  }catch(e){toastMsg('保存失败: '+e.message,2000)}
 }
 
 // ================================================================
