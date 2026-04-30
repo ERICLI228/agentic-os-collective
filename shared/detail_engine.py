@@ -7,7 +7,74 @@ from dataclasses import dataclass, field, asdict
 from typing import List
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(PROJECT_ROOT / "shared" / "core"))
+
+
+def _run_drama_adversarial_review():
+    """Agent 自动运行剧本对抗审核, 返回结构化结果给用户决策"""
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "adversarial_review",
+            str(PROJECT_ROOT / "shared" / "core" / "adversarial_review.py")
+        )
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        engine = mod.create_review_engine("drama_script")
+        result = engine.review_mock("水浒传6集短剧剧本 · EP01-06 · 5镜/集 · 45-60秒/集", "DM-0")
+        return result
+    except Exception as e:
+        return None
+
+
+def _build_adversarial_review_section():
+    """Agent 自动跑完对抗审核 → 呈现结果给用户决策"""
+    result = _run_drama_adversarial_review()
+    if result is None:
+        return DetailSection(
+            title="AI 对抗审核 (3-Agent)", source="real",
+            items=[EntityItem("rv_err","审核引擎","⚠️ 审核引擎加载失败, 请检查 shared/core/adversarial_review.py","real","","","warn")],
+            summary="审核引擎异常 · 请检查环境配置")
+
+    score = result.total_score
+    decision = result.decision
+    dims = result.dimensions
+
+    score_icon = "🟢" if score >= 8.0 else ("🟡" if score >= 6.0 else "🔴")
+    decision_text = {"pass": "推荐通过", "rework": "建议回流重写", "reject": "建议驳回"}.get(decision, decision)
+    decision_status = {"pass": "ok", "rework": "warn", "reject": "ng"}.get(decision, "warn")
+
+    items = [
+        EntityItem(f"rv_score","综合评分",
+            f"{score_icon} {score:.1f}/10 · {decision_text} · 阈值 8.0",
+            "real", "", f"{'高于阈值, 可进入人工审核' if score >= 8.0 else '低于阈值, 建议回流'}", decision_status),
+
+        EntityItem("rv_decision","你的决策","请选择: [通过] [回流重写] [驳回]",
+            "real", "",
+            "API: POST /api/decision {\"task_id\":\"DM-0\",\"action\":\"approved|rework|reject\"}",
+            "ok", "点击按钮 → Agent 自动进入下一阶段"),
+    ]
+
+    for d in dims:
+        sev_icon = {"critical": "🔴", "warning": "🟡", "ok": "🟢"}.get(d.severity, "⚪")
+        findings = " · ".join(d.findings[:2]) if d.findings else "无问题"
+        items.append(EntityItem(
+            f"rv_{d.dimension}", d.dimension,
+            f"{sev_icon} {d.score:.1f}/10 · {findings}",
+            "real", "", d.severity.upper(), d.severity if d.severity == "critical" else "ok"
+        ))
+
+    summary_parts = [
+        f"Agent 自动审核完成 · 综合 {score:.1f}/10",
+        f"{len([d for d in dims if d.severity == 'critical'])} 项 critical",
+        decision_text,
+        "点击上方按钮 → Agent 执行你的决策"
+    ]
+    return DetailSection(
+        title="AI 对抗审核 (3-Agent · Agent 自动运行)", source="real",
+        items=items,
+        summary=" · ".join(summary_parts))
 
 
 @dataclass
@@ -477,25 +544,10 @@ def get_detail_drama(ms_id: str) -> list:
                     "行业标准: 3集动作+1集文戏+1集智谋+1集情感 = 节奏合理"),
                 EntityItem("s04","受众适配","✅ 历史题材+武侠动作=TikTok男性受众(18-35)偏好","real",
                     "","","ok","需注意: 部分暴力场景(PH/VN站可能触发内容审查)"),
-                EntityItem("s05","LLM审核","✅ 已就绪 — Mock<1s / CODING~90s · 评分3.8/10 · 裁决:驳回","real",
-                    "","命令: python3 shared/core/adversarial_review.py drama_script --mock","ok",
-                    "审核维度: 剧本逻辑/人物一致性/对白质量/节奏控制/内容合规 · CODING免费额度"),
-            ], summary="审核标准: 完整性✓ 结构✓ 冲突密度⚠️ 受众✓ · LLM审核已就绪(CODING免费) · 暴力占比83%偏高"),
+            ], summary="审核标准: 完整性✓ 结构✓ 冲突密度⚠️ 受众✓ · 暴力占比83%偏高"),
 
-            DetailSection(title="6集内容一览", source="real", items=[
-                EntityItem("ep01","EP01","鲁提辖拳打镇关西 · 45秒 · 4场景 · 情绪: 愤怒→冲突→暴力→震慑→逃离","real",
-                    "","主演鲁智深 · 暴力指数9/10","warn"),
-                EntityItem("ep02","EP02","鲁智深倒拔垂杨柳 · 50秒 · 5场景 · 情绪: 展示→挑衅→力量爆发→震慑→归隐","real",
-                    "","主演鲁智深 · 暴力指数7/10 · 连续鲁智深集","ok"),
-                EntityItem("ep03","EP03","林冲风雪山神庙 · 55秒 · 6场景 · 情绪: 压抑→阴谋→绝望→爆发→复仇","real",
-                    "","主演林冲 · 暴力指数8/10 · 情绪最复杂","ok"),
-                EntityItem("ep04","EP04","宋江怒杀阎婆惜 · 50秒 · 5场景 · 情绪: 羞辱→隐忍→冲动→杀人→逃亡","real",
-                    "","主演宋江 · 暴力指数7/10 · 情杀(性别敏感)","warn","PH/VN站注意: 女性受害者场景有审核风险"),
-                EntityItem("ep05","EP05","李逵沂岭杀四虎 · 45秒 · 5场景 · 情绪: 孝心→悲痛→暴怒→复仇→释然","real",
-                    "","主演李逵 · 暴力指数9/10","warn"),
-                EntityItem("ep06","EP06","智取生辰纲 · 50秒 · 5场景 · 情绪: 策划→集结→行动→意外→成功","real",
-                    "","主演吴用 · 暴力指数2/10 · 唯一智谋型","ok","建议作为首发集——智谋+群像+非暴力=平台友好"),
-            ], summary="EP06(智取)最平台友好 · EP01/04需内容审核 · 鲁智深连续2集可考虑错开"),
+            # ── Agent 自动跑完的对抗审核结果 ──
+            _build_adversarial_review_section(),
         ],
 
         # ========== DM-1: 角色设计 ==========
