@@ -27,7 +27,7 @@
 | v3.5.3 | 2026-04-29 | 阿牛 + OpenClaw | P0/P1 全线攻克 — NLS/3-Agent/SQLite/6角色圣经/10模块覆盖 |
 | v3.5.4 | 2026-04-29 | 阿牛 | 交互驾驶舱 v2 — 双业务线Tab/决策联动/智能决策引擎 |
 | **v3.6** | **2026-04-30** | **阿牛** | **细节展开系统 — 所有明细点返回实体数据(非状态标签) · 剧本查看/编辑/导出API · 角色ComfyUI渲染器 · 商品图片处理API · 全球信息摘要 · 27端点Flask · 26/27 PASS** |
-| **v3.6.1** | **2026-04-30** | **阿牛** | **QA全绿(80/80)·6集管线全通(ComfyUI+NLS)·25张角色渲染(6角色含武松/鲁智深/林冲/宋江/杨志/晁盖)·30端点+Download API·10项修复(sys/ep_num/export/Image404/拼音双通/DM-V-F/push_erp/SRT/订单)·EPISODE_MAP YAML对齐(idx 7/8/9/10修正)·Dashboard smart routing·80/80 PASS** |
+| **v3.6.1** | **2026-04-30** | **阿牛** | **QA全绿(80/80)·6集管线全通(ComfyUI+NLS)·25张角色渲染(6角色含武松/鲁智深/林冲/宋江/李逵/吴用)·30端点+Download API·10项修复(sys/ep_num/export/Image404/拼音双通/DM-V-F/push_erp/SRT/订单)·EPISODE_MAP YAML对齐(idx 7/8/9/10修正)·Dashboard smart routing·80/80 PASS** |
 
 ---
 
@@ -61,7 +61,7 @@
 | DM-3 | EP02 鲁智深倒拔垂杨柳 | 自动 | ✅ | final.mp4 2.3MB/23s ComfyUI+NLS |
 | DM-4 | EP03 林冲风雪山神庙 | 自动 | ✅ | **final.mp4 2.0MB/23s ComfyUI+NLS** |
 | DM-5 | EP04 宋江怒杀阎婆惜 | 自动 | ✅ | **final.mp4 1.9MB/23s ComfyUI+NLS** |
-| DM-6 | EP05 杨志卖刀 | 自动 | ✅ | **final.mp4 2.0MB/23s ComfyUI+NLS** |
+| DM-6 | EP05 李逵沂岭杀四虎 | 自动 | ✅ | **final.mp4 2.0MB/23s ComfyUI+NLS** |
 | DM-7 | EP06 智取生辰纲 | 自动 | ✅ | **final.mp4 1.8MB/23s ComfyUI+NLS·非暴力·首发推荐** |
 | DM-V | AI视频升级 | **你决策** | ⏸️ | 推荐Kling(微信¥15/EP)·ComfyUI静态图过渡方案已就绪 |
 | DM-S | NLS配音引擎 | 自动 | ✅ | 阿里云TTS 4音色 ~29817/30000字符 |
@@ -301,7 +301,7 @@ Flask :5001 (shared/task_wizard.py)
 | `stories/shuihuzhuan.yaml` | — | **UPDATED** | YAML idx 7/8/9/10 对齐 EPISODE_MAP |
 | `reports/PRD-v3.6.md` | 400+ | **UPDATED** | v3.6.1 注释版·完成度矩阵·QA报告 |
 | `~/.agentic-os/pipeline.db` | — | — | orders(4) + fulfillment_events(3) |
-| `~/.agentic-os/character_designs/renders/` | — | — | 6角色(武松/鲁智深/林冲/宋江/杨志/晁盖)·25 PNG |
+| `~/.agentic-os/character_designs/renders/` | — | — | 6角色(武松/鲁智深/林冲/宋江/李逵/吴用)·25 PNG |
 | `~/.agentic-os/episode_*/final.mp4` | — | **NEW** | EP01-06 全量输出 (1.8-2.4MB/23s) |
 | `~/.agentic-os/products/` | — | — | catalog.json + images/ 1产品6变体图(jpg/nobg/final) |
 | `~/.agentic-os/miaoshou_draft/` | — | **NEW** | 妙手ERP草稿箱同步 (phone_case_main.json+jpg) |
@@ -377,7 +377,7 @@ curl /api/detail/DM-0                ✓ 故事板展开 · DM-1 角色画廊
 | Dashboard HTML 图片展示 | ⏳ | ✅ 已完成 | DM-0/DM-1/MS-2.3 img-gallery + zoom modal + API集成 |
 | Dashboard HTML 编辑表单 | ⏳ | ✅ 已完成 | inline textarea编辑 + POST保存 + voice/color表单 |
 | EP03-06 运行 | ⏳ | ✅ 已完成 | EP01-06 ALL ComfyUI+NLS final.mp4 (1.8-2.4MB) |
-| 剩余ComfyUI角色图 | ⏳ | ✅ 已完成 | 25张全角色渲染 (鲁智深6+林冲3+宋江3+杨志3+晁盖6+武松4) |
+| 剩余ComfyUI角色图 | ⏳ | ✅ 已完成 | 25张全角色渲染 (鲁智深6+林冲3+宋江3+杨志3+晁盖6+武松4+李逵3+吴用3) |
 | 下载功能 | — | ✅ 已完成 | /api/download + /api/script/{ep}/export (txt/html/srt/json) |
 | 订单履约追踪 | — | ✅ 已完成 | fulfillment_events表 + tracking + stats 4条测试 |
 | ERP草稿箱推送 | — | ✅ 已完成 | push_to_erp_draft() → ~/.agentic-os/miaoshou_draft/ |

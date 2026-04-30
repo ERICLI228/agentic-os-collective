@@ -21,9 +21,9 @@ CURRENT_EPISODES = {
     "01": {"id": "lutixia_quan_da_zhenguanxi", "title": "鲁提辖拳打镇关西", "chapter": 3, "character": "鲁智深"},
     "02": {"id": "lu_zhishen_daoba_chuiyangliu", "title": "鲁智深倒拔垂杨柳", "chapter": 4, "character": "鲁智深"},
     "03": {"id": "linchong_fengxue_shanshenmiao", "title": "林冲风雪山神庙", "chapter": 10, "character": "林冲"},
-    "04": {"id": "songjiang_sha_yanpoxi", "title": "宋江怒杀阎婆惜", "chapter": 22, "character": "宋江"},
-    "05": {"id": "wusong_zui_da_jiangmenshen", "title": "杨志卖刀", "chapter": 29, "character": "杨志"},
-    "06": {"id": "zhiqu_shengchengang", "title": "智取生辰纲", "chapter": 16, "character": "晁盖"},
+    "04": {"id": "songjiang_sha_yanpoxi", "title": "宋江杀阎婆惜", "chapter": 22, "character": "宋江"},
+    "05": {"id": "likui_yiling_sha_sihu", "title": "李逵沂岭杀四虎", "chapter": 43, "character": "李逵"},
+    "06": {"id": "zhiqu_shengchengang", "title": "智取生辰纲", "chapter": 16, "character": "吴用"},
 }
 
 ROLE_OVERVIEW = {
@@ -45,7 +45,7 @@ EP_ORDER = ["01", "02", "03", "04", "05", "06"]
 # 角色名→文件ID映射
 CHARACTER_ID_MAP = {
     "武松": "wusong", "鲁智深": "luzhishen", "林冲": "linchong",
-    "宋江": "songjiang", "杨志": "yangzhi", "晁盖": "chaogai",
+    "宋江": "songjiang", "李逵": "likui", "吴用": "wuyong",
 }
 
 def _get_render_dir(character_name):
@@ -186,19 +186,19 @@ def _build_storyboard(title, chapter, character):
             {"seq": 4, "act": "高潮", "scene": "书房内", "description": f"混乱中{character}抽出短刀刺向阎婆惜，鲜血溅在梁山书信上", "emotion": "绝望→冲动", "duration": "8秒"},
             {"seq": 5, "act": "结局", "scene": "书房·黎明", "description": f"{character}擦拭血迹，收起书信，晨光中露出复杂而沉重的表情", "emotion": "悔恨→决断", "duration": "8秒"},
         ],
-        "杨志卖刀": [
-            {"seq": 1, "act": "开场", "scene": "东京市集", "description": f"{character}落魄地站在市集，身前插着他那把祖传宝刀，草标随风飘动", "emotion": "沉郁→无奈", "duration": "8秒", "dialogue": "卖刀…宝刀…"},
-            {"seq": 2, "act": "发展", "scene": "市集", "description": f"泼皮牛二上前挑衅，围观百姓聚拢，{character}强忍怒火", "emotion": "忍耐→暗怒", "duration": "10秒", "dialogue": "你这刀有何好处？"},
-            {"seq": 3, "act": "冲突", "scene": "市集中央", "description": f"牛二百般刁难，{character}拔刀出鞘演示砍铜钱、吹毛断发", "emotion": "展示→紧张", "duration": "10秒"},
-            {"seq": 4, "act": "高潮", "scene": "市集", "description": f"牛二欺人太甚，{character}怒挥宝刀，刀光一闪血迹溅地", "emotion": "爆发→决绝", "duration": "8秒"},
-            {"seq": 5, "act": "结局", "scene": "开封府", "description": f"{character}自首入狱，回头望一眼草标还插在原地的宝刀，眼中满是遗憾", "emotion": "平静→悲凉", "duration": "8秒"},
+        "李逵沂岭杀四虎": [
+            {"seq": 1, "act": "开场", "scene": "沂岭山路", "description": f"{character}背着老娘走在沂岭山路上，烈日当空，娘说口渴", "emotion": "孝顺→焦急", "duration": "8秒", "dialogue": "娘，您歇着，我去找水"},
+            {"seq": 2, "act": "发展", "scene": "山溪边", "description": f"{character}找到山溪舀水，远处传来低沉的虎啸声", "emotion": "安心→警觉", "duration": "10秒", "dialogue": "什么声音？"},
+            {"seq": 3, "act": "冲突", "scene": "沂岭·洞穴外", "description": f"回来发现老娘不见，地上血迹斑斑，{character}目眦欲裂", "emotion": "恐惧→暴怒", "duration": "12秒"},
+            {"seq": 4, "act": "高潮", "scene": "沂岭", "description": f"{character}双斧挥舞，连杀四虎，虎血染红衣衫，怒吼震山林", "emotion": "狂怒→悲壮", "duration": "14秒"},
+            {"seq": 5, "act": "结局", "scene": "沂岭·黄昏", "description": f"{character}跪在老娘失踪处，夕阳下拉长身影，默默收起染血的双斧", "emotion": "悲痛→决绝", "duration": "8秒"},
         ],
         "智取生辰纲": [
-            {"seq": 1, "act": "开场", "scene": "晁盖宅·烛光下", "description": f"七人聚在晁盖宅中，烛光映照脸庞，{character}展开地图低声策划", "emotion": "严肃→机密", "duration": "12秒", "dialogue": "诸位兄弟，此番智取，不许动一兵一卒"},
+            {"seq": 1, "act": "开场", "scene": "聚义厅·烛光下", "description": f"{character}手持羽扇，烛光映照清瘦面容，展开地图低声策划", "emotion": "沉稳→机密", "duration": "12秒", "dialogue": "此番智取，不许动一兵一卒"},
             {"seq": 2, "act": "发展", "scene": "黄泥岗山路", "description": f"{character}扮作枣贩，推车行于黄泥岗山路，烈日当空", "emotion": "伪装→警觉", "duration": "12秒"},
-            {"seq": 3, "act": "冲突", "scene": "黄泥岗", "description": f"杨志押送生辰纲到达，{character}以掺药酒为计，表面争吵掩护", "emotion": "紧张→博弈", "duration": "12秒"},
-            {"seq": 4, "act": "高潮", "scene": "黄泥岗", "description": f"{character}与众好汉假装抢酒喝，杨志军士纷纷倒地，计谋得逞", "emotion": "暗喜→胜利", "duration": "14秒"},
-            {"seq": 5, "act": "结局", "scene": "黄泥岗·夕阳", "description": f"七人推着载满珠宝的车消失在暮色中，杨志醒来绝望跪地", "emotion": "得意→悲凉(杨志视角)", "duration": "10秒"},
+            {"seq": 3, "act": "冲突", "scene": "黄泥岗", "description": f"押送队伍到达，{character}以掺药酒为计，表面争吵掩护", "emotion": "紧张→博弈", "duration": "12秒"},
+            {"seq": 4, "act": "高潮", "scene": "黄泥岗", "description": f"{character}与众好汉假装抢酒喝，军士纷纷倒地，计谋得逞", "emotion": "暗喜→胜利", "duration": "14秒"},
+            {"seq": 5, "act": "结局", "scene": "黄泥岗·夕阳", "description": f"{character}摇扇微笑，望着满载珠宝的车队消失在暮色中", "emotion": "得意→从容", "duration": "10秒"},
         ],
     }
 
