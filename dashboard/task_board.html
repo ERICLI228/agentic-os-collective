@@ -25,6 +25,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 .ms-item{display:flex;align-items:center;padding:5px 8px 5px 16px;border-radius:3px;cursor:pointer;font-size:12px;gap:6px}
 .ms-item:hover{background:#1a1d27}
 .ms-item.sel{background:#1e2a3a;border-left:3px solid #3b82f6;padding-left:13px}
+.ms-item.waiting{border-left:3px solid #f59e0b;background:#1f1a0f}
 .ms-item .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .dot.d{background:#22c55e}.dot.w{background:#f59e0b;animation:pulse 1.5s infinite}.dot.p{background:#444}
 .ms-item .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -122,6 +123,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 /* v3.6: Product row */
 .prod-row{background:#1a1d27;border-radius:6px;padding:10px;margin:6px 0}
 .prod-row .prod-name{font-size:11px;font-weight:600;color:#e4e6eb;margin-bottom:6px}
+.prod-compare{display:flex;gap:8px;margin:6px 0;flex-wrap:wrap}
+.prod-compare .img-col{flex:1;min-width:120px}
+.prod-compare .img-col .img-label{font-size:9px;color:#555;margin-bottom:4px}
+.prod-compare .img-col img{max-width:100%;border-radius:4px}
+.img-placeholder{width:100%;height:120px;background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#444;font-size:10px}
 
 /* v3.6: Loading */
 .loading{color:#f59e0b;font-size:10px;animation:pulse 1.5s infinite}
@@ -224,7 +230,7 @@ function render(){
       if(m.data_source!=='real')b+=`<span class="bdg ${m.data_source=='mock'?'mk':'cp'}">${m.data_source=='mock'?'模拟':'推算'}</span>`;
       if(m.decision_point&&m.status=='waiting_approval')b+='<span class="bdg dc">待决策</span>';
       if(m.decision_point&&m.decision=='approved')b+='<span class="bdg ok">已批准</span>';
-      h+=`<div class="ms-item${sel===m.ms_id?' sel':''}" onclick="select('${m.ms_id}')">
+      h+=`<div class="ms-item${sel===m.ms_id?' sel':''}${m.status=='waiting_approval'?' waiting':''}" onclick="select('${m.ms_id}')">
         <span class="dot ${dc}"></span><span class="nm">${ic} ${m.ms_id} ${m.name}</span>${b}</div>`;
     });
   }
@@ -245,13 +251,13 @@ function select(id){sel=id;render()}
 function renderSummary(){
   const f=all.filter(m=>m.pipeline===cur);
   const w=f.filter(m=>m.status=='waiting_approval');
-  let h='<div style="max-width:700px;margin:0 auto;"><h3 style="color:#888;margin-bottom:12px;font-size:13px;">决策面板</h3>';
+  let h='<div style="max-width:700px;margin:0 auto;"><h3 style="color:#888;margin-bottom:12px;font-size:13px;">&#9873; 决策面板</h3>';
   if(!w.length){h+='<div style="color:#444;padding:20px;text-align:center;background:#1a1d27;border-radius:6px;">无待决策项</div>'}
   else w.forEach(m=>{
-    h+=`<div style="background:#1a1d27;border-radius:6px;padding:12px;margin:8px 0;font-size:12px;">
-      <b>${m.ms_id} ${m.name}</b><div style="color:#888;font-size:10px;">${m.note||''}</div>
-      <div style="margin-top:6px">`;
-    [{a:'approved',l:'批准',c:'btn-p'},{a:'modify',l:'修改',c:'btn-w'},{a:'rejected',l:'驳回',c:'btn-d'}].forEach(o=>{
+    h+=`<div style="background:#1f1a0f;border-left:3px solid #f59e0b;border-radius:6px;padding:12px;margin:8px 0;font-size:12px;">
+      <b style="color:#fbbf24">&#9873; ${m.ms_id} ${m.name}</b><div style="color:#888;font-size:10px;margin-top:4px">${m.note||''}</div>
+      <div style="margin-top:8px">`;
+    [{a:'approved',l:'&#10003; 批准',c:'btn-s'},{a:'modify',l:'&#9998; 修改',c:'btn-w'},{a:'rejected',l:'&#10007; 驳回',c:'btn-d'}].forEach(o=>{
       h+=`<button class="btn ${o.c}" onclick="event.stopPropagation();decide('${m.ms_id}','${o.a}')">${o.l}</button> `;
     });
     h+='</div></div>';
@@ -717,17 +723,20 @@ async function renderMS23(detail,ms){
       const orig=p.original||p.orig||'';
       const nobg=p.nobg||p.no_bg||'';
       const fin=p.final||p.fin||'';
-      pH+=`<div class="prod-row">
+      pH+=`<div class="prod-row" id="prod-${pid}">
         <div class="prod-name">${pname}</div>
-        <div class="img-gallery">`;
+        <div class="img-gallery" id="prod-gallery-${pid}">`;
       if(orig)pH+=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${orig}')"><img src="${orig}" loading="lazy" onerror="this.style.display='none'"/><span class="img-label">原始</span></div>`;
       if(nobg)pH+=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${nobg}')"><img src="${nobg}" loading="lazy" onerror="this.style.display='none'"/><span class="img-label">去背景</span></div>`;
       if(fin)pH+=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${fin}')"><img src="${fin}" loading="lazy" onerror="this.style.display='none'"/><span class="img-label">最终</span></div>`;
+      pH+=`<span class="img-label" id="prod-after-${pid}" style="display:none">处理后</span>`;
       pH+=`</div>
+        <textarea id="note-${pid}" placeholder="修改意见（可选）..." rows="2" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px;border-radius:4px;font-size:10px;margin:4px 0"></textarea>
         <div class="img-actions">
           <button class="mini-btn" onclick="processImage('${pid}','rembg',this)">去背景</button>
           <button class="mini-btn" onclick="processImage('${pid}','full',this)">完整处理</button>
           <button class="mini-btn" onclick="processImage('${pid}','check',this)">合规检查</button>
+          <button class="mini-btn" onclick="processImage('${pid}','push_erp',this)">推妙手草稿</button>
         </div>
       </div>`;
     });
@@ -741,14 +750,24 @@ async function renderMS23(detail,ms){
 // v3.6: processImage - POST image processing
 // ================================================================
 async function processImage(imgId,action,btn){
+  const noteEl=document.getElementById('note-'+imgId);
+  const note=noteEl?noteEl.value:'';
   if(btn){btn.classList.add('busy'); btn.textContent='处理中...';}
   try{
     const r=await fetch('/api/images/'+imgId+'/process',{method:'POST',
-      headers:{'Content-Type':'application/json'},body:JSON.stringify({action})});
+      headers:{'Content-Type':'application/json'},body:JSON.stringify({action,note})});
     const d=await r.json();
     if(d.error)toastMsg(action+' 失败: '+d.error);
-    else if(d.steps)toastMsg(action+' 完成: '+d.steps.join(' \u2192 '));
-    else toastMsg(action+' 完成');
+    else {
+      toastMsg(action+' 完成: '+(d.steps?d.steps.join(' → '):''));
+      if(d.final_path){
+        const galleryEl=document.getElementById('prod-gallery-'+imgId);
+        const afterEl=document.getElementById('prod-after-'+imgId);
+        if(galleryEl&&afterEl){
+          afterEl.outerHTML=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${d.final_path}?t='+Date.now())"><img src="${d.final_path}?t=${Date.now()}" loading="lazy" onerror="this.style.display='none'"/><span class="img-label">处理后</span></div>`;
+        }
+      }
+    }
   }catch(e){toastMsg('处理失败: '+e.message)}
   if(btn){btn.classList.remove('busy');btn.textContent=action;}
 }

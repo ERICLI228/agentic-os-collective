@@ -1,7 +1,7 @@
 name: "AI数字短剧制作流水线"
-version: "1.1"
+version: "1.2"
 project: "drama"
-description: "水浒传AI数字短剧全自动制作流水线 (行业最佳实践)"
+description: "水浒传AI数字短剧全自动制作流水线 (v1.2: 路径修正 + MS-4.5对抗审核)"
 
 stages:
   - id: "MS-1"
@@ -40,13 +40,28 @@ stages:
   - id: "MS-4"
     name: "GLM剧本生成"
     executor: "OpenClaw"
-    command: "python3 ~/.openclaw/skills/water-margin-drama/water_margin_drama.py --script --task {task_id}"
+    command: "python3 ~/.openclaw/skills/water-margin-drama/drama_script.py --task {task_id}"
     expected_artifacts:
       - "final_script.json"
       - "scene_breakdown.json"
     timeout: 300
     decision_point: false
     description: "使用 GLM 生成完整剧本"
+
+  - id: "MS-4.5"
+    name: "对抗质量预审"
+    executor: "OpenClaw"
+    command: "python3 ~/agentic-os-collective/shared/core/adversarial_review.py --scene drama_script --task {task_id}"
+    timeout: 300
+    decision_point: false
+    threshold: 8.0
+    on_below_threshold:
+      action: "retry"
+      max_retries: 3
+      next_stage: "MS-4"
+    on_above_threshold:
+      next_stage: "MS-5"
+    description: "AI自动质量审核，低于8.0分回流重写，高于8.0进入人工审核"
 
   - id: "MS-5"
     name: "人工审核"
@@ -66,30 +81,30 @@ stages:
 
   - id: "MS-6"
     name: "视频生成"
-    executor: "Seedance"
-    command: "python3 ~/.openclaw/skills/water-margin-drama/water_margin_drama.py --video --task {task_id}"
+    executor: "OpenClaw"
+    command: "python3 ~/.openclaw/skills/water-margin-drama/drama_video.py --task {task_id}"
     expected_artifacts:
       - "scenes/*.mp4"
       - "video_manifest.json"
     timeout: 1800
     decision_point: false
-    description: "使用Seedance生成视频"
+    description: "AI视频生成 (fal.ai / Seedance)"
 
   - id: "MS-7"
     name: "配音合成"
-    executor: "MiniMax"
+    executor: "OpenClaw"
     command: "python3 ~/.openclaw/skills/water-margin-drama/drama_audio.py --task {task_id}"
     expected_artifacts:
       - "audio/*.mp3"
       - "audio_manifest.json"
     timeout: 600
     decision_point: false
-    description: "使用TTS合成角色配音"
+    description: "使用NLS TTS合成角色配音"
 
   - id: "MS-8"
     name: "最终合成"
     executor: "OpenClaw"
-    command: "python3 ~/.openclaw/skills/water-margin-drama/drama_audio.py --merge --task {task_id}"
+    command: "python3 ~/.openclaw/skills/water-margin-drama/drama_merge.py --task {task_id}"
     expected_artifacts:
       - "final/*.mp4"
     timeout: 300
