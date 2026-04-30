@@ -7,14 +7,21 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0f1117; color: #e4e6eb; height: 100vh; display: flex; flex-direction: column; }
-.topbar { padding: 14px 20px; border-bottom: 1px solid #222; display: flex; align-items: center; gap: 16px; }
-.topbar h1 { font-size: 18px; }
-.topbar .refresh { font-size: 11px; color: #666; margin-left: auto; }
+.topbar { padding: 12px 20px; border-bottom: 1px solid #222; display: flex; align-items: center; gap: 12px; }
+.topbar h1 { font-size: 17px; }
+.topbar .refresh { font-size: 11px; color: #555; margin-left: auto; }
+.tabs { display: flex; gap: 4px; }
+.tab { padding: 6px 14px; border-radius: 6px; font-size: 13px; cursor: pointer; border: 1px solid #333; color: #888; background: transparent; transition: all .15s; }
+.tab:hover { color: #e4e6eb; }
+.tab.active { background: #2563eb; border-color: #2563eb; color: #fff; }
+.tab .count { font-size: 10px; padding: 1px 5px; border-radius: 8px; margin-left: 4px; }
+.tab .count.warn { background: #f59e0b; color: #000; }
+.tab .count.ok { background: #22c55e; color: #000; }
 .main { display: flex; flex: 1; overflow: hidden; }
-.left { width: 340px; border-right: 1px solid #222; overflow-y: auto; padding: 10px; }
+.left { width: 340px; border-right: 1px solid #222; overflow-y: auto; padding: 8px; }
 .right { flex: 1; overflow-y: auto; padding: 20px; }
-.left h3 { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; padding: 8px; }
-.ms-item { display: flex; align-items: center; padding: 10px 12px; border-radius: 8px; margin: 2px 0; cursor: pointer; transition: background .15s; }
+.left h3 { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 1px; padding: 8px; }
+.ms-item { display: flex; align-items: center; padding: 10px 12px; border-radius: 8px; margin: 1px 0; cursor: pointer; transition: background .15s; }
 .ms-item:hover { background: #1a1d27; }
 .ms-item.active { background: #1e2a3a; border-left: 3px solid #3b82f6; }
 .ms-item .dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; flex-shrink: 0; }
@@ -23,13 +30,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #
 .ms-item .dot.pending { background: #444; }
 .ms-item .info { flex: 1; min-width: 0; }
 .ms-item .name { font-size: 13px; }
-.ms-item .sub { font-size: 11px; color: #666; }
-.ms-item .badge { font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 8px; flex-shrink: 0; }
+.ms-item .sub { font-size: 11px; color: #555; }
+.ms-item .badge { font-size: 10px; padding: 2px 6px; border-radius: 10px; margin-left: 6px; flex-shrink: 0; }
 .ms-item .badge.decision { background: #7c2d12; color: #fbbf24; }
 .ms-item .badge.approved { background: #14532d; color: #22c55e; }
-.ms-item .badge.rejected { background: #7f1d1d; color: #fca5a5; }
 .right .empty { color: #555; text-align: center; padding: 80px 20px; font-size: 14px; }
-.right .detail h2 { font-size: 20px; margin-bottom: 4px; }
+.right .detail h2 { font-size: 20px; margin-bottom: 4px; color: #e4e6eb; }
 .right .detail .status-line { font-size: 13px; color: #888; margin-bottom: 16px; }
 .right .detail .section { background: #1a1d27; border-radius: 10px; padding: 16px; margin-bottom: 14px; }
 .right .detail .section h3 { font-size: 13px; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -47,68 +53,118 @@ body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #
 .ai-box .rec .badge-mod { background: #78350f; color: #fbbf24; }
 .ai-box .reason { font-size: 12px; color: #aaa; line-height: 1.5; }
 .risk-item { padding: 6px 0; font-size: 12px; display: flex; gap: 8px; align-items: flex-start; }
-.risk-item .risk-icon { font-size: 14px; }
-.risk-item .risk-detail { flex: 1; line-height: 1.4; }
-.risk-item .risk-mitigation { color: #666; font-size: 11px; }
 .step-list { font-size: 12px; }
 .step-item { padding: 4px 0; display: flex; gap: 8px; align-items: center; }
 .step-item .step-dot { width: 6px; height: 6px; border-radius: 50%; }
-.step-item .step-dot.ok { background: #22c55e; }
-.step-item .step-dot.ng { background: #ef4444; }
-.step-item .step-dot.run { background: #3b82f6; animation: pulse 1.5s infinite; }
+.step-dot.ok { background: #22c55e; }
+.step-dot.ng { background: #ef4444; }
+.step-dot.run { background: #3b82f6; animation: pulse 1.5s infinite; }
 .forecast { font-size: 12px; color: #aaa; line-height: 1.6; }
 .btn { display: inline-block; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; margin: 4px; }
 .btn-primary { background: #2563eb; color: #fff; }
 .btn-warn { background: #d97706; color: #fff; }
 .btn-danger { background: #dc2626; color: #fff; }
-.btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .toast { position: fixed; bottom: 20px; right: 20px; background: #22c55e; color: #000; padding: 10px 18px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity 0.3s; z-index: 100; }
 .toast.show { opacity: 1; }
+.stats { display: flex; gap: 12px; padding: 0 8px 8px; }
+.stat { flex: 1; background: #111; border-radius: 8px; padding: 10px; text-align: center; }
+.stat .num { font-size: 22px; font-weight: 700; }
+.stat .label { font-size: 10px; color: #666; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
 </style>
 </head>
 <body>
 <div class="topbar">
   <h1>🚀 Agentic OS 指挥中心</h1>
-  <span style="font-size:12px;color:#888;">Pipeline · v3.5.3</span>
+  <div class="tabs">
+    <button class="tab active" id="tabTK" onclick="switchTab('tk')">🛒 TK运营 <span class="count" id="tkCount"></span></button>
+    <button class="tab" id="tabDM" onclick="switchTab('drama')">🎬 数字短剧 <span class="count" id="dmCount"></span></button>
+  </div>
   <span class="refresh" id="lastRefresh"></span>
 </div>
 <div class="main">
   <div class="left">
-    <h3>Pipeline 里程碑</h3>
+    <div class="stats">
+      <div class="stat"><div class="num" id="statDone" style="color:#22c55e">-</div><div class="label">已完成</div></div>
+      <div class="stat"><div class="num" id="statPending" style="color:#f59e0b">-</div><div class="label">待决策</div></div>
+      <div class="stat"><div class="num" id="statTotal" style="color:#888">-</div><div class="label">总里程</div></div>
+    </div>
     <div id="milestoneList"></div>
   </div>
   <div class="right">
-    <div class="empty" id="emptyState">👈 点击左侧里程碑查看详情</div>
+    <div class="empty" id="emptyState">
+      <div id="summaryView"></div>
+    </div>
     <div class="detail" id="detailView" style="display:none"></div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
-let state = { milestones: [], selected: null, data: {} };
+let currentTab = 'tk';
+let state = { milestones: [], selected: null };
+
+const DRAMA_MS = [
+  {id:'DM-0', name:'角色设计圣经', status:'completed', note:'6角色18分镜fal.ai ready', decision_point:false},
+  {id:'DM-1', name:'EP01 武松打虎', status:'completed', note:'NLS真人声+Pillow字幕', decision_point:false},
+  {id:'DM-2', name:'EP02 鲁智深', status:'completed', note:'NLS真人声+Pillow字幕', decision_point:false},
+  {id:'DM-3', name:'EP03 林冲风雪山神庙', status:'pending', note:'管线就绪，待运行', decision_point:false},
+  {id:'DM-4', name:'EP04 宋江怒杀阎婆惜', status:'pending', note:'管线就绪，待运行', decision_point:false},
+  {id:'DM-5', name:'EP05 杨志卖刀', status:'pending', note:'管线就绪，待运行', decision_point:false},
+  {id:'DM-6', name:'EP06 晁盖智取生辰纲', status:'pending', note:'管线就绪，待运行', decision_point:false},
+  {id:'DM-V', name:'fal.ai AI视频升级', status:'pending', note:'等支付 → 真AI武松打虎', decision_point:true},
+  {id:'DM-S', name:'NLS配音引擎', status:'completed', note:'阿里云TTS 4种音色', decision_point:false},
+  {id:'DM-F', name:'视频合成管线', status:'completed', note:'Pillow+ffmpeg 6集切换', decision_point:false},
+  {id:'DM-R', name:'3-Agent审核', status:'completed', note:'笔杆子→参谋→裁判', decision_point:false},
+];
 
 async function refresh() {
   try {
     const resp = await fetch('/api/dashboard');
     state.data = await resp.json();
-    state.milestones = state.data.milestones || [];
-    renderList();
+    mergeMilestones();
+    renderAll();
     document.getElementById('lastRefresh').textContent = new Date().toLocaleTimeString();
   } catch(e) {
     document.getElementById('lastRefresh').textContent = '离线';
   }
 }
 
-function renderList() {
+function mergeMilestones() {
+  // TK milestones from API
+  const tk = (state.data?.milestones || []).map(m => ({...m, pipeline:'tk'}));
+  // Drama milestones from static (could be API later)
+  const dm = DRAMA_MS.map(m => ({...m, pipeline:'drama'}));
+  state.allMilestones = [...tk, ...dm];
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tabTK').className = 'tab' + (tab==='tk'?' active':'');
+  document.getElementById('tabDM').className = 'tab' + (tab==='drama'?' active':'');
+  state.selected = null;
+  renderAll();
+}
+
+function renderAll() {
+  const filtered = state.allMilestones.filter(m => m.pipeline === currentTab);
+  state.milestones = filtered;
+
+  const done = filtered.filter(m => m.status==='completed' || m.status==='approved').length;
+  const pending = filtered.filter(m => m.status==='waiting_approval').length;
+  document.getElementById('statDone').textContent = done;
+  document.getElementById('statPending').textContent = pending;
+  document.getElementById('statTotal').textContent = filtered.length;
+  document.getElementById('tkCount').textContent = state.allMilestones.filter(m=>m.pipeline==='tk').length;
+  document.getElementById('dmCount').textContent = state.allMilestones.filter(m=>m.pipeline==='drama').length;
+
   const el = document.getElementById('milestoneList');
-  el.innerHTML = state.milestones.map(m => {
-    const cls = m.status === 'completed' ? 'done' : m.status === 'waiting_approval' ? 'waiting' : 'pending';
-    const icon = m.status === 'completed' ? '✅' : m.status === 'waiting_approval' ? '⏸️' : '⏳';
+  el.innerHTML = filtered.map(m => {
+    const cls = m.status==='completed'||m.status==='approved'?'done':m.status==='waiting_approval'?'waiting':'pending';
+    const icon = m.status==='completed'||m.status==='approved'?'✅':m.status==='waiting_approval'?'⏸️':'⏳';
     let badges = '';
     if (m.decision_point) {
       if (m.decision === 'approved') badges += '<span class="badge approved">已批准</span>';
-      else if (m.decision === 'rejected') badges += '<span class="badge rejected">已驳回</span>';
       else if (m.status === 'waiting_approval') badges += '<span class="badge decision">待决策</span>';
       else badges += '<span class="badge decision">决策点</span>';
     }
@@ -122,13 +178,66 @@ function renderList() {
       ${badges}
     </div>`;
   }).join('');
+
+  if (state.selected) renderDetail(state.selected);
+  else { document.getElementById('emptyState').style.display='block'; document.getElementById('detailView').style.display='none'; renderSummary(); }
 }
 
-function selectMs(id) {
-  state.selected = id;
-  renderList();
-  renderDetail(id);
+function renderSummary() {
+  const waiting = state.milestones.filter(m => m.status === 'waiting_approval');
+  let html = '<div style="max-width:700px;margin:0 auto;">';
+  html += '<h3 style="color:#888;margin-bottom:12px;">⚡ 决策面板 — 需要你决策</h3>';
+
+  if (waiting.length === 0) {
+    html += '<div style="color:#555;padding:20px;text-align:center;background:#1a1d27;border-radius:10px;">✅ 无待决策项</div>';
+  } else {
+    waiting.forEach(m => {
+      const detail = getMsDetail(m);
+      html += `<div style="background:#1a1d27;border-radius:10px;padding:16px;margin:10px 0;">
+        <div style="font-weight:600;font-size:14px;margin-bottom:4px;">🔴 ${m.id} ${m.name}</div>
+        <div style="font-size:12px;color:#888;margin-bottom:8px;">${m.note||''} · 评分 ${detail.ai_score||0}/10</div>`;
+      if (detail.reasoning) {
+        html += '<div style="font-size:12px;color:#aaa;margin-bottom:8px;">';
+        detail.reasoning.forEach(r => { html += `• ${r}<br>`; });
+        html += '</div>';
+      }
+      if (detail.risks) {
+        detail.risks.forEach(r => {
+          html += `<div style="font-size:11px;color:#f59e0b;margin:2px 0;">⚠️ ${r.name}: ${r.detail}</div>`;
+        });
+      }
+      html += '<div style="margin-top:8px;">';
+      (detail.options||[{action:'approved',label:'✅ 批准'},{action:'modify',label:'✏️ 修改'},{action:'rejected',label:'❌ 驳回'}]).forEach(opt => {
+        const btnCls = opt.action==='approved'?'btn-primary':opt.action==='rejected'?'btn-danger':'btn-warn';
+        html += `<button class="btn ${btnCls}" onclick="event.stopPropagation();submitDecision('${m.id}','${opt.action}')">${opt.label}</button> `;
+      });
+      html += '</div></div>';
+    });
+  }
+
+  const done = state.milestones.filter(m => m.status==='completed'||m.status==='approved').length;
+  const total = state.milestones.length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  html += `<h3 style="color:#888;margin:20px 0 12px;">📊 ${currentTab==='tk'?'TK运营':'数字短剧'} 总览</h3>`;
+  html += `<div style="background:#1a1d27;border-radius:10px;padding:16px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="flex:1;height:8px;background:#222;border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:#22c55e;border-radius:4px;"></div>
+      </div>
+      <span style="font-size:14px;font-weight:700;color:#22c55e;">${done}/${total}</span>
+    </div>
+    <div style="font-size:11px;color:#666;margin-top:8px;line-height:1.5;">
+      ✅ ${state.milestones.filter(m=>m.status==='completed'||m.status==='approved').map(m=>m.name).join(' · ') || '无'}
+    </div>
+    <div style="font-size:11px;color:#555;margin-top:4px;">
+      ⏳ ${state.milestones.filter(m=>m.status==='pending').map(m=>m.name).join(' · ') || '无'}
+    </div>
+  </div>`;
+  html += '</div>';
+  document.getElementById('summaryView').innerHTML = html;
 }
+
+function selectMs(id) { state.selected = id; renderAll(); }
 
 function renderDetail(id) {
   document.getElementById('emptyState').style.display = 'none';
@@ -138,49 +247,38 @@ function renderDetail(id) {
   if (!ms) return;
 
   const isDecision = ms.decision_point && ms.status === 'waiting_approval';
-  const isDone = ms.status === 'completed';
+  const isDone = ms.status === 'completed' || ms.status === 'approved';
   const statusColor = isDone ? '#22c55e' : ms.status === 'waiting_approval' ? '#f59e0b' : '#666';
   const statusLabel = {completed:'已完成', waiting_approval:'等待你的决策', pending:'待执行',
     running:'执行中', approved:'已批准', rejected:'已驳回'}[ms.status] || ms.status;
 
-  // 根据里程碑生成具体的分析内容
   const detail = getMsDetail(ms);
-  const forecast = getForecast(ms);
+  const forecast = getForecast(ms, currentTab);
 
-  let html = `
-    <div class="detail">
-      <h2>${ms.id} ${ms.name}</h2>
-      <div class="status-line" style="color:${statusColor}">● ${statusLabel} ${ms.note ? '· ' + ms.note : ''}</div>`;
+  let html = `<div class="detail"><h2>${ms.id} ${ms.name}</h2>
+    <div class="status-line" style="color:${statusColor}">● ${statusLabel} · ${ms.note||''}</div>`;
 
-  // AI分析 (决策点)
   if (isDecision) {
     const score = detail.ai_score || 0;
     const rec = detail.ai_recommendation || 'pending';
     const recLabel = {approved:'✅ 建议批准', rejected:'❌ 建议驳回', rework:'✏️ 建议修改'}[rec] || rec;
     const recBadge = {approved:'badge-app', rejected:'badge-rej', rework:'badge-mod'}[rec] || '';
     const boxCls = rec === 'approved' ? 'recommend' : 'warn';
-
-    html += `<div class="section">
-      <h3>🤖 AI 决策分析</h3>
+    html += `<div class="section"><h3>🤖 AI 决策分析</h3>
       <div class="ai-box ${boxCls}">
         <div class="rec">${recLabel} <span class="badge-rec ${recBadge}">置信度 ${(detail.ai_confidence||0)*100|0}%</span></div>
         <div style="font-size:12px;color:#888;margin:4px 0;">综合评分 ${score}/10 · 风险等级: ${detail.risk_level||'medium'}</div>
         <div class="reason">${(detail.reasoning||[]).map(r => '• '+r).join('<br>')}</div>
       </div>`;
-
     if (detail.risks && detail.risks.length) {
       html += `<div style="margin-top:10px;font-size:12px;color:#f59e0b;">⚠️ 风险:</div>`;
       detail.risks.forEach(r => {
         const icon = {high:'🔴', medium:'🟡', low:'🟢'}[r.level] || '⚪';
-        html += `<div class="risk-item"><span class="risk-icon">${icon}</span><div class="risk-detail">${r.name}: ${r.detail}${r.mitigation ? '<br><span class="risk-mitigation">缓解: '+r.mitigation+'</span>' : ''}</div></div>`;
+        html += `<div class="risk-item"><span>${icon}</span><div>${r.name}: ${r.detail}${r.mitigation?'<br><span style="color:#666;font-size:11px">缓解: '+r.mitigation+'</span>':''}</div></div>`;
       });
     }
-
     html += `</div>`;
-
-    // 决策按钮
-    html += `<div class="section">
-      <h3>你的决策</h3>`;
+    html += `<div class="section"><h3>你的决策</h3>`;
     (detail.options||[]).forEach(opt => {
       const btnCls = opt.action === 'approved' ? 'btn-primary' : opt.action === 'rejected' ? 'btn-danger' : 'btn-warn';
       html += `<button class="btn ${btnCls}" onclick="submitDecision('${id}', '${opt.action}')">${opt.label}</button> `;
@@ -188,10 +286,8 @@ function renderDetail(id) {
     html += `</div>`;
   }
 
-  // 执行进度
   if (detail.steps && detail.steps.length) {
-    html += `<div class="section">
-      <h3>📋 子任务执行进度</h3>
+    html += `<div class="section"><h3>📋 子任务执行进度</h3>
       <div class="progress-row">
         <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${detail.step_pct||0}%;background:${statusColor}"></div></div>
         <div class="progress-pct">${detail.step_pct||0}%</div>
@@ -204,199 +300,104 @@ function renderDetail(id) {
     html += `</div></div>`;
   }
 
-  // 关键数据
   if (detail.metrics) {
-    html += `<div class="section">
-      <h3>📊 关键数据</h3>`;
+    html += `<div class="section"><h3>📊 关键数据</h3>`;
     Object.entries(detail.metrics).forEach(([k,v]) => {
       html += `<div style="font-size:12px;margin:4px 0;"><span style="color:#888;">${k}:</span> ${v}</div>`;
     });
     html += `</div>`;
   }
 
-  // 下一步预报
-  html += `<div class="section">
-    <h3>🔮 下一步预报</h3>
-    <div class="forecast">${forecast}</div>
-  </div>`;
-
-  html += `</div>`;
+  html += `<div class="section"><h3>🔮 下一步预报</h3><div class="forecast">${forecast}</div></div></div>`;
   document.getElementById('detailView').innerHTML = html;
 }
 
 function getMsDetail(ms) {
-  // 每个里程碑的具体数据
-  const map = {
-    'MS-0': {
-      metrics: {'采集商品数': 100, '通过校验': 100, '门禁状态': ms.status},
-      steps: [
-        {name: '采集箱数据拉取', status: 'ok', note: '100品'},
-        {name: '字段完整性校验', status: 'ok', note: 'title/price/SKU'},
-        {name: '价格合理性检查', status: 'ok', note: '0异常'},
-        {name: '门禁通过', status: 'ok'},
-      ], step_pct: 100,
-    },
-    'MS-1': {
-      metrics: {'同步时间': '2026-04-28', '店铺数': 6, '已选品': 100},
-      steps: [
-        {name: '妙手ERP同步', status: 'ok', note: '采集箱100品'},
-        {name: '多店数据聚合', status: 'ok', note: '6店'},
-        {name: 'JSON输出', status: 'ok'},
-      ], step_pct: 100,
-    },
-    'MS-1.5': {
-      ai_score: 7.56, ai_recommendation: 'approved', ai_confidence: 0.76,
-      reasoning: ['品类增长趋势确认', '毛利率51%达盈利线', '供应链稳定2家备选', '竞品分析头部有空间', '达人资源≥50人可快速启动'],
-      risk_level: 'medium',
-      risks: [
-        {name: '季节性波动', level: 'medium', detail: '3C配件Q2-Q3可能需求下降', mitigation: '提前备Q4旺季库存'},
-      ],
-      options: [{action:'approved',label:'✅ 批准发布'},{action:'rejected',label:'❌ 驳回'}],
-      metrics: {'综合评分': '7.56/10', '毛利率': '51%', '竞品数': 12, '达人可用': '50+'},
-      steps: [
-        {name: '竞品饱和度分析', status: 'ok', note: '头部3家，中部9家'},
-        {name: '利润空间核算', status: 'ok', note: '毛利51%'},
-        {name: '供应链评估', status: 'ok', note: '2家合格'},
-        {name: '季节性评估', status: 'ok', note: 'Q2小幅下降'},
-        {name: '达人潜力评估', status: 'ok', note: '≥50达人'},
-      ], step_pct: 100,
-    },
-    'MS-2': {
-      ai_score: 8.30, ai_recommendation: 'approved', ai_confidence: 0.83,
-      reasoning: ['TOP1蓝牙耳机利润41%', 'TK月销5000+验证需求', '1688供货稳定2家', '竞品差异化空间充足', '东南亚5国定价已核算'],
-      risk_level: 'low',
-      risks: [{name: '价格战风险', level: 'medium', detail: '同品类15个竞品可能有降价行为', mitigation: '差异化主图+赠品策略'}],
-      options: [{action:'approved',label:'✅ 批准选品'},{action:'rejected',label:'❌ 重新选品'}],
-      metrics: {'TOP1': '蓝牙耳机 Pro (8.42)', 'TOP2': '无线充电器 (8.30)', 'TOP3': '手机支架 (8.24)'},
-      steps: [
-        {name: 'TOP N 排序', status: 'ok', note: '3品入选'},
-        {name: '利润核算', status: 'ok', note: '31-51%'},
-        {name: '竞品对比', status: 'ok', note: '12-15竞品'},
-        {name: '合规检查', status: 'ok'},
-        {name: '最终推荐', status: 'ok', note: 'TOP1蓝牙耳机'},
-      ], step_pct: 100,
-    },
-    'MS-2.1': {
-      metrics: {'目标语言': '5国', '模板数': 15, '待优化': 'LLM超时'},
-      steps: [
-        {name: '翻译模板生成', status: 'ok', note: '5国15模板'},
-        {name: '禁忌词过滤', status: 'ok'},
-        {name: '本地化审查', status: 'running', note: 'LLM调用超时需优化'},
-      ], step_pct: 67,
-    },
-    'MS-2.2': {
-      steps: [
-        {name: 'TK类目映射', status: 'ok', note: '5国匹配'},
-        {name: '属性填写', status: 'ok'},
-      ], step_pct: 100,
-    },
-    'MS-2.3': {
-      metrics: {'工具': 'rembg已安装', '待执行': '批量去背景+尺寸适配'},
-      steps: [
-        {name: 'rembg安装', status: 'ok'},
-        {name: '主图去背景', status: 'pending'},
-        {name: 'TK尺寸适配', status: 'pending'},
-      ], step_pct: 33,
-    },
-    'MS-2.4': {
-      metrics: {'PH售价': '$5.99-$12.99', 'MY售价': 'RM18-RM42', 'TH售价': '฿159-฿399'},
-      steps: [
-        {name: '5国定价计算', status: 'ok'},
-        {name: '利润率验证', status: 'ok'},
-      ], step_pct: 100,
-    },
-    'MS-2.5': {
-      steps: [
-        {name: '物流方案制定', status: 'pending'},
-        {name: '运费模板', status: 'pending'},
-      ], step_pct: 0,
-    },
-    'MS-2.6': {
-      metrics: {'检查项': '危险品/禁售/敏感词', '结果': '通过'},
-      steps: [
-        {name: '危险品检查', status: 'ok'},
-        {name: '禁售类目检查', status: 'ok'},
-        {name: '广告合规', status: 'ok'},
-      ], step_pct: 100,
-    },
-    'MS-3': {
-      metrics: {'待发布': 3, '目标站': '菲律宾(8371977)', '门禁': 'MS-4待审批'},
-      steps: [
-        {name: '商品数据打包', status: 'ok'},
-        {name: '发布队列准备', status: 'ok'},
-        {name: '等待MS-4审批', status: 'running'},
-      ], step_pct: 67,
-    },
-    'MS-4': {
-      ai_score: 8.0, ai_recommendation: 'approved', ai_confidence: 0.80,
-      reasoning: ['全部前序步骤已完成或可接受', '3个商品通过合规检查', '目标市场菲律宾需求确认', '发布风险可控'],
-      risk_level: 'low',
-      risks: [
-        {name: '首单0销量', level: 'low', detail: '新品无历史数据，需7天观察期', mitigation: '同步启动广告推广+达人合作'},
-      ],
-      options: [
-        {action:'approved',label:'✅ 批准发布'},
-        {action:'modify',label:'✏️ 修改后再审'},
-        {action:'rejected',label:'❌ 驳回'},
-      ],
-      metrics: {'待发布商品': 3, '店铺': '菲律宾(8371977)', '门禁状态': '等待你的决策'},
-      steps: [
-        {name: 'MS-2全部子步骤', status: 'ok', note: '9/10完成'},
-        {name: 'publish_gate.py', status: 'running', note: '等待MIAOSHOW_PUBLISH_ENABLED'},
-        {name: '你的决策', status: 'running', note: '待点击批准'},
-        {name: '执行发布', status: 'pending'},
-      ], step_pct: 50,
-    },
-    'MS-5': {
-      metrics: {'推送状态': '已飞书', '昨日订单': '0(未发品)', '店铺健康': '6店正常'},
-      steps: [
-        {name: '数据聚合', status: 'ok'},
-        {name: '卡片生成', status: 'ok'},
-        {name: '飞书推送', status: 'ok'},
-      ], step_pct: 100,
-    },
-  };
+  // TK milestones
+  if (ms.pipeline === 'tk') {
+    const map = {
+      'MS-0': {metrics:{'采集商品数':100,'通过校验':100},steps:[{name:'采集箱拉取',status:'ok',note:'100品'},{name:'字段校验',status:'ok'},{name:'价格检查',status:'ok'}],step_pct:100},
+      'MS-1': {metrics:{'同步时间':'2026-04-28','店铺数':6,'已选品':100},steps:[{name:'妙手ERP同步',status:'ok'},{name:'多店聚合',status:'ok'}],step_pct:100},
+      'MS-1.5': {ai_score:7.56,ai_recommendation:'approved',ai_confidence:0.76,reasoning:['品类增长趋势确认','毛利率51%','供应链2家备选','竞品头部有空间'],risk_level:'medium',risks:[{name:'季节性波动',level:'medium',detail:'Q2需求下降',mitigation:'提前备Q4库存'}],options:[{action:'approved',label:'✅ 批准'},{action:'rejected',label:'❌ 驳回'}],metrics:{'评分':'7.56/10','毛利率':'51%'},steps:[{name:'竞品分析',status:'ok'},{name:'利润核算',status:'ok'},{name:'供应链评估',status:'ok'}],step_pct:100},
+      'MS-2': {ai_score:8.30,ai_recommendation:'approved',ai_confidence:0.83,reasoning:['TOP1蓝牙耳机利润41%','TK月销5000+','1688供货稳定'],risk_level:'low',options:[{action:'approved',label:'✅ 批准选品'},{action:'rejected',label:'❌ 重新选品'}],metrics:{'TOP1':'蓝牙耳机(8.42)','TOP2':'无线充电器(8.30)','TOP3':'手机支架(8.24)'},steps:[{name:'TOP排序',status:'ok'},{name:'利润核算',status:'ok'},{name:'竞品对比',status:'ok'}],step_pct:100},
+      'MS-2.1': {metrics:{'目标':'5国','模板':15},steps:[{name:'翻译生成',status:'ok'},{name:'禁忌词过滤',status:'ok'},{name:'本地化审查',status:'run',note:'LLM需优化'}],step_pct:67},
+      'MS-2.2': {steps:[{name:'TK类目映射',status:'ok'},{name:'属性填写',status:'ok'}],step_pct:100},
+      'MS-2.3': {metrics:{'工具':'rembg已安装'},steps:[{name:'rembg安装',status:'ok'},{name:'主图去背景',status:'ng'},{name:'尺寸适配',status:'ng'}],step_pct:33},
+      'MS-2.4': {metrics:{'PH':'$5.99-$12.99','MY':'RM18-RM42'},steps:[{name:'5国定价',status:'ok'},{name:'利润率验证',status:'ok'}],step_pct:100},
+      'MS-2.5': {steps:[{name:'物流方案',status:'ng'},{name:'运费模板',status:'ng'}],step_pct:0},
+      'MS-2.6': {metrics:{'结果':'通过'},steps:[{name:'危险品检查',status:'ok'},{name:'禁售检查',status:'ok'},{name:'广告合规',status:'ok'}],step_pct:100},
+      'MS-3': {metrics:{'待发布':3,'目标站':'菲律宾(8371977)'},steps:[{name:'商品打包',status:'ok'},{name:'发布队列',status:'ok'},{name:'等待MS-4',status:'run'}],step_pct:67},
+      'MS-4': {ai_score:8.0,ai_recommendation:'approved',ai_confidence:0.80,reasoning:['前序全部完成','3品合规通过','菲律宾市场确认','发布风险可控'],risk_level:'low',risks:[{name:'新品0销量',level:'low',detail:'需7天观察',mitigation:'同步广告+达人合作'}],options:[{action:'approved',label:'✅ 批准发布'},{action:'modify',label:'✏️ 修改'},{action:'rejected',label:'❌ 驳回'}],metrics:{'待发布':3,'店铺':'菲律宾(8371977)'},steps:[{name:'MS-2子步骤',status:'ok'},{name:'门禁检查',status:'run'},{name:'你的决策',status:'run'}],step_pct:50},
+      'MS-5': {metrics:{'推送状态':'已飞书','昨日订单':'0(未发品)'},steps:[{name:'数据聚合',status:'ok'},{name:'卡片生成',status:'ok'},{name:'飞书推送',status:'ok'}],step_pct:100},
+    };
+    return map[ms.id] || {metrics:{'状态':ms.status},steps:[{name:'执行中',status:'run'}],step_pct:50};
+  }
 
-  return map[ms.id] || {
-    metrics: {'状态': ms.status},
-    steps: [{name: '执行中', status: 'running'}],
-    step_pct: 50,
+  // Drama milestones
+  const dmap = {
+    'DM-0': {metrics:{'角色数':6,'每角色分镜':3,'总prompts':18,'目标':'fal.ai Seedance'},steps:[{name:'外貌设定',status:'ok'},{name:'服装兵器',status:'ok'},{name:'English Prompt',status:'ok'},{name:'NLS音色映射',status:'ok'}],step_pct:100},
+    'DM-1': {metrics:{'文件':'final.mp4','大小':'231KB','时长':'23s','配音':'NLS zhiming'},steps:[{name:'剧本生成',status:'ok'},{name:'NLS配音',status:'ok',note:'5段mp3'},{name:'Pillow字幕帧',status:'ok'},{name:'ffmpeg合成',status:'ok'}],step_pct:100},
+    'DM-2': {metrics:{'文件':'final.mp4','大小':'231KB','时长':'23s','配音':'NLS zhiqi'},steps:[{name:'剧本生成',status:'ok'},{name:'NLS配音',status:'ok'},{name:'Pillow帧',status:'ok'},{name:'合成',status:'ok'}],step_pct:100},
+    'DM-3': {metrics:{'状态':'管线就绪','主演':'林冲'},steps:[{name:'剧本',status:'ok'},{name:'NLS配音',status:'ng',note:'待运行'},{name:'Pillow帧',status:'ng'},{name:'合成',status:'ng'}],step_pct:25},
+    'DM-4': {metrics:{'状态':'管线就绪','主演':'宋江'},steps:[{name:'剧本',status:'ok'},{name:'NLS配音',status:'ng'},{name:'Pillow帧',status:'ng'},{name:'合成',status:'ng'}],step_pct:25},
+    'DM-5': {metrics:{'状态':'管线就绪','主演':'杨志'},steps:[{name:'剧本',status:'ok'},{name:'NLS配音',status:'ng'},{name:'Pillow帧',status:'ng'},{name:'合成',status:'ng'}],step_pct:25},
+    'DM-6': {metrics:{'状态':'管线就绪','主演':'晁盖'},steps:[{name:'剧本',status:'ok'},{name:'NLS配音',status:'ng'},{name:'Pillow帧',status:'ng'},{name:'合成',status:'ng'}],step_pct:25},
+    'DM-V': {ai_score:9.0,ai_recommendation:'approved',ai_confidence:0.90,reasoning:['fal.ai Wan2.5视频质变','$1.25/EP成本可控','角色圣经ready','6集全链路已通，只差AI画面'],risk_level:'medium',risks:[{name:'支付阻塞',level:'high',detail:'fal.ai需信用卡/外币支付',mitigation:'联系朋友代付或使用虚拟信用卡'}],options:[{action:'approved',label:'🔑 我去解决支付'},{action:'modify',label:'⏸️ 暂时跳过'}],metrics:{'预估费用':'$1.25/EP','效果':'真AI画面替代纯色','优先级':'P1'},steps:[{name:'角色圣经',status:'ok'},{name:'管线合成',status:'ok'},{name:'fal.ai注册',status:'ng',note:'等支付'}],step_pct:67},
+    'DM-S': {metrics:{'引擎':'阿里云NLS','音色':4,'余额':'~29817/30000字符'},steps:[{name:'ALIYUN_ KEY配置',status:'ok'},{name:'synthesize()',status:'ok'},{name:'pipeline集成',status:'ok'}],step_pct:100},
+    'DM-F': {metrics:{'画面':'Pillow字幕帧','合成':'ffmpeg','切换':'--episode 01-06'},steps:[{name:'Pillow生成',status:'ok'},{name:'ffmpeg编码',status:'ok'},{name:'NLS+视频合并',status:'ok'},{name:'episode切换',status:'ok'}],step_pct:100},
+    'DM-R': {metrics:{'架构':'笔杆子→参谋→裁判','参谋模型':'qwen3.6-plus','裁判模型':'qwen3-coder-plus'},steps:[{name:'参谋挑刺',status:'ok'},{name:'裁判独立裁决',status:'ok'},{name:'--mode multi-agent',status:'ok'}],step_pct:100},
   };
+  return dmap[ms.id] || {metrics:{'状态':ms.status},steps:[{name:'执行中',status:'run'}],step_pct:50};
 }
 
-function getForecast(ms) {
-  const nextMap = {
-    'MS-1': '→ MS-1.5: AI自动进行市场判断(竞品饱和度/利润空间/供应链/季节性/达人潜力)，完成后需要你的决策',
-    'MS-1.5': '→ 等你批准后进入 MS-2: AI自动选品分析(五维评分+TOP3推荐)',
-    'MS-2': '→ 等你批准选品后进入 MS-2.1~2.6: 内容本地化/类目映射/图像适配/定价/物流/合规',
-    'MS-2.1': '→ MS-2.2: 类目映射自动匹配',
-    'MS-2.2': '→ MS-2.3: 图像适配(去背景+尺寸优化)',
-    'MS-2.3': '→ MS-2.4: 5国定价策略计算',
-    'MS-2.4': '→ MS-2.5: 物流模板配置',
-    'MS-2.5': '→ MS-2.6: 合规检查',
-    'MS-2.6': '→ MS-3: 发布准备',
-    'MS-3': '→ MS-4: 发布审批 — 最后一道关卡，需要你的决策。确保 MIAOSHOW_PUBLISH_ENABLED=true',
-    'MS-4': '→ 批准后自动发布3品到菲律宾站(8371977) → MS-5生成日报推送飞书。预计5分钟内完成。',
-    'MS-5': '→ 每日自动推送。下一步: 监控订单/广告/达人数据，进入运营阶段。',
-    'MS-0': '→ MS-1: 采集箱数据自动同步。门禁通过即可自动进入。',
+function getForecast(ms, tab) {
+  if (tab === 'drama') {
+    const next = {
+      'DM-0':'→ EP01-06 管线自动生成，角色设定已就绪',
+      'DM-1':'→ 已完成。下一步: EP03-06批量生成',
+      'DM-2':'→ 已完成。下一步: EP03-06批量生成',
+      'DM-3':'→ 运行: python3 pipeline_ep01.py --voice nls --episode 03',
+      'DM-4':'→ 运行: python3 pipeline_ep01.py --voice nls --episode 04',
+      'DM-5':'→ 运行: python3 pipeline_ep01.py --voice nls --episode 05',
+      'DM-6':'→ 运行: python3 pipeline_ep01.py --voice nls --episode 06',
+      'DM-V':'→ 解决支付 → 19个Seedance分镜 → 武松打虎真AI版 → 短剧从此质变',
+      'DM-S':'→ 持续服务6集配音，余额充足',
+      'DM-F':'→ 等待fai.ai替换Pillow后，管线自动升级',
+      'DM-R':'→ 选品/广告/剧本审核持续服务',
+    };
+    return next[ms.id] || '→ 管线自动推进';
+  }
+
+  const next = {
+    'MS-1':'→ MS-1.5: AI市场判断(五维+3-Agent审核)',
+    'MS-1.5':'→ 批准后→ MS-2: AI自动选品TOP3',
+    'MS-2':'→ 批准后→ MS-2.1~2.6: 内容/类目/图像/定价/物流/合规',
+    'MS-2.1':'→ MS-2.2: 类目映射',
+    'MS-2.2':'→ MS-2.3: 图像适配',
+    'MS-2.3':'→ MS-2.4: 5国定价',
+    'MS-2.4':'→ MS-2.5: 物流模板',
+    'MS-2.5':'→ MS-2.6: 合规检查',
+    'MS-2.6':'→ MS-3: 发布准备',
+    'MS-3':'→ MS-4: 最后关卡，需你批准。MIAOSHOW_PUBLISH_ENABLED=true',
+    'MS-4':'→ 批准→ 5分钟自动发3品到菲律宾→ MS-5日报',
+    'MS-5':'→ 日常运营: 监控订单/广告/达人',
+    'MS-0':'→ MS-1: 采集同步，自动推进',
   };
-  return nextMap[ms.id] || '→ 下一步: 系统自动推进到下一里程碑';
+  return next[ms.id] || '→ 系统自动推进';
 }
 
 async function submitDecision(msId, action) {
   const resp = await fetch('/api/decision', {
     method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({task_id: 'TK-20260429-PIPELINE', action, reason: '驾驶舱决策', milestone_id: msId})
+    body: JSON.stringify({task_id:'TK-20260429-PIPELINE',action,reason:'驾驶舱决策',milestone_id:msId})
   });
-  const data = await resp.json();
   const t = document.getElementById('toast');
-  t.textContent = action === 'approved' ? '✅ 已批准' : action === 'rejected' ? '❌ 已驳回' : '✏️ 已标记';
+  t.textContent = action==='approved'?'✅ 已批准':action==='rejected'?'❌ 已驳回':'✏️ 已标记';
   t.classList.add('show');
-  setTimeout(() => { t.classList.remove('show'); refresh(); selectMs(msId); }, 600);
+  setTimeout(()=>{t.classList.remove('show');refresh();if(state.selected)renderDetail(state.selected);},600);
 }
 
-refresh();
-setInterval(refresh, 30000);
+refresh(); setInterval(refresh, 30000);
 </script>
 </body>
 </html>
