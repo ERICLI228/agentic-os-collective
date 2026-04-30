@@ -8,6 +8,7 @@
   python3 pipeline_ep01.py                  # 跑完整管线 (macOS say)
   python3 pipeline_ep01.py --voice nls      # 阿里云 NLS 真人配音
   python3 pipeline_ep01.py --silent         # 纯视频(无声)
+  python3 pipeline_ep01.py --sfx            # + 环境音效混音 (freesound)
   python3 pipeline_ep01.py --dry-run        # 只打印计划
   python3 pipeline_ep01.py --test           # 验证依赖
 """
@@ -432,6 +433,7 @@ def main():
     parser.add_argument("--episode", default="03", help="集数编号 (01-06)")
     parser.add_argument("--render", choices=["pillow", "comfyui"], default="pillow", help="视频渲染引擎: pillow=字帧(2/10) comfyui=AI渲染图(5/10)")
     parser.add_argument("--silent", action="store_true")
+    parser.add_argument("--sfx", action="store_true", help="启用环境音效混音 (freesound)")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--test", action="store_true")
     args = parser.parse_args()
@@ -475,6 +477,8 @@ def main():
             print("  Step 2: 用 NLS TTS 生成旁白音频 (旁白: zhiqi 女声, 5段)")
         else:
             print("  Step 2: 用 macOS say TTS 生成旁白音频 (5段)")
+        if args.sfx:
+            print("  Step 2.5: 混入环境音效 (freesound)")
         print("  Step 3: 用 ffmpeg 生成视频片段 (5段)")
         if args.render == "comfyui":
             print("          渲染引擎: ComfyUI AI静态图")
@@ -504,6 +508,8 @@ def main():
         mode_parts.append("ComfyUI渲染")
     else:
         mode_parts.append("Pillow字帧")
+    if args.sfx:
+        mode_parts.append("SFX音效")
     mode_label = "+".join(mode_parts)
     print(f"\n{'='*60}")
     print(f"  🎬 Sprint 1.5: 水浒传 EP{ep_id} 端到端管线 [{mode_label}]")
@@ -521,6 +527,22 @@ def main():
     else:
         print(f"\n🎙️ Step 2: 生成旁白音频 [voice={voice_mode}]...")
         audio_files = generate_audio(script, voice_mode=voice_mode, audio_dir=audio_dir)
+
+    # Step 2.5: SFX 混音
+    if args.sfx and not silent_mode:
+        print("\n🎵 Step 2.5: 环境音效混音 (freesound)...")
+        try:
+            import sys
+            sys.path.insert(0, str(PROJECT_ROOT / "shared"))
+            from core.sfx_engine import SFXEngine
+            sfx_engine = SFXEngine()
+            sfx_output = sfx_engine.process_episode(ep_id, audio_dir, output_dir)
+            if sfx_output:
+                print(f"  ✅ SFX 混音完成 → {sfx_output.name}")
+            else:
+                print("  ℹ️ 无SFX处理 (可能缺少API Key或缓存)")
+        except Exception as e:
+            print(f"  ⚠️ SFX 引擎异常: {e}")
 
     # Step 3
     print("\n🎥 Step 3: 生成视频片段...")
