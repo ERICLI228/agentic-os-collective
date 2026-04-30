@@ -63,7 +63,7 @@ def _find_ffmpeg():
     return "ffmpeg"  # fallback
 
 FFMPEG = _find_ffmpeg()
-FFPROBE = FFMPEG.replace("ffmpeg", "ffprobe") if "ffmpeg" in FFMPEG else "ffprobe"
+FFPROBE = str(Path(FFMPEG).parent / "ffprobe") if Path(FFMPEG).parent.name == "bin" else (FFMPEG.replace("ffmpeg", "ffprobe") if "ffmpeg" in FFMPEG else "ffprobe")
 os.environ["PATH"] = f"{Path(FFMPEG).parent}:{os.environ.get('PATH', '')}"
 
 
