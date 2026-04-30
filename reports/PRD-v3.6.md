@@ -153,7 +153,7 @@ Agentic OS v3.6 是一个**基于智能体架构的双业务线自动化中台**
 
 ### 2.1 剧本管理系统（DM-0）
 
-**文件**: `shared/script_manager.py` (413行)
+**文件**: `shared/script_manager.py` (454行)
 
 | 功能 | API 端点 | 说明 |
 |------|---------|------|
@@ -290,7 +290,7 @@ Flask :5001 (shared/task_wizard.py)
 | `shared/script_manager.py` | 454 | **UPDATED** | 剧本查看/编辑/导出·6集故事板·YAML同步·_export_srt·EP05李逵/EP06吴用
 | `shared/comfyui_renderer.py` | 259 | — | ComfyUI SDXL 渲染器·25张全面渲染 |
 | `shared/core/image_processor.py` | 240 | **UPDATED** | rembg·resize·compliance·push_to_erp_draft |
-| `shared/core/tk_pipeline_db.py` | 441 | **UPDATED** | orders扩展+fulfillment_events·4条测试数据 |
+| `shared/core/tk_pipeline_db.py` | 731 | **UPDATED** | orders扩展+fulfillment_events·4条测试数据 |
 | `shared/analytics_engine.py` | 525 | — | TK利润/竞品/供应链·Drama脚本/成本 |
 | `shared/localization_reviewer.py` | 268 | — | 5国LLM翻译·禁忌词过滤·可读性评分 |
 | `shared/decision_engine.py` | 345 | — | 3-Agent审核→DecisionBrief·风险矩阵 |
