@@ -30,6 +30,18 @@ from dataclasses import dataclass, asdict, field
 # ============================================================
 
 @dataclass
+class MultiAgentConfig:
+    """3-Agent 对抗审核配置 (DRM-03)"""
+    critic_model: str = "aliyun/qwen3.6-plus"
+    judge_model: str = "aliyun/qwen3-coder-plus"
+    critic_temp: float = 0.4
+    judge_temp: float = 0.2
+    enabled: bool = True
+
+    def to_dict(self) -> Dict:
+        return asdict(self)
+
+@dataclass
 class DimensionCritique:
     """单个维度的挑刺意见"""
     dimension: str           # 维度名称 (如"利润可信度")
@@ -498,6 +510,174 @@ class AdversarialReviewEngine:
     # Mock 模式 (无 API Key 时用于测试)
     # ============================================================
 
+    def review_multi_agent(
+        self,
+        content: str,
+        content_type: str = "内容",
+        content_id: str = "",
+        rework_count: int = 0,
+        multi_config: MultiAgentConfig = None,
+    ) -> ReviewResult:
+        """
+        DRM-03: 3-Agent 对抗审核 (笔杆子→参谋→裁判)
+
+        与 review() 的区别:
+        - 参谋和裁判使用不同的 LLM 模型/温度，避免自我评分偏差
+        - 裁判的 prompt 更强调独立性，不依赖同一模型的内部偏见
+        - 适合关键决策场景 (选品/广告/剧本)
+
+        Args:
+            content: 被审核内容 (笔杆子已生成)
+            content_type: 内容类型
+            content_id: 追踪 ID
+            rework_count: 回流次数
+            multi_config: 多 Agent 配置，默认 qwen3.6-plus(参谋) + qwen3-coder-plus(裁判)
+
+        Returns:
+            ReviewResult 审核结果
+        """
+        if multi_config is None:
+            multi_config = MultiAgentConfig()
+
+        start_time = time.time()
+        content_id = content_id or f"multi_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+        critic = LLMClient(multi_config.critic_model)
+        judge = LLMClient(multi_config.judge_model)
+
+        # Step 1: [参谋] 用独立模型挑刺
+        print(f"  🔍 [参谋 {multi_config.critic_model}] 开始审核...")
+        critic_sys, critic_usr = self._build_critic_prompt(content, content_type)
+        critic_result = critic.call_json(critic_sys, critic_usr, temperature=multi_config.critic_temp)
+
+        # 构建维度结果
+        dimensions = []
+        for dim in self.config.dimensions:
+            score = critic_result.get("dimension_scores", {}).get(dim, 0)
+            crit = critic_result.get("dimension_critiques", {}).get(dim, {})
+            findings = crit.get("findings", [])
+            severity = crit.get("severity", "ok")
+
+            if score < self.config.rework_threshold:
+                severity = "critical"
+            elif score < self.config.threshold:
+                severity = "warning" if not severity or severity == "ok" else severity
+
+            dimensions.append(DimensionCritique(
+                dimension=dim,
+                score=float(score),
+                findings=findings,
+                severity=severity,
+            ))
+
+        # Step 2: [裁判] 用不同模型独立裁决
+        print(f"  ⚖️  [裁判 {multi_config.judge_model}] 独立裁决...")
+        content_summary = self._get_content_summary(content)
+        judge_sys, judge_usr = self._build_judge_prompt(content_summary, critic_result, rework_count)
+        # Add independence directive
+        judge_sys += "\n重要: 你是独立裁判，不受参谋偏见影响。请独立评估。"
+        judge_result = judge.call_json(judge_sys, judge_usr, temperature=multi_config.judge_temp)
+
+        total_score = float(judge_result.get("total_score", 0))
+        decision = judge_result.get("decision", "reject")
+        judge_reason = judge_result.get("reason", "")
+
+        # 验证裁判决策与分数的逻辑一致性
+        if total_score >= self.config.threshold and decision != "pass":
+            decision = "pass"
+        elif self.config.rework_threshold <= total_score < self.config.threshold and decision not in ("pass", "rework", "reject"):
+            decision = "rework"
+        elif total_score < self.config.rework_threshold:
+            decision = "reject"
+
+        if decision == "rework" and rework_count >= self.config.max_rework_cycles:
+            decision = "reject"
+            judge_reason = f"已达最大回流次数({self.config.max_rework_cycles})，自动驳回"
+
+        elapsed = time.time() - start_time
+
+        return ReviewResult(
+            scenario=self.config.scenario,
+            content_id=content_id,
+            total_score=round(total_score, 2),
+            dimensions=dimensions,
+            decision=decision,
+            rework_count=rework_count,
+            max_rework=self.config.max_rework_cycles,
+            critique_summary=critic_result.get("summary", ""),
+            judge_reason=judge_reason,
+            timestamp=datetime.now().isoformat(),
+            elapsed_seconds=elapsed,
+        )
+
+    def review_mock_multi_agent(
+        self,
+        content: Any,
+        content_type: str = "内容",
+        content_id: str = "",
+        rework_count: int = 0,
+    ) -> ReviewResult:
+        """Mock 3-Agent 审核 (模拟独立模型，无 API 调用)"""
+        start_time = time.time()
+        content_id = content_id or f"mock_multi_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+        import hashlib
+        content_hash = hashlib.md5(str(content).encode()).hexdigest()
+        seed = int(content_hash[:8], 16)
+
+        dims = self.config.dimensions
+        n = len(dims)
+
+        # 参谋独立评分 (不同 seed)
+        critic_scores = []
+        for i in range(n):
+            s = (seed * (i + 3) * 7 + 42) % 10
+            critic_scores.append(max(3, min(9, s)))
+
+        dimensions = []
+        for i, dim in enumerate(dims):
+            score = critic_scores[i]
+            findings = [f"[参谋] 维度 {dim} Mock 批判点 {j+1}" for j in range(i % 3 + 1)]
+            severity = "critical" if score < self.config.rework_threshold else (
+                "warning" if score < self.config.threshold else "ok"
+            )
+            dimensions.append(DimensionCritique(
+                dimension=dim, score=float(score),
+                findings=findings, severity=severity
+            ))
+
+        # 裁判独立评分 (不同 seed → 可能不同于参谋)
+        judge_seed = (seed * 13 + 77) % 10
+        judge_scores = []
+        for i in range(n):
+            s = (judge_seed * (i + 5) * 11 + 33) % 10
+            judge_scores.append(max(3, min(9, s)))
+
+        total_score = round(sum(judge_scores) / n, 2)
+
+        if total_score >= self.config.threshold:
+            decision = "pass"
+        elif total_score >= self.config.rework_threshold:
+            decision = "rework"
+        else:
+            decision = "reject"
+
+        elapsed = time.time() - start_time
+
+        return ReviewResult(
+            scenario=self.config.scenario,
+            content_id=content_id,
+            total_score=total_score,
+            dimensions=dimensions,
+            decision=decision,
+            rework_count=rework_count,
+            max_rework=self.config.max_rework_cycles,
+            critique_summary=f"3-Agent Mock: 参谋评分 {[d.score for d in dimensions]}, 裁判独立评分 {judge_scores}",
+            judge_reason=f"独立裁判裁决 (模型不同, seed={judge_seed}): {decision}",
+            timestamp=datetime.now().isoformat(),
+            elapsed_seconds=elapsed,
+        )
+
     def review_mock(
         self,
         content: Any,
@@ -686,13 +866,19 @@ if __name__ == "__main__":
 
     print("=" * 60)
     print("  通用对抗审核框架 (FR-BS-011)")
-    print("  Agentic OS v3.4")
+    print("  Agentic OS v3.5  |  DRM-03: 3-Agent")
     print("=" * 60)
     print()
 
     use_mock = "--mock" in sys.argv
     if use_mock:
         sys.argv.remove("--mock")
+
+    multi_agent = "--mode" in sys.argv and sys.argv[sys.argv.index("--mode") + 1] == "multi-agent"
+    if multi_agent:
+        idx = sys.argv.index("--mode")
+        sys.argv.pop(idx)
+        sys.argv.pop(idx)
 
     # 如果没有参数，运行演示
     if len(sys.argv) < 2:
@@ -727,16 +913,28 @@ if __name__ == "__main__":
 
         engine = create_review_engine("tk_product")
 
+        mode_label = "3-Agent (笔杆子→参谋→裁判)" if multi_agent else "2-Agent (参谋+裁判)"
+        print(f"🔄 模式: {mode_label}")
+
         if use_mock:
-            result = engine.review_mock(demo_content.strip(), "选品报告", "demo_product_001")
+            if multi_agent:
+                result = engine.review_mock_multi_agent(demo_content.strip(), "选品报告", "demo_multi_001")
+            else:
+                result = engine.review_mock(demo_content.strip(), "选品报告", "demo_product_001")
         else:
             try:
-                result = engine.review(demo_content.strip(), "选品报告", "demo_product_001")
+                if multi_agent:
+                    result = engine.review_multi_agent(demo_content.strip(), "选品报告", "demo_multi_001")
+                else:
+                    result = engine.review(demo_content.strip(), "选品报告", "demo_product_001")
             except Exception as e:
                 print(f"⚠️  LLM 调用失败: {e}")
                 print("使用 Mock 模式继续演示...")
                 print()
-                result = engine.review_mock(demo_content.strip(), "选品报告", "demo_product_001")
+                if multi_agent:
+                    result = engine.review_mock_multi_agent(demo_content.strip(), "选品报告", "demo_multi_001")
+                else:
+                    result = engine.review_mock(demo_content.strip(), "选品报告", "demo_product_001")
 
         print()
         print("=" * 60)
@@ -768,8 +966,14 @@ if __name__ == "__main__":
         engine = create_review_engine(scenario)
 
         if use_mock:
-            result = engine.review_mock(content.strip(), "审核内容")
+            if multi_agent:
+                result = engine.review_mock_multi_agent(content.strip(), "审核内容")
+            else:
+                result = engine.review_mock(content.strip(), "审核内容")
         else:
-            result = engine.review(content.strip(), "审核内容")
+            if multi_agent:
+                result = engine.review_multi_agent(content.strip(), "审核内容")
+            else:
+                result = engine.review(content.strip(), "审核内容")
 
         print(json.dumps(result.to_dict(), ensure_ascii=False, indent=2))
