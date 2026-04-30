@@ -144,3 +144,34 @@ url = config.get_feishu_webhook("数据看板")
 | dashboard_api_v2.py | FEISHU_WEBHOOK_URL | config.py Webhook ID字典 |
 | 4个drama模块 | 水浒传专有数据 | stories/*.yaml 配置驱动 |
 | execution_logger/auto_sync | shell=True | base_executor.run_command() |
+
+## 任务完成规则 (Task Completion Protocol)
+
+每次任务完成后，按以下顺序执行：
+
+### 1. 更新 PRD
+先标注 PRD（`reports/PRD-v3.6.md`），反映本次完成内容：标题/行数/产品数/完成度百分比。
+
+### 2. 三方案备份
+基于 PRD 同步代码至 GitHub，再执行三方案备份：
+```bash
+# (1) git push 到 remote
+git push origin main
+
+# (2) 本地时间戳快照
+rsync -a --exclude='.git' ~/agentic-os-collective/ ~/Backups/agentic-os-$(date +%Y%m%d_%H%M)/
+
+# (3) iCloud 同步 (macOS)
+cp -r ~/agentic-os-collective ~/Library/Mobile\ Documents/com~apple~CloudDocs/Backups/agentic-os-latest/
+```
+
+### 3. 同步 Obsidian
+```bash
+python3 ~/.openclaw/workspace/knowledge-base/sync_tasks_to_obsidian.py
+```
+
+### 4. OpenClaw ↔ OpenCode 协同规则
+- OpenClaw 和 OpenCode 在执行任务时要**主动相互协助与验证测试**
+- 任何一方完成修改后，另一方应运行 `python3 -m py_compile <file>` 验证语法
+- 如果一方遇到问题（死循环/路径错误/依赖缺失），另一方**主动协助协同解决**，不等用户介入
+- 关键数据（EPISODE_MAP、角色名、PRD行数）双方交叉验证后才 commit

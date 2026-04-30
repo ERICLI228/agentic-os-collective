@@ -1,12 +1,12 @@
-# 🎬 Agentic OS v3.6 产品需求文档 (PRD) — 细节展开 + 实体数据版
+# 🎬 Agentic OS v3.6.2 产品需求文档 (PRD) — P0清零 + 动态管线版
 
 > **文档类型**: 产品需求文档 (Product Requirements Document)  
-> **版本**: v3.6 细节展开 + 实体数据版  
-> **日期**: 2026 年 4 月 30 日  
+> **版本**: v3.6.2 P0清零 + 动态管线版  
+> **日期**: 2026 年 4 月 30 日 (v3.6.2)  
 > **产品名称**: Agentic OS v3.5 双业务线自动化系统  
 > **产品愿景**: 一个指令启动 → 全程自动执行 → **关键节点等你决策** → 输出可发布成果  
 > **目标用户**: TK 跨境电商运营人员、AI短剧创作者、技术开发团队  
-> **文档状态**: ✅ 已定稿（v3.6: 细节展开系统 + 剧本/角色/图片API + ComfyUI渲染器 + 全球信息摘要覆盖）
+> **文档状态**: ✅ 已定稿（v3.6.2: P0清零 + 动态管线 + MS-0/1/3/5 stub全补实 + generate_script动态化）
 > **前置版本**: v3.5（2026-04-29 感知控制优先版）→ v3.5.4（2026-04-29 交互驾驶舱 v2）
 
 ---
@@ -28,6 +28,7 @@
 | v3.5.4 | 2026-04-29 | 阿牛 | 交互驾驶舱 v2 — 双业务线Tab/决策联动/智能决策引擎 |
 | **v3.6** | **2026-04-30** | **阿牛** | **细节展开系统 — 所有明细点返回实体数据(非状态标签) · 剧本查看/编辑/导出API · 角色ComfyUI渲染器 · 商品图片处理API · 全球信息摘要 · 27端点Flask · 26/27 PASS** |
 | **v3.6.1** | **2026-04-30** | **阿牛** | **QA全绿(80/80)·6集管线全通(ComfyUI+NLS)·25张角色渲染(6角色含武松/鲁智深/林冲/宋江/李逵/吴用)·30端点+Download API·10项修复(sys/ep_num/export/Image404/拼音双通/DM-V-F/push_erp/SRT/订单)·EPISODE_MAP YAML对齐(idx 7/8/9/10修正)·Dashboard smart routing·80/80 PASS** |
+| **v3.6.2** | **2026-04-30** | **阿牛 + OpenClaw** | **P0清零: DM-1角色卡杨志→李逵/晁盖→吴用·EPISODE_MAP ep05李逵/ep06吴用·generate_script()动态化(script_manager加载)·MS-0/1/3/5 stub补实(门禁/采集/发布/日报)·SFX 11类型6集全配·29stale引用清除·get_dummy_ms移除** |
 
 ---
 
@@ -281,30 +282,31 @@ Flask :5001 (shared/task_wizard.py)
     └── /api/status          — 系统运行状态
 ```
 
-### 3.2 关键文件清单 (v3.6.1更新)
+## 3.2 关键文件清单 (v3.6.2更新)
 
-| 文件 | 行数 | v3.6.1状态 | 说明 |
+| 文件 | 行数 | v3.6.2状态 | 说明 |
 |------|------|-----------|------|
-| `shared/task_wizard.py` | 740 | **UPDATED** | Flask主服务·30端点·CORS·sys/ep_num/download修复 |
-| `shared/detail_engine.py` | 779 | **UPDATED** | 14里程碑·DM-V/DM-F/DM-10新增·含图片URL |
-| `shared/script_manager.py` | 454 | **UPDATED** | 剧本查看/编辑/导出·6集故事板·YAML同步·_export_srt·EP05李逵/EP06吴用
-| `shared/comfyui_renderer.py` | 259 | — | ComfyUI SDXL 渲染器·25张全面渲染 |
-| `shared/core/image_processor.py` | 240 | **UPDATED** | rembg·resize·compliance·push_to_erp_draft |
-| `shared/core/tk_pipeline_db.py` | 731 | **UPDATED** | orders扩展+fulfillment_events·4条测试数据 |
-| `shared/analytics_engine.py` | 525 | — | TK利润/竞品/供应链·Drama脚本/成本 |
+| `shared/task_wizard.py` | 740 | — | Flask主服务·30端点·CORS·sys/ep_num/download修复 |
+| `shared/detail_engine.py` | 797 | **UPDATED** | 14里程碑·DM-1角色卡全修复(李逵/吴用)·MS-0/1/3/5 stub补实·0处stale引用 |
+| `shared/script_manager.py` | 454 | — | 剧本查看/编辑/导出·6集故事板·YAML同步·_export_srt·EP05李逵/EP06吴用 |
+| `shared/comfyui_renderer.py` | 259 | **UPDATED** | ComfyUI SDXL 渲染器·--help likui/wuyong修正 |
+| `shared/core/image_processor.py` | 240 | — | rembg·resize·compliance·push_to_erp_draft |
+| `shared/core/tk_pipeline_db.py` | 731 | — | orders扩展+fulfillment_events·4条测试数据 |
+| `shared/analytics_engine.py` | 700 | **UPDATED** | EPISODE_MAP ep05李逵/ep06吴用·DRAMA_EMOTIONAL_ARCS更新 |
+| `shared/core/sfx_engine.py` | 497 | **UPDATED** | 11音效类型(含喧哗/拳击/木材)·6集全配·sfx_manifest.json |
 | `shared/localization_reviewer.py` | 268 | — | 5国LLM翻译·禁忌词过滤·可读性评分 |
 | `shared/decision_engine.py` | 345 | — | 3-Agent审核→DecisionBrief·风险矩阵 |
 | `shared/core/adversarial_review.py` | 886 | — | 3-Agent对抗审核框架·6场景 |
-| `dashboard/task_board.html` | 790 | **UPDATED** | v3.6 smart routing·DM-0/DM-1/MS-2.3专用渲染·图片画廊·inline编辑·下载 |
+| `dashboard/task_board.html` | 790 | — | v3.6 smart routing·DM-0/DM-1/MS-2.3专用渲染·图片画廊·inline编辑·下载 |
 | `dashboard/info_board.html` | 300+ | — | 全球信息摘要·科学清新风格·筛选Tabs |
-| `drama/openclaw/core/pipeline_ep01.py` | 554 | — | --render comfyui|pillow·--voice nls·6集全通 |
-| `stories/shuihuzhuan.yaml` | — | **UPDATED** | YAML idx 7/8/9/10 对齐 EPISODE_MAP |
-| `reports/PRD-v3.6.md` | 400+ | **UPDATED** | v3.6.1 注释版·完成度矩阵·QA报告 |
+| `drama/openclaw/core/pipeline_ep01.py` | 597 | **UPDATED** | generate_script()动态化(script_manager加载)·6集全适配·ACT_TYPE_MAP |
+| `stories/shuihuzhuan.yaml` | — | — | YAML idx 7/8/9/10 对齐 EPISODE_MAP |
+| `reports/PRD-v3.6.md` | 418+ | **UPDATED** | v3.6.2 版本·行数同步·完成度矩阵 |
 | `~/.agentic-os/pipeline.db` | — | — | orders(4) + fulfillment_events(3) |
 | `~/.agentic-os/character_designs/renders/` | — | — | 6角色(武松/鲁智深/林冲/宋江/李逵/吴用)·25 PNG |
-| `~/.agentic-os/episode_*/final.mp4` | — | **NEW** | EP01-06 全量输出 (1.8-2.4MB/23s) |
+| `~/.agentic-os/episode_*/final.mp4` | — | — | EP01-06 全量输出 (1.8-2.4MB/23s) |
 | `~/.agentic-os/products/` | — | — | catalog.json + images/ 1产品6变体图(jpg/nobg/final) |
-| `~/.agentic-os/miaoshou_draft/` | — | **NEW** | 妙手ERP草稿箱同步 (phone_case_main.json+jpg) |
+| `~/.agentic-os/miaoshou_draft/` | — | — | 妙手ERP草稿箱同步 (phone_case_main.json+jpg) |
 | `~/.agentic-os/info_subscriber/items.json` | — | — | 123条信息摘要 |
 
 ---
