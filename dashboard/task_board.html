@@ -104,20 +104,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #
 let currentTab = 'tk';
 let state = { milestones: [], selected: null };
 
-const DRAMA_MS = [
-  {id:'DM-0', name:'角色设计圣经', status:'completed', note:'6角色18分镜fal.ai ready', decision_point:false},
-  {id:'DM-1', name:'EP01 武松打虎', status:'completed', note:'NLS真人声+Pillow字幕', decision_point:false},
-  {id:'DM-2', name:'EP02 鲁智深', status:'completed', note:'NLS真人声+Pillow字幕', decision_point:false},
-  {id:'DM-3', name:'EP03 林冲风雪山神庙', status:'pending', note:'管线就绪，待运行', decision_point:false},
-  {id:'DM-4', name:'EP04 宋江怒杀阎婆惜', status:'pending', note:'管线就绪，待运行', decision_point:false},
-  {id:'DM-5', name:'EP05 杨志卖刀', status:'pending', note:'管线就绪，待运行', decision_point:false},
-  {id:'DM-6', name:'EP06 晁盖智取生辰纲', status:'pending', note:'管线就绪，待运行', decision_point:false},
-  {id:'DM-V', name:'fal.ai AI视频升级', status:'pending', note:'等支付 → 真AI武松打虎', decision_point:true},
-  {id:'DM-S', name:'NLS配音引擎', status:'completed', note:'阿里云TTS 4种音色', decision_point:false},
-  {id:'DM-F', name:'视频合成管线', status:'completed', note:'Pillow+ffmpeg 6集切换', decision_point:false},
-  {id:'DM-R', name:'3-Agent审核', status:'completed', note:'笔杆子→参谋→裁判', decision_point:false},
-];
-
 async function refresh() {
   try {
     const resp = await fetch('/api/dashboard');
@@ -131,11 +117,11 @@ async function refresh() {
 }
 
 function mergeMilestones() {
-  // TK milestones from API
-  const tk = (state.data?.milestones || []).map(m => ({...m, pipeline:'tk'}));
-  // Drama milestones from static (could be API later)
-  const dm = DRAMA_MS.map(m => ({...m, pipeline:'drama'}));
-  state.allMilestones = [...tk, ...dm];
+  state.allMilestones = (state.data?.milestones || []).map(m => {
+    // 保留API返回的pipeline，若无则根据ID前缀推断
+    const p = m.pipeline || (String(m.id||'').startsWith('DM') ? 'drama' : 'tk');
+    return {...m, pipeline: p};
+  });
 }
 
 function switchTab(tab) {
