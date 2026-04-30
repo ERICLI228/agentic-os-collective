@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic OS 指挥中心</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0f1117; color: #e4e6eb; padding: 20px; }
+h1 { font-size: 20px; margin-bottom: 4px; }
+.sub { color: #8a8d91; font-size: 13px; margin-bottom: 20px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.card { background: #1a1d27; border-radius: 10px; padding: 20px; }
+.card h2 { font-size: 14px; color: #8a8d91; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.stat-row { display: flex; gap: 16px; margin-bottom: 16px; }
+.stat { flex: 1; background: #222532; border-radius: 8px; padding: 12px; text-align: center; }
+.stat .num { font-size: 28px; font-weight: 700; }
+.stat .label { font-size: 11px; color: #8a8d91; margin-top: 4px; }
+.stat .num.green { color: #22c55e; }
+.stat .num.yellow { color: #f59e0b; }
+.stat .num.red { color: #ef4444; }
+.progress { height: 6px; background: #222532; border-radius: 3px; margin: 8px 0 16px; overflow: hidden; }
+.progress-bar { height: 100%; background: #22c55e; border-radius: 3px; transition: width 0.5s; }
+.ms-item { display: flex; align-items: center; padding: 6px 8px; border-radius: 6px; margin: 2px 0; font-size: 13px; }
+.ms-item:hover { background: #222532; }
+.ms-item .dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 10px; flex-shrink: 0; }
+.ms-item .dot.done { background: #22c55e; }
+.ms-item .dot.waiting { background: #f59e0b; animation: pulse 1.5s infinite; }
+.ms-item .dot.pending { background: #4a4d57; }
+.ms-item .name { flex: 1; }
+.ms-item .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 8px; }
+.ms-item .tag.decision { background: #7c2d12; color: #fbbf24; }
+.ms-item .tag.approved { background: #14532d; color: #22c55e; }
+.btn { display: inline-block; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; margin: 4px; }
+.btn-primary { background: #2563eb; color: #fff; }
+.btn-warn { background: #d97706; color: #fff; }
+.btn-danger { background: #dc2626; color: #fff; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.decision-panel { background: #2d1a0e; border: 1px solid #d97706; border-radius: 8px; padding: 12px; margin-top: 8px; display: none; }
+.decision-panel.show { display: block; }
+.toast { position: fixed; bottom: 20px; right: 20px; background: #22c55e; color: #000; padding: 10px 18px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity 0.3s; }
+.toast.show { opacity: 1; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+</style>
+</head>
+<body>
+<h1>🚀 Agentic OS 指挥中心</h1>
+<div class="sub">TK 运营 Pipeline · 30s 自动刷新 <span id="lastRefresh"></span></div>
+
+<div class="grid">
+  <div class="card">
+    <h2>📊 Pipeline 总览</h2>
+    <div class="stat-row">
+      <div class="stat">
+        <div class="num green" id="completed">-</div>
+        <div class="label">已完成</div>
+      </div>
+      <div class="stat">
+        <div class="num yellow" id="pending">-</div>
+        <div class="label">待决策</div>
+      </div>
+      <div class="stat">
+        <div class="num" id="total">-</div>
+        <div class="label">总里程碑</div>
+      </div>
+    </div>
+    <div id="pctLabel" style="font-size:13px;color:#8a8d91"></div>
+    <div class="progress"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+    <div id="milestones"></div>
+  </div>
+  <div class="card">
+    <h2>⚡ 决策面板</h2>
+    <div id="decisionCard" style="color:#8a8d91;font-size:13px;">无待决策项</div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:5001/api/dashboard';
+let milestones = [];
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+async function submitDecision(taskId, action) {
+  const resp = await fetch('http://localhost:5001/api/decision', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({task_id: taskId, action: action, reason: '驾驶舱决策'})
+  });
+  const data = await resp.json();
+  showToast(action === 'approved' ? '✅ 已批准' : action === 'rejected' ? '❌ 已驳回' : '✏️ 已标记修改');
+  setTimeout(refresh, 500);
+}
+
+async function refresh() {
+  try {
+    const resp = await fetch(API);
+    const data = await resp.json();
+    milestones = data.milestones || [];
+    renderStats(data);
+    renderMilestones();
+    renderDecisionPanel();
+    document.getElementById('lastRefresh').textContent = '· ' + new Date().toLocaleTimeString();
+  } catch(e) {
+    document.getElementById('lastRefresh').textContent = '· 连接失败';
+  }
+}
+
+function renderStats(data) {
+  document.getElementById('completed').textContent = data.completed || 0;
+  document.getElementById('pending').textContent = data.decision_pending || 0;
+  document.getElementById('total').textContent = data.total_milestones || 0;
+  const pct = data.completion_pct || 0;
+  document.getElementById('pctLabel').textContent = `完成度 ${pct}%`;
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+function renderMilestones() {
+  const el = document.getElementById('milestones');
+  el.innerHTML = milestones.map(m => {
+    const cls = m.status === 'completed' ? 'done' : m.status === 'waiting_approval' ? 'waiting' : 'pending';
+    const icon = m.status === 'completed' ? '✅' : m.status === 'waiting_approval' ? '⏸️' : '⏳';
+    let tags = '';
+    if (m.decision_point) tags += `<span class="tag decision">决策点</span>`;
+    if (m.decision === 'approved') tags += `<span class="tag approved">已批准</span>`;
+    return `<div class="ms-item">
+      <span class="dot ${cls}"></span>
+      <span class="name">${icon} ${m.id} ${m.name}</span>
+      ${tags}
+    </div>`;
+  }).join('');
+}
+
+function renderDecisionPanel() {
+  const waiting = milestones.filter(m => m.status === 'waiting_approval' && m.decision_point);
+  const el = document.getElementById('decisionCard');
+  if (waiting.length === 0) {
+    el.innerHTML = '<div style="color:#8a8d91;font-size:13px;">✅ 无待决策项</div>';
+    return;
+  }
+  el.innerHTML = waiting.map(m => `
+    <div style="background:#222532;border-radius:8px;padding:12px;margin:8px 0;">
+      <div style="font-weight:600;margin-bottom:6px;">🔴 ${m.id} ${m.name}</div>
+      <div style="font-size:12px;color:#8a8d91;margin-bottom:8px;">状态: ${m.status} | ${m.note || ''}</div>
+      <button class="btn btn-primary" onclick="submitDecision('TK-20260429-PIPELINE','approved')">✅ 批准</button>
+      <button class="btn btn-warn" onclick="submitDecision('TK-20260429-PIPELINE','modify')">✏️ 修改</button>
+      <button class="btn btn-danger" onclick="submitDecision('TK-20260429-PIPELINE','rejected')">❌ 驳回</button>
+    </div>
+  `).join('');
+}
+
+refresh();
+setInterval(refresh, 30000);
+</script>
+</body>
+</html>
