@@ -1,7 +1,7 @@
-# 🎬 Agentic OS v3.6.2 产品需求文档 (PRD) — P0清零 + 动态管线版
+# 🎬 Agentic OS v3.6.3 产品需求文档 (PRD) — PHASE1-4完成版
 
 > **文档类型**: 产品需求文档 (Product Requirements Document)  
-> **版本**: v3.6.2 P0清零 + 动态管线版  
+> **版本**: v3.6.3 PHASE1-4完成版  
 > **日期**: 2026 年 4 月 30 日 (v3.6.2)  
 > **产品名称**: Agentic OS v3.5 双业务线自动化系统  
 > **产品愿景**: 一个指令启动 → 全程自动执行 → **关键节点等你决策** → 输出可发布成果  
@@ -29,6 +29,7 @@
 | **v3.6** | **2026-04-30** | **阿牛** | **细节展开系统 — 所有明细点返回实体数据(非状态标签) · 剧本查看/编辑/导出API · 角色ComfyUI渲染器 · 商品图片处理API · 全球信息摘要 · 27端点Flask · 26/27 PASS** |
 | **v3.6.1** | **2026-04-30** | **阿牛** | **QA全绿(80/80)·6集管线全通(ComfyUI+NLS)·25张角色渲染(6角色含武松/鲁智深/林冲/宋江/李逵/吴用)·30端点+Download API·10项修复(sys/ep_num/export/Image404/拼音双通/DM-V-F/push_erp/SRT/订单)·EPISODE_MAP YAML对齐(idx 7/8/9/10修正)·Dashboard smart routing·80/80 PASS** |
 | **v3.6.2** | **2026-04-30** | **阿牛 + OpenClaw** | **P0清零: DM-1角色卡杨志→李逵/晁盖→吴用·EPISODE_MAP ep05李逵/ep06吴用·generate_script()动态化(script_manager加载)·MS-0/1/3/5 stub补实(门禁/采集/发布/日报)·SFX 11类型6集全配·29stale引用清除·get_dummy_ms移除** |
+| **v3.6.3** | **2026-04-30** | **阿牛 + OpenClaw + OpenCode** | **PHASE1止血: 假成功清洗11条·execution_logger安全加固(shell=False)·ffmpeg动态路径(drama_merge+pillow)·quality_assessor语法修复·skill脚本软链接7就位+drama_script/drama_video恢复·CLAUDE同步v3.6.2/82%。PHASE3管线: drama_pipeline.yaml v1.2(Seedance/MiniMax→OpenClaw·MS-4.5对抗审核·9阶段编译验证)。PHASE4 Dashboard: 待决策黄色高亮·MS-2.3修改意见+实时刷新·决策面板增强** |
 
 ---
 
