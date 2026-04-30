@@ -1,12 +1,12 @@
-# 🎬 Agentic OS v3.6.6 产品需求文档 (PRD) — UX诚实评估版
+# 🎬 Agentic OS v3.6.7 产品需求文档 (PRD) — 角色档案系统
 
 > **文档类型**: 产品需求文档 (Product Requirements Document)
-> **版本**: v3.6.6 UX诚实评估版
-> **日期**: 2026 年 4 月 30 日 (v3.6.6)
+> **版本**: v3.6.7 角色档案系统
+> **日期**: 2026 年 4 月 30 日 (v3.6.7)
 > **产品名称**: Agentic OS v3.5 双业务线自动化系统
 > **产品愿景**: 一个指令启动 → 全程自动执行 → **关键节点等你决策** → 输出可发布成果
 > **目标用户**: TK 跨境电商运营人员、AI短剧创作者、技术开发团队
-> **文档状态**: ⚠️ 待冲刺（v3.6.6: CEO诚实评估确认后端 API 82% → 前端 UX 仅 30%，体验断裂 25-40%）
+> **文档状态**: ✅ DM-1 角色设计从技术参数→完整人物小传 (对标影视行业角色 Bible)
 > **前置版本**: v3.6.5（2026-04-30 LLM审核管线集成版）
 
 ---
@@ -33,6 +33,7 @@
 | **v3.6.4** | **2026-04-30** | **阿牛** | **PHASE2 Cockpit: 10/10 API 200·/api/script list scene_count+render_fields·/api/script/3 zero-pad修复·/api/decision宽容模式·/api/render别名路由(b030875)·详情端点渲染统计补齐·sys.path跨路径修复(d6f71c0)·role_designer过期副本清理(67b01ba)·CLAUDE.md v3.6.2同步** |
 | **v3.6.5** | **2026-04-30** | **阿牛** | **LLM对抗审核突破: CODING免费额度路线通(单Agent~87s/3-Agent~100s)·综合评分3.8/10→reject·4维度真实审计·adversarial_review.py模型aliyun/→coding/+env加载·pipeline_ep01.py --review(mock/coding)开关·DM-0 Dashboard命令修正·drama_pipeline.yaml MS-4.5命令修正·CODING Plan余48%/48天** |
 | **v3.6.6** | **2026-04-30** | **阿牛 + CEO 黄光耀** | **CEO诚实评估: 后端 API 82% → 前端 UX 仅 30% → 11项UX全覆盖(561a9c9) · 图片对比视图✅ · 真实进度反馈✅ · 键盘导航+快捷键✅ · 管线监控面板✅ · 详情面包屑✅ · 刷新状态指示✅ · 模态点击关闭✅ · 左侧键盘导航✅ · 统计Tooltip✅ · 搜索高亮✅ · 空状态引导✅ · 1310行(+318)·JS括号406/406平衡·49函数** |
+| **v3.6.7** | **2026-04-30** | **阿牛** | **DM-1 角色档案系统: 4属性→完整人物小传(Bible) · visual_bible.json 8角色升级(personality/appearance/background/voice) · character_profile_generator.py(AI生成+预设fallback+重渲染检测) · POST /api/character 深合并保存 · DM-1 前端完全重构(角色Bible面板+编辑模式+颜色选择器+渲染进度) · 6角色全覆盖(武松/鲁智深/林冲/宋江/李逵/吴用) · +1152/-45 lines (4 files) · commit d01ef95** |
 ---
 
 ## 📊 PHASE 1-4 完成记录 (v3.6.4 新增)
@@ -116,7 +117,7 @@
 | ID | 名称 | 类型 | 状态 | v3.6 更新 |
 |----|------|------|------|-----------|
 | **DM-0** | **剧本审核** | 自动 | **✅ 管线就绪** | **完整剧本查看/编辑/导出·5段式分镜故事板·LLM审核CODING路线通(~90s/0费)·pipeline --review 开关·shuihuzhuan.yaml实时同步** |
-| **DM-1** | **角色设计** | 自动 | **🏗️ 进行中** | **ComfyUI渲染器已生成鲁智深3镜+晁盖3镜·6角色设计可编辑·NLS音色/配色选择·POST /api/character/{name}** |
+| **DM-1** | **角色设计** | 自动 | **✅ 档案就绪** | **角色 Bible v3.6.7: 8角色完整档案(性格/口头禅/习性/服饰/背景/关系) · 编辑模式+颜色选择器 · AI生成+重渲染检测 · 6角色前端面板(武松/鲁智深/林冲/宋江/李逵/吴用)** |
 | DM-2 | EP01 鲁提辖拳打镇关西 | 自动 | ✅ | final.mp4 2.3MB/23s ComfyUI+NLS |
 | DM-3 | EP02 鲁智深倒拔垂杨柳 | 自动 | ✅ | final.mp4 2.3MB/23s ComfyUI+NLS |
 | DM-4 | EP03 林冲风雪山神庙 | 自动 | ✅ | **final.mp4 2.0MB/23s ComfyUI+NLS** |
