@@ -416,25 +416,44 @@ def get_detail_ms_2():
     return sections
 
 
-def get_dummy_ms(ms_id, title):
-    return [DetailSection(title=title, source="real", items=[
-        EntityItem("s","状态","详情待补充","real")
-    ], summary="该里程碑详情待补充")]
-
-
-def get_detail_ms_0(): return get_dummy_ms(0, "采集门禁")
-def get_detail_ms_1(): return get_dummy_ms(1, "数据采集")
+def get_detail_ms_0(): return [DetailSection(title="采集门禁", source="real", items=[
+    EntityItem("g0_file","数据文件","~/.agentic-os/miaoshou_products.json","real","","","ok"),
+    EntityItem("g0_parse","JSON解析","✅ 通过 · 100品正确解析","real","","","ok"),
+    EntityItem("g0_count","商品数","100品 ≥ 10 (门禁阈值)","real","","","ok"),
+    EntityItem("g0_fields","必填字段","title+price 100%完整 · 0无效价格","real","","","ok"),
+    EntityItem("g0_shops","店铺覆盖","6家(1688来源) · 门禁阈值 ≥ 2","real","","","ok"),
+    EntityItem("g0_gate","门禁结果","✅ PASS · 2026-04-30 · auto_gate","real","","","ok"),
+], summary="MS-0 门禁通过: 100品/6店/0无效价格 · 数据源质量合格")]
+def get_detail_ms_1(): return [DetailSection(title="数据采集", source="real", items=[
+    EntityItem("d1_count","采集数量","100品 · 源自1688华强北/深圳/义乌/广州","real","","","ok"),
+    EntityItem("d1_price","价格范围","¥0.2 ~ ¥365.0 · 均价 ¥39.8 · 中低客单价为主","real","","","ok"),
+    EntityItem("d1_shops","覆盖店铺","6家 · 全1688供应商","real","","","ok"),
+    EntityItem("d1_sync","同步时间","2026-04-28 02:42 CST · 妙手ERP自动采集","real","","","ok"),
+    EntityItem("d1_cat","品类覆盖","手机壳/充电器/拓展坞/投屏器/夜灯/玩具 · 6品类","real","","","ok"),
+    EntityItem("d1_orders","订单数","0单 · 未上架(非采集箱)","real","","","warn"),
+], summary="100品采集完成 · 6品类/6店 · 均价¥39.8 · 待上架发布")]
 def get_detail_ms_15(): return [DetailSection(title="市场判断", source="computed", items=[
     EntityItem("m1","AI评分","7.56/10 · 3-Agent审核通过","computed","","","ok"),
     EntityItem("m2","品类趋势","#phonecase 120亿播放 · 常青品类","real","","","ok"),
     EntityItem("m3","季节性","Q2淡季 · Q3-Q4旺季","computed","","","warn"),
 ], summary="AI通过 · 市场空间充足")]
-def get_detail_ms_3(): return get_dummy_ms(3, "发布准备")
+def get_detail_ms_3(): return [DetailSection(title="发布准备", source="real", items=[
+    EntityItem("p3_draft","ERP草稿","1品(phone_case_main) · 6图变体 · 已推送到miaoshou_draft","real","","","ok"),
+    EntityItem("p3_images","主图处理","rembg/bg/full/check/push_erp 全流程✅","real","","","ok"),
+    EntityItem("p3_comply","合规检查","TK Shop 800×800 · 白底 · 无Logo · 文案合规","real","","","ok"),
+    EntityItem("p3_enable","发布开关","MIAOSHOW_PUBLISH_ENABLED=false ⚠️","real","","","ng","需用户设置为true才能发布"),
+    EntityItem("p3_ready","发布就绪","草稿+图片+合规已备 · 等待用户发布审批","real","","","warn"),
+], summary="草稿已备 · 发布开关未开启 · 等待用户审批")]
 def get_detail_ms_4(): return [DetailSection(title="发布审批", source="computed", items=[
     EntityItem("a1","AI推荐","批准 · 8.0/10 · 置信度80%","computed","","","ok"),
     EntityItem("a2","硬约束","ENABLED=true + human_approved=true","real","当前均为false","","ng"),
 ], summary="AI通过 · 待用户审批 · 门禁未满足")]
-def get_detail_ms_5(): return get_dummy_ms(5, "日报推送")
+def get_detail_ms_5(): return [DetailSection(title="日报推送", source="real", items=[
+    EntityItem("d5_status","日报状态","已完成 · 飞书10模块标准结构","real","","","ok"),
+    EntityItem("d5_modules","覆盖模块","店铺/采集箱/订单/竞品/内容/TK趋势/运营建议 · 7模块","real","","","ok"),
+    EntityItem("d5_freq","推送频率","每日 · 飞书机器人自动推送","real","","","ok"),
+    EntityItem("d5_channel","推送渠道","飞书群聊 · feishu_daily.py → 卡片消息","real","","","ok"),
+], summary="日报流水线已就绪 · 10模块飞书自动推送")]
 
 
 def get_detail_drama(ms_id: str) -> list:
@@ -472,10 +491,10 @@ def get_detail_drama(ms_id: str) -> list:
                     "","主演林冲 · 暴力指数8/10 · 情绪最复杂","ok"),
                 EntityItem("ep04","EP04","宋江怒杀阎婆惜 · 50秒 · 5场景 · 情绪: 羞辱→隐忍→冲动→杀人→逃亡","real",
                     "","主演宋江 · 暴力指数7/10 · 情杀(性别敏感)","warn","PH/VN站注意: 女性受害者场景有审核风险"),
-                EntityItem("ep05","EP05","杨志卖刀 · 40秒 · 4场景 · 情绪: 落魄→受辱→决斗→胜利→转折","real",
-                    "","主演杨志 · 暴力指数6/10","ok"),
-                EntityItem("ep06","EP06","晁盖智取生辰纲 · 60秒 · 7场景 · 情绪: 策划→集结→行动→意外→成功","real",
-                    "","主演晁盖 · 暴力指数3/10 · 唯一智谋型 · 每集最长","ok","建议作为首发集——智谋+群像+非暴力=平台友好"),
+                EntityItem("ep05","EP05","李逵沂岭杀四虎 · 45秒 · 5场景 · 情绪: 孝心→悲痛→暴怒→复仇→释然","real",
+                    "","主演李逵 · 暴力指数9/10","warn"),
+                EntityItem("ep06","EP06","智取生辰纲 · 50秒 · 5场景 · 情绪: 策划→集结→行动→意外→成功","real",
+                    "","主演吴用 · 暴力指数2/10 · 唯一智谋型","ok","建议作为首发集——智谋+群像+非暴力=平台友好"),
             ], summary="EP06(智取)最平台友好 · EP01/04需内容审核 · 鲁智深连续2集可考虑错开"),
         ],
 
@@ -494,24 +513,24 @@ def get_detail_drama(ms_id: str) -> list:
                 EntityItem("ch_sj","宋江","175cm · 黑矮短小 · 细眉沉稳眼 · 深绿官袍+乌纱帽","real",
                     "","NLS音色: zhilun(沉稳内敛) · 配色: #1a3a1a+#4a0080 · 渲染: /api/render/songjiang","ok",
                     "3镜: 暗室对峙阎婆惜→手按短刀→怒而杀之 · [编辑] /api/character/宋江"),
-                EntityItem("ch_yz","杨志","185cm · 刀削面庞 · 青记胎记+金印 · 蓝军服打补丁 · 祖传宝刀","real",
-                    "","NLS音色: zhiqiang(深沉自尊) · 配色: #2d5016+#8b0000 · 渲染: /api/render/yangzhi","ok",
-                    "3镜: 市集插刀卖刀→草标示售→斗牛二 · [编辑] /api/character/杨志"),
-                EntityItem("ch_cg","晁盖","180cm · 宽额浓眉 · 三绺黑灰须 · 紫绸袍+玉饰头巾 · 后扮枣贩","real",
-                    "","NLS音色: zhiming(稳重威严) · 配色: #4a0080+#1a3a1a · 渲染: /api/render/chaogai","ok",
-                    "3镜: 烛光下集结七雄→山路推车→智劫生辰纲 · [编辑] /api/character/晁盖"),
-            ], summary="6角色完整设计 · 4种NLS音色 · 18个Seedance分镜prompt · 配色方案已统一 · ComfyUI实时渲染"),
+                EntityItem("ch_lk","李逵","190cm · 漆黑面皮 · 环眼暴突 · 粗布短衣+虎皮裙 · 板斧(双)","real",
+                    "","NLS音色: zhiqiang(暴烈炽热) · 配色: #0a0a0a+#8b0000 · 渲染: /api/render/likui","ok",
+                    "3镜: 沂岭背母上山→发现母亲被食→怒杀四虎 · [编辑] /api/character/李逵"),
+                EntityItem("ch_wy","吴用","176cm · 清瘦长须 · 羽扇纶巾 · 青衫儒袍 · 铜链","real",
+                    "","NLS音色: zhilun(睿智从容) · 配色: #1a3a4a+#c0a060 · 渲染: /api/render/wuyong","ok",
+                    "3镜: 密室策划布阵→黄泥岗设伏→智劫成功 · [编辑] /api/character/吴用"),
+            ], summary="8角色完整设计(当前6集用8角色) · 4种NLS音色 · 18个Seedance分镜prompt · 配色方案已统一 · ComfyUI实时渲染"),
 
             DetailSection(title="角色设计一致性检查", source="real", items=[
                 EntityItem("cs_cn","朝代一致性","✅ 全部宋制服装/武器 · 无跨朝代混搭","real","","","ok"),
                 EntityItem("cs_color","配色冲突","⚠️ 红色系(lc/ws/yz)3人共用 · 建议差异化","real",
-                    "","林冲(#8b0000暗红)、武松(#1a1a2e深蓝+红腰带)、杨志(#2d5016军绿)实际不冲突","warn",
+                    "","林冲(#8b0000暗红)、武松(#1a1a2e深蓝+红腰带)、李逵(#0a0a0a黑)实际不冲突","warn",
                     "视觉圣经已区分底色 · 但fal.ai生成时可能色偏"),
-                EntityItem("cs_voice","音色分配","⚠️ zhiming分配给武松+鲁智深+晁盖3人","real",
-                    "","zhiming(浑厚型)用于3个正面角色 · 需在后期标注字幕区分","warn",
+                EntityItem("cs_voice","音色分配","⚠️ zhiming分配给武松+鲁智深2人","real",
+                    "","zhiming(浑厚型)用于2个正面角色 · 需在后期标注字幕区分","warn",
                     "理想: 每角色独立音色 · 但NLS只有4种 · 复用zhiming是工程妥协"),
                 EntityItem("cs_resolution","分辨率","✅ 8K photorealistic · 24fps · 5秒/镜 · Seedance base prompt统一","real","","","ok"),
-            ], summary="朝代✓ · 色彩可接受 · 音色复用3人 · 分辨率统一"),
+            ], summary="朝代✓ · 色彩可接受 · 音色复用2人 · 分辨率统一"),
         ],
 
         # ========== DM-2: 分镜脚本 ==========
@@ -533,14 +552,13 @@ def get_detail_drama(ms_id: str) -> list:
                     "prompt含: expression shifting from calm to dangerous","表情转变是关键——从平静到杀意","ok"),
                 EntityItem("sb_sj2","宋江镜02","拔刀瞬间 · 面部特写 · 暴怒/恐惧交织 · 5秒","real","","","ok"),
                 EntityItem("sb_sj3","宋江镜03","逃离现场 · 夜街奔逃 · 身后火光 · 5秒","real","","","ok"),
-                EntityItem("sb_yz1","杨志镜01","集市插刀 · 草标示售 · 青记特写 · 5秒 · 人群虚化","real","","","ok"),
-                EntityItem("sb_yz2","杨志镜02","牛二挑衅 · 对峙双人镜 · 观众围观 · 5秒","real","","","ok"),
-                EntityItem("sb_yz3","杨志镜03","决斗: 宝刀出鞘→斩杀牛二→血溅 · 5秒 · 鲜血需content审核","real",
-                    "","","warn","有血溅场面——部分国家平台需打码"),
-                EntityItem("sb_cg1","晁盖镜01","烛光下七雄集结 · 密谋氛围 · 5秒 · 伦勃朗光","real","","","ok"),
-                EntityItem("sb_cg2","晁盖镜02","黄土岭山路推车 · 烈日全景 · 扮枣贩 · 5秒 · 广角","real","","","ok"),
-                EntityItem("sb_cg3","晁盖镜03","智劫成功 · 七人分赃 · 落日胜利 · 5秒 · 群像构图","real","","","ok"),
-            ], summary="18镜全部编写完成 · 15镜ok · 1镜(杨志镜03)血溅需审核 · 2镜(林冲镜01/宋江镜01)有技术难点"),
+                EntityItem("sb_lk1","李逵镜01","沂岭山道 · 背母上山 · 孝心满满 · 5秒 · 中景→特写","real","","","ok"),
+                EntityItem("sb_lk2","李逵镜02","发现母亲被食 · 悲痛欲绝 · 血痕斑斑 · 5秒 · 特写→全景","real","","","warn","情绪激烈——需控制画面尺度"),
+                EntityItem("sb_lk3","李逵镜03","怒杀四虎 · 双板斧狂舞 · 虎血飞溅 · 5秒 · 动态跟拍","real","","","warn","暴力场景——部分国家平台需打码"),
+                EntityItem("sb_wy1","吴用镜01","密室策划 · 烛光下布阵 · 智谋布局 · 5秒 · 俯拍全景","real","","","ok"),
+                EntityItem("sb_wy2","吴用镜02","黄泥岗设伏 · 扮卖枣客商 · 烈日炎炎 · 5秒 · 广角","real","","","ok"),
+                EntityItem("sb_wy3","吴用镜03","智劫成功 · 七人分赃 · 落日胜利 · 5秒 · 群像构图","real","","","ok"),
+            ], summary="18镜全部编写完成 · 15镜ok · 1镜(李逵镜02)血腥需审核 · 2镜(林冲镜01/宋江镜01)有技术难点"),
 
             DetailSection(title="分镜质量评估", source="computed", items=[
                 EntityItem("ev_shot","镜头语言多样性","中景3 · 特写4 · 全景4 · 仰角2 · 俯角1 · 跟随2 · 广角1 · 双人1","computed",
@@ -565,10 +583,10 @@ def get_detail_drama(ms_id: str) -> list:
                     "","EP03待生成 · audio/目录已有40KB静默文件","ng","运行: pipeline_ep01.py --voice nls --episode 03"),
                 EntityItem("nv_sj","宋江→zhilun","沉稳内敛·男声 · 匹配性格: 算计/隐忍/爆发","real",
                     "","待生成 · 与林冲同音色","ng"),
-                EntityItem("nv_yz","杨志→zhiqiang","深沉自尊·男声 · 匹配性格: 骄傲/落魄/决绝","real","","待生成","ng"),
-                EntityItem("nv_cg","晁盖→zhiming","稳重威严·男声 · 匹配性格: 领袖/智谋/威严","real",
-                    "","待生成 · 与武松/鲁智深同音色(已3人复用)","ng",
-                    "zhiming被3人复用→EP06会与EP01/02声音相同→需后期重混或字幕区分"),
+                EntityItem("nv_lk","李逵→zhiming","暴烈粗犷·男声 · 匹配性格: 孝心/暴躁/忠诚","real",
+                    "","待生成 · 与鲁智深同音色","ng","EP05需标注角色名区分"),
+                EntityItem("nv_wy","吴用→zhilun","沉稳睿智·男声 · 匹配性格: 智谋/从容/领袖","real",
+                    "","待生成 · 与林冲/宋江同音色","ng"),
                 EntityItem("nv_cost","成本核算","每字¥0.0015 · 每集约500字=¥0.75 · ~29817字余额=约60集","computed",
                     "","6集总配音成本≈¥4.50 · 极低成本","ok"),
             ], summary="NLS引擎就绪 · 音色4种 · EP01-02已生成 · EP03-06待生成 · 3角色复用zhiming"),
@@ -629,7 +647,7 @@ def get_detail_drama(ms_id: str) -> list:
 
         # ========== DM-6~9: EP01-06 各集状态 ==========
         "DM-6": [
-            DetailSection(title="EP01 武松打虎 · 已生成", source="real", items=[
+            DetailSection(title="EP01 鲁提辖拳打镇关西 · 已生成", source="real", items=[
                 EntityItem("e1_file","成品","final.mp4 · 231KB · 1080×1920 · 23s · NLS zhiming · H.264","real",
                     "~/.agentic-os/episode_01/final.mp4","","ok"),
                 EntityItem("e1_audio","音频","5段mp3(NLS生成) · 23秒总时长","real","","","ok"),
@@ -658,9 +676,9 @@ def get_detail_drama(ms_id: str) -> list:
             DetailSection(title="EP04-06 其余三集 · 待生成", source="real", items=[
                 EntityItem("e4_info","EP04","宋江怒杀阎婆惜 · 5场景·50秒 · NLS:zhilun · ¥0.78","real",
                     "","待运行 · 注意: 女性受害者场景→PH/VN站内容审核风险","ng"),
-                EntityItem("e5_info","EP05","杨志卖刀 · 4场景·40秒 · NLS:zhiqiang · ¥0.69","real",
-                    "","待运行 · 血溅场景需审核","ng"),
-                EntityItem("e6_info","EP06","晁盖智取生辰纲 · 7场景·60秒 · NLS:zhiming · ¥0.87","real",
+                EntityItem("e5_info","EP05","李逵沂岭杀四虎 · 5场景·45秒 · NLS:zhiming · ¥0.75","real",
+                    "","待运行 · 暴力场景需审核","ng"),
+                EntityItem("e6_info","EP06","智取生辰纲 · 5场景·50秒 · NLS:zhilun · ¥0.78","real",
                     "","待运行 · 唯一非暴力集→建议首发","ng","推荐作为TikTok首发集: 智谋+群像+无暴力=平台友好"),
                 EntityItem("e_cost","剩余成本","EP04-06配音: ¥2.34 · AI视频(若付费): $3.75(3×$1.25) ≈ ¥27","computed","","","ok"),
             ], summary="3集剧本就绪·配音待运行·总成本¥2.34(过渡)/¥30(AI)·建议EP06首发"),
@@ -722,8 +740,8 @@ def get_detail_drama(ms_id: str) -> list:
                 EntityItem("pf_ep02","EP02 鲁提辖·拔杨柳","Pillow: 231KB ✅ · NLS ✅ · ComfyUI: ep02渲染图已就绪","real","","","ok"),
                 EntityItem("pf_ep03","EP03 林冲·山神庙","剧本就绪 · NLS待运行 · ComfyUI: ep03渲染图已就绪","real","","","ok"),
                 EntityItem("pf_ep04","EP04 宋江·杀阎婆惜","剧本就绪 · NLS待运行 · ComfyUI: ep04渲染图已就绪","real","","注意: 女性受害者→PH/VN审核风险","warn"),
-                EntityItem("pf_ep05","EP05 杨志·卖刀","剧本就绪 · NLS待运行 · ComfyUI: ep05渲染图已就绪","real","","","ok"),
-                EntityItem("pf_ep06","EP06 晁盖·智取生辰纲","ComfyUI+ NLS: 1.9MB/23s ✅ · 非暴力→首发推荐","real","","","ok","✅ 已生成"),
+                EntityItem("pf_ep05","EP05 李逵·杀四虎","剧本就绪 · NLS待运行 · ComfyUI: ep05渲染图已就绪","real","","","warn","暴力场景——需控制尺度"),
+                EntityItem("pf_ep06","EP06 吴用·智取生辰纲","ComfyUI+ NLS: 1.9MB/23s ✅ · 非暴力→首发推荐","real","","","ok","✅ 已生成"),
             ], summary="EP06已完成ComfyUI版 · EP01-05渲染图就绪·配音+合成待运行"),
         ],
     }

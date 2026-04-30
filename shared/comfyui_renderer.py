@@ -197,7 +197,7 @@ def render_episode(bible, episode_id, opts=None):
 def main():
     import argparse
     p = argparse.ArgumentParser(description="ComfyUI 静态图渲染器 v3.6")
-    p.add_argument("--character", help="角色ID: wusong/luzhishen/linchong/songjiang/yangzhi/chaogai")
+    p.add_argument("--character", help="角色ID: wusong/luzhishen/linchong/songjiang/likui/wuyong")
     p.add_argument("--episode", help="集数: 01-06")
     p.add_argument("--all", action="store_true", help="渲染全部18镜")
     p.add_argument("--test", action="store_true", help="快速测试: 生成1张512x912小图")
@@ -235,7 +235,7 @@ def main():
         results = {}
         # Pipeline-aligned: 6 episodes → 6 character renders (with ep prefixes for same-char episodes)
         pipeline_eps = {"01": "luzhishen", "02": "luzhishen", "03": "linchong",
-                        "04": "songjiang", "05": "yangzhi", "06": "chaogai"}
+                        "04": "songjiang", "05": "likui", "06": "wuyong"}
         for ep, char_id in pipeline_eps.items():
             ep_tag = f"ep{ep}"
             results[ep_tag] = render_character(bible, char_id, opts, episode=ep_tag)

@@ -454,10 +454,10 @@ def _mock_supplier_evaluations(category: str) -> List[SupplierEvaluation]:
 EPISODE_MAP = {
     "01": {"idx": 0, "title": "鲁提辖拳打镇关西", "character": "鲁智深", "scenes": 4, "est_duration": 45},
     "02": {"idx": 1, "title": "鲁智深倒拔垂杨柳", "character": "鲁智深", "scenes": 5, "est_duration": 50},
-    "03": {"idx": 7, "title": "林冲风雪山神庙", "character": "林冲", "scenes": 6, "est_duration": 55},
-    "04": {"idx": 8, "title": "宋江怒杀阎婆惜", "character": "宋江", "scenes": 5, "est_duration": 50},
-    "05": {"idx": 9, "title": "杨志卖刀", "character": "杨志", "scenes": 4, "est_duration": 40},
-    "06": {"idx": 10, "title": "智取生辰纲", "character": "晁盖", "scenes": 7, "est_duration": 60},
+    "03": {"idx": 6, "title": "林冲风雪山神庙", "character": "林冲", "scenes": 6, "est_duration": 55},
+    "04": {"idx": 10, "title": "宋江怒杀阎婆惜", "character": "宋江", "scenes": 5, "est_duration": 50},
+    "05": {"idx": 9, "title": "李逵沂岭杀四虎", "character": "李逵", "scenes": 5, "est_duration": 45},
+    "06": {"idx": 8, "title": "智取生辰纲", "character": "吴用", "scenes": 5, "est_duration": 50},
 }
 
 DRAMA_EMOTIONAL_ARCS = {

@@ -28,7 +28,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 # Episode 映射 (按 shuihuzhuan.yaml 索引)
 EPISODE_MAP = {
     "01": {"idx": 0, "title": "鲁提辖拳打镇关西", "character": "鲁智深",
-            "dir": "episode_01", "scene_key": "景阳冈"},
+            "dir": "episode_01", "scene_key": "渭州"},
     "02": {"idx": 1, "title": "鲁智深倒拔垂杨柳", "character": "鲁智深",
             "dir": "episode_02", "scene_key": "大相国寺菜园"},
     "03": {"idx": 6, "title": "林冲风雪山神庙", "character": "林冲",
@@ -42,11 +42,29 @@ EPISODE_MAP = {
 }
 
 # ── ffmpeg 路径 (Mac brew 不在默认 PATH) ──
-FFMPEG_BIN = "/opt/homebrew/Cellar/ffmpeg/8.1_1/bin/ffmpeg"
-FFPROBE_BIN = "/opt/homebrew/Cellar/ffmpeg/8.1_1/bin/ffprobe"
-os.environ["PATH"] = f"{Path(FFMPEG_BIN).parent}:{os.environ.get('PATH', '')}"
-FFMPEG = FFMPEG_BIN if Path(FFMPEG_BIN).exists() else "ffmpeg"
-FFPROBE = FFPROBE_BIN if Path(FFPROBE_BIN).exists() else "ffprobe"
+def _find_ffmpeg():
+    """动态查找 ffmpeg，避免 brew 升级后路径失效"""
+    candidates = [
+        shutil.which("ffmpeg"),  # PATH
+        "/opt/homebrew/bin/ffmpeg",
+        "/usr/local/bin/ffmpeg",
+    ]
+    # 也扫 brew Cellar
+    cellar = Path("/opt/homebrew/Cellar/ffmpeg")
+    if cellar.exists():
+        for d in sorted(cellar.iterdir(), reverse=True):
+            f = d / "bin" / "ffmpeg"
+            if f.exists():
+                candidates.append(str(f))
+                break
+    for p in candidates:
+        if p and Path(p).exists():
+            return p
+    return "ffmpeg"  # fallback
+
+FFMPEG = _find_ffmpeg()
+FFPROBE = FFMPEG.replace("ffmpeg", "ffprobe") if "ffmpeg" in FFMPEG else "ffprobe"
+os.environ["PATH"] = f"{Path(FFMPEG).parent}:{os.environ.get('PATH', '')}"
 
 
 def init_episode_dirs(ep_id="03"):
@@ -91,78 +109,81 @@ def check_dependencies():
     return results
 
 
-def generate_script(ep_id="03", script_dir=None):
-    """Step 1: 生成剧本 JSON"""
-    import yaml
+def _import_script_manager():
+    import sys
+    sys.path.insert(0, str(PROJECT_ROOT))
+    from shared.script_manager import _build_storyboard, CURRENT_EPISODES
+    return _build_storyboard, CURRENT_EPISODES
 
+
+ACT_TYPE_MAP = {
+    "开场": "establishing",
+    "发展": "action",
+    "冲突": "conflict",
+    "高潮": "climax",
+    "结局": "closing",
+}
+
+
+def generate_script(ep_id="03", script_dir=None):
+    """Step 1: 生成剧本 JSON (动态从 script_manager 加载分镜)"""
+    import yaml
+    _build_storyboard, CURRENT_EPISODES = _import_script_manager()
+
+    ep_cfg = EPISODE_MAP.get(ep_id, EPISODE_MAP["03"])
     story_file = PROJECT_ROOT / "stories" / "shuihuzhuan.yaml"
     with open(story_file) as f:
         story = yaml.safe_load(f)
 
-    ep_cfg = EPISODE_MAP.get(ep_id, EPISODE_MAP["03"])
     ep = story["episodes"][ep_cfg["idx"]]
-    scene_key = ep_cfg.get("scene_key")
-    scene = story["scenes"].get(scene_key, "") if scene_key else ep.get("title", "")
+    character = ep_cfg.get("character", ep.get("character", ""))
+    title = ep_cfg.get("title", ep.get("title", ""))
 
-    # 分镜脚本
-    character = ep.get("character", "武松")
+    storyboard = _build_storyboard(title, ep_cfg.get("idx", 0), character)
+
+    shots = []
+    time_offset = 0
+    for sb in storyboard:
+        dur_sec = int(sb.get("duration", "10秒").replace("秒", ""))
+        shot = {
+            "id": f"shot_{sb['seq']:02d}",
+            "time_range": f"{time_offset}-{time_offset + dur_sec}s",
+            "type": ACT_TYPE_MAP.get(sb.get("act", ""), "action"),
+            "visual": sb.get("description", ""),
+            "narration": sb.get("dialogue", sb.get("description", "")),
+            "mood": sb.get("emotion", ""),
+            "scene": sb.get("scene", ""),
+            "act": sb.get("act", ""),
+            "duration_sec": dur_sec,
+        }
+        shots.append(shot)
+        time_offset += dur_sec
+
+    total_duration = sum(s["duration_sec"] for s in shots)
+    scene_key = ep_cfg.get("scene_key")
+    scene_desc = story.get("scenes", {}).get(scene_key, "") if scene_key else ""
+
     script = {
-        "episode_id": ep["id"],
-        "title": ep["title"],
+        "episode_id": f"ep{ep_id}",
+        "title": title,
         "character": character,
-        "scene": scene_key or ep.get("title", ""),
-        "scene_description": scene,
-        "duration_seconds": 30,
+        "scene": scene_key or title,
+        "scene_description": scene_desc,
+        "duration_seconds": total_duration,
         "generated_at": datetime.now().isoformat(),
-        "shots": [
-            {
-                "id": "shot_01",
-                "time_range": "0-5s",
-                "type": "establishing",
-                "visual": "景阳冈山路,夕阳西下,古松参天,远处酒旗飘扬",
-                "narration": "话说武松来到景阳冈前,见一酒旗迎风飘扬,上书'三碗不过冈'五个大字。",
-                "mood": "肃穆"
-            },
-            {
-                "id": "shot_02",
-                "time_range": "5-12s",
-                "type": "action",
-                "visual": "武松手提哨棒大步上山,肌肉紧绷,目光如电",
-                "narration": "武松喝了十八碗酒,趁着酒兴,一步步走上景阳冈来。",
-                "mood": "紧张"
-            },
-            {
-                "id": "shot_03",
-                "time_range": "12-20s",
-                "type": "climax",
-                "visual": "猛虎从乱草丛中猛然跃出,狂风大作,武松翻身闪避",
-                "narration": "忽听一阵狂风,乱草丛中跳出一只吊睛白额大虫,直往武松扑来!",
-                "mood": "惊险"
-            },
-            {
-                "id": "shot_04",
-                "time_range": "20-27s",
-                "type": "resolution",
-                "visual": "武松骑在虎背上,双拳如雨,老虎挣扎无力",
-                "narration": "武松奋起平生之力,按住虎头,提起铁锤般大小的拳头,尽平生之力只顾打。",
-                "mood": "激昂"
-            },
-            {
-                "id": "shot_05",
-                "time_range": "27-30s",
-                "type": "closing",
-                "visual": "武松站在被打死的老虎旁,夕阳余晖,英雄气概",
-                "narration": "这一打,打出了一位打虎英雄,威名远扬。",
-                "mood": "豪迈"
-            }
-        ]
+        "shots": shots,
     }
+
+    if script_dir is None:
+        from pathlib import Path
+        script_dir = Path.home() / ".agentic-os" / f"episode_{ep_id}" / "script"
+        script_dir.mkdir(parents=True, exist_ok=True)
 
     output_file = script_dir / f"script_ep{ep_id}.json"
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(script, f, ensure_ascii=False, indent=2)
 
-    print(f"  ✅ Step 1: 剧本生成 ({ep_id}) → {output_file}")
+    print(f"  ✅ Step 1: 剧本生成 ({ep_id}) → {output_file} ({len(shots)}镜/{total_duration}秒)")
     return script
 
 
@@ -245,8 +266,8 @@ def generate_video(script, video_dir=None, render_mode="pillow", ep_id="03"):
         "鲁智深": ("#4a3728", "#c4a35a"),
         "林冲": ("#1c1c2a", "#8b0000"),
         "宋江": ("#1a3a1a", "#ffd700"),
-        "杨志": ("#2d5016", "#d4a574"),
-        "晁盖": ("#4a0080", "#8b7355"),
+        "李逵": ("#2a1a0a", "#cc4400"),
+        "吴用": ("#1a2a3a", "#66ccff"),
     }
 
     # ComfyUI render path config

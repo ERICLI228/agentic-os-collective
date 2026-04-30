@@ -30,8 +30,22 @@ SFX_LIBRARY_DIR = Path(os.path.expanduser("~/.agentic-os/sfx_library"))
 SFX_LIBRARY_DIR.mkdir(parents=True, exist_ok=True)
 
 # FFmpeg
-FFMPEG = "/opt/homebrew/Cellar/ffmpeg/8.1_1/bin/ffmpeg"
-FFMPEG = FFMPEG if Path(FFMPEG).exists() else "ffmpeg"
+def _find_ffmpeg():
+    import shutil
+    candidates = [shutil.which("ffmpeg"), "/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg"]
+    cellar = Path("/opt/homebrew/Cellar/ffmpeg")
+    if cellar.exists():
+        for d in sorted(cellar.iterdir(), reverse=True):
+            f = d / "bin" / "ffmpeg"
+            if f.exists():
+                candidates.append(str(f))
+                break
+    for p in candidates:
+        if p and Path(p).exists():
+            return p
+    return "ffmpeg"
+
+FFMPEG = _find_ffmpeg()
 
 # ── 场景→音效映射 ──
 SCENE_SFX_MAP = {
@@ -83,10 +97,42 @@ SCENE_SFX_MAP = {
         "fade_in": 0.5,
         "fade_out": 0.5,
     },
+    "喧哗": {
+        "keywords": ["crowd talking", "market ambience", "busy street", "tavern noise"],
+        "volume": 0.10,
+        "fade_in": 0.8,
+        "fade_out": 0.8,
+    },
+    "木材": {
+        "keywords": ["wood breaking", "tree falling", "wood crack", "timber"],
+        "volume": 0.22,
+        "fade_in": 0.2,
+        "fade_out": 0.4,
+    },
+    "拳击": {
+        "keywords": ["punch hit", "body hit", "impact punch", "fight punch"],
+        "volume": 0.20,
+        "fade_in": 0.05,
+        "fade_out": 0.1,
+    },
 }
 
 # ── 各集场景配置 ──
 EPISODE_SFX = {
+    "01": {  # 鲁提辖拳打镇关西
+        "shots": [
+            {"scene": "喧哗", "start": 0, "duration": 5},   # 酒馆场景
+            {"scene": "拳击", "start": 10, "duration": 6},   # 三拳打郑屠
+            {"scene": "脚步", "start": 18, "duration": 5},   # 假装醉酒离去
+        ]
+    },
+    "02": {  # 鲁智深倒拔垂杨柳
+        "shots": [
+            {"scene": "鸟鸣", "start": 0, "duration": 5},   # 菜园鸟鸣
+            {"scene": "脚步", "start": 5, "duration": 5},   # 泼皮围观走动
+            {"scene": "木材", "start": 12, "duration": 5},  # 拔树 木裂
+        ]
+    },
     "03": {  # 林冲风雪山神庙
         "shots": [
             {"scene": "风雪", "start": 0, "duration": None},  # 全程
@@ -290,7 +336,10 @@ class SFXEngine:
         return output_file
 
     def process_episode(self, ep_id: str, audio_dir: Path, output_dir: Path) -> Optional[Path]:
-        """处理整集的音效混音"""
+        """处理整集的音效混音，返回 (output_path, manifest_json_path)"""
+        import json as _json
+        from datetime import datetime as _datetime
+
         ep_sfx = EPISODE_SFX.get(ep_id)
         if not ep_sfx:
             print(f"  ℹ️ EP{ep_id} 无预配置音效")
@@ -322,6 +371,7 @@ class SFXEngine:
         output_audio = output_dir / "final_with_sfx.aac"
         current_audio = main_audio
         sfx_step = 0
+        mix_log = []
 
         for shot_cfg in ep_sfx["shots"]:
             scene_type = shot_cfg["scene"]
@@ -346,6 +396,16 @@ class SFXEngine:
                     fade_out=scene_cfg["fade_out"],
                 )
                 current_audio = temp_out
+                mix_log.append({
+                    "step": sfx_step,
+                    "scene": scene_type,
+                    "file": sfx_file.name,
+                    "start_sec": start,
+                    "duration_sec": dur or "全程",
+                    "volume": scene_cfg["volume"],
+                    "fade_in": scene_cfg["fade_in"],
+                    "fade_out": scene_cfg["fade_out"],
+                })
             except subprocess.CalledProcessError as e:
                 print(f"  ⚠️ 混音失败: {e}")
                 continue
@@ -353,6 +413,19 @@ class SFXEngine:
         if current_audio != main_audio:
             current_audio.rename(output_audio)
             print(f"  ✅ SFX 混音完成 → {output_audio.name}")
+
+            # 保存 SFX 清单
+            manifest_path = output_dir / "sfx_manifest.json"
+            manifest = {
+                "episode": ep_id,
+                "generated_at": _datetime.now().isoformat(),
+                "sfx_count": len(mix_log),
+                "output_file": str(output_audio.name),
+                "tracks": mix_log,
+            }
+            manifest_path.write_text(_json.dumps(manifest, ensure_ascii=False, indent=2))
+            print(f"  📋 SFX清单已保存 → {manifest_path.name} ({len(mix_log)}轨混音)")
+
             return output_audio
 
         return None
