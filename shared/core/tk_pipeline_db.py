@@ -245,7 +245,13 @@ def update_milestone(ms_id, status=None, decision=None, note=None):
 def get_milestones():
     with get_db() as db:
         rows = db.execute("SELECT * FROM milestones ORDER BY ms_id").fetchall()
-    return [dict(r) for r in rows]
+    result = []
+    for r in rows:
+        d = dict(r)
+        if 'ms_id' in d and 'id' in d:
+            d['id'] = d['ms_id']  # 用字符串ID (MS-1, DM-0) 替代数字ID
+        result.append(d)
+    return result
 
 
 def get_milestone_stats():
