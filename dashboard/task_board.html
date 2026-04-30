@@ -76,7 +76,7 @@ h1 { font-size: 20px; margin-bottom: 4px; }
 <div class="toast" id="toast"></div>
 
 <script>
-const API = 'http://localhost:5001/api/dashboard';
+const API = '/api/dashboard';
 let milestones = [];
 
 function showToast(msg) {
@@ -86,7 +86,7 @@ function showToast(msg) {
 }
 
 async function submitDecision(taskId, action) {
-  const resp = await fetch('http://localhost:5001/api/decision', {
+  const resp = await fetch('/api/decision', {
     method: 'POST', headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({task_id: taskId, action: action, reason: '驾驶舱决策'})
   });

@@ -9,8 +9,19 @@ import re
 from pathlib import Path
 from datetime import datetime
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
+
+
+@app.route('/dashboard')
+def serve_dashboard():
+    """驾驶舱 HTML"""
+    dashboard_path = Path(__file__).resolve().parent.parent / "dashboard" / "task_board.html"
+    if dashboard_path.exists():
+        return dashboard_path.read_text(encoding="utf-8"), 200, {"Content-Type": "text/html; charset=utf-8"}
+    return "<h1>Dashboard not found</h1>", 404
 
 WORKSPACE = Path.home() / "agentic-os-collective"
 KNOWLEDGE_FILE = WORKSPACE / "shared/knowledge/best_practices.yaml"
