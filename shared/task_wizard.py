@@ -3,12 +3,13 @@
 智能任务创建向导 API
 包含智能推荐、内容引导、参数建议
 """
+import sys
 import json
 import yaml
 import re
 from pathlib import Path
 from datetime import datetime
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -477,6 +478,9 @@ def api_script_list():
 @app.route('/api/script/<ep_num>', methods=['GET', 'POST'])
 def api_script_detail(ep_num):
     """剧本查看(GET) / 修改(POST)"""
+    # Strip "ep" prefix if present: ep06 → 06
+    if ep_num.lower().startswith("ep"):
+        ep_num = ep_num[2:]
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     try:
         from script_manager import get_episode_detail, update_episode
@@ -484,7 +488,10 @@ def api_script_detail(ep_num):
             data = request.get_json() or {}
             result = update_episode(ep_num, data)
             return jsonify({"status": "updated", "episode": result})
-        return jsonify(get_episode_detail(ep_num))
+        result = get_episode_detail(ep_num)
+        if result is None:
+            return jsonify({"error": f"Episode not found: {ep_num}"}), 404
+        return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e), "ep_num": ep_num}), 500
 
@@ -492,18 +499,42 @@ def api_script_detail(ep_num):
 @app.route('/api/script/<ep_num>/export', methods=['GET'])
 def api_script_export(ep_num):
     """剧本导出 GET /api/script/01/export?format=txt|html"""
+    if ep_num.lower().startswith("ep"):
+        ep_num = ep_num[2:]
     fmt = request.args.get("format", "html")
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     try:
         from script_manager import export_episode
-        content = export_episode(ep_num, fmt)
-        if content is None:
-            return jsonify({"error": "Episode not found"}), 404
-        if fmt == "html":
-            return content, 200, {"Content-Type": "text/html; charset=utf-8",
-                                  "Content-Disposition": f"attachment; filename=script_ep{ep_num}.html"}
-        return content, 200, {"Content-Type": "text/plain; charset=utf-8",
-                              "Content-Disposition": f"attachment; filename=script_ep{ep_num}.txt"}
+        result = export_episode(ep_num, fmt)
+        if not result:
+            return jsonify({"error": f"Episode not found: {ep_num}"}), 404
+        content, mime, filename = result
+        return content, 200, {"Content-Type": mime, "Content-Disposition": f"attachment; filename={filename}"}
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/download')
+def api_download():
+    """下载导出文件: /api/download?name=ep01.txt 或 /api/download?name=ep01.html"""
+    name = request.args.get("name", "").strip()
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    try:
+        from script_manager import export_episode
+
+        # Parse ep_num and format from name
+        import re as _re
+        m = _re.match(r'ep(\d+)\.(txt|html|srt|json)', name.lower())
+        if not m:
+            return jsonify({"error": f"Invalid filename: {name}. Use ep01.txt, ep01.html, etc."}), 400
+
+        ep_num = m.group(1)
+        fmt = m.group(2)
+        result = export_episode(ep_num, fmt)
+        if not result:
+            return jsonify({"error": f"Episode not found: {ep_num}"}), 404
+        content, mime, filename = result
+        return content, 200, {"Content-Type": mime, "Content-Disposition": f"attachment; filename={filename}"}
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -514,23 +545,32 @@ def api_character_detail(char_name):
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     try:
         from script_manager import ROLE_OVERVIEW, CHARACTER_ID_MAP, _get_render_dir
+
+        # Resolve pinyin name to Chinese character name
+        REVERSE_ID_MAP = {v: k for k, v in CHARACTER_ID_MAP.items()}
+        cn_name = REVERSE_ID_MAP.get(char_name, char_name)
+
         if request.method == 'POST':
             data = request.get_json() or {}
-            if char_name in ROLE_OVERVIEW:
+            # Allow pinyin or Chinese name for updates
+            if cn_name in ROLE_OVERVIEW:
+                ROLE_OVERVIEW[cn_name].update(data)
+            elif char_name in ROLE_OVERVIEW:
                 ROLE_OVERVIEW[char_name].update(data)
-            return jsonify({"status": "updated", "character": ROLE_OVERVIEW.get(char_name)})
+            return jsonify({"status": "updated", "character": ROLE_OVERVIEW.get(cn_name) or ROLE_OVERVIEW.get(char_name)})
 
-        info = ROLE_OVERVIEW.get(char_name)
+        info = ROLE_OVERVIEW.get(cn_name) or ROLE_OVERVIEW.get(char_name)
         if not info:
-            return jsonify({"error": f"Character not found: {char_name}"}), 404
+            return jsonify({"error": f"Character not found: {char_name} (cn: {cn_name})"}), 404
 
-        rd = _get_render_dir(char_name)
+        rd = _get_render_dir(cn_name)
         renders = []
         if rd.exists():
             for p in sorted(rd.glob("*.png")):
-                renders.append(f"/api/render/{CHARACTER_ID_MAP.get(char_name, char_name)}/{p.name}")
+                render_char_id = CHARACTER_ID_MAP.get(cn_name, cn_name)
+                renders.append(f"/api/render/{render_char_id}/{p.name}")
 
-        return jsonify({"name": char_name, "design": info, "renders": renders})
+        return jsonify({"name": cn_name, "pinyin": CHARACTER_ID_MAP.get(cn_name, cn_name), "design": info, "renders": renders})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -571,6 +611,8 @@ def api_image_view(img_id):
     for p, tag in variants:
         if p.exists():
             files[tag] = f"/api/images/file/{p.name}"
+    if not files:
+        return jsonify({"error": f"Image not found: {img_id}"}), 404
     return jsonify({"id": img_id, "files": files})
 
 
@@ -644,6 +686,13 @@ def api_image_process(img_id):
         elif action == "check":
             issues = check_compliance(img_path)
             results["compliance"] = {"passed": len(issues) == 0, "issues": issues}
+
+        elif action == "push_erp":
+            from core.image_processor import push_to_erp_draft
+            draft_path = push_to_erp_draft(img_id, [str(img_path)], product_title=img_id)
+            results["steps"].append(f"erp_draft: {draft_path}")
+            results["output"] = draft_path
+
         else:
             return jsonify({"error": f"Unknown action: {action}"}), 400
 

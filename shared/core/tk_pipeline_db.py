@@ -138,11 +138,30 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             order_id TEXT UNIQUE NOT NULL,
             product_id TEXT,
+            product_title TEXT,
             shop_id TEXT,
+            shop_name TEXT,
+            customer_name TEXT DEFAULT '',
             amount REAL DEFAULT 0,
             quantity INTEGER DEFAULT 1,
+            currency TEXT DEFAULT 'CNY',
             status TEXT DEFAULT 'pending',
-            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+            fulfillment TEXT DEFAULT 'unshipped',
+            tracking_number TEXT DEFAULT '',
+            logistics_provider TEXT DEFAULT '',
+            order_source TEXT DEFAULT 'tiktok',
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS fulfillment_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            description TEXT,
+            location TEXT,
+            timestamp TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY (order_id) REFERENCES orders(order_id)
         );
 
         CREATE INDEX IF NOT EXISTS idx_pipeline_runs_status ON pipeline_runs(status);
@@ -499,13 +518,79 @@ def record_order(order_id, product_id=None, shop_id=None, amount=0, quantity=1, 
         """, (order_id, product_id, shop_id, amount, quantity, status))
 
 
+def save_order(order_id, product_id="", product_title="", shop_id="", shop_name="",
+               customer_name="", amount=0, quantity=1, currency="CNY", status="pending",
+               fulfillment="unshipped", tracking_number="", logistics_provider="", order_source="tiktok"):
+    with get_db(write=True) as db:
+        db.execute("""
+            INSERT OR REPLACE INTO orders
+            (order_id, product_id, product_title, shop_id, shop_name, customer_name,
+             amount, quantity, currency, status, fulfillment, tracking_number,
+             logistics_provider, order_source, updated_at)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
+        """, (order_id, product_id, product_title, shop_id, shop_name, customer_name,
+              amount, quantity, currency, status, fulfillment, tracking_number,
+              logistics_provider, order_source))
+    return order_id
+
+
+def update_order_status(order_id, status, fulfillment=None, tracking_number="", logistics_provider=""):
+    with get_db(write=True) as db:
+        updates = ["status=?", "updated_at=datetime('now')"]
+        params = [status]
+        if fulfillment:
+            updates.append("fulfillment=?")
+            params.append(fulfillment)
+        if tracking_number:
+            updates.append("tracking_number=?")
+            params.append(tracking_number)
+        if logistics_provider:
+            updates.append("logistics_provider=?")
+            params.append(logistics_provider)
+        params.append(order_id)
+        db.execute(f"UPDATE orders SET {', '.join(updates)} WHERE order_id=?", params)
+
+
+def add_fulfillment_event(order_id, event_type, description="", location=""):
+    with get_db(write=True) as db:
+        db.execute("""
+            INSERT INTO fulfillment_events (order_id, event_type, description, location)
+            VALUES (?,?,?,?)
+        """, (order_id, event_type, description, location))
+
+
+def get_orders(status=None, limit=50):
+    with get_db() as db:
+        if status:
+            rows = db.execute("SELECT * FROM orders WHERE status=? ORDER BY created_at DESC LIMIT ?",
+                            (status, limit)).fetchall()
+        else:
+            rows = db.execute("SELECT * FROM orders ORDER BY created_at DESC LIMIT ?",
+                            (limit,)).fetchall()
+    return [dict(r) for r in rows]
+
+
+def get_order_tracking(order_id):
+    with get_db() as db:
+        order = db.execute("SELECT * FROM orders WHERE order_id=?", (order_id,)).fetchone()
+        events = db.execute("SELECT * FROM fulfillment_events WHERE order_id=? ORDER BY timestamp",
+                          (order_id,)).fetchall()
+    return {
+        "order": dict(order) if order else None,
+        "events": [dict(e) for e in events],
+    }
+
+
 def get_order_stats():
     with get_db() as db:
         total = db.execute("SELECT COUNT(*) FROM orders").fetchone()[0]
         revenue = db.execute(
-            "SELECT COALESCE(SUM(amount), 0) FROM orders WHERE status='completed'"
+            "SELECT COALESCE(SUM(amount), 0) FROM orders WHERE status IN ('completed','shipped')"
         ).fetchone()[0]
-    return {"total_orders": total, "total_revenue": round(revenue, 2)}
+        shipping = db.execute(
+            "SELECT COUNT(*) FROM orders WHERE fulfillment='shipped' AND status NOT IN ('completed','cancelled')"
+        ).fetchone()[0]
+    return {"total_orders": total, "total_revenue": round(revenue, 2), "in_transit": shipping}
 
 
 # ============================================================

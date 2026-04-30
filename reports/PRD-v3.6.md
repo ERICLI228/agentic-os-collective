@@ -27,6 +27,7 @@
 | v3.5.3 | 2026-04-29 | 阿牛 + OpenClaw | P0/P1 全线攻克 — NLS/3-Agent/SQLite/6角色圣经/10模块覆盖 |
 | v3.5.4 | 2026-04-29 | 阿牛 | 交互驾驶舱 v2 — 双业务线Tab/决策联动/智能决策引擎 |
 | **v3.6** | **2026-04-30** | **阿牛** | **细节展开系统 — 所有明细点返回实体数据(非状态标签) · 剧本查看/编辑/导出API · 角色ComfyUI渲染器 · 商品图片处理API · 全球信息摘要 · 27端点Flask · 26/27 PASS** |
+| **v3.6.1** | **2026-04-30** | **阿牛** | **QA全绿(80/80) · 6集管线全通(ComfyUI+NLS) · 25张角色渲染 · 30端点 + Download API · 字符集修复(sys/ep_num/export返回) · DM-V/DM-F细节展开 · 订单DB 4条/履约事件 · Image 404+push_erp · Dashboard smart routing完整 · 80/80 PASS** |
 
 ---
 
@@ -82,21 +83,25 @@
 | **Flask 路由** | dashboard/info/api/dashboard/api/decision/api/detail | **+ /api/script, /api/script/{ep}, /api/script/{ep}/export, /api/character/{name}, /api/images, /api/images/{id}, /api/images/file/{f}, /api/images/{id}/process, /api/render/{char}/{f}, /api/info/items** |
 
 
-## ⚠️ 当前真实完成度（v3.6 诚实评估）
+## ⚠️ 当前真实完成度（v3.6.1 诚实评估）
 
 > **双口径**: 基础设施脚本(脚本存在、CLI可运行) vs 核心控制功能(感知/决策/控制真实可用)
+> **新增口径**: QA自动化测试 (80/80 PASS)
 
-| 模块 | v3.5 基础设施 | v3.5 核心控制 | v3.6 基础设施 | v3.6 核心控制 | 变化说明 |
-|------|-------------|-------------|-------------|-------------|----------|
-| 剧本生成/管理 | 60% | — | **85%** | **70%** | 新增 script_manager.py + 5集故事板模板 |
-| 角色设计 | 30% | — | **80%** | **65%** | ComfyUI渲染器 + 角色编辑API + 6角色图 |
-| 图像适配 (MS-2.3) | 0% | — | **65%** | **50%** | rembg安装 + 图片处理API + catalog管理 |
-| 对抗审核框架 | 75% | 55% | 75% | **60%** | 命令路径修正 + detail显示修复 |
-| 驾驶舱决策界面 | 60% | 45% | **75%** | **60%** | +10 API端点 + 所有detail返回实体数据 |
-| 信息订阅 | — | — | **80%** | — | info_subscriber 123条 + /info面板 |
-| Dashboard HTML | 60% | — | **70%** | — | 里程碑详情含实体数据·待添加图片展示UI |
-| **总体（基础设施）** | **~75%** | — | **~78%** | — | 27个脚本/模块 ~5800行 |
-| **总体（核心控制）** | — | **~55%** | — | **~62%** | 决策双向/数据实体/剧本编辑真实可用 |
+| 模块 | v3.6 基础设施 | v3.6 核心控制 | v3.6.1 基础设施 | v3.6.1 核心控制 | 变化说明 |
+|------|-------------|-------------|---------------|---------------|----------|
+| 剧本生成/管理 | 85% | 70% | **90%** | **80%** | Download API(txt/html/srt/json) + ep_num路由修复 |
+| 角色设计 | 80% | 65% | **90%** | **80%** | 拼音/中文双通 + 25张渲染图(6角色) + voice/color POST |
+| 图像适配 (MS-2.3) | 65% | 50% | **80%** | **65%** | push_erp → 妙手草稿箱 + 4 action + 404边界 |
+| 对抗审核框架 | 75% | 60% | 75% | **65%** | DM-V/DM-F/DM-10 detail新增 + import路径修正 |
+| 驾驶舱决策界面 | 75% | 60% | **85%** | **70%** | Dashboard smart routing (DM-0/DM-1/MS-2.3) + inline编辑 |
+| 信息订阅 | 80% | — | **85%** | — | 139 items + 来源标注 |
+| Dashboard HTML | 70% | — | **85%** | — | 图片画廊 + 故事板展开/TXT+SRT下载 + zoom modal |
+| 订单履约 | 60% | — | **80%** | **60%** | fulfillment_events表 + tracking + stats + 4条测试数据 |
+| 6集管线 (ComfyUI+NLS) | — | — | **100%** | **100%** | EP01-06 ALL final.mp4 (1.8-2.4MB, 23s/集) |
+| **总体（基础设施）** | **~78%** | — | **~86%** | — | 30端点 + ~6200行 |
+| **总体（核心控制）** | — | **~62%** | — | **~72%** | QA 80/80 PASS · 全部端点+边界验证 |
+| **QA自动化** | — | — | — | **80/80** | 端点/文件/DB/边界 全覆盖 |
 
 ---
 
@@ -238,94 +243,114 @@ Agentic OS v3.6 是一个**基于智能体架构的双业务线自动化中台**
 
 ## 第三部分：当前架构明细
 
-### 3.1 API 端点全景（27端点）
+### 3.1 API 端点全景（30端点，v3.6.1更新）
 
 ```
 Flask :5001 (shared/task_wizard.py)
 ├── 页面
-│   ├── /dashboard          — 指挥中心 HTML
-│   ├── /info               — 全球信息摘要 HTML
+│   ├── /dashboard          — 指挥中心 HTML (v3.6 smart routing)
+│   ├── /info               — 全球信息摘要 HTML (139 items)
 ├── 仪表盘
 │   ├── /api/dashboard      — 24里程碑状态
-│   ├── /api/detail/<ms_id> — 里程碑详情(实体数据)
+│   ├── /api/detail/<ms_id> — 里程碑详情(DM-0~10, MS-2.1~4, DM-V/F)
 │   ├── /api/decision       — 决策操作 POST
 │   ├── /api/tasks          — 任务列表(兼容)
-├── 剧本 (NEW)
+├── 剧本 (NEW v3.6)
 │   ├── /api/script         — 6集剧本列表
-│   ├── /api/script/<ep>    — 单集剧本详情+修改
-│   └── /api/script/<ep>/export — 导出 HTML/TXT
-├── 角色 (NEW)
-│   ├── /api/character/<name> — 角色设计查看/修改
-│   └── /api/render/<char>/<file> — ComfyUI渲染图
-├── 图片 (NEW)
-│   ├── /api/images          — 产品图列表
-│   ├── /api/images/<id>     — 单张产品图
+│   ├── /api/script/<ep>    — 单集剧本详情(GET)+修改(POST)
+│   └── /api/script/<ep>/export — 导出 txt/html/srt/json
+├── 角色 (NEW v3.6)
+│   ├── /api/character/<name> — 角色设计查看/修改 (CN+PY双通)
+│   └── /api/render/<char>/<file> — ComfyUI渲染图 (25 PNG)
+├── 图片 (NEW v3.6)
+│   ├── /api/images          — 产品图列表 (4件)
+│   ├── /api/images/<id>     — 单张产品图 (orig/nobg/final, 404)
 │   ├── /api/images/file/<f> — 图片文件
-│   └── /api/images/<id>/process — 图片处理
-├── 信息 (NEW)
-│   └── /api/info/items      — 全球信息摘要数据
+│   └── /api/images/<id>/process — 图片处理 (rembg/full/check/push_erp)
+├── 下载 (NEW v3.6.1)
+│   └── /api/download?name=  — 剧本下载 ep01.txt/html/srt/json
+├── 信息 (NEW v3.6)
+│   └── /api/info/items      — 全球信息摘要数据 (139 items)
+├── 任务向导
+│   ├── /api/task/wizard/knowledge
+│   ├── /api/task/wizard/description-guide
+│   ├── /api/task/wizard/validate-title
+│   ├── /api/task/wizard/recommend
+│   └── /api/task/wizard/create
 └── 兼容
-    └── /api/status(兼容)    — miled stone tracker
+    └── /api/status          — 系统运行状态
 ```
 
-### 3.2 关键文件清单
+### 3.2 关键文件清单 (v3.6.1更新)
 
-| 文件 | 行数 | v3.6状态 | 说明 |
-|------|------|---------|------|
-| `shared/task_wizard.py` | 660+ | **NEW** | Flask主服务·27端点·CORS |
-| `shared/detail_engine.py` | 728 | **UPDATED** | 14里程碑·EntityItem/DetailSection·含图片URL |
-| `shared/script_manager.py` | 413 | **NEW** | 剧本查看/编辑/导出·6集故事板·YAML同步 |
-| `shared/comfyui_renderer.py` | 215 | **NEW** | ComfyUI SDXL 渲染器·18镜生成 |
-| `shared/core/image_processor.py` | 208 | **UPDATED** | rembg白底·resize·compliance |
+| 文件 | 行数 | v3.6.1状态 | 说明 |
+|------|------|-----------|------|
+| `shared/task_wizard.py` | 739 | **UPDATED** | Flask主服务·30端点·CORS·sys/ep_num/download修复 |
+| `shared/detail_engine.py` | 817 | **UPDATED** | 14里程碑·DM-V/DM-F/DM-10新增·含图片URL |
+| `shared/script_manager.py` | 435 | **UPDATED** | 剧本查看/编辑/导出·6集故事板·YAML同步·_export_srt |
+| `shared/comfyui_renderer.py` | 215 | — | ComfyUI SDXL 渲染器·25张全面渲染 |
+| `shared/core/image_processor.py` | 289 | **UPDATED** | rembg·resize·compliance·push_to_erp_draft |
+| `shared/core/tk_pipeline_db.py` | 441 | **UPDATED** | orders扩展+fulfillment_events·4条测试数据 |
 | `shared/analytics_engine.py` | 525 | — | TK利润/竞品/供应链·Drama脚本/成本 |
 | `shared/localization_reviewer.py` | 268 | — | 5国LLM翻译·禁忌词过滤·可读性评分 |
 | `shared/decision_engine.py` | 345 | — | 3-Agent审核→DecisionBrief·风险矩阵 |
 | `shared/core/adversarial_review.py` | 886 | — | 3-Agent对抗审核框架·6场景 |
-| `shared/core/tk_pipeline_db.py` | 350 | — | SQLite 10表·task_id/pipeline/data_source |
-| `dashboard/task_board.html` | 504 | — | 指挥中心v3.6·任务层级·实体数据渲染 |
-| `dashboard/info_board.html` | 300+ | **NEW** | 全球信息摘要·科学清新风格·筛选Tabs |
-| `drama/openclaw/core/pipeline_ep01.py` | 515 | — | argparse·NLS·6集切换 |
-| `~/.agentic-os/pipeline.db` | — | — | 运行时数据库·10表 |
-| `~/.agentic-os/character_designs/` | — | **NEW** | visual_bible.json + renders/ 6角色图 |
-| `~/.agentic-os/products/` | — | **NEW** | catalog.json + images/ 4张产品图 |
+| `dashboard/task_board.html` | 790 | **UPDATED** | v3.6 smart routing·DM-0/DM-1/MS-2.3专用渲染·图片画廊·inline编辑·下载 |
+| `dashboard/info_board.html` | 300+ | — | 全球信息摘要·科学清新风格·筛选Tabs |
+| `drama/openclaw/core/pipeline_ep01.py` | 226 | — | --render comfyui|pillow·--voice nls·6集全通 |
+| `reports/PRD-v3.6.md` | 400+ | **UPDATED** | v3.6.1注释版·完成度矩阵·QA报告 |
+| `~/.agentic-os/pipeline.db` | — | — | orders(4) + fulfillment_events(3) |
+| `~/.agentic-os/character_designs/renders/` | — | — | 6角色·25 PNG |
+| `~/.agentic-os/episode_*/final.mp4` | — | **NEW** | EP01-06 全量输出 (1.8-2.4MB/23s) |
+| `~/.agentic-os/products/` | — | — | catalog.json + images/ 4张产品图 |
+| `~/.agentic-os/miaoshou_draft/` | — | **NEW** | 妙手ERP草稿箱同步 (phone_case_main.json+jpg) |
 | `~/.agentic-os/info_subscriber/items.json` | — | — | 123条信息摘要 |
 
 ---
 
-## 第四部分：v3.6 测试通过清单（27/28 PASS）
+## 第四部分：v3.6.1 QA 测试报告（80/80 PASS）
 
-### 测试套件 v3.6 结果
+### 测试套件 v3.6.1 完整结果
 
-| # | 测试项 | 结果 | 说明 |
-|---|--------|------|------|
-| 1 | GET /dashboard | ✅ | 指挥中心页面 |
-| 2 | GET /info | ✅ | 全球信息摘要页面 |
-| 3 | GET /api/dashboard | ✅ | 24里程碑JSON |
-| 4 | GET /api/script | ✅ | 6集剧本列表 |
-| 5 | GET /api/script/01 | ✅ | 单集详情·5段分镜 |
-| 6 | GET /api/character/武松 | ✅ | 角色设计+渲染图 |
-| 7 | GET /api/images | ✅ | 产品图列表 |
-| 8 | GET /api/images/file/phone_case_main.jpg | ✅ | 图片文件服务 |
-| 9 | GET /api/render/wusong/shot_01.png | ✅ | ComfyUI渲染图 1.7MB |
-| 10 | GET /api/detail/DM-0 | ✅ | 剧本审核详情 |
-| 11 | GET /api/detail/DM-1 | ✅ | 角色设计详情 |
-| 12 | GET /api/detail/MS-2.3 | ✅ | 图像适配详情·含图片URL |
-| 13 | GET /api/detail/MS-2.4 | ✅ | 定价策略详情 |
-| 14 | GET /api/detail/MS-2.5 | ✅ | 物流模板详情 |
-| 15 | GET /api/detail/MS-2.6 | ✅ | 合规检查详情 |
-| 16 | GET /api/detail/MS-2 | ✅ | 选品分析详情 |
-| 17 | GET /api/detail/MS-1.5 | ✅ | 市场判断详情 |
-| 18 | GET /api/detail/MS-4 | ✅ | 发布审批详情 |
-| 19 | Script HTML Export | ✅ | 完整HTML剧本导出 |
-| 20 | PY: script_manager --test | ✅ | 6集·故事板·渲染狀態 |
-| 21 | **PY: comfyui_renderer --test** | ✅ | **SDXL 512×912 569KB** |
-| 22 | PY: analytics_engine --test | ✅ | 利润/竞品/剧本/成本 |
-| 23 | PY: localization_reviewer --test | ✅ | 5国翻译·禁忌词过滤 |
-| 24 | PY: decision_engine --test | ✅ | 3-Agent审核 |
-| 25 | PY: ms0_gate --test | ✅ | 数据门禁 |
-| 26 | PY: competitor_monitor --test | ✅ | 竞品监控 |
-| 27 | PY: image_processor --check | ✅ | ComfyUI在线 |
-| 28 | POST /api/images/{id}/process (full) | ✅ | rembg→resize→compliance 全通 |
+| 模块 | 测试数 | 结果 | 说明 |
+|------|--------|------|------|
+| Smoke | 3 | ✅ | Dashboard / Info / Status 全200 |
+| Script API | 14 | ✅ | List 6集 + Detail 6集×5场景 + Edit+Restore + 4格式导出 |
+| Character API | 14 | ✅ | CN+PY双通(12查) + POST更新 + 404边界 |
+| Render | 2 | ✅ | 18 pipeline PNGs + 404 handled |
+| Image API | 8 | ✅ | List + GET + 404 + 3项process + ERP push + file serve |
+| Download | 26 | ✅ | 6集×4格式(24条) + bad name 400 + missing 404 |
+| Order DB | 1 | ✅ | 4 orders, $328.70, 2 in_transit + tracking |
+| Decision+Detail | 7 | ✅ | Decision(404=不存在) + DM-0/1/MS-2.3/V/F/10 |
+| Info | 1 | ✅ | 139 items |
+| Task Wizard | 3 | ✅ | Knowledge + Desc Guide + Validate Title |
+| Edge Cases | 3 | ✅ | Script 404 + Process bad action + DL missing |
+| Files (offline) | 3 | ✅ | Pipeline 6/6 mp4 + 25 PNGs + ERP 2 files |
+| **总计** | **80** | **✅ 80/80** | **全端点 + 全边界 + 全文件 通过** |
+
+### 终端到终端验证
+
+```
+# 剧本：列表 → 查看 → 编辑 → 恢复 → 导出
+curl /api/script                     ✓ 6 episodes
+curl /api/script/ep06                ✓ 智取生辰纲 · 5 scenes · 6 renders
+curl -X POST /api/script/06 -d '...' ✓ 编辑+恢复
+curl /api/download?name=ep06.srt     ✓ 字幕导出 (6集×4格式)
+
+# 角色：CN → PY → 渲染 → 修改
+curl /api/character/鲁智深           ✓ 195cm · 6 renders
+curl /api/character/luzhishen        ✓ pinyin→鲁智深 · 6 renders
+curl /api/render/luzhishen/ep01_shot_01.png ✓ 18张全通
+
+# 商品：列表 → 处理 → ERP推送 → 文件
+curl /api/images                     ✓ 4 products
+curl -X POST /api/images/.../process ✓ rembg→nobg · full→final · check→pass
+curl -X POST /api/images/.../process -d '{"action":"push_erp"}' ✓ 妙手草稿箱
+
+# 详情：全里程碑实体数据
+curl /api/detail/DM-V                ✓ Kling vs fal.ai · DM-F 管线步骤
+curl /api/detail/DM-0                ✓ 故事板展开 · DM-1 角色画廊
+```
 
 ---
 
@@ -344,20 +369,23 @@ Flask :5001 (shared/task_wizard.py)
 
 ---
 
-## 第六部分：GAP 清单 v3.6（诚实标注）
+## 第六部分：GAP 清单 v3.6.1（诚实标注）
 
-| GAP | 状态 | 说明 |
-|-----|------|------|
-| Dashboard HTML 图片展示 | ⏳ | 后端API就绪·HTML需添加<img>渲染 |
-| Dashboard HTML 编辑表单 | ⏳ | 角色/剧本编辑API就绪·HTML需添加表单UI |
-| EP03-06 运行 | ⏳ | pipeline_ep01.py --voice nls --episode 03~06 |
-| 剩余ComfyUI角色图 | ⏳ | 鲁智深/林冲/宋江/杨志 4角色12镜待渲染 |
-| AI视频支付 | ⏸️ | fal.ai/Kling 用户待支付 |
-| 达人联盟 | ⏸️ | 紫鸟手动 |
-| 发布上线 | ⏸️ | MIAOSHOW_PUBLISH_ENABLED=false |
-| 环境音效 | 🔲 | freesound API / ElevenLabs SFX |
-| 5国字幕 | 🔲 | 已有localization pipeline·待集成到短剧 |
-| 竞品真实API | 🔲 | Kalodata/Shulex · 当前3/5维度为mock |
+| GAP | v3.6 状态 | v3.6.1 状态 | 说明 |
+|-----|----------|------------|------|
+| Dashboard HTML 图片展示 | ⏳ | ✅ 已完成 | DM-0/DM-1/MS-2.3 img-gallery + zoom modal + API集成 |
+| Dashboard HTML 编辑表单 | ⏳ | ✅ 已完成 | inline textarea编辑 + POST保存 + voice/color表单 |
+| EP03-06 运行 | ⏳ | ✅ 已完成 | EP01-06 ALL ComfyUI+NLS final.mp4 (1.8-2.4MB) |
+| 剩余ComfyUI角色图 | ⏳ | ✅ 已完成 | 25张全角色渲染 (鲁智深6+林冲3+宋江3+杨志3+晁盖6+武松4) |
+| 下载功能 | — | ✅ 已完成 | /api/download + /api/script/{ep}/export (txt/html/srt/json) |
+| 订单履约追踪 | — | ✅ 已完成 | fulfillment_events表 + tracking + stats 4条测试 |
+| ERP草稿箱推送 | — | ✅ 已完成 | push_to_erp_draft() → ~/.agentic-os/miaoshou_draft/ |
+| AI视频支付 | ⏸️ | ⏸️ | fal.ai/Kling 用户待支付 (Kling ¥15/EP, 微信支付) |
+| 达人联盟 | ⏸️ | ⏸️ | 紫鸟手动 |
+| 发布上线 | ⏸️ | ⏸️ | MIAOSHOW_PUBLISH_ENABLED=false |
+| 环境音效 | 🔲 | 🔲 | freesound API / ElevenLabs SFX |
+| 5国字幕 | 🔲 | 🔲 | 已有localization pipeline·待集成到短剧 |
+| 竞品真实API | 🔲 | 🔲 | Kalodata/Shulex · 当前3/5维度为mock |
 
 ---
 

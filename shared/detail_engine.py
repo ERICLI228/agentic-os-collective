@@ -673,15 +673,58 @@ def get_detail_drama(ms_id: str) -> list:
                     "当前: ✓ 格式正确","","ok"),
                 EntityItem("pub_len","时长","23秒/集 · TikTok推荐15-60秒 · Reels/Shorts≤90秒","real",
                     "","✓ 在平台要求范围内","ok","但23秒偏短→建议升级画面后恢复45-60秒原始剧本时长"),
-                EntityItem("pub_size","文件大小","231KB/集 · TikTok推荐≥2MB","real",
-                    "","✗ 231KB远低于推荐值·算法可能降权","ng","升级AI画面后自动解决·预计2-10MB/集"),
+                EntityItem("pub_size","文件大小","231KB/集(Pillow) · 1.9MB/集(ComfyUI) · TikTok推荐≥2MB","real",
+                    "Pillow 231KB(✗) → ComfyUI 1.9MB(接近)","","ng","升级AI画面后自动解决·预计2-10MB/集"),
                 EntityItem("pub_compress","压缩要求","无须额外压缩 · 231KB已远低于平台限制(通常<500MB) · 但需注意: 太小=低质量信号","real","","","warn"),
                 EntityItem("pub_content","内容审核","EP01/02/03/04/05含暴力·EP04含女性受害者·EP05含血溅","real",
-                    "","TK自动审核: 暴力内容可能限流(非下架)·PH/VN/MY对血腥容忍度低","warn",
-                    "建议: EP06(智取)作为首发→通过审核概率最高"),
+                    "","TK自动审核: 暴力内容可能限流(非下架)·PH/VN/MY对血腥容忍度低","warn"),
                 EntityItem("pub_sub","字幕要求","当前仅中文字幕 · PH/SG需英文字幕 · VN需越南语 · TH需泰语 · MY需马来语","real",
                     "","","ng","MS-2.1 本地化管线已就绪但未应用于短剧·需单独启动剧本翻译"),
-            ], summary="格式✓ · 时长✓ · 文件过小✗ · 内容审核需注意 · 字幕缺失5国版 · 首发集推荐EP06"),
+            ], summary="格式✓ · 时长✓ · ComfyUI文件大小接近标准✓ · 字幕缺失5国版 · 首发集推荐EP06"),
+        ],
+
+        # ========== DM-V: AI视频升级决策 ==========
+        "DM-V": [
+            DetailSection(title="当前方案 vs 升级方案对比", source="computed", items=[
+                EntityItem("dv_now","当前","ComfyUI静态图(5/10) + Pillow字帧动画(2.5D) + NLS配音","real",
+                    "","免费 · 本地GPU · 5分钟/集","ok","已实现: pipeline --render comfyui → 1.9MB/23s"),
+                EntityItem("dv_kling","Kling","图生视频 · 微信/支付宝支付 · 中文Prompt · ¥15/EP","computed",
+                    "","","ok","推荐首选: 支付方式友好 + Chinese prompt + 价格低"),
+                EntityItem("dv_fal","fal.ai","Seedance 2.0 · Visa/Mastercard · $1.25/shot ≈ ¥60/EP","computed",
+                    "","","warn","支付渠道受阻 · 需外币信用卡"),
+                EntityItem("dv_quality","预期质量","Kling 8.5/10 · fal.ai 9/10 · ComfyUI 5/10 · Pillow 2/10","computed",
+                    "","","ok"),
+            ], summary="建议: Kling(¥15/EP)跑EP06首发3个关键镜头验证 · 不满意换Seedance/Runway"),
+            DetailSection(title="行业对标参考", source="real", items=[
+                EntityItem("dv_ref","Netflix Love\\, Death & Robots","部分集数: 静态概念图→AI动画预演→最终渲染","real",
+                    "","","ok","我们: ComfyUI定妆→Pillow 2.5D→Kling 3D = 类似路径"),
+                EntityItem("dv_diff","差异化卖点","东南亚市场: 动态漫画风格+古典文学IP = 稀缺组合","real",
+                    "","","ok","非暴力集(EP06)首发测试→验证受众接受度"),
+            ], summary="对标Netflix制作流程 · 东南亚动态漫画市场蓝海 · 先测试再投入"),
+        ],
+
+        # ========== DM-F: 视频合成管线 ==========
+        "DM-F": [
+            DetailSection(title="管线步骤状态", source="real", items=[
+                EntityItem("pf_pillow","Step 1: 图片生成","Pillow字帧(2/10) → ComfyUI静态图(5/10) ✅","real",
+                    "","","ok","--render pillow|comfyui 切换"),
+                EntityItem("pf_nls","Step 2: NLS配音","阿里云TTS · 4音色 · NLS真人声(8/10) ✅","real",
+                    "","~29817/30000字符剩余","ok","--voice nls 启用"),
+                EntityItem("pf_merge","Step 3: ffmpeg合成","视频片段+音频→final.mp4 ✅","real",
+                    "","Pillow:231KB/23s · ComfyUI:1.9MB/23s","ok"),
+                EntityItem("pf_sfx","Step 4: 环境音效","待集成: freesound.org API 或 ElevenLabs SFX 🔲","real",
+                    "","","ng","风/雨/行人/马匹声 → 提升沉浸感8→9分"),
+                EntityItem("pf_sub","Step 5: 5国字幕","当前仅中文 · 待集成本地化管线 🔲","real",
+                    "","","ng","MS-2.1 pipeline已就绪 · 需翻译剧本字幕→srt格式"),
+            ], summary="3步已通 · 缺少环境音效和5国字幕 · 完整管线6/10 → 补齐后9/10"),
+            DetailSection(title="各集管线进度", source="real", items=[
+                EntityItem("pf_ep01","EP01 鲁提辖·镇关西","Pillow: 231KB ✅ · NLS ✅ · ComfyUI: ep01渲染图已就绪(lu zhisen) · 待运行","real","","","ok"),
+                EntityItem("pf_ep02","EP02 鲁提辖·拔杨柳","Pillow: 231KB ✅ · NLS ✅ · ComfyUI: ep02渲染图已就绪","real","","","ok"),
+                EntityItem("pf_ep03","EP03 林冲·山神庙","剧本就绪 · NLS待运行 · ComfyUI: ep03渲染图已就绪","real","","","ok"),
+                EntityItem("pf_ep04","EP04 宋江·杀阎婆惜","剧本就绪 · NLS待运行 · ComfyUI: ep04渲染图已就绪","real","","注意: 女性受害者→PH/VN审核风险","warn"),
+                EntityItem("pf_ep05","EP05 杨志·卖刀","剧本就绪 · NLS待运行 · ComfyUI: ep05渲染图已就绪","real","","","ok"),
+                EntityItem("pf_ep06","EP06 晁盖·智取生辰纲","ComfyUI+ NLS: 1.9MB/23s ✅ · 非暴力→首发推荐","real","","","ok","✅ 已生成"),
+            ], summary="EP06已完成ComfyUI版 · EP01-05渲染图就绪·配音+合成待运行"),
         ],
     }
 

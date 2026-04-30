@@ -257,14 +257,43 @@ def update_episode(ep_num, data):
 
 
 def export_episode(ep_num, format="txt"):
-    """导出剧本为 TXT 或 HTML"""
+    """导出剧本为 TXT 或 HTML，返回 (content, mime_type, filename)"""
     detail = get_episode_detail(ep_num)
     if not detail:
         return None
 
     if format == "html":
-        return _export_html(detail)
-    return _export_txt(detail)
+        content = _export_html(detail)
+        filename = f"ep{detail['number']}.html"
+        return (content, "text/html; charset=utf-8", filename)
+    elif format == "srt":
+        content = _export_srt(detail)
+        filename = f"ep{detail['number']}.srt"
+        return (content, "text/plain; charset=utf-8", filename)
+    elif format == "json":
+        content = json.dumps(detail, ensure_ascii=False, indent=2)
+        filename = f"ep{detail['number']}.json"
+        return (content, "application/json; charset=utf-8", filename)
+    content = _export_txt(detail)
+    filename = f"ep{detail['number']}.txt"
+    return (content, "text/plain; charset=utf-8", filename)
+
+
+def _export_srt(detail):
+    """导出为 SRT 字幕格式"""
+    sb = detail.get("storyboard", [])
+    lines = []
+    for i, scene in enumerate(sb, 1):
+        start_sec = sum(s.get("duration_sec", 5) for s in sb[:i-1])
+        end_sec = start_sec + scene.get("duration_sec", 5)
+        start_ts = f"00:00:{start_sec:02d},000"
+        end_ts = f"00:00:{end_sec:02d},000"
+        text = scene.get("dialogue") or scene.get("description", "")
+        lines.append(f"{i}")
+        lines.append(f"{start_ts} --> {end_ts}")
+        lines.append(text)
+        lines.append("")
+    return "\n".join(lines)
 
 
 def _export_txt(detail):

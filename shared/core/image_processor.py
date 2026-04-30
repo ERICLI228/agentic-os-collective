@@ -28,7 +28,8 @@ import urllib.request
 from pathlib import Path
 from datetime import datetime
 
-OUTPUT_DIR = Path.home() / ".agentic-os" / "processed_images"
+COMPLIANT_DIR = Path.home() / ".agentic-os" / "processed_images"
+ERP_DRAFT_DIR = Path.home() / ".agentic-os" / "miaoshou_draft"  # 妙手ERP草稿箱同步目录
 
 
 def download_image(url: str, dest: Path):
@@ -105,12 +106,42 @@ def check_compliance(image_path: Path):
     return issues
 
 
+def push_to_erp_draft(product_id, image_paths: list, product_title=""):
+    """v3.6: 推送处理后图片到妙手ERP草稿箱目录"""
+    ERP_DRAFT_DIR.mkdir(parents=True, exist_ok=True)
+    draft_file = ERP_DRAFT_DIR / f"{product_id}.json"
+
+    draft = {
+        "product_id": product_id,
+        "title": product_title,
+        "images": [],
+        "pushed_at": datetime.now().isoformat(),
+        "synced": False,
+    }
+    if draft_file.exists():
+        draft = json.loads(draft_file.read_text())
+
+    for src in image_paths:
+        src_path = Path(src)
+        if not src_path.exists():
+            continue
+        dest = ERP_DRAFT_DIR / src_path.name
+        import shutil
+        shutil.copy(src_path, dest)
+        draft["images"].append(str(dest.resolve()))
+
+    draft_file.write_text(json.dumps(draft, ensure_ascii=False, indent=2))
+    print(f"  ✅ ERP草稿箱: {draft_file} ({len(draft['images'])} images)")
+    return str(draft_file)
+
+
 def process_single(url: str, product_title: str = "") -> dict:
     """处理单张商品图（主要对1688源图）"""
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    COMPLIANT_DIR.mkdir(parents=True, exist_ok=True)
+    ERP_DRAFT_DIR.mkdir(parents=True, exist_ok=True)
     slug = product_title[:20].replace(" ", "_").replace("/", "-") if product_title else "product"
     ts = datetime.now().strftime("%H%M%S")
-    base = OUTPUT_DIR / f"{slug}_{ts}"
+    base = COMPLIANT_DIR / f"{slug}_{ts}"
 
     result = {"url": url, "title": product_title, "steps": []}
 
@@ -176,7 +207,8 @@ def main():
                 print(f"✅ ComfyUI 在线 ({resp.status})")
         except Exception:
             print("⚠️ ComfyUI 离线 (部分功能降级)")
-        print(f"\n输出目录: {OUTPUT_DIR}")
+        print(f"\n输出目录: {COMPLIANT_DIR}")
+        print(f"ERP草稿箱: {ERP_DRAFT_DIR}")
         return
 
     if "--single" in sys.argv:
@@ -192,7 +224,7 @@ def main():
     miaoshou = Path(sys.argv[sys.argv.index("--input") + 1]) if "--input" in sys.argv else None
     if miaoshou and miaoshou.exists():
         results = process_from_miaoshou(str(miaoshou))
-        output_file = OUTPUT_DIR / "batch_results.json"
+        output_file = COMPLIANT_DIR / "batch_results.json"
         with open(output_file, "w") as f:
             json.dump(results, f, ensure_ascii=False, indent=2)
         print(f"\n✅ 完成 {len(results)} 张, 结果: {output_file}")
