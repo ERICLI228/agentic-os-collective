@@ -193,3 +193,13 @@ Sender (untrusted metadata):
 - 决策:
 
 - 归档: wiki/outputs/session-20260428-064211.md
+
+## [2026-04-29 19:00] session | 9c50506a-5b28-45ac-b1ef-ed7266502c19.jsonl
+- 消息数: 15
+- 主题:
+  - [cron:0fbcb3bd-797c-4fdc-a212-f84c92281d9b GPT-SoVITS TTS 推理就绪检查] 检查 GPT-SoVITS TTS 推理服务是否就绪。执行：
+1. `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:9880/` 检查服务是否在线（400=正常，说明服务在运行）
+2. `ps aux 
+- 决策:
+  - **结论：✅ TTS 推理已就绪，可正常使用！**
+- 归档: wiki/outputs/session-20260429-190052.md

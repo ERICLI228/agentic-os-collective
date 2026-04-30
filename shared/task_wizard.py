@@ -433,6 +433,252 @@ def api_list_tasks():
     return api_status()
 
 
+@app.route('/info')
+def serve_info_board():
+    """全球信息摘要页面"""
+    info_path = Path(__file__).resolve().parent.parent / "dashboard" / "info_board.html"
+    if info_path.exists():
+        return info_path.read_text(encoding="utf-8"), 200, {"Content-Type": "text/html; charset=utf-8"}
+    return "<h1>Info board not found</h1>", 404
+
+
+@app.route('/api/info/items', methods=['GET'])
+def api_info_items():
+    """全球信息摘要数据"""
+    import json as _json
+    items_path = Path.home() / ".agentic-os" / "info_subscriber" / "items.json"
+    if not items_path.exists():
+        return jsonify({"items": [], "feeds": {}, "new_count": 0, "updated_at": ""})
+    with open(items_path) as f:
+        raw = _json.load(f)
+    items = list(raw.values()) if isinstance(raw, dict) else raw
+    items.sort(key=lambda x: x.get("published", x.get("fetched_at", "")), reverse=True)
+    feeds = set()
+    for i in items:
+        feeds.add(i.get("feed_name", i.get("source", "unknown")))
+    return jsonify({
+        "items": items, "feeds": {f: f for f in sorted(feeds)},
+        "new_count": len(items),
+        "updated_at": items[0].get("fetched_at", "") if items else "",
+    })
+
+
+@app.route('/api/script', methods=['GET'])
+def api_script_list():
+    """剧本列表 — 6集概要"""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    try:
+        from script_manager import get_all_episodes
+        return jsonify({"episodes": get_all_episodes(), "total": 6})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/script/<ep_num>', methods=['GET', 'POST'])
+def api_script_detail(ep_num):
+    """剧本查看(GET) / 修改(POST)"""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    try:
+        from script_manager import get_episode_detail, update_episode
+        if request.method == 'POST':
+            data = request.get_json() or {}
+            result = update_episode(ep_num, data)
+            return jsonify({"status": "updated", "episode": result})
+        return jsonify(get_episode_detail(ep_num))
+    except Exception as e:
+        return jsonify({"error": str(e), "ep_num": ep_num}), 500
+
+
+@app.route('/api/script/<ep_num>/export', methods=['GET'])
+def api_script_export(ep_num):
+    """剧本导出 GET /api/script/01/export?format=txt|html"""
+    fmt = request.args.get("format", "html")
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    try:
+        from script_manager import export_episode
+        content = export_episode(ep_num, fmt)
+        if content is None:
+            return jsonify({"error": "Episode not found"}), 404
+        if fmt == "html":
+            return content, 200, {"Content-Type": "text/html; charset=utf-8",
+                                  "Content-Disposition": f"attachment; filename=script_ep{ep_num}.html"}
+        return content, 200, {"Content-Type": "text/plain; charset=utf-8",
+                              "Content-Disposition": f"attachment; filename=script_ep{ep_num}.txt"}
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/character/<char_name>', methods=['GET', 'POST'])
+def api_character_detail(char_name):
+    """角色设计查看/修改"""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    try:
+        from script_manager import ROLE_OVERVIEW, CHARACTER_ID_MAP, _get_render_dir
+        if request.method == 'POST':
+            data = request.get_json() or {}
+            if char_name in ROLE_OVERVIEW:
+                ROLE_OVERVIEW[char_name].update(data)
+            return jsonify({"status": "updated", "character": ROLE_OVERVIEW.get(char_name)})
+
+        info = ROLE_OVERVIEW.get(char_name)
+        if not info:
+            return jsonify({"error": f"Character not found: {char_name}"}), 404
+
+        rd = _get_render_dir(char_name)
+        renders = []
+        if rd.exists():
+            for p in sorted(rd.glob("*.png")):
+                renders.append(f"/api/render/{CHARACTER_ID_MAP.get(char_name, char_name)}/{p.name}")
+
+        return jsonify({"name": char_name, "design": info, "renders": renders})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/render/<char_id>/<filename>')
+def api_render_image(char_id, filename):
+    """渲染图静态文件服务"""
+    path = Path.home() / ".agentic-os" / "character_designs" / "renders" / char_id / filename
+    if not path.exists():
+        return "Not found", 404
+    from flask import send_file
+    return send_file(str(path), mimetype="image/png")
+
+
+# ========== 商品图片 API ==========
+
+@app.route('/api/images', methods=['GET'])
+def api_images_list():
+    """商品图片列表"""
+    catalog_path = Path.home() / ".agentic-os" / "products" / "catalog.json"
+    if not catalog_path.exists():
+        return jsonify({"products": []})
+    with open(catalog_path) as f:
+        catalog = json.load(f)
+    return jsonify(catalog)
+
+
+@app.route('/api/images/<img_id>', methods=['GET'])
+def api_image_view(img_id):
+    """查看单张商品图片"""
+    img_path = Path.home() / ".agentic-os" / "products" / "images" / f"{img_id}.jpg"
+    variants = [
+        (img_path, "original"),
+        (Path.home() / ".agentic-os" / "products" / "images" / f"{img_id}_nobg.jpg", "nobg"),
+        (Path.home() / ".agentic-os" / "products" / "images" / f"{img_id}_final.jpg", "final"),
+    ]
+    files = {}
+    for p, tag in variants:
+        if p.exists():
+            files[tag] = f"/api/images/file/{p.name}"
+    return jsonify({"id": img_id, "files": files})
+
+
+@app.route('/api/images/file/<filename>')
+def api_image_file(filename):
+    """商品图片文件服务"""
+    path = Path.home() / ".agentic-os" / "products" / "images" / filename
+    if not path.exists():
+        return "Not found", 404
+    from flask import send_file
+    return send_file(str(path), mimetype="image/jpeg")
+
+
+@app.route('/api/images/<img_id>/process', methods=['POST'])
+def api_image_process(img_id):
+    """处理商品图片: rembg/resize/compliance"""
+    data = request.get_json() or {}
+    action = data.get("action", "rembg")
+
+    img_path = Path.home() / ".agentic-os" / "products" / "images" / f"{img_id}.jpg"
+    if not img_path.exists():
+        return jsonify({"error": f"Image not found: {img_id}"}), 404
+
+    results = {"id": img_id, "action": action, "steps": []}
+
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from core.image_processor import remove_background, resize_to_square, check_compliance
+
+        if action == "rembg":
+            out_path = img_path.parent / f"{img_id}_nobg.jpg"
+            result = remove_background(img_path, out_path)
+            if result:
+                results["steps"].append("rembg: ok")
+                results["output"] = f"/api/images/file/{img_id}_nobg.jpg"
+            else:
+                results["steps"].append("rembg: failed")
+                results["error"] = "RemBG 处理失败，检查 rembg 是否正确安装"
+
+        elif action == "resize":
+            import shutil
+            final_path = img_path.parent / f"{img_id}_final.jpg"
+            shutil.copy(img_path, final_path)
+            result = resize_to_square(final_path)
+            if result:
+                results["steps"].append("resize: ok")
+                results["output"] = f"/api/images/file/{img_id}_final.jpg"
+            else:
+                results["steps"].append("resize: failed")
+
+        elif action == "full":
+            # rembg → resize → compliance
+            out_path = img_path.parent / f"{img_id}_nobg.jpg"
+            nobg = remove_background(img_path, out_path)
+            if nobg:
+                results["steps"].append("rembg: ok")
+                import shutil
+                final_path = img_path.parent / f"{img_id}_final.jpg"
+                shutil.copy(nobg, final_path)
+                resized = resize_to_square(final_path)
+                if resized:
+                    results["steps"].append("resize: ok")
+                    issues = check_compliance(final_path)
+                    results["steps"].append(f"compliance: {'pass' if not issues else ', '.join(issues)}")
+                    results["output"] = f"/api/images/file/{img_id}_final.jpg"
+                else:
+                    results["steps"].append("resize: failed")
+            else:
+                results["steps"].append("rembg: failed")
+
+        elif action == "check":
+            issues = check_compliance(img_path)
+            results["compliance"] = {"passed": len(issues) == 0, "issues": issues}
+        else:
+            return jsonify({"error": f"Unknown action: {action}"}), 400
+
+        # Update catalog status
+        catalog_path = Path.home() / ".agentic-os" / "products" / "catalog.json"
+        if catalog_path.exists():
+            with open(catalog_path) as f:
+                catalog = json.load(f)
+            for p in catalog.get("products", []):
+                if p["id"] == img_id:
+                    if results.get("output"):
+                        p["status"] = "已处理"
+                        p["output"] = results["output"]
+                    if results.get("error"):
+                        p["status"] = "处理失败"
+                    break
+            with open(catalog_path, "w") as f:
+                json.dump(catalog, f, ensure_ascii=False, indent=2)
+
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({"error": str(e), "id": img_id}), 500
+
+
+@app.route('/api/detail/<ms_id>', methods=['GET'])
+def api_detail(ms_id):
+    """里程碑详情 — v3.6 返回实体数据(非状态标签)"""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    try:
+        from detail_engine import get_all_details
+        return jsonify(get_all_details(ms_id))
+    except Exception as e:
+        return jsonify({"error": str(e), "ms_id": ms_id}), 500
+
+
 if __name__ == '__main__':
     import sys, os
     sys.path.insert(0, str(Path(__file__).parent.parent))

@@ -31,7 +31,7 @@ def get_db(write=False):
 
 
 def init_db():
-    """初始化数据库 schema"""
+    """初始化数据库 schema — v3.6 含 task_id/pipeline/data_source 列迁移"""
     with get_db(write=True) as db:
         db.executescript("""
         CREATE TABLE IF NOT EXISTS pipeline_runs (
@@ -66,13 +66,39 @@ def init_db():
         CREATE TABLE IF NOT EXISTS milestones (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             ms_id TEXT UNIQUE NOT NULL,
+            task_id TEXT DEFAULT '',
             name TEXT NOT NULL,
+            pipeline TEXT DEFAULT 'tk',
             status TEXT DEFAULT 'pending',
             decision_point INTEGER DEFAULT 0,
             decision TEXT,
             note TEXT,
+            data_source TEXT DEFAULT 'real',
             completed_at TEXT,
             updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+
+        CREATE TABLE IF NOT EXISTS analytics_snapshots (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            pipeline TEXT NOT NULL,
+            snapshot_type TEXT NOT NULL,
+            snapshot_key TEXT NOT NULL,
+            data JSON,
+            data_source TEXT DEFAULT 'mock',
+            computed_at TEXT NOT NULL DEFAULT (datetime('now')),
+            UNIQUE(pipeline, snapshot_type, snapshot_key)
+        );
+
+        CREATE TABLE IF NOT EXISTS localization_reviews (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            task_id TEXT NOT NULL,
+            content_type TEXT NOT NULL,
+            source_lang TEXT DEFAULT 'zh',
+            target_country TEXT NOT NULL,
+            score REAL DEFAULT 0,
+            issues JSON,
+            reviewed_by TEXT DEFAULT 'llm',
+            reviewed_at TEXT NOT NULL DEFAULT (datetime('now'))
         );
 
         CREATE TABLE IF NOT EXISTS shop_health (
@@ -122,10 +148,32 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_pipeline_runs_status ON pipeline_runs(status);
         CREATE INDEX IF NOT EXISTS idx_decisions_status ON decisions(status);
         CREATE INDEX IF NOT EXISTS idx_milestones_status ON milestones(status);
+        CREATE INDEX IF NOT EXISTS idx_milestones_task ON milestones(task_id);
+        CREATE INDEX IF NOT EXISTS idx_milestones_pipeline ON milestones(pipeline);
+        CREATE INDEX IF NOT EXISTS idx_analytics_pipeline_type ON analytics_snapshots(pipeline, snapshot_type);
         CREATE INDEX IF NOT EXISTS idx_shop_health_shop ON shop_health(shop_id);
         CREATE INDEX IF NOT EXISTS idx_competitor_product ON competitor_snapshots(product_id);
         CREATE INDEX IF NOT EXISTS idx_products_source ON products(source_item_id);
         """)
+
+        # v3.6 列迁移: 给旧版 milestones 表补新列
+        try:
+            db.execute("ALTER TABLE milestones ADD COLUMN task_id TEXT DEFAULT ''")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE milestones ADD COLUMN pipeline TEXT DEFAULT 'tk'")
+        except Exception:
+            pass
+        try:
+            db.execute("ALTER TABLE milestones ADD COLUMN data_source TEXT DEFAULT 'real'")
+        except Exception:
+            pass
+
+        # 给现有数据打 pipeline 标签
+        db.execute("UPDATE milestones SET pipeline='tk' WHERE ms_id LIKE 'MS-%' AND (pipeline IS NULL OR pipeline='')")
+        db.execute("UPDATE milestones SET pipeline='drama' WHERE ms_id LIKE 'DM-%' AND (pipeline IS NULL OR pipeline='')")
+
     return True
 
 
@@ -215,13 +263,14 @@ def init_milestones(milestones_list):
     with get_db(write=True) as db:
         for ms in milestones_list:
             db.execute(
-                "INSERT OR IGNORE INTO milestones (ms_id, name, status, decision_point, note) VALUES (?,?,?,?,?)",
-                (ms["id"], ms["name"], ms.get("status", "pending"),
-                 ms.get("decision_point", 0), ms.get("note", ""))
+                "INSERT OR IGNORE INTO milestones (ms_id, task_id, name, pipeline, status, decision_point, data_source, note) VALUES (?,?,?,?,?,?,?,?)",
+                (ms["id"], ms.get("task_id", ""), ms["name"], ms.get("pipeline", "tk"),
+                 ms.get("status", "pending"), ms.get("decision_point", 0),
+                 ms.get("data_source", "real"), ms.get("note", ""))
             )
 
 
-def update_milestone(ms_id, status=None, decision=None, note=None):
+def update_milestone(ms_id, status=None, decision=None, note=None, data_source=None, task_id=None):
     fields = []
     values = []
     if status:
@@ -235,6 +284,12 @@ def update_milestone(ms_id, status=None, decision=None, note=None):
     if note is not None:
         fields.append("note=?")
         values.append(note)
+    if data_source is not None:
+        fields.append("data_source=?")
+        values.append(data_source)
+    if task_id is not None:
+        fields.append("task_id=?")
+        values.append(task_id)
     fields.append("updated_at=datetime('now')")
     values.append(ms_id)
 
@@ -242,25 +297,123 @@ def update_milestone(ms_id, status=None, decision=None, note=None):
         db.execute(f"UPDATE milestones SET {', '.join(fields)} WHERE ms_id=?", values)
 
 
-def get_milestones():
+def get_milestones(pipeline_filter=None, task_id=None):
     with get_db() as db:
-        rows = db.execute("SELECT * FROM milestones ORDER BY ms_id").fetchall()
+        query = "SELECT * FROM milestones WHERE 1=1"
+        params = []
+        if pipeline_filter:
+            query += " AND pipeline=?"
+            params.append(pipeline_filter)
+        if task_id:
+            query += " AND task_id=?"
+            params.append(task_id)
+        rows = db.execute(query + " ORDER BY ms_id", params).fetchall()
     result = []
     for r in rows:
         d = dict(r)
-        if 'ms_id' in d and 'id' in d:
-            d['id'] = d['ms_id']  # 用字符串ID (MS-1, DM-0) 替代数字ID
+        d['id'] = d['ms_id']
         result.append(d)
     return result
 
 
-def get_milestone_stats():
+def get_tasks_with_milestones(pipeline_filter=None):
+    milestones = get_milestones(pipeline_filter=pipeline_filter)
+    tasks = {}
+    for ms in milestones:
+        tid = ms.get("task_id", "")
+        if not tid:
+            tid = "_ungrouped"
+        if tid not in tasks:
+            tasks[tid] = {"task_id": tid, "milestones": [], "completed": 0, "total": 0, "pending_decision": 0}
+        tasks[tid]["milestones"].append(ms)
+        tasks[tid]["total"] += 1
+        if ms.get("status") == "completed":
+            tasks[tid]["completed"] += 1
+        if ms.get("status") == "waiting_approval" or ms.get("decision_point") and ms.get("status") in ("pending", "running"):
+            tasks[tid]["pending_decision"] += 1
+    return list(tasks.values())
+
+
+def get_milestone_stats(pipeline_filter=None):
     with get_db() as db:
-        total = db.execute("SELECT COUNT(*) FROM milestones").fetchone()[0]
-        completed = db.execute("SELECT COUNT(*) FROM milestones WHERE status='completed'").fetchone()[0]
-        pending = db.execute("SELECT COUNT(*) FROM milestones WHERE status='waiting_approval'").fetchone()[0]
+        extra = "WHERE pipeline=?" if pipeline_filter else ""
+        params = (pipeline_filter,) if pipeline_filter else ()
+        total = db.execute(f"SELECT COUNT(*) FROM milestones {extra}", params).fetchone()[0]
+        completed = db.execute(f"SELECT COUNT(*) FROM milestones {extra} AND status='completed'", params).fetchone()[0] if total else 0
+        pending = db.execute(f"SELECT COUNT(*) FROM milestones {extra} AND status='waiting_approval'", params).fetchone()[0] if total else 0
+        mock_count = db.execute(f"SELECT COUNT(*) FROM milestones {extra} AND data_source='mock'", params).fetchone()[0] if total else 0
     pct = round(completed / total * 100, 1) if total > 0 else 0
-    return {"total_milestones": total, "completed": completed, "decision_pending": pending, "completion_pct": pct}
+    return {"total_milestones": total, "completed": completed, "decision_pending": pending,
+            "mock_data_count": mock_count, "completion_pct": pct}
+
+
+# ============================================================
+# Analytics Snapshots (分析快照)
+# ============================================================
+
+def save_analytics(pipeline, snapshot_type, snapshot_key, data, data_source="mock"):
+    data_json = json.dumps(data, ensure_ascii=False)
+    with get_db(write=True) as db:
+        db.execute("""
+            INSERT INTO analytics_snapshots (pipeline, snapshot_type, snapshot_key, data, data_source, computed_at)
+            VALUES (?,?,?,?,?,datetime('now'))
+            ON CONFLICT(pipeline, snapshot_type, snapshot_key) DO UPDATE SET
+                data=excluded.data, data_source=excluded.data_source, computed_at=datetime('now')
+        """, (pipeline, snapshot_type, snapshot_key, data_json, data_source))
+
+
+def get_analytics(pipeline, snapshot_type=None):
+    with get_db() as db:
+        if snapshot_type:
+            rows = db.execute(
+                "SELECT * FROM analytics_snapshots WHERE pipeline=? AND snapshot_type=? ORDER BY computed_at DESC",
+                (pipeline, snapshot_type)
+            ).fetchall()
+        else:
+            rows = db.execute(
+                "SELECT * FROM analytics_snapshots WHERE pipeline=? ORDER BY snapshot_type, computed_at DESC",
+                (pipeline,)
+            ).fetchall()
+    results = []
+    for r in rows:
+        d = dict(r)
+        try:
+            d["data"] = json.loads(d["data"]) if isinstance(d["data"], str) else d["data"]
+        except (json.JSONDecodeError, TypeError):
+            pass
+        results.append(d)
+    return results
+
+
+# ============================================================
+# Localization Reviews (本地化审查)
+# ============================================================
+
+def save_localization_review(task_id, content_type, target_country, score, issues=None,
+                             source_lang="zh", translated_title="", translated_desc=""):
+    issues_json = json.dumps(issues or [], ensure_ascii=False)
+    with get_db(write=True) as db:
+        db.execute(
+            "INSERT INTO localization_reviews (task_id, content_type, source_lang, target_country, score, issues) VALUES (?,?,?,?,?,?)",
+            (task_id, content_type, source_lang, target_country, score, issues_json)
+        )
+
+
+def get_localization_reviews(task_id=None):
+    with get_db() as db:
+        if task_id:
+            rows = db.execute("SELECT * FROM localization_reviews WHERE task_id=? ORDER BY reviewed_at DESC", (task_id,)).fetchall()
+        else:
+            rows = db.execute("SELECT * FROM localization_reviews ORDER BY reviewed_at DESC LIMIT 50").fetchall()
+    results = []
+    for r in rows:
+        d = dict(r)
+        try:
+            d["issues"] = json.loads(d["issues"]) if isinstance(d["issues"], str) else d.get("issues", [])
+        except (json.JSONDecodeError, TypeError):
+            d["issues"] = []
+        results.append(d)
+    return results
 
 
 # ============================================================
@@ -360,8 +513,9 @@ def get_order_stats():
 # ============================================================
 
 def get_dashboard():
-    """聚合所有数据 → /api/dashboard 响应格式"""
-    ms = get_milestone_stats()
+    """聚合所有数据 → /api/dashboard 响应格式, 含 Task 层级和分析数据"""
+    ms_tk = get_milestone_stats(pipeline_filter="tk")
+    ms_dm = get_milestone_stats(pipeline_filter="drama")
     dec = get_decision_stats()
     runs = get_recent_runs(5)
     health = get_latest_shop_health()
@@ -371,14 +525,27 @@ def get_dashboard():
     for h in health:
         health_summary[h["status"]] = health_summary.get(h["status"], 0) + 1
 
+    tk_tasks = get_tasks_with_milestones(pipeline_filter="tk")
+    dm_tasks = get_tasks_with_milestones(pipeline_filter="drama")
+    all_milestones = get_milestones()
+
+    tk_analytics = get_analytics("tk")
+    dm_analytics = get_analytics("drama")
+
     return {
-        **ms,
+        "total_milestones": ms_tk["total_milestones"] + ms_dm["total_milestones"],
+        "completed": ms_tk["completed"] + ms_dm["completed"],
+        "decision_pending": ms_tk["decision_pending"] + ms_dm["decision_pending"],
+        "mock_data_count": ms_tk["mock_data_count"] + ms_dm["mock_data_count"],
+        "completion_pct": round((ms_tk["completed"] + ms_dm["completed"]) / max(ms_tk["total_milestones"] + ms_dm["total_milestones"], 1) * 100, 1),
+        "tk": {"tasks": tk_tasks, "stats": ms_tk, "analytics": tk_analytics},
+        "dm": {"tasks": dm_tasks, "stats": ms_dm, "analytics": dm_analytics},
         "decisions": dec,
         "recent_runs": len(runs),
         "last_run": runs[0]["started_at"] if runs else None,
         "shop_health": health_summary,
         "orders": orders,
-        "milestones": [dict(m) for m in get_milestones()],
+        "milestones": all_milestones,
         "timestamp": datetime.now().isoformat(),
     }
 
@@ -396,11 +563,12 @@ def migrate_from_json():
     if milestones_path.exists():
         with open(milestones_path) as f:
             raw = json.load(f)
-        ms_list = raw if isinstance(raw, list) else raw.get("milestones", [])
+        ms_list = raw if isinstance(raw, list) else raw.get("milestones", {})
         if isinstance(ms_list, dict):
-            ms_list = [{"id": k, "name": v.get("name", k), "status": v.get("status", "pending"), 
+            ms_list = [{"id": k, "task_id": v.get("task_id", ""), "name": v.get("name", k),
+                        "pipeline": v.get("pipeline", "tk"), "status": v.get("status", "pending"),
                         "decision_point": v.get("decision_point", 0), "note": v.get("note", ""),
-                        "decision": v.get("decision")}
+                        "decision": v.get("decision"), "data_source": v.get("data_source", "real")}
                        for k, v in ms_list.items()]
         init_milestones(ms_list)
         print(f"✅ 迁移 {len(ms_list)} 个里程碑")

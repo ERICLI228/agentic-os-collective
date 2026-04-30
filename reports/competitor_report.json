@@ -1,0 +1,12 @@
+{
+  "source": "baseline",
+  "timestamp": "2026-04-29T18:30:03.795628",
+  "shop_id": "8371977",
+  "items": [],
+  "alerts": [],
+  "summary": {
+    "total_tracked": 0,
+    "price_drops": 0,
+    "high_risk": 0
+  }
+}

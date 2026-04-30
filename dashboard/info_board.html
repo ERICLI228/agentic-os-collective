@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全球信息摘要 · Agentic OS</title>
+<style>
+:root {
+  --bg: #f8f9fb;
+  --card: #fff;
+  --text: #2c3e50;
+  --muted: #94a3b8;
+  --accent: #3b82f6;
+  --accent2: #8b5cf6;
+  --warn: #f59e0b;
+  --green: #10b981;
+  --red: #ef4444;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,.04), 0 1px 2px rgba(0,0,0,.03);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif; background: var(--bg); color: var(--text); line-height:1.6; -webkit-font-smoothing: antialiased;}
+
+/* Header */
+.hero{background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #1e293b 100%); color:#fff; padding:32px 40px;}
+.hero h1{font-size:22px; font-weight:600; letter-spacing:-0.3px; margin-bottom:6px;}
+.hero .sub{font-size:13px; color:#94a3b8; display:flex; gap:20px; flex-wrap:wrap}
+.hero .stat{font-size:12px; color:#64748b; display:flex; align-items:center; gap:5px}
+.hero .stat .val{color:#e2e8f0; font-weight:600; font-size:15px}
+
+/* Container */
+.container{max-width:1100px; margin:0 auto; padding:24px 20px;}
+
+/* Section Header */
+.sec-hdr{display:flex; align-items:center; gap:8px; margin:28px 0 14px; padding-bottom:8px; border-bottom:2px solid var(--border)}
+.sec-hdr h2{font-size:15px;font-weight:600;color:var(--text);letter-spacing:-0.2px}
+.sec-hdr .count{font-size:11px;color:var(--muted);background:#f1f5f9;padding:2px 8px;border-radius:10px}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
+
+/* Card */
+.card{background:var(--card);border-radius:var(--radius);padding:16px 18px;border:1px solid var(--border);transition:all .15s;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px}
+.card:hover{border-color:#cbd5e1;box-shadow:0 4px 12px rgba(0,0,0,.06);transform:translateY(-1px)}
+.card .src-line{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted)}
+.card .src-line .src-badge{padding:1px 7px;border-radius:8px;font-weight:500;font-size:9px;letter-spacing:0.3px}
+.src-badge.reddit{background:#fef2f2;color:#dc2626}
+.src-badge.youtube{background:#fef2f2;color:#dc2626}
+.src-badge.blog{background:#f0fdf4;color:#16a34a}
+.src-badge.rss{background:#eff6ff;color:#2563eb}
+
+.card .title{font-size:13px;font-weight:550;color:var(--text);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .title a{color:inherit;text-decoration:none}
+.card .title a:hover{color:var(--accent)}
+.card .meta{display:flex;align-items:center;gap:10px;font-size:10px;color:var(--muted);margin-top:auto}
+.card .meta .tag{padding:1px 6px;border-radius:6px;font-size:9px;font-weight:500}
+.tag.tk{background:#fef3c7;color:#92400e}
+.tag.normal{background:#f1f5f9;color:#64748b}
+
+/* Relevance bar */
+.rel-bar{display:flex;align-items:center;gap:6px;font-size:10px}
+.rel-bar .bar{flex:1;height:3px;background:#f1f5f9;border-radius:2px;overflow:hidden}
+.rel-bar .bar .fill{height:100%;border-radius:2px;transition:width .3s}
+.rel-bar .pct{color:var(--muted);min-width:28px;text-align:right}
+
+/* Empty */
+.empty{text-align:center;padding:40px;color:var(--muted);font-size:13px}
+
+/* Footer */
+.footer{text-align:center;padding:20px;font-size:10px;color:#cbd5e1;border-top:1px solid var(--border);margin-top:30px}
+
+/* Pulse */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;display:inline-block}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:10px}
+.tab-btn{padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:11px;cursor:pointer;transition:all .15s}
+.tab-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tab-btn:hover:not(.active){border-color:#cbd5e1;color:var(--text)}
+
+/* Source stats */
+.src-stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.src-stat{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);padding:3px 10px;border-radius:10px;background:#f8fafc;border:1px solid var(--border)}
+.src-stat .n{font-weight:600;color:var(--text);font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🌍 全球信息摘要</h1>
+  <div class="sub">
+    <span id="heroTime"></span>
+    <span class="stat">订阅源 <span class="val" id="heroSources">-</span></span>
+    <span class="stat">总条目 <span class="val" id="heroTotal">-</span></span>
+    <span class="stat">今日新增 <span class="val" id="heroNew">-</span></span>
+    <span class="stat"><span class="live-dot"></span> 实时</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="src-stats" id="srcStats"></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="filterTab('all',this)">全部</button>
+    <button class="tab-btn" onclick="filterTab('tk',this)">🔥 TK电商</button>
+    <button class="tab-btn" onclick="filterTab('reddit',this)">Reddit</button>
+    <button class="tab-btn" onclick="filterTab('youtube',this)">YouTube</button>
+    <button class="tab-btn" onclick="filterTab('blog',this)">Blog</button>
+  </div>
+
+  <div class="sec-hdr"><h2 id="secTitle">最新信息流</h2><span class="count" id="secCount">-</span></div>
+  <div class="grid" id="feedGrid"></div>
+  <div class="empty" id="emptyState" style="display:none">暂无匹配条目</div>
+</div>
+
+<div class="footer">
+  Agentic OS v3.6 · info_subscriber.py · 每60分钟自动更新 · 隐私优先 · 不追踪
+</div>
+
+<script>
+let allItems=[], feedMap={}, curFilter='all';
+
+async function load(){
+  try{
+    const r=await fetch('/api/info/items');
+    const data=await r.json();
+    allItems=data.items||[];
+    feedMap=data.feeds||{};
+    document.getElementById('heroSources').textContent=Object.keys(feedMap).length;
+    document.getElementById('heroTotal').textContent=allItems.length;
+    document.getElementById('heroNew').textContent=data.new_count||allItems.length;
+    document.getElementById('heroTime').textContent=new Date(data.updated_at||Date.now()).toLocaleString('zh-CN',{hour12:false});
+    renderSrcStats();
+    render();
+  }catch(e){
+    document.getElementById('feedGrid').innerHTML='<div class="empty">加载失败 — 请确认 Flask 服务运行中</div>';
+  }
+}
+
+function renderSrcStats(){
+  const src={};
+  allItems.forEach(i=>{const s=i.source_type||i.source||'other';src[s]=src[s]?src[s]+1:1});
+  document.getElementById('srcStats').innerHTML=Object.entries(src).sort((a,b)=>b[1]-a[1]).slice(0,6)
+    .map(([k,v])=>`<div class="src-stat"><span class="n">${v}</span> ${k}</div>`).join('');
+}
+
+function filterTab(f,btn){
+  curFilter=f;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function render(){
+  let filtered = allItems;
+  if(curFilter==='tk'){
+    filtered = allItems.filter(i=>{
+      const score = i.tk_relevance||0;
+      const tags = (i.tags||[]).join(' ').toLowerCase();
+      return score>=0.3 || tags.includes('dropshipping')||tags.includes('ecommerce')||tags.includes('tiktok');
+    });
+    document.getElementById('secTitle').textContent='🔥 TK电商高相关';
+  }else if(curFilter!=='all'){
+    filtered = allItems.filter(i=>(i.source_type||i.source||'')===curFilter);
+    document.getElementById('secTitle').textContent=curFilter.charAt(0).toUpperCase()+curFilter.slice(1)+' 来源';
+  }else{
+    document.getElementById('secTitle').textContent='最新信息流';
+  }
+  document.getElementById('secCount').textContent=filtered.length;
+
+  if(!filtered.length){
+    document.getElementById('feedGrid').innerHTML='';
+    document.getElementById('emptyState').style.display='block';
+    return;
+  }
+  document.getElementById('emptyState').style.display='none';
+
+  document.getElementById('feedGrid').innerHTML=filtered.slice(0,60).map(i=>{
+    const src=i.source_type||i.source||'other';
+    const rel=i.tk_relevance||0;
+    const relColor=rel>=0.5?'#f59e0b':rel>=0.3?'#6366f1':'#cbd5e1';
+    const relPct=Math.round(rel*100);
+    const tags=(i.tags||[]).slice(0,2);
+    const time=formatTime(i.published||i.fetched_at);
+    return `<div class="card">
+      <div class="src-line">
+        <span class="src-badge ${src}">${src}</span>
+        <span>${i.feed_name||''}</span>
+        <span style="margin-left:auto">${time}</span>
+      </div>
+      <div class="title"><a href="${i.link||'#'}" target="_blank" rel="noopener">${i.title||'(无标题)'}</a></div>
+      ${i.summary?`<div style="font-size:11px;color:#94a3b8;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${i.summary}</div>`:''}
+      <div class="meta">
+        ${tags.map(t=>`<span class="tag ${t==='dropshipping'||t==='ecommerce'||t==='tiktok'?'tk':'normal'}">#${t}</span>`).join('')}
+        <div class="rel-bar" style="margin-left:auto" title="TK相关度 ${relPct}%">
+          <div class="bar"><div class="fill" style="width:${relPct}%;background:${relColor}"></div></div>
+          <span class="pct">${relPct}%</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function formatTime(t){
+  if(!t)return'';
+  try{
+    const d=new Date(t);
+    const now=new Date();
+    const diff=now-d;
+    if(diff<3600000)return Math.floor(diff/60000)+'分钟前';
+    if(diff<86400000)return Math.floor(diff/3600000)+'小时前';
+    if(diff<604800000)return Math.floor(diff/86400000)+'天前';
+    return d.toLocaleDateString('zh-CN',{month:'short',day:'numeric'});
+  }catch(e){return''}
+}
+
+load();
+setInterval(load,300000);
+</script>
+</body>
+</html>

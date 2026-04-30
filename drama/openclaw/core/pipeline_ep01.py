@@ -221,8 +221,8 @@ def _generate_nls(text, audio_file, voice="zhiqi"):
         _generate_say(text, audio_file)
 
 
-def generate_video(script, video_dir=None):
-    """Step 3: 生成视频片段 (Pillow 字幕帧 → ffmpeg)"""
+def generate_video(script, video_dir=None, render_mode="pillow", ep_id="03"):
+    """Step 3: 生成视频片段 (Pillow 字幕帧 或 ComfyUI AI渲染图 → ffmpeg)"""
     if video_dir is None:
         video_dir = VIDEO_DIR
     video_files = []
@@ -248,6 +248,16 @@ def generate_video(script, video_dir=None):
         "晁盖": ("#4a0080", "#8b7355"),
     }
 
+    # ComfyUI render path config
+    RENDER_CHAR_MAP = {"01": "luzhishen", "02": "luzhishen", "03": "linchong",
+                       "04": "songjiang", "05": "yangzhi", "06": "chaogai"}
+    RENDER_BASE = Path.home() / ".agentic-os" / "character_designs" / "renders"
+
+    # Render mapping
+    use_comfyui = (render_mode == "comfyui")
+    ep_num = ep_id
+    char_id = RENDER_CHAR_MAP.get(ep_num, "linchong")
+
     for i, shot in enumerate(script["shots"]):
         video_file = video_dir / f"{shot['id']}.mp4"
         duration = 5 if i < 4 else 3
@@ -260,14 +270,34 @@ def generate_video(script, video_dir=None):
         narration = shot.get("narration", "")
         scene_label = shot.get("scene", "")
 
-        img = Image.new("RGB", (w, h), bg_color)
-        draw = ImageDraw.Draw(img)
+        # ── ComfyUI mode: load AI render image ──
+        if use_comfyui:
+            # Cycle through available renders (3 renders → 5 shots: 0,1,2,0,1)
+            render_idx = (i % 3) + 1
+            render_file = RENDER_BASE / char_id / f"ep{ep_num}_shot_{render_idx:02d}.png"
+            if render_file.exists():
+                try:
+                    img = Image.open(render_file).convert("RGB")
+                    img = img.resize((w, h), Image.LANCZOS)
+                    draw = ImageDraw.Draw(img)
+                    print(f"    📷 ComfyUI: {render_file.name} ({render_file.stat().st_size//1024}KB)")
+                except Exception as e:
+                    print(f"    ⚠️ ComfyUI加载失败: {e}, 降级Pillow")
+                    img = Image.new("RGB", (w, h), bg_color)
+                    draw = ImageDraw.Draw(img)
+            else:
+                print(f"    ⚠️ ComfyUI渲染图不存在: {render_file}, 降级Pillow")
+                img = Image.new("RGB", (w, h), bg_color)
+                draw = ImageDraw.Draw(img)
+        else:
+            img = Image.new("RGB", (w, h), bg_color)
+            draw = ImageDraw.Draw(img)
 
         # Top: Episode + Shot info
         draw.text((40, 30), f"{episode}  {shot['id']}", fill="#888888", font=font_small)
 
-        # Center: Character name
-        if char_name:
+        # Center: Character name (only in pillow mode — comfyui has it in the image)
+        if not use_comfyui and char_name:
             bbox = draw.textbbox((0, 0), char_name, font=font_title)
             tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
             draw.text(((w - tw) // 2, 200), char_name, fill=accent_color, font=font_title)
@@ -400,6 +430,7 @@ def main():
     parser = argparse.ArgumentParser(description="短剧端到端管线")
     parser.add_argument("--voice", choices=["say", "nls"], default="say")
     parser.add_argument("--episode", default="03", help="集数编号 (01-06)")
+    parser.add_argument("--render", choices=["pillow", "comfyui"], default="pillow", help="视频渲染引擎: pillow=字帧(2/10) comfyui=AI渲染图(5/10)")
     parser.add_argument("--silent", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--test", action="store_true")
@@ -445,6 +476,10 @@ def main():
         else:
             print("  Step 2: 用 macOS say TTS 生成旁白音频 (5段)")
         print("  Step 3: 用 ffmpeg 生成视频片段 (5段)")
+        if args.render == "comfyui":
+            print("          渲染引擎: ComfyUI AI静态图")
+        else:
+            print("          渲染引擎: Pillow 字幕帧")
         if silent_mode:
             print("  Step 4: 拼接视频 → final_silent.mp4 (无声)")
         else:
@@ -465,6 +500,10 @@ def main():
         mode_parts.append("SILENT (无声)")
     else:
         mode_parts.append("有声")
+    if args.render == "comfyui":
+        mode_parts.append("ComfyUI渲染")
+    else:
+        mode_parts.append("Pillow字帧")
     mode_label = "+".join(mode_parts)
     print(f"\n{'='*60}")
     print(f"  🎬 Sprint 1.5: 水浒传 EP{ep_id} 端到端管线 [{mode_label}]")
@@ -485,7 +524,7 @@ def main():
 
     # Step 3
     print("\n🎥 Step 3: 生成视频片段...")
-    video_files = generate_video(script, video_dir=video_dir)
+    video_files = generate_video(script, video_dir=video_dir, render_mode=args.render, ep_id=ep_id)
 
     # Step 4
     if silent_mode:
