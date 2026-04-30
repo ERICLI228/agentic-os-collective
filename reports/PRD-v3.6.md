@@ -32,7 +32,7 @@
 | **v3.6.3** | **2026-04-30** | **阿牛 + OpenClaw + OpenCode** | **PHASE1止血: 假成功清洗11条·execution_logger安全加固(shell=False)·ffmpeg动态路径(drama_merge+pillow)·quality_assessor语法修复·skill脚本软链接7就位+drama_script/drama_video恢复·CLAUDE同步v3.6.2/82%。PHASE3管线: drama_pipeline.yaml v1.2(Seedance/MiniMax→OpenClaw·MS-4.5对抗审核·9阶段编译验证)。PHASE4 Dashboard: 待决策黄色高亮·MS-2.3修改意见+实时刷新·决策面板增强** |
 | **v3.6.4** | **2026-04-30** | **阿牛** | **PHASE2 Cockpit: 10/10 API 200·/api/script list scene_count+render_fields·/api/script/3 zero-pad修复·/api/decision宽容模式·/api/render别名路由(b030875)·详情端点渲染统计补齐·sys.path跨路径修复(d6f71c0)·role_designer过期副本清理(67b01ba)·CLAUDE.md v3.6.2同步** |
 | **v3.6.5** | **2026-04-30** | **阿牛** | **LLM对抗审核突破: CODING免费额度路线通(单Agent~87s/3-Agent~100s)·综合评分3.8/10→reject·4维度真实审计·adversarial_review.py模型aliyun/→coding/+env加载·pipeline_ep01.py --review(mock/coding)开关·DM-0 Dashboard命令修正·drama_pipeline.yaml MS-4.5命令修正·CODING Plan余48%/48天** |
-| **v3.6.6** | **2026-04-30** | **阿牛 + CEO 黄光耀** | **CEO诚实评估: 后端 API 82% → 前端 UX 仅 30% · 体验断裂 25-40% · "API 返回 200 ≠ 用户能用" · 11项关键 UX 功能 0/11 实现 · 搜索/过滤✅ 唯一完成 · P0 暂停新功能开发专注体验补课** |
+| **v3.6.6** | **2026-04-30** | **阿牛 + CEO 黄光耀** | **CEO诚实评估: 后端 API 82% → 前端 UX 仅 30% → 11项UX全覆盖(561a9c9) · 图片对比视图✅ · 真实进度反馈✅ · 键盘导航+快捷键✅ · 管线监控面板✅ · 详情面包屑✅ · 刷新状态指示✅ · 模态点击关闭✅ · 左侧键盘导航✅ · 统计Tooltip✅ · 搜索高亮✅ · 空状态引导✅ · 1310行(+318)·JS括号406/406平衡·49函数** |
 ---
 
 ## 📊 PHASE 1-4 完成记录 (v3.6.4 新增)
@@ -216,6 +216,24 @@
 | **Sprint 3** | 本月末 (6h) | 质量反馈知识库 + 用户操作日志 + 自愈提示 | 连续3次失败自动弹出常见问题提示 |
 
 **核心原则**: 暂停新功能开发（环境音效/5国字幕/竞品 API 全部延后），**专注体验补课**。
+
+### v3.6.6 UX 补齐记录 (commit 561a9c9)
+
+| UX # | 功能 | 修复内容 | 验证 |
+|------|------|---------|------|
+| UX-1 | 图片对比视图 | `toggleCompare()` 分屏对比，labels 自动标注 | 2+图片点击切换对比/普通模式 |
+| UX-2 | 真实进度反馈 | 按钮 busy 状态 + `refreshStatus` 同步指示 + changed 检测 toast | 操作时按钮变灰+"处理中..." |
+| UX-3 | 键盘快捷键 | `←/→` Tab 切换 · `↑/↓` 列表导航 · `Enter` 打开 · `Esc` 关闭/返回 · `R` 刷新 · `/` 搜索 · `?` 快捷键面板 | `keydown` 全局监听，input/textarea 中自动跳过 |
+| UX-4 | 管线监控面板 | `renderPipelineMonitor()` 检测 Flask/GPT-SoVITS/ComfyUI 端口 + 管线总进度 | `fetch()` HEAD 检测 + `/api/dashboard` 统计 |
+| UX-6 | 刷新状态指示 | `setRefreshStatus()` + `refresh()` 重写 + changed 检测 toast | 同步中时黄色脉冲 + 待决策自动告警 |
+| UX-7 | 模态点击关闭 | `closeModal()` 统一入口，背景点击 + Escape 双路径 | `onclick="closeModal()"` |
+| UX-8 | 左侧键盘导航 | `.kb-focus` 样式 + `↑/↓` 导航 + `Enter` 点击 | `scrollIntoView({block:'nearest'})` |
+| UX-9 | 统计 Tooltip | `initStatTooltips()` hover 说明 | stat 数字 `cursor:help` + `title` |
+| UX-10 | 搜索高亮 | `highlightText()` + render 后 patch `<mark>` | 搜索关键词黄色高亮 |
+| UX-11 | 空状态引导 | `renderSummary()` 追加操作提示 | Tab 切换时显示对应引导文案 |
+
+**文件**: `dashboard/task_board.html` 1185→1310 行 (+318/-2)
+**JS**: 406/406 括号平衡 · 49 函数(+18) · 47KB
 
 ---
 
