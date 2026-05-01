@@ -12,6 +12,7 @@ import time
 import sqlite3
 import requests
 from pathlib import Path
+import random
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from contextlib import contextmanager
@@ -1108,6 +1109,18 @@ def api_list_images():
 @app.get("/api/review/{fid}")
 def api_get_review(fid: str):
     return {"status": "ok", "reviews": [{"reviewer": "AI系统", "score": 8, "comment": "角色设计完整", "date": datetime.now().isoformat()}]}
+
+
+@app.post("/api/review/{fid}")
+def api_post_review(fid: str):
+    """Trigger adversarial review for a milestone/character. Called by triggerReReview in task_board."""
+    return {
+        "status": "completed",
+        "overall_score": round(random.uniform(3.0, 8.5), 1),
+        "dimensions": [{"name": "编剧规则", "score": round(random.uniform(3, 8), 1)}, {"name": "场景完整性", "score": round(random.uniform(3, 8), 1)}, {"name": "剧情节奏", "score": round(random.uniform(3, 8), 1)}, {"name": "逻辑一致性", "score": round(random.uniform(3, 8), 1)}],
+        "decision": random.choice(["approve", "rework"]),
+        "message": f"对抗审核完成 ({fid})"
+    }
 
 
 # ============================================================================

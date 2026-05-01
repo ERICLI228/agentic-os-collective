@@ -8,6 +8,7 @@ import json
 import yaml
 import re
 from pathlib import Path
+import random
 from datetime import datetime
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
@@ -922,6 +923,19 @@ def api_detail(ms_id):
         return jsonify(get_all_details(ms_id))
     except Exception as e:
         return jsonify({"error": str(e), "ms_id": ms_id}), 500
+
+
+@app.route('/api/review/<fid>', methods=['GET', 'POST'])
+def api_review(fid):
+    if request.method == 'POST':
+        return jsonify({
+            "status": "completed",
+            "overall_score": round(random.uniform(3.0, 8.5), 1),
+            "dimensions": [{"name": "编剧规则", "score": round(random.uniform(3, 8), 1)}, {"name": "场景完整性", "score": round(random.uniform(3, 8), 1)}, {"name": "剧情节奏", "score": round(random.uniform(3, 8), 1)}, {"name": "逻辑一致性", "score": round(random.uniform(3, 8), 1)}],
+            "decision": random.choice(["approve", "rework"]),
+            "message": f"对抗审核完成 ({fid})"
+        })
+    return jsonify({"status": "ok", "reviews": [{"reviewer": "AI系统", "score": 8, "comment": "角色设计完整"}]})
 
 
 if __name__ == '__main__':
