@@ -279,6 +279,104 @@ def mix_with_voice_and_bgm(video_path: str, voice_path: str, music_path: str = N
         return None
 
 
+def text_to_speech_gptsovits(text: str, char_id: str = "wusong", output_path: str = None) -> str:
+    """
+    使用GPT-SoVITS v3 生成配音 (角色声音克隆)
+    
+    Args:
+        text: 台词文本
+        char_id: 角色ID (wusong/luzhishen/etc.)，对应 character_voices.json
+        output_path: 输出WAV路径
+    
+    前置条件:
+        character_voices.json 中对应角色需配置 ref_audio 和 prompt_text
+    """
+    import warnings
+    warnings.filterwarnings("ignore")
+    
+    voice_config_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "character_voices.json"
+    )
+    if not os.path.exists(voice_config_path):
+        print("❌ character_voices.json 未找到")
+        return None
+    
+    import json
+    with open(voice_config_path, "r") as f:
+        config = json.load(f)
+    
+    chars = config.get("characters", {})
+    if char_id not in chars:
+        print(f"❌ 角色 '{char_id}' 不在配置中。可用: {list(chars.keys())}")
+        return None
+    
+    c = chars[char_id]
+    if not c.get("ref_audio") or not c.get("prompt_text"):
+        print(f"❌ 角色 '{char_id}' 参考音频未配置")
+        return None
+    
+    ref_audio = os.path.expanduser(c["ref_audio"])
+    if not os.path.exists(ref_audio):
+        print(f"❌ 参考音频不存在: {ref_audio}")
+        return None
+    
+    sovits_cfg = config["gpt_sovits_config"]
+    root = os.path.expanduser(sovits_cfg["GPT_SOVITS_ROOT"])
+    
+    import sys as _sys
+    _sys.path.insert(0, os.path.join(root, "GPT_SoVITS", "GPT_SoVITS"))
+    _sys.path.insert(0, os.path.join(root, "GPT_SoVITS"))
+    os.environ.update({
+        "gpt_path": os.path.expanduser(sovits_cfg["gpt_path"]),
+        "sovits_path": os.path.expanduser(sovits_cfg["sovits_path"]),
+        "bert_path": os.path.expanduser(sovits_cfg["bert_path"]),
+    })
+    
+    _cwd = os.getcwd()
+    os.chdir(root)
+    
+    try:
+        import inference_webui as w
+        import numpy as np
+        import soundfile
+        
+        gen = w.change_sovits_weights(os.environ["sovits_path"])
+        list(gen)
+        
+        params = dict(c.get("gpt_params", {}))
+        params.setdefault("how_to_cut", "不切")
+        params.setdefault("top_k", 5)
+        params.setdefault("top_p", 0.9)
+        params.setdefault("temperature", 0.8)
+        params.setdefault("speed", 1.0)
+        params.setdefault("sample_steps", 32)
+        
+        gen = w.get_tts_wav(
+            ref_audio,
+            c["prompt_text"],
+            c.get("prompt_language", "Chinese"),
+            text,
+            "Chinese",
+            **params
+        )
+        sr, audio = next(gen)
+        
+        if output_path is None:
+            output_dir = os.path.expanduser(sovits_cfg.get("output_dir", "~/GPT-SoVITS/output/drama"))
+            os.makedirs(output_dir, exist_ok=True)
+            output_path = os.path.join(output_dir, f"{char_id}_{uuid.uuid4().hex[:8]}.wav")
+        
+        soundfile.write(output_path, np.clip(audio, -32768, 32767).astype(np.int16), sr)
+        print(f"✅ GPT-SoVITS语音 ({c['name']}): {output_path} ({len(audio)/sr:.1f}s)")
+        return output_path
+    except Exception as e:
+        print(f"❌ GPT-SoVITS错误: {e}")
+        return None
+    finally:
+        os.chdir(_cwd)
+
+
 def create_test_bgm(output_path: str = None) -> str:
     """
     创建测试用背景音乐 (使用系统音频生成简单旋律)
@@ -360,13 +458,20 @@ def main():
         print(__doc__)
         print("\n📖 用法:")
         print("  python drama_audio.py --tts \"需要配音的文字\"")
+        print("  python drama_audio.py --sovits wusong \"台词内容\"    # GPT-SoVITS 角色配音")
         print("  python drama_audio.py --merge video.mp4 audio.m4a")
         print("  python drama_audio.py --full video_url \"配音脚本\" output_name")
         sys.exit(1)
     
     action = sys.argv[1]
     
-    if action == "--tts":
+    if action == "--sovits":
+        # 用法: --sovits <char_id> <台词文本>
+        char_id = sys.argv[2] if len(sys.argv) > 2 else "wusong"
+        text = sys.argv[3] if len(sys.argv) > 3 else "你好，我是水浒传AI数字短剧系统"
+        text_to_speech_gptsovits(text, char_id=char_id)
+    
+    elif action == "--tts":
         text = " ".join(sys.argv[2:]) if len(sys.argv) > 2 else "你好，我是水浒传AI数字短剧系统"
         text_to_speech_mac(text)
         

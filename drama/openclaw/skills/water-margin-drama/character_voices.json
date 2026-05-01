@@ -1,0 +1,61 @@
+{
+  "_schema": "character_voices v1.0",
+  "_description": "每个角色的参考音频配置。添加新角色只需: 1) 录3-10秒角色原声 → 2) 写文本标注 → 3) 填入此文件 → 4) 运行 batch_tts.py",
+  "_tts_backend": "GPT-SoVITS v3 (s2Gv3.pth + s1bert25hz GPT)",
+  "characters": {
+    "wusong": {
+      "name": "武松",
+      "ref_audio": "~/GPT-SoVITS/output/wusong_cosyvoice.wav",
+      "prompt_text": "风雨还在下。主人，我在风雨里呼唤着你的名字。",
+      "prompt_language": "Chinese",
+      "voice_desc": "男声，有力豪迈",
+      "gpt_params": {
+        "top_k": 6,
+        "top_p": 0.9,
+        "temperature": 0.7,
+        "speed": 1.0,
+        "sample_steps": 32,
+        "how_to_cut": "不切"
+      }
+    },
+    "luzhishen": {
+      "name": "鲁智深",
+      "ref_audio": "",
+      "prompt_text": "",
+      "prompt_language": "Chinese",
+      "voice_desc": "男声，洪亮爽朗",
+      "_todo": "录3-10秒鲁智深说话的原声(电视剧片段即可)，填入 ref_audio 和 prompt_text"
+    },
+    "linchong": {
+      "name": "林冲",
+      "ref_audio": "",
+      "prompt_text": "",
+      "prompt_language": "Chinese",
+      "voice_desc": "男声，沉稳内敛",
+      "_todo": "录3-10秒林冲说话的原声"
+    },
+    "songjiang": {
+      "name": "宋江",
+      "ref_audio": "",
+      "prompt_text": "",
+      "prompt_language": "Chinese",
+      "voice_desc": "男声，沉稳厚重",
+      "_todo": "录3-10秒宋江说话的原声"
+    },
+    "likui": {
+      "name": "李逵",
+      "ref_audio": "",
+      "prompt_text": "",
+      "prompt_language": "Chinese",
+      "voice_desc": "男声，粗犷暴躁",
+      "_todo": "录3-10秒李逵说话的原声"
+    }
+  },
+  "gpt_sovits_config": {
+    "gpt_path": "~/GPT-SoVITS/GPT_SoVITS/pretrained_models/s1bert25hz-2kh-longer-epoch=68e-step=50232.ckpt",
+    "sovits_path": "~/GPT-SoVITS/GPT_SoVITS/pretrained_models/s2Gv3.pth",
+    "bert_path": "~/GPT-SoVITS/GPT_SoVITS/pretrained_models/chinese-roberta-wwm-ext-large",
+    "GPT_SOVITS_ROOT": "~/GPT-SoVITS",
+    "output_dir": "~/GPT-SoVITS/output/drama"
+  }
+}

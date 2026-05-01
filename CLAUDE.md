@@ -1,208 +1,96 @@
-# agentic-os-collective 项目架构说明
+# agentic-os-collective Schema
 
-> 版本：2026-04-23
-> 仓库：~/agentic-os-collective/
-> 状态：生产环境
+> 版本：2026-04-27 | 仓库：~/agentic-os-collective/
 
-## 🎯 项目概述
-
-本项目包含两个核心业务线：
-1. **AI数字短剧自动化系统** (drama/)
-2. **TK东南亚运营自动化系统** (tk/)
-
-共享基础设施位于 `shared/` 目录。
-
----
-
-## 📁 目录结构
+## 项目结构
 
 ```
 agentic-os-collective/
-├── drama/                    # AI短剧自动化
-│   ├── openclaw/
-│   │   ├── core/             # 核心引擎模块
-│   │   │   ├── download_server.py        # 下载服务
-│   │   │   ├── decision_listener.py      # 决策监听器
-│   │   │   ├── token_governor_v1.py      # Token治理v1
-│   │   │   ├── token_governor_v2.py      # Token治理v2
-│   │   │   ├── safe_router.py            # 安全路由
-│   │   │   ├── progress_logger.py        # 进度日志
-│   │   │   ├── dashboard_api_v2.py       # Dashboard API
-│   │   │   └── media_server.py           # 媒体服务
-│   │   └── skills/
-│   │       └── water-margin-drama/       # 水浒传短剧Skill
-│   │           ├── water_margin_drama.py # 主脚本
-│   │           ├── script_selector.py    # 剧本筛选
-│   │           ├── role_designer.py      # 角色设计
-│   │           ├── auto_publisher.py     # 自动发布
-│   │           └── SKILL.md              # Skill说明
-│
-├── tk/                       # TK运营自动化
-│   ├── openclaw/
-│   │   ├── core/             # 核心引擎（与drama共享结构）
-│   │   └ skills/
-│   │       ├── claw-operator/            # TK运营Operator
-│   │       └── feishu-tk-notifier/       # 飞书通知
-│
-├── shared/                   # 共享基础设施
-│   ├── mcp_task_server.py    # MCP任务服务器
-│   ├── execution_logger.py   # 执行日志器
-│   ├── task_wizard.py        # 任务向导
-│   ├── data/
-│   │   └ init_db.py          # 数据库初始化
-│   ├── knowledge/
-│   │   └ best_practices.yaml # 最佳实践知识库
-│   └── templates/
-│       ├── tk_pipeline.yaml   # TK流水线模板
-│       ├── drama_pipeline.yaml # 短剧流水线模板
-│
-├── dashboard/                # Dashboard UI
-├── api/                      # API服务
-├── gateway/                  # Gateway配置
-├── hooks/                    # Git Hooks
-├── tests/                    # 测试套件
-└ reports/                   # 审查报告输出
-
+├── drama/     # AI数字短剧自动化
+│   └── openclaw/
+│       ├── core/     # 下载/决策/Token治理/路由
+│       └── skills/water-margin-drama/  # 水浒传短剧
+├── tk/        # TK东南亚运营
+│   └── openclaw/
+│       ├── core/     # 与drama共享结构
+│       └── skills/claw-operator/       # 运营Operator
+├── shared/    # 共享基础设施
+│   ├── mcp_task_server.py
+│   ├── execution_logger.py
+│   └── knowledge/   # 知识库（见下方Schema）
+├── dashboard/ api/ gateway/ hooks/ tests/ reports/
 ```
 
----
+## AI 行为规则
 
-## 🧩 核心模块说明
+### 知识回填（每次任务后必须执行）
+完成任务后，检查是否有新的可沉淀知识：
 
-### 1. drama/openclaw/core/ (AI短剧核心引擎)
+1. **如果是新发现的方法/方案/结论** → 写入 `shared/knowledge/raw/notes/`
+2. **如果是可复用的最佳实践** → 更新 `shared/knowledge/best_practices.yaml`
+3. **如果回答了一个复杂问题** → `wiki-query.py` 存档到 `wiki/outputs/`
+4. **如果是新概念/实体** → `wiki-ingest.py` 在 `wiki/concepts/` 或 `wiki/entities/` 中创建页面
+5. **操作完成后** → 更新 `wiki/index.md` 和 `wiki/log.md`
 
-| 模块 | 功能 | 关键特性 |
-|------|------|---------|
-| `download_server.py` | 视频下载服务 | 支持多平台、断点续传 |
-| `decision_listener.py` | 决策监听器 | 异步事件驱动 |
-| `token_governor_v1.py` | Token治理v1 | 简单限额控制 |
-| `token_governor_v2.py` | Token治理v2 | 智能预算分配 |
-| `safe_router.py` | 安全路由 | 权限验证、流量控制 |
-| `progress_logger.py` | 进度日志 | 实时监控、状态追踪 |
-| `dashboard_api_v2.py` | Dashboard API | RESTful接口、数据聚合 |
-| `media_server.py` | 媒体服务 | 视频处理、格式转换 |
+### 提问时的行为（Query 闭环）
+1. 先读 `shared/knowledge/wiki/CLAUDE.md`（Schema）
+2. 再读 `wiki/index.md`（现有内容概览）
+3. 加载相关页面后回答，带 `[[wikilink]]` 引用
+4. 答案存回 `wiki/outputs/`（运行 `python3 shared/scripts/wiki-query.py <slug> "<title>" <answer>`）
 
-### 2. drama/openclaw/skills/water-margin-drama/ (水浒传短剧Skill)
+### Ingest 自动化
+当 `shared/knowledge/raw/` 中有新素材时：
+1. 读取素材内容
+2. 选择页面类型（concept | entity | source）
+3. 使用 `shared/knowledge/templates/{type}.md` 创建 wiki 页面（含 YAML frontmatter + [[wikilinks]]）
+4. 更新 `wiki/index.md` 和 `wiki/log.md`
+5. 或直接运行：`python3 shared/scripts/wiki-ingest.py <raw-file> --type <type>`
 
-| 模块 | 功能 | 输入/输出 |
-|------|------|----------|
-| `water_margin_drama.py` | 主脚本 | 剧本→视频 |
-| `script_selector.py` | 剧本筛选 | 原文→精选片段 |
-| `role_designer.py` | 角色设计 | 角色→配音/形象 |
-| `controversy_rewriter.py` | 争议改写 | 敏感剧情→合规版本 |
-| `auto_publisher.py` | 自动发布 | 视频→平台上传 |
-| `drama_audio.py` | 配音合成 | 文本→武松语音 |
+### Lint 定时巡检
+每周一运行健康检查：
+```bash
+python3 ~/agentic-os-collective/shared/scripts/wiki-lint.py
+```
+检查项：孤儿页面、断链、缺失 frontmatter、内容冲突、高频引用但未成页
 
-### 3. tk/openclaw/core/ (TK运营核心引擎)
-
-与 drama 共享相同的架构模板，但业务逻辑不同。
-
-| 模块 | 功能 | TK特定特性 |
-|------|------|-----------|
-| `download_server.py` | 视频下载 | TK平台适配 |
-| `decision_listener.py` | 决策监听 | 运营策略决策 |
-| `token_governor_v2.py` | Token治理 | 运营预算控制 |
-
-### 4. shared/ (共享基础设施)
-
-| 模块 | 功能 | 服务范围 |
-|------|------|---------|
-| `mcp_task_server.py` | MCP任务服务器 | drama + tk |
-| `execution_logger.py` | 执行日志器 | 全项目 |
-| `task_wizard.py` | 任务向导 | 任务创建流程 |
-| `data/init_db.py` | 数据库初始化 | 数据库Schema |
-
----
-
-## 🔑 关键文件路径
-
-### 配置文件
-
-| 文件 | 路径 | 用途 |
-|------|------|------|
-| TK流水线配置 | `shared/templates/tk_pipeline.yaml` | TK运营流程定义 |
-| 短剧流水线配置 | `shared/templates/drama_pipeline.yaml` | 短剧生成流程定义 |
-| 最佳实践知识库 | `shared/knowledge/best_practices.yaml` | 通用最佳实践 |
-| TK Operator配置 | `tk/openclaw/skills/claw-operator/config.json` | TK运营参数 |
-
-### 数据文件
-
-| 文件 | 路径 | 用途 |
-|------|------|------|
-| 水浒传剧本库 | `drama/openclaw/skills/water-margin-drama/episode_list.json` | 剧本索引 |
-| 角色库 | `drama/openclaw/skills/water-margin-drama/role_library.json` | 角色+配音配置 |
-
-### 文档文件
-
-| 文件 | 路径 | 用途 |
-|------|------|------|
-| 水浒传Skill说明 | `drama/openclaw/skills/water-margin-drama/SKILL.md` | Skill使用指南 |
-| TK Operator Skill | `tk/openclaw/skills/claw-operator/SKILL.md` | TK运营指南 |
-
----
-
-## 📋 命名约定
-
-### 文件命名
-
-| 类型 | 约定 | 示例 |
+### 命名约定
+| 类型 | 格式 | 示例 |
 |------|------|------|
 | Python模块 | `snake_case.py` | `download_server.py` |
-| 配置文件 | `snake_case.yaml/json` | `tk_pipeline.yaml` |
-| Skill文档 | `SKILL.md` | 固定名称 |
-| 状态文件 | `*_state.json` | `confirmation_state.json` |
-
-### 目录命名
-
-| 类型 | 约定 | 示例 |
-|------|------|------|
+| 配置文件 | `snake_case.yaml` | `tk_pipeline.yaml` |
 | Skill目录 | `skill-name/` | `water-margin-drama/` |
-| 核心模块 | `core/` | 固定名称 |
-| 共享目录 | `shared/` | 固定名称 |
+| Wiki页面 | `kebab-case.md` | `active-inference.md` |
 
----
+### 依赖关系
+- 所有核心模块强依赖 `shared/mcp_task_server.py`
+- 外部依赖：OpenClaw, GPT-SoVITS, Replicate, 飞书API
+- 配音依赖：GPT-SoVITS V3+ 模型权重
 
-## 🔗 依赖关系
+### 已知问题
+1. drama/tk 架构重复，共用代码可提取到 shared/
+2. SOP文档缺失如 TK-OPERATION-SOP.md
 
-### 外部依赖
+### 模型路由
+| 场景 | 模型 | 说明 |
+|------|------|------|
+| 默认 | `ollama/llama3.2:3b` | 本地快速 |
+| 备选 | `deepseek/deepseek-v4-flash` | 直连api.deepseek.com |
+| 复杂 | `aliyun/qwen3.6-plus` | CODING计划免费额度 |
+| 代码 | `aliyun/qwen3-coder-plus` | CODING计划 |
 
-| 依赖 | 用途 | 版本要求 |
-|------|------|---------|
-| OpenClaw | 核心框架 | 最新版 |
-| GPT-SoVITS | 配音合成 | V3或V2 |
-| Replicate | 动态视频生成 | 需余额 |
-| 飞书 API | 通知推送 | Webhook配置 |
+## 会话归档（Clicky/CPR 理念）
 
-### 内部依赖
+每次会话结束时（或用户说"结束"、"归档"、"保存"时）执行：
 
-| 模块 | 依赖模块 | 依赖类型 |
-|------|---------|---------|
-| `drama/core/*` | `shared/mcp_task_server.py` | 强依赖 |
-| `tk/core/*` | `shared/mcp_task_server.py` | 强依赖 |
-| `water_margin_drama.py` | `drama/core/*` | 强依赖 |
-| `claw-operator.py` | `tk/core/*` | 强依赖 |
+```bash
+bash ~/agentic-os-collective/scripts/archive-session.sh
+```
 
----
+这将：
+1. 提取本次会话的关键决策和主题
+2. 结构化日志写入 `shared/knowledge/wiki/log.md`
+3. 完整归档保存到 `wiki/outputs/session-{timestamp}.md`
+4. 更新 `wiki/index.md` 索引
+5. 追加到 `workspace/memory/timeline.md`
 
-## ⚠️ 已知问题
-
-1. **架构重复**: `drama/core/` 与 `tk/core/` 结构相似，可能存在代码重复
-2. **CLAUDE.md缺失**: 项目根目录缺少架构说明文档
-3. **SOP文档缺失**: 未找到 TK-OPERATION-SOP.md 文件
-4. **配置分散**: 配置文件分散在多个目录，缺少统一管理
-
----
-
-## 📊 项目统计
-
-| 类型 | 数量 |
-|------|------|
-| 总文件数 | 2831 |
-| Python文件 | 55 |
-| 配置文件 | 613 |
-| 文档文件 | 118 |
-| Skill数 | 2 (drama) + 2 (tk) |
-
----
-
-*更新于 2026-04-23 00:50 PDT*
+在回答中如涉及重要决策，使用 `[[wikilinks]]` 格式标注，便于知识库链接。
