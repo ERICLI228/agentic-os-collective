@@ -1187,20 +1187,31 @@ async function renderDM1(detail, ms) {
   detailEl.insertAdjacentHTML('beforeend', sec);
   const container = document.getElementById('dm1-characters');
 
-  // Fetch all characters
-  const fetches = CHAR_NAMES.map(name => {
-    const fid = CHAR_MAP[name] || name;
-    return fetch('/api/character/' + fid).then(r => r.ok ? r.json() : null).catch(() => null);
-  });
-  const results = await Promise.all(fetches);
+  // Fetch all characters with bulk endpoint (single request instead of 108)
+  let results = [];
+  try {
+    const r = await fetch('/api/characters/all', { signal: AbortSignal.timeout(8000) });
+    if (r.ok) { const d = await r.json(); results = d.characters || []; }
+  } catch(e) {
+    console.warn('Bulk fetch failed, falling back to individual', e);
+    for (let b = 0; b < CHAR_NAMES.length; b += 6) {
+      const batch = CHAR_NAMES.slice(b, b + 6).map(n => {
+        const fid = CHAR_MAP[n] || n;
+        return fetch('/api/character/' + fid, { signal: AbortSignal.timeout(2000) })
+          .then(r => r.ok ? r.json() : null).catch(() => null);
+      });
+      (await Promise.all(batch)).forEach(r => results.push(r));
+      await new Promise(r => setTimeout(r, 50));
+    }
+  }
 
   let html = '';
   results.forEach((data, i) => {
     if (!data) return;
-    const name = data.name || CHAR_NAMES[i];
-    const fid = data.pinyin || CHAR_MAP[name] || name;
-    let profile = data.profile || {};
-    // Normalize: some profiles have an inner .profile wrapper
+    let name = data.name || CHAR_NAMES[i];
+    let fid = data.pinyin || CHAR_MAP[name] || name;
+    // Bulk API returns flat structure, legacy API returns nested profile
+    let profile = data.profile || data;
     if (profile.profile && typeof profile.profile === 'object' && !Array.isArray(profile.profile)) {
       profile = profile.profile;
     }
@@ -1210,8 +1221,8 @@ async function renderDM1(detail, ms) {
     const appearance = profile.appearance || {};
     const background = profile.background || {};
     const voice = profile.voice || {};
-    const videoPrompts = profile.video_prompts || {};
-    const title = profile.title || CHAR_ROLES[name] || '';
+    const videoPrompts = (typeof data.video_prompts === 'object' && !Array.isArray(data.video_prompts)) ? data.video_prompts : (typeof profile.video_prompts === 'object' && !Array.isArray(profile.video_prompts) ? profile.video_prompts : {});
+    const title = profile.title || data.title || CHAR_ROLES[name] || '';
     const cp = appearance.color_palette || {};
     const mainRender = renders.length > 0 ? renders[0] : `/api/render/${fid}/shot_01.png`;
 

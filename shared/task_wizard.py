@@ -925,6 +925,47 @@ def api_detail(ms_id):
         return jsonify({"error": str(e), "ms_id": ms_id}), 500
 
 
+@app.route('/api/characters/all', methods=['GET'])
+def api_characters_all():
+    """一次性返回所有角色的精简数据，避免108次单请求压垮单线程Flask"""
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    try:
+        from script_manager import CHARACTER_ID_MAP, _get_render_dir
+    except Exception:
+        CHARACTER_ID_MAP = {}
+    bible_path = Path.home() / ".agentic-os" / "character_designs" / "visual_bible.json"
+    bible = {}
+    if bible_path.exists():
+        with open(bible_path, encoding="utf-8") as f:
+            bible = json.load(f)
+    chars = bible.get("characters", {})
+    results = []
+    for fid, ch in chars.items():
+        rd = _get_render_dir(ch.get("name", fid))
+        renders = []
+        if rd.exists():
+            for p in sorted(rd.glob("*.png"))[:5]:
+                renders.append(f"/api/render/{fid}/{p.name}")
+        results.append({
+            "name": ch.get("name", fid),
+            "pinyin": fid,
+            "title": ch.get("title", ""),
+            "star_rank": ch.get("star_rank"),
+            "star_name": ch.get("star_name", ""),
+            "actor": ch.get("actor", ""),
+            "prompt_en": ch.get("prompt_en", ""),
+            "basic_info": ch.get("basic_info", {}),
+            "personality": ch.get("personality", {}),
+            "appearance": ch.get("appearance", {}),
+            "voice": ch.get("voice", {}),
+            "renders": renders,
+            "video_prompts": ch.get("video_prompts", {}),
+            "has_video_prompts": "video_prompts" in ch and ch.get("video_prompts") and isinstance(ch.get("video_prompts"), dict),
+        })
+    return jsonify({"characters": results, "total": len(results)})
+
+
 @app.route('/api/review/<fid>', methods=['GET', 'POST'])
 def api_review(fid):
     if request.method == 'POST':
