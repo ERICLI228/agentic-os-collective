@@ -965,6 +965,9 @@ async function renderDetail(){
     await renderDM0(detail,ms);
   }else if(ms.ms_id==='DM-1'){
     await renderDM1(detail,ms);
+  }else if(ms.ms_id && !ms.ms_id.startsWith('DM-') && !ms.ms_id.startsWith('daily')){
+    await renderTKDetail(detail,ms);
+    await renderDM1(detail,ms);
   }else if(ms.ms_id==='MS-2.3'){
     await renderMS23(detail,ms);
   }else if(ms.ms_id&&/^DM-(6|7|8|9|10)$/.test(ms.ms_id)){
@@ -973,6 +976,37 @@ async function renderDetail(){
 }
 
 // ================================================================
+// v3.7: TK milestone rich panels
+async function renderTKDetail(detail, ms) {
+  var el = document.getElementById('detail');
+  if (!detail || !detail.sections) return;
+  var h = '';
+  detail.sections.forEach(function(s) {
+    h += '<div class="sec"><h3>' + (s.title||'') + ' <span class="src-tag src-' + (s.source||'mock') + '">[' + (s.source||'mock') + ']</span></h3>';
+    (s.items||[]).forEach(function(it) {
+      h += '<div class="ent-row"><span class="ent-lbl">' + (it.label||it.key||'') + '</span><div class="ent-val"><span>' + (it.value||'') + '</span>';
+      if (it.note) h += '<div class="note">' + it.note + '</div>';
+      h += '</div></div>';
+    });
+    h += '</div>';
+  });
+  if (ms.ms_id === 'MS-2.3') {
+    try {
+      var r = await fetch('/api/images');
+      var d = await r.json();
+      var imgs = d.images || [];
+      if (imgs.length > 0) {
+        h += '<div class="sec"><h3>📷 产品图片</h3><div class="img-gallery">';
+        imgs.slice(0, 12).forEach(function(img) {
+          h += '<div class="img-card" onclick="zoomImg(\'' + img.url + '\')"><img src="' + img.url + '" loading="lazy" onerror="this.style.display=\'none\'" style="max-width:150px"/><span class="img-label">' + img.name + '</span></div>';
+        });
+        h += '</div></div>';
+      }
+    } catch(e) {}
+  }
+  el.insertAdjacentHTML('beforeend', h);
+}
+
 // v3.6: renderDM0 - DM-0: 6集完整故事板
 // ================================================================
 async function renderDM0(detail,ms){
