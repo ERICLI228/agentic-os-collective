@@ -198,6 +198,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 .cb-voice-player-row .cb-voice-player{flex:1}
 .cb-voice-close{font-size:14px;padding:2px 6px;border-radius:3px;border:1px solid rgba(239,68,68,.3);color:#ef4444;background:rgba(239,68,68,.08);cursor:pointer;line-height:1;flex-shrink:0}
 .cb-voice-close:hover{background:rgba(239,68,68,.2)}
+/* DM-1 Search & Filter */
+.dm1-searchbar{padding:8px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dm1-searchbar .search-box{flex:1;min-width:200px;background:#111;border:1px solid #333;color:#e4e6eb;padding:5px 10px;border-radius:6px;font-size:11px;outline:none;transition:border-color .15s}
+.dm1-searchbar .search-box:focus{border-color:#4a9eff}
+.dm1-filter-chips{display:flex;gap:4px;flex-wrap:wrap;padding:0 12px 8px}
+.dm1-chip{padding:3px 10px;border-radius:12px;font-size:10px;cursor:pointer;border:1px solid rgba(74,158,255,.2);color:#6b8aad;background:rgba(74,158,255,.04);transition:all .15s;user-select:none}
+.dm1-chip:hover{border-color:#4a9eff;color:#93c5fd}
+.dm1-chip.active{background:rgba(74,158,255,.15);border-color:#4a9eff;color:#e8f0fe}
+.dm1-showing{padding:4px 12px 8px;font-size:10px;color:#444;text-align:center}
 /* Video prompts three-scheme cards */
 .cb-vp-card{background:rgba(0,0,0,.1);border-radius:4px;margin:3px 0;overflow:hidden}
 .cb-vp-card-hdr{display:flex;align-items:center;gap:6px;padding:4px 8px;font-size:10px;color:#94a3b8;cursor:pointer;user-select:none;background:rgba(74,158,255,.04)}
@@ -468,6 +477,10 @@ const CHAR_MAP={武松:'wusong',鲁智深:'luzhishen',林冲:'linchong',宋江:'
 const CHAR_NAMES=['武松','鲁智深','林冲','宋江','李逵','吴用','卢俊义','公孙胜','关胜','秦明','呼延灼','花荣','柴进','李应','朱仝','董平','张清','杨志','徐宁','索超','戴宗','刘唐','史进','穆弘','雷横','李俊','阮小二','张横','阮小五','张顺','阮小七','杨雄','石秀','解珍','解宝','燕青','朱武','黄信','孙立','宣赞','郝思文','韩滔','彭玘','单廷珪','魏定国','萧让','裴宣','欧鹏','邓飞','燕顺','杨林','凌振','蒋敬','吕方','郭盛','安道全','皇甫端','王英','扈三娘','鲍旭','樊瑞','孔明','孔亮','项充','李衮','金大坚','马麟','童威','童猛','孟康','侯健','陈达','杨春','郑天寿','陶宗旺','宋清','乐和','龚旺','丁得孙','穆春','曹正','宋万','杜迁','薛永','施恩','李忠','周通','汤隆','杜兴','邹渊','邹润','朱贵','朱富','蔡福','蔡庆','李立','李云','焦挺','石勇','孙新','顾大嫂','张青','孙二娘','王定六','郁保四','白胜','时迁','段景住','晁盖'];
 const CHAR_ROLES={武松:'行者・打虎英雄',鲁智深:'花和尚・倒拔垂杨柳',林冲:'豹子头・八十万禁军教头',宋江:'及时雨・呼保义',李逵:'黑旋风・沂岭杀四虎',吴用:'智多星・智取生辰纲',卢俊义:'玉麒麟・河北三绝',公孙胜:'入云龙・道法通天',关胜:'大刀・武圣后裔',秦明:'霹雳火・性如烈火',呼延灼:'双鞭・开国名将之后',花荣:'小李广・百步穿杨',柴进:'小旋风・皇室贵胄',李应:'扑天雕・独龙冈庄主',朱仝:'美髯公・义释宋江',董平:'双枪将・风流猛将',张清:'没羽箭・飞石无敌',杨志:'青面兽・杨家将后裔',徐宁:'金枪手・钩镰枪破连环马',索超:'急先锋・性急如火',戴宗:'神行太保・日行八百里',刘唐:'赤发鬼・鬓边朱砂记',史进:'九纹龙・华山好汉',穆弘:'没遮拦・揭阳一霸',雷横:'插翅虎・郓城都头',李俊:'混江龙・水军之首',阮小二:'立地太岁・石碣村渔民',张横:'船火儿・浔阳江好汉',阮小五:'短命二郎・水中好汉',张顺:'浪里白条・水底伏龙',阮小七:'活阎罗・最野老三',杨雄:'病关索・蓟州两院押狱',石秀:'拼命三郎・路见不平',解珍:'两头蛇・登州猎户',解宝:'双尾蝎・解珍之弟',燕青:'浪子・多才多艺'};
 let VOICE_CONFIG={};
+let charDataCache = [];
+let currentDM1Filter = { query: '', category: '' };
+const DM1_TOP10 = 10;
+const TIANGANG_COUNT = 36;
 const CHARACTER_VOICES={
   wusong:{ref:'/Users/hokeli/GPT-SoVITS/output/wusong_cosyvoice.wav',prompt:'风雨还在下。主人，我在风雨里呼唤着你的名字。'},
   luzhishen:{ref:'/Users/hokeli/GPT-SoVITS/output/luzhishen_nls_ref.wav',prompt:'洒家是鲁智深！倒拔垂杨柳，拳打镇关西！'},
@@ -1156,8 +1169,18 @@ function downloadScript(epNum,fmt){
 async function renderDM1(detail, ms) {
   const detailEl = document.getElementById('detail');
   let sec = `<div class="sec" id="dm1-sec"><h3>🎭 角色档案系统 (DM-1)</h3>
-    <p style="font-size:10px;color:#555;margin-bottom:8px">点击「编辑档案」修改角色设定 · 修改后自动检测是否需重新渲染</p>
+    <p style="font-size:10px;color:#555;margin-bottom:4px">点击「编辑档案」修改角色设定 · 修改后自动检测是否需重新渲染</p>
+    <div class="dm1-searchbar">
+      <input class="search-box" id="dm1-search" placeholder="搜索角色名、称号或星宿…" oninput="onDM1Search(this.value)" />
+    </div>
+    <div class="dm1-filter-chips" id="dm1-chips">
+      <span class="dm1-chip active" onclick="onDM1Chip(this, '')">全部</span>
+      <span class="dm1-chip" onclick="onDM1Chip(this, 'tiangang')">三十六天罡</span>
+      <span class="dm1-chip" onclick="onDM1Chip(this, 'dishap')">七十二地煞</span>
+      <span class="dm1-chip" onclick="onDM1Chip(this, 'core')">主要角色</span>
+    </div>
     <div id="dm1-characters"><span class="loading">加载角色档案...</span></div>
+    <div class="dm1-showing" id="dm1-showing" style="display:none"></div>
   </div>`;
   detailEl.insertAdjacentHTML('beforeend', sec);
   const container = document.getElementById('dm1-characters');
@@ -1169,218 +1192,213 @@ async function renderDM1(detail, ms) {
   });
   const results = await Promise.all(fetches);
 
-  let html = '';
-  results.forEach((data, i) => {
-    if (!data) return;
+  charDataCache = results.map((data, i) => {
+    if (!data) return null;
     const name = data.name || CHAR_NAMES[i];
     const fid = data.pinyin || CHAR_MAP[name] || name;
     let profile = data.profile || {};
-    // Normalize: some profiles have an inner .profile wrapper
     if (profile.profile && typeof profile.profile === 'object' && !Array.isArray(profile.profile)) {
       profile = profile.profile;
     }
     const renders = data.renders || [];
     const basic = profile.basic_info || {};
     const personality = profile.personality || {};
+    const title = profile.title || CHAR_ROLES[name] || '';
+    const star = profile.star_name || profile.star_rank ? (profile.star_name || '(' + profile.star_rank + ')') : '';
+    const nickname = basic.nickname || (personality.core_traits || []).join(' ') || '';
+    const isTiangang = i < TIANGANG_COUNT;
+    return { name, fid, profile, renders, basic, personality, title, star, nickname, isTiangang, index: i };
+  }).filter(Boolean);
+
+  // Default: Top 10 only
+  currentDM1Filter = { query: '', category: '' };
+  document.getElementById('dm1-search').value = '';
+  renderDM1Cards(container);
+}
+
+// DM-1: Render filtered character cards from cache
+function renderDM1Cards(container) {
+  const q = (currentDM1Filter.query || '').toLowerCase();
+  const cat = currentDM1Filter.category || '';
+
+  let filtered = charDataCache;
+
+  // Category filter
+  if (cat === 'tiangang') {
+    filtered = filtered.filter(c => c.isTiangang);
+  } else if (cat === 'dishap') {
+    filtered = filtered.filter(c => !c.isTiangang);
+  } else if (cat === 'core') {
+    // Top 12 (天罡前12 = 主要角色)
+    filtered = filtered.filter(c => c.index < 12);
+  }
+
+  // Search filter
+  if (q) {
+    filtered = filtered.filter(c => {
+      const searchStr = (c.name + ' ' + c.title + ' ' + c.star + ' ' + c.nickname).toLowerCase();
+      return searchStr.includes(q);
+    });
+  } else if (!cat) {
+    // Default: Top 10 only
+    filtered = filtered.slice(0, DM1_TOP10);
+  }
+
+  let html = '';
+  filtered.forEach(c => {
+    const { name, fid, profile, renders: rds, basic, personality } = c;
     const appearance = profile.appearance || {};
     const background = profile.background || {};
     const voice = profile.voice || {};
     const videoPrompts = profile.video_prompts || {};
-    const title = profile.title || CHAR_ROLES[name] || '';
+    const title = c.title;
     const cp = appearance.color_palette || {};
-    const mainRender = renders.length > 0 ? renders[0] : `/api/render/${fid}/shot_01.png`;
+    const mainRender = rds.length > 0 ? rds[0] : '/api/render/' + fid + '/shot_01.png';
 
-    html += `<div class="char-bible" id="charbible-${fid}">
-      <div class="char-bible-header">
-        <span class="cb-name">${name}</span>
-        <span class="cb-title">${title}</span>
-        <button class="cb-edit-btn" onclick="toggleCharBibleEdit('${fid}')">✏️ 编辑档案</button>
-      </div>
-      <div class="cb-body">
-        <div class="cb-left">
-          <img src="${mainRender}" onclick="zoomImg('${mainRender}')" onerror="this.src='';this.parentElement.innerHTML='<div class=img-placeholder-text></div>'" />
-          <div class="cb-thumbnails" id="cbthumbs-${fid}">`;
-    renders.forEach((r, ri) => {
+    html += '<div class="char-bible" id="charbible-' + fid + '">'
+      + '<div class="char-bible-header">'
+      + '<span class="cb-name">' + name + '</span>'
+      + '<span class="cb-title">' + title + '</span>'
+      + '<button class="cb-edit-btn" onclick="toggleCharBibleEdit(\'' + fid + '\')">✏️ 编辑档案</button>'
+      + '</div>'
+      + '<div class="cb-body">'
+      + '<div class="cb-left">'
+      + '<img src="' + mainRender + '" loading="lazy" onclick="zoomImg(\'' + mainRender + '\')" onerror="this.style.display=\'none\'" />'
+      + '<div class="cb-thumbnails" id="cbthumbs-' + fid + '">';
+
+    rds.forEach((r, ri) => {
       const url = typeof r === 'string' ? r : (r.url || r.src || '');
-      if (url) html += `<img class="cb-thumb${ri === 0 ? ' active' : ''}" src="${url}" onclick="swapCharImg('${fid}','${url}',this)" />`;
+      if (url) html += '<img class="cb-thumb' + (ri===0?' active':'') + '" src="' + url + '" loading="lazy" onclick="swapCharImg(\'' + fid + '\',\'' + url + '\',this)" />';
     });
-    // fallback thumbnails
-    if (renders.length === 0) {
+    if (rds.length === 0) {
       for (let si = 1; si <= 3; si++) {
         const shot = String(si).padStart(2, '0');
-        const url = `/api/render/${fid}/shot_${shot}.png`;
-        html += `<img class="cb-thumb" src="${url}" onclick="swapCharImg('${fid}','${url}',this)" onerror="this.style.display='none'" />`;
+        const url = '/api/render/' + fid + '/shot_' + shot + '.png';
+        html += '<img class="cb-thumb" src="' + url + '" loading="lazy" onclick="swapCharImg(\'' + fid + '\',\'' + url + '\',this)" onerror="this.style.display=\'none\'" />';
       }
     }
-    html += `</div>
-        </div>
-        <div class="cb-right">
-          <!-- 基本信息 -->
-          <div class="cb-section">
-            <div class="cb-section-title"><span class="cb-icon">📏</span> 基本信息</div>
-            <div class="cb-section-content">${basic.height || ''} · ${basic.build || ''} · ${basic.face || ''} · ${basic.age || ''}</div>
-          </div>
-          <!-- 性格特征 -->
-          <div class="cb-section">
-            <div class="cb-section-title"><span class="cb-icon">🎨</span> 性格特征</div>
-            <div class="cb-section-content">
-              <div class="cb-traits">${(personality.core_traits || []).map(t => `<span class="cb-trait">${t}</span>`).join('')}</div>
-              <div style="font-size:10px;color:#888;margin-top:4px">${personality.emotional_range || ''}</div>
-              <div style="font-size:10px;color:#666">${personality.speech_style || ''}</div>
-            </div>
-          </div>
-          <!-- 口头禅 -->
-          ${(personality.catchphrases || []).length > 0 ? `<div class="cb-section">
-            <div class="cb-section-title"><span class="cb-icon">🗣️</span> 口头禅</div>
-            <div class="cb-section-content">${(personality.catchphrases || []).map(c => `<div class="cb-catchphrase">${c}</div>`).join('')}</div>
-          </div>` : ''}
-          <!-- 习性 -->
-          ${(personality.habits || []).length > 0 ? `<div class="cb-section">
-            <div class="cb-section-title"><span class="cb-icon">🍺</span> 习性</div>
-            <div class="cb-section-content">${(personality.habits || []).map(h => `<div class="cb-habits">• ${h}</div>`).join('')}</div>
-          </div>` : ''}
-          <!-- 服饰设计 -->
-          <div class="cb-section">
-            <div class="cb-section-title"><span class="cb-icon">👔</span> 服饰设计</div>
-            <div class="cb-section-content">
-              ${appearance.costume || '待补充'}
-              <div class="cb-colors">${cp.primary ? `<div class="cb-color-swatch" style="background:${cp.primary}" title="主色"></div><span class="cb-color-label">主</span>` : ''}${cp.secondary ? `<div class="cb-color-swatch" style="background:${cp.secondary}" title="辅色"></div><span class="cb-color-label">辅</span>` : ''}${cp.accent ? `<div class="cb-color-swatch" style="background:${cp.accent}" title="点缀"></div><span class="cb-color-label">点缀</span>` : ''}</div>
-              ${(appearance.accessories || []).length > 0 ? `<div style="font-size:9px;color:#666">配饰: ${(appearance.accessories || []).join(' · ')}</div>` : ''}
-            </div>
-          </div>
-          <!-- 角色背景 -->
-          <div class="cb-section">
-            <div class="cb-section-title"><span class="cb-icon">📖</span> 角色背景</div>
-            <div class="cb-section-content">
-              ${background.origin ? `<div style="font-size:10px">出身: ${background.origin}</div>` : ''}
-              ${(background.key_events || []).length > 0 ? `<div style="font-size:10px">关键事件: ${(background.key_events || []).join(' → ')}</div>` : ''}
-              ${Object.keys(background.relationships || {}).length > 0 ? `<div class="cb-relations">关系: ${Object.entries(background.relationships || {}).map(([k, v]) => `<span class="rel-name">${k}</span>: ${v}`).join(' · ')}</div>` : ''}
-            </div>
-          </div>
-          <!-- 音色 (Voice Config) -->
-          <div class="cb-section cb-voice-wrap" id="voice-section-${fid}">
-            <div class="cb-section-title"><span class="cb-icon">🎤</span> 音色</div>
-            <!-- Voice info card -->
-            <div class="cb-voice-card" id="voicecard-${fid}">
-              <div class="cb-voice-card-body">
-                <div class="cb-voice-card-row"><span class="vc-label">角色</span><span class="vc-val">${name}</span></div>
-                <div class="cb-voice-card-row"><span class="vc-label">类型</span><span class="vc-val" id="vc-type-${fid}">${voice.nls_speaker ? 'NLS' : (voice.provider || '—')}</span></div>
-                <div class="cb-voice-card-row"><span class="vc-label">音色</span><span class="vc-val" id="vc-voice-${fid}">${voice.nls_speaker ? voice.nls_speaker + ' · ' + (voice.description || '') : '未配置'}</span></div>
-                <div class="cb-voice-card-row"><span class="vc-label">参考</span><span class="vc-val" id="vc-ref-${fid}">${voice.sample_text || voice.reference_text || '—'}</span></div>
-              </div>
-              <div class="cb-voice-card-btns">
-                <button type="button" class="cb-btn cb-btn-cfg" id="cfgbtn-${fid}" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();toggleVoiceConfigForm('${fid}');return false">🎤 配置音色</button>
-                <button type="button" class="cb-btn cb-btn-aud" id="audbtn-${fid}" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();auditionVoice('${fid}');return false" ${(voice.nls_speaker || CHARACTER_VOICES[fid]) ? '' : 'disabled'}>🔊 试听</button>
-              </div>
-            </div>
-            <!-- Inline config form -->
-            <div class="cb-voice-config-form" id="voicecfgform-${fid}" style="display:none">
-              <div class="cb-voice-config-form-row">
-                <label>提供商</label>
-                <select id="cfg-provider-${fid}">
-                  <option value="NLS" ${!voice.provider || voice.provider==='NLS' ? 'selected' : ''}>NLS（阿里云）</option>
-                  <option value="MiniMax" ${voice.provider==='MiniMax' ? 'selected' : ''}>MiniMax</option>
-                  <option value="ElevenLabs" ${voice.provider==='ElevenLabs' ? 'selected' : ''}>ElevenLabs</option>
-                </select>
-              </div>
-              <div class="cb-voice-config-form-row">
-                <label>音色名称</label>
-                <input id="cfg-voice-${fid}" value="${voice.nls_speaker || ''}" placeholder="如 zhiming" />
-              </div>
-              <div class="cb-voice-config-form-row">
-                <label>参考文本</label>
-                <input id="cfg-reftext-${fid}" value="${voice.reference_text || voice.sample_text || ''}" placeholder="试听参考文本" />
-              </div>
-              <div class="cb-voice-config-form-btns">
-                <button type="button" class="btn btn-save" onclick="saveVoiceConfig('${fid}')">💾 保存并试听</button>
-                <button type="button" class="btn btn-cancel" onclick="toggleVoiceConfigForm('${fid}')">取消</button>
-              </div>
-            </div>
-            <!-- Audio player row -->
-            <div class="cb-voice-player-row" id="voiceplayerrow-${fid}" style="display:none">
-              <div class="cb-voice-player" id="voiceplayer-${fid}">
-                <audio id="voiceaudio-${fid}" controls></audio>
-                <span class="cb-dur" id="voicedur-${fid}"></span>
-              </div>
-              <button type="button" class="cb-voice-close" id="voiceclose-${fid}" onclick="closeVoicePlayer('${fid}')" title="关闭播放">✕</button>
-            </div>
-            <!-- Custom TTS generation row -->
-            <div class="cb-voice-row">
-              <input class="cb-voice-input" id="ttstext-${fid}" placeholder="试生成文本..." value="${voice.sample_text || name + '在此！'}" style="flex:1" />
-              <button type="button" class="cb-btn cb-btn-gen" id="genbtn-${fid}" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();generateVoice('${fid}');return false">🔊 生成</button>
-              <button type="button" class="cb-btn cb-btn-gen" id="regenbtn-${fid}" style="display:none" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();generateVoice('${fid}');return false">🔄 重新生成</button>
-            </div>
-            <div id="voicespinner-${fid}" style="display:none;text-align:center;padding:4px">
-              <span class="cb-voice-spinner"></span> <span style="font-size:10px;color:#6b8aad">生成中...</span>
-            </div>
-          </div>
-          <!-- Video Prompts (三方案) -->
-          ${Object.keys(videoPrompts).length > 0 ? `<div class="cb-section">
-            <div class="cb-section-title"><span class="cb-icon">🎬</span> 视频提示词（三方案）</div>
-            ${Object.entries(videoPrompts).map(([key, v]) => `
-              <div class="cb-vp-card">
-                <div class="cb-vp-card-hdr" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-                  <span class="vp-icon">📋</span> ${v.title || key}
-                  <span style="margin-left:auto;font-size:9px;color:#555">${v.get ? v.get('参数') || '' : (v['参数'] || '')}</span>
-                </div>
-                <div class="cb-vp-card-body" style="display:none">
-                  <div class="cb-vp-line"><span class="vp-label">描述</span><span class="vp-val">${v.desc || v.get ? v.get('desc') || '' : ''}</span></div>
-                  <div class="cb-vp-line"><span class="vp-label">提示词</span><span class="vp-val vp-prompt">${v.prompt || v.get ? v.get('prompt') || '' : ''}</span></div>
-                  ${v['简练版'] ? `<div class="cb-vp-line"><span class="vp-label">简练版</span><span class="vp-val vp-prompt">${v['简练版']}</span></div>` : ''}
-                </div>
-              </div>
-            `).join('')}
-          </div>` : ''}
-          <!-- Actions -->
-          <div class="cb-actions">
-            <button class="cb-btn" id="rerender-btn-${fid}" onclick="reRenderChar('${fid}')">🔄 重新生成角色图</button>
-            <button class="cb-btn" onclick="generateAIProfile('${fid}')">✨ AI 生成档案</button>
-          </div>
-          <div class="cb-rerender-progress" id="rerender-prog-${fid}">
-            <div class="cb-prog-bar"><div class="cb-prog-fill" id="rerender-fill-${fid}"></div></div>
-            <div class="cb-prog-text" id="rerender-text-${fid}">渲染中...</div>
-          </div>
-        </div>
-      </div>
-      <!-- Edit mode (hidden by default) -->
-      <div class="cb-edit-mode" id="cbedit-${fid}">
-        <div class="cb-field"><label>📏 身高</label><input id="edit-basic_height-${fid}" type="text" value="${basic.height || ''}" /></div>
-        <div class="cb-field"><label>💪 体型</label><input id="edit-basic_build-${fid}" type="text" value="${basic.build || ''}" /></div>
-        <div class="cb-field"><label>👤 面相</label><input id="edit-basic_face-${fid}" type="text" value="${basic.face || ''}" /></div>
-        <div class="cb-field"><label>🎨 核心性格 (逗号分隔)</label><input id="edit-traits-${fid}" type="text" value="${(personality.core_traits || []).join(',')}" /></div>
-        <div class="cb-field"><label>💭 情感层次</label><textarea id="edit-emotion-${fid}">${personality.emotional_range || ''}</textarea></div>
-        <div class="cb-field"><label>🗣️ 说话风格</label><input id="edit-speech-${fid}" type="text" value="${personality.speech_style || ''}" /></div>
-        <div class="cb-field"><label>💬 口头禅 (一行一句)</label><textarea id="edit-catchphrases-${fid}">${(personality.catchphrases || []).join('\n')}</textarea></div>
-        <div class="cb-field"><label>🍺 习性 (一行一条)</label><textarea id="edit-habits-${fid}">${(personality.habits || []).join('\n')}</textarea></div>
-        <div class="cb-field"><label>👔 服饰描述</label><textarea id="edit-costume-${fid}">${appearance.costume || ''}</textarea></div>
-        <div class="cb-field"><label>🎨 配色</label>
-          <div class="cb-color-input">
-            <span class="cb-color-label">主</span><input type="color" id="edit-cp-primary-${fid}" value="${cp.primary || '#1a1a2e'}" />
-            <span class="cb-color-label">辅</span><input type="color" id="edit-cp-secondary-${fid}" value="${cp.secondary || '#8b0000'}" />
-            <span class="cb-color-label">点缀</span><input type="color" id="edit-cp-accent-${fid}" value="${cp.accent || '#d4a574'}" />
-          </div>
-        </div>
-        <div class="cb-field"><label>📖 出身</label><input id="edit-origin-${fid}" type="text" value="${background.origin || ''}" /></div>
-        <div class="cb-field"><label>🔑 关键事件 (逗号分隔)</label><input id="edit-events-${fid}" type="text" value="${(background.key_events || []).join(',')}" /></div>
-        <div class="cb-field"><label>🎤 音色 Speaker</label><input id="edit-voice-${fid}" type="text" value="${voice.nls_speaker || ''}" /></div>
-        <div class="cb-field"><label>🎤 音色描述</label><input id="edit-voice-desc-${fid}" type="text" value="${voice.description || ''}" /></div>
-        <div class="cb-field"><label>📝 参考文本</label><input id="edit-reftext-${fid}" type="text" value="${voice.reference_text || ''}" /></div>
-        <div class="cb-field"><label>📝 试生成文本</label><input id="edit-ttstext-${fid}" type="text" value="${voice.sample_text || ''}" /></div>
-        <div class="cb-edit-btns">
-          <button class="btn btn-save" onclick="saveCharBible('${fid}')">💾 保存修改</button>
-          <button class="btn btn-cancel" onclick="toggleCharBibleEdit('${fid}')">取消</button>
-          <button class="btn btn-ai" onclick="generateAIProfile('${fid}')">✨ AI 生成</button>
-        </div>
-      </div>
-    </div>`;
+
+    html += '</div></div><div class="cb-right">'
+      + '<div class="cb-section"><div class="cb-section-title"><span class="cb-icon">📏</span> 基本信息</div>'
+      + '<div class="cb-section-content">' + (basic.height||'') + ' · ' + (basic.build||'') + ' · ' + (basic.face||'') + ' · ' + (basic.age||'') + '</div></div>'
+      + '<div class="cb-section"><div class="cb-section-title"><span class="cb-icon">🎨</span> 性格特征</div>'
+      + '<div class="cb-section-content"><div class="cb-traits">' + (personality.core_traits||[]).map(t => '<span class="cb-trait">' + t + '</span>').join('') + '</div>'
+      + '<div style="font-size:10px;color:#888;margin-top:4px">' + (personality.emotional_range||'') + '</div>'
+      + '<div style="font-size:10px;color:#666">' + (personality.speech_style||'') + '</div></div></div>';
+
+    if ((personality.catchphrases||[]).length) {
+      html += '<div class="cb-section"><div class="cb-section-title"><span class="cb-icon">🗣️</span> 口头禅</div>'
+        + '<div class="cb-section-content">' + (personality.catchphrases||[]).map(c => '<div class="cb-catchphrase">' + c + '</div>').join('') + '</div></div>';
+    }
+
+    if ((personality.habits||[]).length) {
+      html += '<div class="cb-section"><div class="cb-section-title"><span class="cb-icon">🍺</span> 习性</div>'
+        + '<div class="cb-section-content">' + (personality.habits||[]).map(h => '<div class="cb-habits">• ' + h + '</div>').join('') + '</div></div>';
+    }
+
+    html += '<div class="cb-section"><div class="cb-section-title"><span class="cb-icon">👔</span> 服饰设计</div>'
+      + '<div class="cb-section-content">' + (appearance.costume||'待补充')
+      + '<div class="cb-colors">'
+      + (cp.primary ? '<div class="cb-color-swatch" style="background:' + cp.primary + '" title="主色"></div><span class="cb-color-label">主</span>' : '')
+      + (cp.secondary ? '<div class="cb-color-swatch" style="background:' + cp.secondary + '" title="辅色"></div><span class="cb-color-label">辅</span>' : '')
+      + (cp.accent ? '<div class="cb-color-swatch" style="background:' + cp.accent + '" title="点缀"></div><span class="cb-color-label">点缀</span>' : '')
+      + '</div>'
+      + ((appearance.accessories||[]).length ? '<div style="font-size:9px;color:#666">配饰: ' + (appearance.accessories||[]).join(' · ') + '</div>' : '')
+      + '</div></div>';
+
+    html += '<div class="cb-section"><div class="cb-section-title"><span class="cb-icon">📖</span> 角色背景</div>'
+      + '<div class="cb-section-content">'
+      + (background.origin ? '<div style="font-size:10px">出身: ' + background.origin + '</div>' : '')
+      + ((background.key_events||[]).length ? '<div style="font-size:10px">关键事件: ' + (background.key_events||[]).join(' → ') + '</div>' : '')
+      + '</div></div>';
+
+    // Voice section (simplified for performance — full voice UI loads on click)
+    const vcRef = CHARACTER_VOICES[fid] || {};
+    html += '<div class="cb-section cb-voice-wrap" id="voice-section-' + fid + '">'
+      + '<div class="cb-section-title"><span class="cb-icon">🎤</span> 音色</div>'
+      + '<div class="cb-voice-card" id="voicecard-' + fid + '">'
+      + '<div class="cb-voice-card-body">'
+      + '<div class="cb-voice-card-row"><span class="vc-label">角色</span><span class="vc-val">' + name + '</span></div>'
+      + '<div class="cb-voice-card-row"><span class="vc-label">类型</span><span class="vc-val" id="vc-type-' + fid + '">' + (voice.nls_speaker ? 'NLS' : (voice.provider||'—')) + '</span></div>'
+      + '<div class="cb-voice-card-row"><span class="vc-label">音色</span><span class="vc-val" id="vc-voice-' + fid + '">' + (voice.nls_speaker ? voice.nls_speaker + ' · ' + (voice.description||'') : '未配置') + '</span></div>'
+      + '<div class="cb-voice-card-row"><span class="vc-label">参考</span><span class="vc-val">' + (vcRef.prompt||voice.sample_text||voice.reference_text||'—') + '</span></div>'
+      + '</div>'
+      + '<div class="cb-voice-card-btns">'
+      + '<button type="button" class="cb-btn cb-btn-cfg" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();toggleVoiceConfigForm(\'' + fid + '\');return false">🎤 配置音色</button>'
+      + '<button type="button" class="cb-btn cb-btn-aud" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();auditionVoice(\'' + fid + '\');return false"' + (vcRef.ref ? '' : ' disabled') + '>🔊 试听</button>'
+      + '</div></div>'
+      + '<div class="cb-voice-player-row" id="voiceplayerrow-' + fid + '" style="display:none">'
+      + '<div class="cb-voice-player"><audio id="voiceaudio-' + fid + '" controls></audio></div>'
+      + '<button type="button" class="cb-voice-close" id="voiceclose-' + fid + '" onclick="closeVoicePlayer(\'' + fid + '\')">✕</button></div>'
+      + '<div class="cb-voice-row">'
+      + '<input class="cb-voice-input" id="ttstext-' + fid + '" placeholder="试生成文本..." value="' + (voice.sample_text||name+'在此！') + '" style="flex:1" />'
+      + '<button type="button" class="cb-btn cb-btn-gen" id="genbtn-' + fid + '" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();generateVoice(\'' + fid + '\');return false">🔊 生成</button>'
+      + '<button type="button" class="cb-btn cb-btn-gen" id="regenbtn-' + fid + '" style="display:none" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();generateVoice(\'' + fid + '\');return false">🔄 重新生成</button>'
+      + '</div>'
+      + '<div id="voicespinner-' + fid + '" style="display:none;text-align:center;padding:4px"><span class="cb-voice-spinner"></span> <span style="font-size:10px;color:#6b8aad">生成中...</span></div>'
+      + '</div>';
+
+    // Actions & edit mode (simplified)
+    html += '<div class="cb-actions">'
+      + '<button class="cb-btn" onclick="reRenderChar(\'' + fid + '\')">🔄 重新生成角色图</button>'
+      + '<button class="cb-btn" onclick="generateAIProfile(\'' + fid + '\')">✨ AI 生成档案</button>'
+      + '</div>'
+      + '<div class="cb-edit-mode" id="cbedit-' + fid + '" style="display:none">'
+      + '<div class="cb-field"><label>📏 身高</label><input id="edit-basic_height-' + fid + '" value="' + (basic.height||'') + '"/></div>'
+      + '<div class="cb-field"><label>💪 体型</label><input id="edit-basic_build-' + fid + '" value="' + (basic.build||'') + '"/></div>'
+      + '<div class="cb-field"><label>👤 面相</label><input id="edit-basic_face-' + fid + '" value="' + (basic.face||'') + '"/></div>'
+      + '<div class="cb-field"><label>🎨 核心性格</label><input id="edit-traits-' + fid + '" value="' + (personality.core_traits||[]).join(',') + '"/></div>'
+      + '<div class="cb-field"><label>🎤 音色 Speaker</label><input id="edit-voice-' + fid + '" value="' + (voice.nls_speaker||'') + '"/></div>'
+      + '<div class="cb-field"><label>📝 参考文本</label><input id="edit-reftext-' + fid + '" value="' + (voice.reference_text||'') + '"/></div>'
+      + '<div class="cb-edit-btns"><button class="btn btn-save" onclick="saveCharBible(\'' + fid + '\')">💾 保存修改</button>'
+      + '<button class="btn btn-cancel" onclick="toggleCharBibleEdit(\'' + fid + '\')">取消</button></div>'
+      + '</div></div></div>';
   });
+
   container.innerHTML = html;
-  // Restore previously generated audios
+
+  const showingEl = document.getElementById('dm1-showing');
+  if (filtered.length < charDataCache.length && !q && !cat) {
+    showingEl.style.display = 'block';
+    showingEl.textContent = '已展示 ' + filtered.length + ' 位核心角色，共 ' + charDataCache.length + ' 位，请搜索查看更多';
+  } else if (q || cat) {
+    showingEl.style.display = 'block';
+    showingEl.textContent = '筛选结果: ' + filtered.length + ' / ' + charDataCache.length + ' 位角色';
+  } else {
+    showingEl.style.display = 'none';
+  }
+
+  // Restore generated audios
   Object.keys(generatedAudios).forEach(fid => {
     if (document.getElementById('voiceplayer-' + fid)) {
       showVoicePlayback(fid);
     }
   });
+}
+
+// DM-1: Search with debounce
+let dm1Timer;
+function onDM1Search(val) {
+  clearTimeout(dm1Timer);
+  dm1Timer = setTimeout(() => {
+    currentDM1Filter.query = val;
+    // Reset chips when searching
+    if (val) {
+      document.getElementById('dm1-chips').querySelectorAll('.dm1-chip').forEach(el => el.classList.remove('active'));
+      currentDM1Filter.category = '';
+    }
+    renderDM1Cards(document.getElementById('dm1-characters'));
+  }, 300);
+}
+
+// DM-1: Filter chip
+function onDM1Chip(el, cat) {
+  document.getElementById('dm1-chips').querySelectorAll('.dm1-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentDM1Filter.category = cat;
+  currentDM1Filter.query = '';
+  document.getElementById('dm1-search').value = '';
+  renderDM1Cards(document.getElementById('dm1-characters'));
 }
 
 // ================================================================
