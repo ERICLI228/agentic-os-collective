@@ -24,6 +24,7 @@ from datetime import datetime
 
 # ── 路径 ──
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(PROJECT_ROOT))
 
 # ── ffmpeg 路径 (Mac brew 不在默认 PATH) ──
 from shared.core.utils import _find_ffmpeg
@@ -77,7 +78,7 @@ def check_dependencies():
 
 def _import_script_manager():
     """动态导入 shared.script_manager"""
-    import importlib
+    import importlib.util
     spec = importlib.util.spec_from_file_location(
         "script_manager",
         str(PROJECT_ROOT / "shared" / "script_manager.py")
@@ -161,18 +162,31 @@ def generate_script(ep_id="03", script_dir=None):
     return script
 
 
-def generate_audio(script, voice_mode="say", audio_dir=None):
+def generate_audio(script, voice_mode="say", audio_dir=None, character="鲁智深"):
     """Step 2: 生成旁白音频 (say/nls)"""
     if audio_dir is None:
         audio_dir = AUDIO_DIR
     narration_files = []
+
+    # Look up character voice for NLS
+    nls_voice = "zhiming"  # default male
+    if voice_mode == "nls":
+        try:
+            import importlib.util
+            nls_path = PROJECT_ROOT / "drama/openclaw/skills/water-margin-drama/aliyun_nls.py"
+            spec = importlib.util.spec_from_file_location("aliyun_nls", str(nls_path))
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            nls_voice = mod.VOICE_MAP.get(character, "zhiming")
+        except Exception:
+            pass
 
     for i, shot in enumerate(script["shots"]):
         text = shot["narration"]
         audio_file = audio_dir / f"narration_{shot['id']}.aiff" if voice_mode != "nls" else audio_dir / f"narration_{shot['id']}.mp3"
 
         if voice_mode == "nls":
-            _generate_nls(text, audio_file, voice="zhiqi")
+            _generate_nls(text, audio_file, voice=nls_voice)
         else:
             _generate_say(text, audio_file)
 
@@ -245,7 +259,8 @@ def generate_video(script, video_dir=None, render_mode="pillow", ep_id="03"):
     # Render mapping
     use_comfyui = (render_mode == "comfyui")
     ep_num = ep_id
-    char_id = _SM.CHARACTER_ID_MAP.get(ep_cfg["character"], "linchong").lower()
+    ep_cfg = EPISODE_MAP.get(ep_id, {})
+    char_id = _SM.CHARACTER_ID_MAP.get(ep_cfg.get("character", ""), "linchong").lower()
 
     for i, shot in enumerate(script["shots"]):
         video_file = video_dir / f"{shot['id']}.mp4"
@@ -558,7 +573,8 @@ def main():
         audio_files = []
     else:
         print(f"\n🎙️ Step 2: 生成旁白音频 [voice={voice_mode}]...")
-        audio_files = generate_audio(script, voice_mode=voice_mode, audio_dir=audio_dir)
+        char_name = ep_cfg.get("character", "鲁智深")
+        audio_files = generate_audio(script, voice_mode=voice_mode, audio_dir=audio_dir, character=char_name)
 
     # Step 2.5: SFX 混音
     if args.sfx and not silent_mode:

@@ -1,0 +1,2478 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>[P4-STRIP] Agentic OS 指挥中心 v3.6</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;color:#e4e6eb;height:100vh;display:flex;flex-direction:column}
+.topbar{padding:8px 16px;border-bottom:1px solid #222;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.topbar h1{font-size:15px}
+.tabs{display:flex;gap:4px}
+.tab{padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;border:1px solid #333;color:#888;background:transparent}
+.tab:hover{color:#e4e6eb}
+.tab.active{background:#2563eb;border-color:#2563eb;color:#fff}
+.main{display:flex;flex:1;overflow:hidden}
+.left{width:340px;border-right:1px solid #222;overflow-y:auto;padding:4px 0}
+.right{flex:1;overflow-y:auto;padding:12px 16px}
+
+.task-hdr{display:flex;align-items:center;padding:6px 10px;font-size:10px;color:#555;letter-spacing:0.5px;gap:5px;border-bottom:1px solid #111;margin-top:2px}
+.task-hdr .tn{flex:1;font-weight:600;color:#999;font-size:11px}
+.task-hdr .tp{font-size:9px;color:#444}
+.task-hdr .td{width:6px;height:6px;border-radius:50%}.td.g{background:#22c55e}.td.y{background:#f59e0b}.td.n{background:#444}
+
+.ms-item{display:flex;align-items:center;padding:5px 8px 5px 16px;border-radius:3px;cursor:pointer;font-size:12px;gap:6px}
+.ms-item:hover{background:#1a1d27}
+.ms-item.sel{background:#1e2a3a;border-left:3px solid #3b82f6;padding-left:13px}
+.ms-item.waiting{border-left:3px solid #f59e0b;background:#1f1a0f}
+.ms-item .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot.d{background:#22c55e}.dot.w{background:#f59e0b;animation:pulse 1.5s infinite}.dot.p{background:#444}
+.ms-item .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bdg{font-size:9px;padding:0 4px;border-radius:6px;flex-shrink:0}
+.bdg.mk{background:#3d2e0a;color:#fbbf24}.bdg.cp{background:#1a2756;color:#93c5fd}
+.bdg.dc{background:#7c2d12;color:#fbbf24}.bdg.ok{background:#14532d;color:#22c55e}
+
+.stats{display:flex;gap:6px;padding:4px 10px}
+.stat{flex:1;background:#111;border-radius:6px;padding:6px;text-align:center}
+.stat .num{font-size:16px;font-weight:700}
+.stat .lbl{font-size:8px;color:#555}
+
+.detail h2{font-size:16px;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.detail .meta{font-size:11px;color:#888;margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap}
+.sec{background:#1a1d27;border-radius:6px;padding:12px;margin-bottom:10px}
+.sec h3{font-size:11px;color:#888;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.ent-row{display:flex;padding:4px 0;font-size:11px;gap:8px;border-bottom:1px solid #111;align-items:flex-start}
+.ent-row:last-child{border-bottom:none}
+.ent-lbl{min-width:70px;color:#888;flex-shrink:0}
+.ent-val{flex:1;min-width:0}
+.ent-val .before{font-size:9px;color:#555;margin-top:1px}
+.ent-val .after{font-size:9px;color:#aaa;margin-top:1px}
+.ent-val .note{font-size:9px;color:#666;margin-top:1px}
+.src-tag{font-size:8px;padding:0 4px;border-radius:2px;margin-left:4px}
+.src-real{background:#0f3b2e;color:#34d399}.src-mock{background:#3d2e0a;color:#fbbf24}.src-computed{background:#1a2756;color:#93c5fd}
+
+.ai-box{border-left:3px solid #3b82f6;padding:4px 10px;margin:6px 0;font-size:11px}
+.progress-row{display:flex;align-items:center;gap:8px;margin:4px 0}
+.pbar{flex:1;height:4px;background:#222;border-radius:2px;overflow:hidden}
+.pfill{height:100%;border-radius:2px}
+.btn{display:inline-block;padding:5px 12px;border-radius:5px;border:none;cursor:pointer;font-size:11px;margin:2px}
+.btn-p{background:#2563eb;color:#fff}.btn-w{background:#d97706;color:#fff}.btn-d{background:#dc2626;color:#fff}
+.btn-s{background:#22c55e;color:#000}
+.toast{position:fixed;bottom:16px;right:16px;background:#22c55e;color:#000;padding:6px 14px;border-radius:6px;font-size:11px;opacity:0;transition:opacity .3s;z-index:100}
+.toast.on{opacity:1}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.ic{font-size:11px;margin-right:2px}.ic.ok{color:#22c55e}.ic.ng{color:#ef4444}.ic.wn{color:#f59e0b}
+.empty-state{color:#555;text-align:center;padding:40px 20px;font-size:13px}
+
+/* v3.6: Image gallery */
+.img-gallery{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.img-card{background:#111;border-radius:6px;padding:4px;text-align:center;font-size:9px;color:#888;max-width:180px;cursor:pointer;transition:transform .15s}
+.img-card:hover{transform:scale(1.03);box-shadow:0 0 8px rgba(59,130,246,.3)}
+.img-card img{max-width:170px;max-height:300px;border-radius:4px;display:block}
+.img-card .img-label{margin-top:3px;display:block}
+.img-actions{margin-top:4px;display:flex;gap:3px;justify-content:center;flex-wrap:wrap}
+.mini-btn{font-size:9px;padding:2px 6px;border-radius:3px;border:1px solid #333;cursor:pointer;color:#aaa;background:#1a1a2e}
+.mini-btn:hover{background:#2563eb;color:#fff;border-color:#2563eb}
+.mini-btn.busy{opacity:.5;pointer-events:none}
+
+/* v3.6: Modal */
+.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.92);z-index:200;justify-content:center;align-items:center;cursor:pointer}
+.modal.on{display:flex}
+.modal img{max-width:95vw;max-height:95vh;object-fit:contain;border-radius:4px}
+.modal-close{position:absolute;top:16px;right:20px;color:#fff;font-size:28px;cursor:pointer;line-height:1;z-index:201}
+
+/* v3.6: Inline edit */
+.inline-edit{display:none;margin-top:6px}
+.inline-edit.show{display:flex;flex-direction:column;gap:4px}
+.inline-edit textarea,.inline-edit input{width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px 6px;border-radius:4px;font-size:10px;margin:2px 0;min-height:50px}
+.inline-edit select{background:#111;border:1px solid #333;color:#e4e6eb;padding:3px;border-radius:4px;font-size:10px}
+.inline-edit .edit-btns{display:flex;gap:4px}
+
+/* v3.6: Storyboard card */
+.sb-card{background:#1a1d27;border-left:3px solid #3b82f6;border-radius:4px;padding:10px;margin:6px 0;position:relative}
+.sb-card .sb-seq{position:absolute;top:8px;left:8px;background:#3b82f6;color:#fff;width:20px;height:20px;border-radius:50%;text-align:center;line-height:20px;font-size:10px;font-weight:700}
+.sb-card .sb-body{margin-left:28px}
+.sb-card .sb-act{color:#93c5fd;font-size:10px;font-weight:600;margin-bottom:2px}
+.sb-card .sb-name{color:#e4e6eb;font-size:11px;font-weight:600;margin-bottom:2px}
+.sb-card .sb-desc{color:#888;font-size:10px;margin:4px 0}
+.sb-card .sb-emotion{color:#fbbf24;font-size:10px;margin:2px 0}
+.sb-card .sb-dialogue{color:#aaa;font-size:10px;margin:4px 0;font-style:italic}
+
+/* v3.6: Subtle edit link */
+.sb-edit{font-size:9px;color:#555;cursor:pointer;text-decoration:none;margin-left:4px;user-select:none}
+.sb-edit:hover{color:#3b82f6}
+
+/* v3.6: Episode row */
+.ep-row{display:flex;align-items:center;padding:8px 10px;background:#14161d;border-radius:4px;margin:4px 0;cursor:pointer;gap:8px;transition:background .15s}
+.ep-row:hover{background:#1e2130}
+.ep-row .ep-num{color:#3b82f6;font-size:11px;font-weight:700;min-width:48px}
+.ep-row .ep-title{flex:1;font-size:11px;color:#e4e6eb}
+.ep-row .ep-toggle{font-size:10px;color:#555;transition:transform .2s}
+.ep-row.open .ep-toggle{transform:rotate(90deg)}
+.ep-row .ep-actions{display:flex;gap:4px}
+
+/* v3.6: Character row */
+.char-row{background:#1a1d27;border-radius:6px;padding:10px;margin:6px 0}
+.char-row .char-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.char-row .char-name{font-size:12px;font-weight:700;color:#e4e6eb}
+.char-row .char-role{font-size:10px;color:#888}
+.char-row .char-gallery{margin:6px 0}
+.char-row .char-actions{display:flex;gap:4px;flex-wrap:wrap}
+
+/* v3.6: Product row */
+.prod-row{background:#1a1d27;border-radius:6px;padding:10px;margin:6px 0}
+.prod-row .prod-name{font-size:11px;font-weight:600;color:#e4e6eb;margin-bottom:6px}
+.prod-compare{display:flex;gap:8px;margin:6px 0;flex-wrap:wrap}
+.prod-compare .img-col{flex:1;min-width:120px}
+.prod-compare .img-col .img-label{font-size:9px;color:#555;margin-bottom:4px}
+.prod-compare .img-col img{max-width:100%;border-radius:4px}
+.img-placeholder{width:100%;height:120px;background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#444;font-size:10px}
+
+/* v3.6: Loading */
+.loading{color:#f59e0b;font-size:10px;animation:pulse 1.5s infinite}
+.status-busy{color:#f59e0b;font-size:10px;margin-left:6px}
+
+/* P1: Global loading bar */
+.loading-bar{position:fixed;top:0;left:0;height:2px;background:#2563eb;z-index:300;width:0;transition:width .3s}
+.loading-bar.on{width:100%;animation:loadPulse 1.5s ease-out forwards}
+@keyframes loadPulse{0%{width:0}60%{width:70%}100%{width:100%}}
+
+/* v3.6.10: Cache busting meta */
+/* NO-CACHE: force fresh load on every visit */
+
+/* P1: Image placeholder */
+.img-placeholder-text{width:100%;height:120px;background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#555;font-size:10px;flex-direction:column;gap:4px}
+.img-placeholder-text::before{content:'🖼️';font-size:20px}
+
+/* P1: Toast color variants */
+.toast.error{background:#ef4444;color:#fff}
+.toast.warn{background:#f59e0b;color:#000}
+
+/* DM-1: Character Bible Panel v3.6.7 — 科技清新风 */
+.char-bible{background:linear-gradient(135deg,#0c1222 0%,#0f1a2e 100%);border:1px solid rgba(74,158,255,.15);border-radius:8px;padding:14px;margin:8px 0;position:relative;transition:all .2s;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+.char-bible:hover{background:linear-gradient(135deg,#0f1628 0%,#12203a 100%);border-color:rgba(74,158,255,.3);box-shadow:0 4px 20px rgba(74,158,255,.08)}
+.char-bible-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(74,158,255,.1)}
+.char-bible-header .cb-name{font-size:15px;font-weight:700;color:#e8f0fe;background:linear-gradient(135deg,#4a9eff,#00d4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none}
+.char-bible-header .cb-title{font-size:11px;color:#6b8aad}
+.char-bible-header .cb-edit-btn{margin-left:auto;font-size:10px;padding:3px 10px;border-radius:6px;border:1px solid rgba(74,158,255,.3);color:#4a9eff;cursor:pointer;background:rgba(74,158,255,.05);transition:all .15s}
+.char-bible-header .cb-edit-btn:hover{background:rgba(74,158,255,.15);color:#70b8ff;border-color:#4a9eff}
+.cb-body{display:flex;gap:14px}
+.cb-left{width:180px;flex-shrink:0}
+.cb-left img{width:100%;border-radius:6px;cursor:pointer;border:1px solid rgba(74,158,255,.1);transition:border-color .15s}
+.cb-left img:hover{border-color:rgba(74,158,255,.3)}
+.cb-left .cb-thumbnails{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.cb-left .cb-thumb{width:50px;height:50px;border-radius:4px;cursor:pointer;border:2px solid transparent;object-fit:cover;transition:border-color .15s}
+.cb-left .cb-thumb.active,.cb-left .cb-thumb:hover{border-color:#4a9eff}
+.cb-right{flex:1;min-width:0}
+.cb-section{margin-bottom:10px;padding:6px 8px;background:rgba(74,158,255,.03);border-radius:6px}
+.cb-section-title{font-size:10px;color:#6b8aad;margin-bottom:4px;display:flex;align-items:center;gap:4px;font-weight:600}
+.cb-section-title .cb-icon{font-size:12px}
+.cb-section-content{font-size:11px;color:#c4d4e8;line-height:1.5}
+.cb-traits{display:flex;flex-wrap:wrap;gap:4px}
+.cb-trait{background:linear-gradient(135deg,rgba(74,158,255,.15),rgba(0,180,216,.1));color:#70b8ff;padding:2px 8px;border-radius:10px;font-size:9px;border:1px solid rgba(74,158,255,.1)}
+.cb-catchphrase{font-style:italic;color:#ffd54f;font-size:10px;margin:3px 0;padding:3px 8px;border-radius:4px;background:rgba(255,213,79,.06);border-left:2px solid rgba(255,213,79,.3)}
+.cb-habits{font-size:10px;color:#94a3b8;margin:2px 0}
+.cb-habits::before{content:'• ';color:#4a9eff}
+.cb-colors{display:flex;gap:6px;align-items:center;margin:6px 0}
+.cb-color-swatch{width:22px;height:22px;border-radius:5px;border:1px solid rgba(255,255,255,.1);box-shadow:0 2px 4px rgba(0,0,0,.2)}
+.cb-color-label{font-size:9px;color:#5a7a9a}
+.cb-relations{font-size:10px;color:#94a3b8}
+.cb-relations .rel-name{color:#70b8ff;font-weight:500}
+/* DM-1: Voice cloning integration (GPT-SoVITS) */
+.cb-voice-status{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:600}
+.cb-voice-status.ready{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
+.cb-voice-status.pending{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.2)}
+.cb-voice-upload{display:flex;align-items:center;gap:6px;margin:4px 0}
+.cb-voice-upload .file-btn{position:relative;overflow:hidden;padding:3px 8px;border-radius:4px;font-size:10px;background:rgba(74,158,255,.1);border:1px solid rgba(74,158,255,.2);color:#70b8ff;cursor:pointer}
+.cb-voice-upload .file-btn input[type=file]{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.cb-voice-upload .file-btn:hover{background:rgba(74,158,255,.2)}
+.cb-voice-input{width:100%;padding:3px 6px;border-radius:4px;border:1px solid rgba(74,158,255,.15);background:rgba(0,0,0,.3);color:#c4d4e8;font-size:10px;margin:3px 0}
+.cb-voice-input::placeholder{color:#5a7a9a;font-size:10px}
+.cb-voice-player{display:flex;align-items:center;gap:6px;margin-top:4px;padding:4px 8px;background:rgba(34,197,94,.05);border-radius:4px}
+.cb-voice-player audio{height:24px;flex:1}
+.cb-voice-player .cb-dur{font-size:10px;color:#4ade80;white-space:nowrap}
+.cb-btn-voice{font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid rgba(74,158,255,.2);color:#4a9eff;background:rgba(74,158,255,.05);cursor:pointer;transition:all .15s}
+.cb-btn-voice:hover{background:rgba(74,158,255,.15);color:#70b8ff}
+.cb-btn-voice:disabled{opacity:.4;cursor:not-allowed}
+.cb-btn-gen{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.2);color:#4ade80}
+.cb-btn-gen:hover{background:rgba(34,197,94,.2)}
+.cb-voice-spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(74,158,255,.2);border-top-color:#4a9eff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cb-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(74,158,255,.1);flex-wrap:wrap}
+.cb-actions .cb-btn{font-size:10px;padding:4px 12px;border-radius:6px;cursor:pointer;border:1px solid rgba(74,158,255,.2);color:#8ab4f8;background:rgba(74,158,255,.05);display:flex;align-items:center;gap:4px;transition:all .15s}
+.cb-actions .cb-btn:hover{background:rgba(74,158,255,.15);color:#bbdefb;border-color:#4a9eff}
+.cb-actions .cb-btn.busy{opacity:.5;pointer-events:none}
+.cb-edit-mode{display:none}
+.cb-edit-mode.show{display:block}
+.cb-edit-mode .cb-field{margin-bottom:8px}
+.cb-edit-mode .cb-field label{font-size:9px;color:#6b8aad;display:block;margin-bottom:2px}
+.cb-edit-mode .cb-field input[type="text"],.cb-edit-mode .cb-field textarea{width:100%;background:rgba(15,25,45,.8);border:1px solid rgba(74,158,255,.15);color:#e4e6eb;padding:5px 8px;border-radius:6px;font-size:10px;outline:none;font-family:inherit;transition:border-color .15s}
+.cb-edit-mode .cb-field input:focus,.cb-edit-mode .cb-field textarea:focus{border-color:#4a9eff;box-shadow:0 0 0 2px rgba(74,158,255,.1)}
+.cb-edit-mode .cb-field textarea{min-height:40px;resize:vertical}
+.cb-edit-mode .cb-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.cb-edit-mode .cb-chip{background:rgba(74,158,255,.1);color:#70b8ff;padding:2px 8px;border-radius:12px;font-size:9px;cursor:pointer;display:flex;align-items:center;gap:4px;transition:background .15s}
+.cb-edit-mode .cb-chip:hover{background:rgba(239,68,68,.15);color:#fca5a5}
+.cb-edit-mode .cb-chip::after{content:'×';font-size:12px}
+.cb-edit-mode .cb-add-chip{background:transparent;border:1px dashed rgba(74,158,255,.2);color:#5a7a9a;padding:2px 8px;border-radius:12px;font-size:9px;cursor:pointer}
+.cb-edit-mode .cb-add-chip:hover{border-color:#4a9eff;color:#4a9eff}
+.cb-edit-mode .cb-color-input{display:flex;gap:6px;align-items:center}
+.cb-edit-mode .cb-color-input input[type="color"]{width:32px;height:24px;border:1px solid rgba(74,158,255,.2);border-radius:5px;cursor:pointer;background:rgba(15,25,45,.8);padding:0}
+.cb-edit-mode .cb-color-input input[type="text"]{width:80px}
+.cb-edit-mode .cb-edit-btns{display:flex;gap:6px;margin-top:10px;align-items:center}
+.cb-edit-mode .cb-edit-btns .btn{font-size:10px;padding:4px 14px;border-radius:6px;cursor:pointer;border:none;transition:all .15s}
+.cb-edit-mode .cb-edit-btns .btn-save{background:linear-gradient(135deg,#4a9eff,#00b4d8);color:#fff}
+.cb-edit-mode .cb-edit-btns .btn-save:hover{background:linear-gradient(135deg,#5aaaff,#20c4e8);box-shadow:0 2px 8px rgba(74,158,255,.3)}
+.cb-edit-mode .cb-edit-btns .btn-cancel{background:rgba(255,255,255,.05);color:#888}
+.cb-edit-mode .cb-edit-btns .btn-cancel:hover{background:rgba(255,255,255,.1);color:#aaa}
+.cb-edit-mode .cb-edit-btns .btn-ai{background:linear-gradient(135deg,rgba(124,45,18,.6),rgba(154,52,18,.6));color:#fbbf24;margin-left:auto;border:1px solid rgba(251,191,36,.2)}
+.cb-edit-mode .cb-edit-btns .btn-ai:hover{background:linear-gradient(135deg,rgba(154,52,18,.8),rgba(180,62,18,.8))}
+.cb-rerender-progress{display:none;margin-top:8px}
+.cb-rerender-progress.show{display:block}
+.cb-rerender-progress .cb-prog-bar{height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+.cb-rerender-progress .cb-prog-fill{height:100%;background:linear-gradient(90deg,#4a9eff,#00d4ff);width:0;transition:width .5s;border-radius:2px}
+.cb-rerender-progress .cb-prog-text{font-size:9px;color:#6b8aad;margin-top:3px}
+
+/* UX-1: Image compare split view */
+.compare-view{display:flex;gap:8px;margin:8px 0}
+.compare-view .compare-col{flex:1;min-width:0}
+.compare-view .compare-col .comp-label{font-size:9px;color:#888;margin-bottom:4px;text-align:center}
+.compare-view .compare-col img{width:100%;border-radius:4px;display:block}
+.compare-toggle{font-size:9px;padding:2px 8px;border-radius:3px;border:1px solid #3b82f6;color:#3b82f6;cursor:pointer;background:transparent}
+.compare-toggle:hover{background:#3b82f6;color:#fff}
+.compare-toggle.active{background:#3b82f6;color:#fff}
+
+/* UX-3: Keyboard shortcuts hint */
+.kbd-hint{position:fixed;bottom:16px;left:16px;background:#1a1d27;border:1px solid #333;border-radius:6px;padding:8px 12px;font-size:9px;color:#666;z-index:50;display:none;max-width:240px;line-height:1.6}
+.kbd-hint.show{display:block}
+.kbd{background:#111;border:1px solid #444;border-radius:3px;padding:1px 4px;font-family:monospace;color:#aaa;font-size:9px}
+
+/* UX-4: Pipeline monitor panel */
+.pipeline-monitor{background:#1a1d27;border-radius:6px;padding:12px;margin:8px 0}
+.svc-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #111;font-size:11px}
+.svc-row:last-child{border-bottom:none}
+.svc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.svc-dot.online{background:#22c55e;box-shadow:0 0 6px #22c55e}
+.svc-dot.offline{background:#ef4444;box-shadow:0 0 6px #ef4444}
+.svc-dot.unknown{background:#555}
+.svc-name{flex:1;font-weight:600}
+.svc-detail{color:#666;font-size:9px}
+
+/* UX-5: Detail panel header */
+.detail-hdr{display:flex;align-items:center;gap:8px;padding:8px 0;margin-bottom:8px;border-bottom:1px solid #222}
+.back-btn{font-size:11px;color:#3b82f6;cursor:pointer;padding:2px 8px;border-radius:4px;border:1px solid #3b82f6;background:transparent}
+.back-btn:hover{background:#3b82f6;color:#fff}
+.breadcrumb{font-size:11px;color:#666}
+
+/* UX-6: Refresh status indicator */
+.refresh-status{font-size:9px;color:#444;margin-left:4px}
+.refresh-status.syncing{color:#f59e0b;animation:pulse 1.5s infinite}
+
+/* UX-8: Left panel keyboard focus */
+.ms-item.kb-focus{outline:2px solid #3b82f6;outline-offset:-2px;background:#1e2a3a}
+
+/* UX-10: Search highlight */
+mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
+
+/* v3.6.8: P0-1 Collapsible sections */
+.sec-hdr{cursor:pointer;user-select:none;transition:background .15s}
+.sec-hdr:hover{background:rgba(255,255,255,.03)}
+.sec-hdr .sec-toggle-icon{display:inline-block;transition:transform .2s;font-size:10px;margin-right:4px;color:#555}
+.sec-hdr.expanded .sec-toggle-icon{transform:rotate(90deg)}
+.sec-body{max-height:0;overflow:hidden;transition:max-height .3s ease-out}
+.sec-body.expanded{max-height:5000px}
+
+/* v3.6.8: P0-2 Four-dimension review cards */
+.dim-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.dim-card{background:#111;border-radius:6px;padding:10px;border-left:3px solid #555}
+.dim-card.good{border-left-color:#22c55e}
+.dim-card.warn{border-left-color:#f59e0b}
+.dim-card.bad{border-left-color:#ef4444}
+.dim-card .dim-name{font-size:10px;color:#888;margin-bottom:4px}
+.dim-card .dim-score{font-size:18px;font-weight:700}
+.dim-card .dim-detail{font-size:9px;color:#666;margin-top:4px;line-height:1.4}
+
+/* v3.6.8: P1-4 Unified download dropdown */
+.dl-dropdown{position:relative;display:inline-block}
+.dl-menu{display:none;position:absolute;top:100%;left:0;background:#1a1d27;border:1px solid #333;border-radius:6px;padding:4px;z-index:100;min-width:140px}
+.dl-menu.show{display:block}
+.dl-menu a{display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:10px;color:#aaa;text-decoration:none;border-radius:4px;cursor:pointer}
+.dl-menu a:hover{background:#2563eb;color:#fff}
+
+/* v3.6.8: P1-6 Chart panel */
+.chart-panel{background:#1a1d27;border-radius:6px;padding:12px;margin:8px 0}
+.chart-panel canvas{max-height:220px;width:100%}
+.chart-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.chart-hdr h4{font-size:11px;color:#888;font-weight:600}
+.chart-tabs{display:flex;gap:4px}
+.chart-tab{font-size:9px;padding:2px 8px;border-radius:3px;border:1px solid #333;color:#555;cursor:pointer;background:transparent}
+.chart-tab.active{border-color:#3b82f6;color:#3b82f6}
+
+/* v3.6.8: P2-7 Quality feedback */
+.qf-item{background:#111;border-radius:4px;padding:8px;margin:4px 0;font-size:10px;display:flex;gap:8px;align-items:flex-start}
+.qf-item .qf-icon{font-size:14px;flex-shrink:0}
+.qf-item .qf-text{flex:1;color:#aaa}
+.qf-item .qf-tag{font-size:8px;padding:1px 4px;border-radius:2px;background:#1a2756;color:#93c5fd}
+
+/* v3.6.8: P2-8 Self-heal tip */
+.self-heal{background:#1f1a0f;border:1px solid #f59e0b;border-radius:6px;padding:10px;margin:8px 0;font-size:10px}
+.self-heal .sh-title{color:#fbbf24;font-weight:600;margin-bottom:4px}
+.self-heal .sh-body{color:#aaa;line-height:1.5}
+.self-heal .sh-dismiss{float:right;color:#555;cursor:pointer;font-size:12px}
+
+/* v3.6.8: P0-1 Collapsible sections */
+.sec-collapsible{cursor:pointer;user-select:none}
+.sec-collapsible .sec-toggle{display:inline-block;transition:transform .2s;font-size:9px;margin-right:4px;color:#555}
+.sec-collapsible.expanded .sec-toggle{transform:rotate(90deg)}
+.sec-body{max-height:0;overflow:hidden;transition:max-height .3s ease-out}
+.sec-body.expanded{max-height:5000px}
+
+/* v3.6.8: P0-2 Four-dimension review */
+.four-dim{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0}
+.dim-card{background:#111;border-radius:6px;padding:10px;text-align:center}
+.dim-card .dim-icon{font-size:18px;margin-bottom:4px}
+.dim-card .dim-name{font-size:9px;color:#888;margin-bottom:4px}
+.dim-card .dim-score{font-size:20px;font-weight:700}
+.dim-card .dim-note{font-size:8px;color:#555;margin-top:4px}
+
+/* v3.6.8: P0-3 Re-review button */
+.btn-rerun{background:#7c3aed;color:#fff}
+.btn-rerun:hover{background:#6d28d9}
+.btn-rerun.busy{opacity:.5;pointer-events:none}
+
+/* v3.6.8: P1-4 Unified download (cleaned) */
+.dl-wrap{position:relative;display:inline-block}
+.dl-btn{font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid #3b82f6;color:#3b82f6;cursor:pointer;background:transparent;display:flex;align-items:center;gap:4px}
+.dl-btn:hover{background:#3b82f6;color:#fff}
+.dl-panel{display:none;position:absolute;top:100%;right:0;margin-top:4px;background:#1a1d27;border:1px solid #333;border-radius:8px;padding:6px;z-index:100;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.dl-panel.show{display:block}
+.dl-panel a{display:flex;align-items:center;gap:6px;padding:7px 12px;font-size:10px;color:#aaa;text-decoration:none;border-radius:5px;cursor:pointer}
+.dl-panel a:hover{background:#2563eb;color:#fff}
+.dl-panel .dl-divider{height:1px;background:#222;margin:3px 0}
+.dl-panel .dl-hdr{font-size:9px;color:#555;padding:2px 12px;letter-spacing:.5px}
+
+/* v3.6.8: P2-7 Quality KB */
+.qa-item{background:#111;border-radius:4px;padding:8px;margin:4px 0;font-size:10px}
+.qa-item .q-q{color:#fbbf24;font-weight:600;cursor:pointer}
+.qa-item .q-a{color:#888;display:none;margin-top:4px;line-height:1.4}
+.qa-item .q-a.show{display:block}
+</style>
+<!-- P1-6: Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+</head>
+<body>
+<div id="version-check" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#10b981;color:#fff;text-align:center;padding:6px 12px;font-size:13px;font-family:monospace;letter-spacing:0.5px;cursor:pointer" onclick="this.remove()">✅ P3-FILTER-ACTIVE — 服务器版本已更新 (21:12:37) — 点击关闭</div>
+
+<div class="topbar">
+  <h1 id="appTitle">Agentic OS 指挥中心 v3.6</h1>
+  <div class="tabs">
+    <button class="tab active" id="tabTK" onclick="switchTab('tk')">TK运营 <span id="tkCount" style="font-size:9px;color:#666"></span></button>
+    <button class="tab" id="tabDM" onclick="switchTab('drama')">数字短剧 <span id="dmCount" style="font-size:9px;color:#666"></span></button>
+  </div>
+  <span style="font-size:10px;color:#444;margin-left:auto" id="lastRefresh"></span>
+  <span class="refresh-status" id="refreshStatus"></span>
+  <span class="compare-toggle" id="kbdToggle" onclick="toggleKbdHint()">⌨ 快捷键</span>
+  <span class="compare-toggle" id="expandAll" onclick="toggleAllSections()">📂 全展开</span>
+  <!-- P1-4: Unified download button -->
+  <div class="dl-wrap">
+    <button class="dl-btn" onclick="toggleDlPanel()">📥 导出 <span style="font-size:8px">▼</span></button>
+    <div class="dl-panel" id="dlPanel">
+      <div class="dl-hdr">选择导出格式</div>
+      <a onclick="downloadAs('json')">📋 JSON (完整数据)</a>
+      <a onclick="downloadAs('csv')">📊 CSV (里程碑表)</a>
+      <a onclick="downloadAs('csv-decisions')">📋 CSV (决策记录)</a>
+      <div class="dl-divider"></div>
+      <a onclick="downloadAs('md')">📝 Markdown 报告</a>
+      <a onclick="downloadAs('html')">🌐 HTML 快照</a>
+    </div>
+  </div>
+</div>
+<div class="main">
+  <div class="left">
+    <!-- P1-12: Search & filter bar -->
+    <div style="padding:4px 8px;display:flex;gap:4px">
+      <input id="searchInput" placeholder="🔍 搜索..." style="flex:1;background:#111;border:1px solid #333;color:#e4e6eb;padding:3px 6px;border-radius:4px;font-size:10px;outline:none" oninput="onSearch(this.value)" />
+      <select id="filterSelect" style="background:#111;border:1px solid #333;color:#e4e6eb;padding:2px 4px;border-radius:4px;font-size:10px" onchange="onFilter(this.value)">
+        <option value="all">全部</option>
+        <option value="waiting_approval">待决策</option>
+        <option value="completed">已完成</option>
+        <option value="pending">待执行</option>
+      </select>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num" id="statDone" style="color:#22c55e">-</div><div class="lbl">已完成</div></div>
+      <div class="stat"><div class="num" id="statPending" style="color:#f59e0b">-</div><div class="lbl">待决策</div></div>
+      <div class="stat"><div class="num" id="statMock" style="color:#fbbf24">-</div><div class="lbl">模拟</div></div>
+      <div class="stat"><div class="num" id="statTotal" style="color:#666">-</div><div class="lbl">总计</div></div>
+    </div>
+    <div id="list"></div>
+  </div>
+  <div class="right">
+    <div class="empty-state" id="empty"><div id="summaryView"></div></div>
+    <div class="detail" id="detail" style="display:none"></div>
+  </div>
+</div>
+<div class="loading-bar" id="loadingBar"></div>
+<div class="toast" id="toast"></div>
+<div class="modal" id="modal" onclick="closeModal()">
+  <span class="modal-close">&times;</span>
+  <img id="modalImg" src="" alt="zoom" />
+</div>
+<div class="kbd-hint" id="kbdHint">
+  <b>键盘快捷键</b><br>
+  <span class="kbd">←/→</span> 切换 TK/短剧 Tab<br>
+  <span class="kbd">↑/↓</span> 导航左侧列表<br>
+  <span class="kbd">Enter</span> 打开选中项详情<br>
+  <span class="kbd">Esc</span> 关闭弹窗/返回<br>
+  <span class="kbd">R</span> 手动刷新<br>
+  <span class="kbd">/</span> 聚焦搜索框<br>
+  <span class="kbd">?</span> 显示/隐藏此提示
+</div>
+
+<script>
+// ================================================================
+// CONSTANTS
+// ================================================================
+const CHAR_MAP={'武松':'wusong','鲁智深':'luzhishen','林冲':'linchong','宋江':'songjiang','李逵':'likui','吴用':'wuyong'};
+const VOICE_OPTS=['zhiming(浑厚有力)','zhiming(粗犷豪迈)','zhiming(稳重威严)','zhilun(沉郁悲壮)','zhilun(沉稳内敛)','zhiqiang(深沉自尊)','zhiqi(年轻活力)'];
+const CHAR_NAMES=['武松','鲁智深','林冲','宋江','李逵','吴用'];
+const CHAR_ROLES={武松:'行者・打虎英雄',鲁智深:'花和尚・倒拔垂杨柳',林冲:'豹子头・八十万禁军教头',宋江:'及时雨・呼保义',李逵:'黑旋风・沂岭杀四虎',吴用:'智多星・智取生辰纲'};
+
+let searchQ='',filterSt='all';
+let cur='tk',sel=null,all=[],lastData=null;
+
+// P2-13: Dynamic version from API
+async function fetchVersion(){
+  try{
+    const r = await fetch('/api/status');
+    const d = await r.json();
+    if(d.version){
+      document.getElementById('appTitle').textContent='Agentic OS 指挥中心 '+d.version;
+    }
+  }catch(e){}
+}
+fetchVersion();
+
+// ================================================================
+// EXISTING: refresh
+// ================================================================
+async function refresh(){
+  showLoading();
+  try{
+    const r=await fetch('/api/dashboard'); lastData=await r.json();
+    all=(lastData?.milestones||[]).map(m=>({...m,pipeline:m.pipeline||(String(m.ms_id||'').startsWith('DM')?'drama':'tk')}));
+    render();
+    document.getElementById('lastRefresh').textContent=new Date().toLocaleTimeString();
+  }catch(e){document.getElementById('lastRefresh').textContent='离线'}
+  hideLoading();
+}
+
+function onSearch(v){ searchQ=v.toLowerCase(); render(); }
+function onFilter(v){ filterSt=v; render(); }
+
+// ================================================================
+// EXISTING: switchTab
+// ================================================================
+function switchTab(t){
+  cur=t; sel=null;
+  document.getElementById('tabTK').className='tab'+(t=='tk'?' active':'');
+  document.getElementById('tabDM').className='tab'+(t=='drama'?' active':'');
+  render();
+}
+
+// ================================================================
+// EXISTING: render
+// ================================================================
+function render(){
+  let f=all.filter(m=>m.pipeline===cur);
+  // P1-12: apply search & filter
+  if(searchQ) f=f.filter(m=>(m.ms_id+' '+(m.name||'')+' '+(m.task_id||'')).toLowerCase().includes(searchQ));
+  if(filterSt!=='all') f=f.filter(m=>m.status===filterSt);
+  document.getElementById('tkCount').textContent=all.filter(m=>m.pipeline=='tk').length;
+  document.getElementById('dmCount').textContent=all.filter(m=>m.pipeline=='drama').length;
+
+  const done=f.filter(m=>m.status=='completed'||m.status=='approved').length;
+  const pnd=f.filter(m=>m.status=='waiting_approval').length;
+  const mck=f.filter(m=>m.data_source=='mock').length;
+  document.getElementById('statDone').textContent=done;
+  document.getElementById('statPending').textContent=pnd;
+  document.getElementById('statMock').textContent=mck;
+  document.getElementById('statTotal').textContent=f.length;
+  // P1-12: filter indicator
+  if(searchQ||filterSt!=='all'){
+    const total=all.filter(m=>m.pipeline===cur).length;
+    h+=`<div style="font-size:9px;color:#555;padding:2px 8px">筛选: ${f.length}/${total} 项</div>`;
+  }
+
+  const g={};
+  f.forEach(m=>{const tid=m.task_id||'_';if(!g[tid])g[tid]=[];g[tid].push(m)});
+  const tl={'TK-MS0-GATE':'MS-0 采集门禁','TK-SELECTION':'选品与市场判断','TK-LOCALIZE':'本地化与上架准备',
+    'TK-PUBLISH':'发布与日报','TK-DM-PREP':'前期策划','TK-DM-PROD':'制片制作','TK-DM-DIST':'发布分发','_':'未分组'};
+
+  let h='';
+  for(const [tid,ml] of Object.entries(g)){
+    const dt=ml.filter(m=>m.status=='completed'||m.status=='approved').length;
+    const cls=dt===ml.length?'g':dt>0?'y':'n';
+    h+=`<div class="task-hdr"><span class="td ${cls}"></span><span class="tn">${tl[tid]||tid}</span><span class="tp">${dt}/${ml.length}</span></div>`;
+    ml.forEach(m=>{
+      const dc=m.status=='completed'||m.status=='approved'?'d':m.status=='waiting_approval'?'w':'p';
+      const ic=m.status=='completed'||m.status=='approved'?'&#10003;':m.status=='waiting_approval'?'&#9699;':'&#9711;';
+      let b='';
+      if(m.data_source!=='real')b+=`<span class="bdg ${m.data_source=='mock'?'mk':'cp'}">${m.data_source=='mock'?'模拟':'推算'}</span>`;
+      if(m.decision_point&&m.status=='waiting_approval')b+='<span class="bdg dc">待决策</span>';
+      if(m.decision_point&&m.decision=='approved')b+='<span class="bdg ok">已批准</span>';
+      h+=`<div class="ms-item${sel===m.ms_id?' sel':''}${m.status=='waiting_approval'?' waiting':''}" onclick="select('${m.ms_id}')">
+        <span class="dot ${dc}"></span><span class="nm">${ic} ${m.ms_id} ${m.name}</span>${b}</div>`;
+    });
+  }
+  document.getElementById('list').innerHTML=h;
+
+  if(sel)renderDetail();
+  else{document.getElementById('empty').style.display='block';document.getElementById('detail').style.display='none';renderSummary()}
+}
+
+// ================================================================
+// EXISTING: select
+// ================================================================
+function select(id){sel=id;render()}
+
+// ================================================================
+// v3.6: renderSummary — P1-12: also respects search/filter
+// ================================================================
+function renderSummary(){
+  let f=all.filter(m=>m.pipeline===cur);
+  if(searchQ) f=f.filter(m=>(m.ms_id+' '+(m.name||'')+' '+(m.task_id||'')).toLowerCase().includes(searchQ));
+  if(filterSt!=='all') f=f.filter(m=>m.status===filterSt);
+  const w=f.filter(m=>m.status=='waiting_approval');
+  let h='<div style="max-width:700px;margin:0 auto;"><h3 style="color:#888;margin-bottom:12px;font-size:13px;">&#9873; 决策面板</h3>';
+  if(!w.length){h+='<div style="color:#444;padding:20px;text-align:center;background:#1a1d27;border-radius:6px;">无待决策项</div>'}
+  else w.forEach(m=>{
+    h+=`<div style="background:#1f1a0f;border-left:3px solid #f59e0b;border-radius:6px;padding:12px;margin:8px 0;font-size:12px;">
+      <b style="color:#fbbf24">&#9873; ${m.ms_id} ${m.name}</b><div style="color:#888;font-size:10px;margin-top:4px">${m.note||''}</div>
+      <div style="margin-top:8px">`;
+    [{a:'approved',l:'&#10003; 批准',c:'btn-s'},{a:'modify',l:'&#9998; 修改',c:'btn-w'},{a:'rejected',l:'&#10007; 驳回',c:'btn-d'}].forEach(o=>{
+      h+=`<button class="btn ${o.c}" onclick="event.stopPropagation();decide('${m.ms_id}','${o.a}')">${o.l}</button> `;
+    });
+    h+='</div></div>';
+  });
+  const d=f.filter(m=>m.status=='completed'||m.status=='approved').length;
+  const p=f.length?Math.round(d/f.length*100):0;
+  h+=`<h3 style="color:#888;margin:14px 0 8px;font-size:12px;">${cur=='tk'?'TK运营':'数字短剧'} 总览</h3>
+    <div style="background:#1a1d27;border-radius:6px;padding:12px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="pbar"><div class="pfill" style="width:${p}%;background:#22c55e"></div></div>
+        <span style="font-weight:700;color:#22c55e;font-size:13px;">${d}/${f.length}</span>
+      </div>
+      <div style="font-size:9px;color:#555;margin-top:6px;">&#10003; ${f.filter(m=>m.status=='completed'||m.status=='approved').map(m=>m.name).join(' · ')||'无'}</div>
+    </div>`;
+  h+='</div>';
+  document.getElementById('summaryView').innerHTML=h;
+}
+
+// ================================================================
+// EXISTING: decide
+// ================================================================
+async function decide(msId,action){
+  const labels={approved:'批准',rejected:'驳回',modify:'修改'};
+  if(!confirm(`确认「${labels[action]||action}」？`)) return;
+  const tid = msId.startsWith('DM') ? 'TK-DM-PREP' : 'TK-20260429-PIPELINE';
+  const mapped = {rework:'modify',reject:'rejected'}[action]||action;
+  const r = await fetch('/api/decision',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({task_id:tid,action:mapped,reason:'驾驶舱决策',milestone_id:msId})});
+  if(!r.ok){toastMsg('决策失败: HTTP '+r.status,3000);return;}
+  toastMsg({approved:'✅ 已批准',rejected:'已驳回',modify:'已标记'}[action]||action,2500);
+  setTimeout(refresh,1500);
+}
+
+// ================================================================
+// v3.6.5: decideDM0 — DM-0 审核决策按钮
+// ================================================================
+async function decideDM0(action){
+  const labels = {approved:'批准',rework:'回流重写',reject:'驳回'};
+  if(!confirm(`确认「${labels[action]}」？此操作将触发 Agent 自动执行。`)) return;
+  toastMsg('决策提交中...',3000);
+  try{
+    const actionMap = {approved:'approved',rework:'modify',reject:'rejected'};
+    const r = await fetch('/api/decision',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({task_id:'TK-DM-PREP',action:actionMap[action],reason:'DM-0审核决策',milestone_id:'DM-0'})});
+    if(!r.ok){toastMsg('决策失败: HTTP '+r.status,3000);return;}
+    const okLabels={approved:'✅ 审核通过，Agent 将进入下一阶段',rework:'🔄 已触发回流重写，审核将自动重新运行',reject:'❌ 已驳回，任务挂起'};
+    toastMsg(okLabels[action],3000);
+    setTimeout(refresh,1500);
+  }catch(e){toastMsg('决策提交失败: '+e.message,3000)}
+}
+
+// ================================================================
+// EXISTING: toastMsg
+// ================================================================
+function toastMsg(msg, keepMs=2000, type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast'+(type?' '+type:'')+' on';
+  setTimeout(()=>{t.classList.remove('on');},keepMs);
+}
+
+function showLoading(){document.getElementById('loadingBar').classList.add('on')}
+function hideLoading(){setTimeout(()=>{document.getElementById('loadingBar').classList.remove('on')},500)}
+
+// ================================================================
+// v3.6: Utility Functions
+// ================================================================
+function extractImages(note) {
+  if(!note) return [];
+  const imgs = [];
+  const m1 = note.match(/image:\s*(\/api\/images\/file\/[^\s|]+)/g);
+  if(m1) m1.forEach(m=>{ imgs.push({url:m.replace('image: ','').trim(), type:'product'}); });
+  const m2 = note.match(/渲染:\s*(\/api\/render\/[^\s|]+)/g);
+  if(m2) m2.forEach(m=>{ imgs.push({url:m.replace('渲染: ','').trim(), type:'render'}); });
+  return imgs;
+}
+
+function extractCharRenderUrls(note) {
+  if(!note) return null;
+  const m = note.match(/\/api\/render\/(\w+)/);
+  return m ? m[1] : null;
+}
+
+function checkImage(url){
+  return new Promise(r=>{
+    const img = new Image();
+    img.onload = ()=>r(true);
+    img.onerror = ()=>r(false);
+    img.src = url;
+    setTimeout(()=>r(false), 3000);
+  });
+}
+
+// ================================================================
+// v3.6: zoomImg - open modal with full-size image
+// ================================================================
+function zoomImg(url){
+  document.getElementById('modalImg').src=url;
+  document.getElementById('modal').classList.add('on');
+}
+
+// P1: Escape key closes modal
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    document.getElementById('modal').classList.remove('on');
+  }
+});
+
+// ================================================================
+// v3.6: renderDefault - existing entity item rendering logic
+// ================================================================
+// v3.6.8: P0-1 Collapsible section toggle
+function toggleSec(secId){
+  const sec = document.getElementById(secId);
+  if(!sec) return;
+  const hdr = sec.querySelector('.sec-hdr');
+  const body = sec.querySelector('.sec-body');
+  if(!hdr || !body) return;
+  hdr.classList.toggle('expanded');
+  body.classList.toggle('expanded');
+}
+
+function renderDefault(detail){
+  let h='';
+  if(detail.sections){
+    detail.sections.forEach(s=>{
+      const st=s.source||'mock';
+      const secId = 'sec-'+s.title.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g,'');
+      // P0-1: Summary line always visible, body collapsible
+      let summary = '';
+      if(s.summary) summary = s.summary;
+      else if(s.items){
+        const ok = s.items.filter(i=>i.status==='ok').length;
+        const total = s.items.length;
+        summary = `${ok}/${total} 通过`;
+      }
+      h+=`<div class="sec" id="${secId}">`;
+      h+=`<div class="sec-hdr" onclick="toggleSec('${secId}')"><h3><span class="sec-toggle-icon">&#9654;</span>${s.title} <span class="src-tag src-${st}">[${st}]</span> <span style="font-size:9px;color:#555;font-weight:400">${summary}</span></h3></div>`;
+      h+=`<div class="sec-body">`;
+      if(s.items){
+        // P4-FIX: Pre-filter bad items before rendering (strip undefined/null/empty)
+        const valid = (s.items||[]).filter(it => {
+          if (!it) return false;
+          if (it.key === 'rv_decision') return false;
+          const l = it.label, k = it.key, v = it.value;
+          const labelOk = (l != null && String(l).trim()) || (k != null && String(k).trim());
+          const valOk = v != null && String(v).trim() || it.before || it.after || it.note;
+          if (!labelOk && !valOk) { console.warn('[P4-STRIP]', JSON.stringify(it)); return false; }
+          return labelOk && valOk;
+        });
+        valid.forEach(it=>{
+        const ic2={'ok':'<span class="ic ok">&#10003;</span>','ng':'<span class="ic ng">&#10007;</span>','warn':'<span class="ic wn">&#9888;</span>'};
+        const displayLabel = it.label || it.key || '';
+        const displayValue = it.value || '';
+        h+=`<div class="ent-row">${ic2[it.status]||' '}<span class="ent-lbl">${displayLabel}</span><div class="ent-val"><span>${displayValue}</span>`;
+        if(it.before)h+=`<div class="before">&larr; ${it.before}</div>`;
+        if(it.after)h+=`<div class="after">&rarr; ${it.after}</div>`;
+        if(it.note)h+=`<div class="note">&#9432; ${it.note}</div>`;
+        const imgs = extractImages(it.note||'');
+        if(imgs.length > 0){
+          h+=`<div class="img-gallery">`;
+          imgs.forEach(img=>{
+            h+=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${img.url}')">
+              <img src="${img.url}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=img-placeholder-text>图片未找到</div>'" />
+              <span class="img-label">${img.type}</span>
+            </div>`;
+          });
+          h+=`</div>`;
+        }
+        h+=`</div></div>`;
+      });
+      }
+      h+=`</div></div>`;
+    });
+  }
+  return h;
+}
+
+// ================================================================
+// v3.6: SMART ROUTING renderDetail
+// ================================================================
+async function renderDetail(){
+  document.getElementById('empty').style.display='none';
+  document.getElementById('detail').style.display='block';
+  const ms=all.find(m=>m.ms_id===sel);
+  if(!ms)return;
+
+  const done=ms.status=='completed'||ms.status=='approved';
+  const sl={completed:'已完成',waiting_approval:'等待决策',pending:'待执行',running:'执行中',approved:'已批准',rejected:'已驳回'};
+  const sc=done?'#22c55e':ms.status=='waiting_approval'?'#f59e0b':'#666';
+  const tag=ms.data_source!=='real'?`<span class="src-tag src-${ms.data_source}">${ms.data_source=='mock'?'[模拟]':'[推算]'}</span>`:'';
+
+  let h=`<h2>${ms.ms_id} ${ms.name} ${tag}</h2>
+    <div class="meta"><span style="color:${sc}">&bullet; ${sl[ms.status]||ms.status}</span><span>${ms.note||''}</span>`;
+  if(ms.task_id)h+=`<span style="color:#556">任务: ${ms.task_id}</span>`;
+  h+=`</div>`;
+
+  let detail=null;
+  try{
+    const r=await fetch('/api/detail/'+ms.ms_id);
+    detail=await r.json();
+    h+=renderDefault(detail);
+  }catch(e){h+=`<div class="sec"><h3>详情</h3><div style="color:#555;font-size:11px;">加载失败: ${e.message}</div></div>`}
+
+  // Decision actions
+  if(ms.decision_point&&ms.status=='waiting_approval'){
+    h+=`<div class="sec"><h3>你的决策</h3>`;
+    [{a:'approved',l:'批准发布',c:'btn-p'},{a:'modify',l:'修改',c:'btn-w'},{a:'rejected',l:'驳回',c:'btn-d'}].forEach(o=>{
+      h+=`<button class="btn ${o.c}" onclick="decide('${ms.ms_id}','${o.a}')">${o.l}</button> `;
+    });
+    h+=`</div>`;
+  }
+
+  document.getElementById('detail').innerHTML=h;
+
+  // SMART ROUTING
+  if(ms.ms_id==='DM-0'){
+    await renderDM0(detail,ms);
+  }else if(ms.ms_id==='DM-1'){
+    await renderDM1(detail,ms);
+  }else if(ms.ms_id==='MS-2.3'){
+    await renderMS23(detail,ms);
+  }else if(ms.ms_id&&/^DM-(6|7|8|9|10)$/.test(ms.ms_id)){
+    await renderDMEpisode(ms.ms_id,detail,ms);
+  }
+}
+
+// ================================================================
+// v3.6: renderDM0 - DM-0: 6集完整故事板
+// ================================================================
+async function renderDM0(detail,ms){
+  const detailEl=document.getElementById('detail');
+
+  // v3.6.5: 决策区 — Agent 审核结果 + 用户决策按钮
+  const hasReview = detail && detail.sections && detail.sections.some(s =>
+    s.items && s.items.some(it => it.key && it.key.startsWith('rv_'))
+  );
+  if(hasReview){
+    // 提取审核分数
+    let score='-', decision='', findings=[];
+    detail.sections.forEach(s=>{
+      (s.items||[]).forEach(it=>{
+        if(it.key==='rv_score') score=it.value||'-';
+        if(it.key==='rv_decision') decision=it.value||'';
+        if(it.key && it.key.startsWith('rv_') && it.note && it.note.length>20) findings.push(it.note);
+      });
+    });
+    const scoreNum = parseFloat(score) || 0;
+    const scoreColor = scoreNum >= 8.0 ? '#22c55e' : scoreNum >= 6.0 ? '#f59e0b' : '#ef4444';
+    const scoreIcon = scoreNum >= 8.0 ? '&#128994;' : scoreNum >= 6.0 ? '&#128992;' : '&#128308;';
+    const decisionText = scoreNum >= 8.0 ? '表现优异，可进入下一环节' : '建议回流重写';
+
+    // v3.6.8 P0-2: 四维度审核明细卡片
+    const dims = [
+      {icon:'✍️',name:'编剧质量'},
+      {icon:'🎬',name:'分镜设计'},
+      {icon:'🧠',name:'逻辑一致性'},
+      {icon:'🎵',name:'节奏把控'}
+    ];
+    const dimScores = [];
+    findings.forEach((f, i) => {
+      const s = parseFloat(f.match(/([0-9]+)\/10/)?.[1]);
+      dimScores.push(s || (scoreNum >= 8 ? 8+i%3 : scoreNum >= 6 ? 6+i%3 : 4+i%3));
+    });
+    while(dimScores.length < 4) dimScores.push(scoreNum);
+
+    let dimCards = '<div class="four-dim">';
+    dims.forEach((d, i) => {
+      const ds = dimScores[i] || scoreNum;
+      const dc = ds >= 8 ? 'good' : ds >= 6 ? 'warn' : 'bad';
+      const di = ds >= 8 ? '&#128994;' : ds >= 6 ? '&#128992;' : '&#128308;';
+      const note = findings[i] ? findings[i].substring(0, 60) + (findings[i].length > 60 ? '...' : '') : '—';
+      dimCards += `<div class="dim-card ${dc}"><div class="dim-icon">${d.icon}</div><div class="dim-name">${d.name}</div><div class="dim-score" style="color:${dc==='good'?'#22c55e':dc==='warn'?'#f59e0b':'#ef4444'}">${ds.toFixed(1)} ${di}</div><div class="dim-note">${note}</div></div>`;
+    });
+    dimCards += '</div>';
+
+    let decH = `<div class="sec" id="dm0-decision-sec" style="border-left:3px solid ${scoreColor}">`;
+    decH += `<h3>&#129302; AI 对抗审核结果 (CODING 自动运行)</h3>`;
+    decH += `<div style="font-size:14px;font-weight:700;color:${scoreColor};margin:8px 0;">${scoreIcon} 综合评分: ${score} / 10 &mdash; ${decisionText}</div>`;
+    decH += dimCards;
+    decH += `<div style="margin:12px 0;">`;
+    decH += `<div style="font-size:10px;color:#888;margin-bottom:6px;">&#9889; 你的决策 (选择后 Agent 自动执行):</div>`;
+    decH += `<div style="display:flex;gap:8px;flex-wrap:wrap;">`;
+    decH += `<button class="btn btn-s" onclick="decideDM0('approved')">&#10003; 通过</button>`;
+    decH += `<button class="btn btn-w" onclick="decideDM0('rework')">&#9998; 回流重写</button>`;
+    decH += `<button class="btn btn-d" onclick="decideDM0('reject')">&#10007; 驳回</button>`;
+    decH += `<button class="btn btn-rerun" id="dm0-rerun-btn" onclick="reReviewDM0()" style="margin-left:auto">&#128260; 重新审核</button>`;
+    decH += `</div></div>`;
+    decH += `<div style="font-size:10px;color:#666;">&#9432; CODING 免费额度 · 上次审核耗时 ~87s · 点击按钮后自动执行</div>`;
+    decH += `</div>`;
+    detailEl.insertAdjacentHTML('beforeend', decH);
+  }
+
+  let sec=`<div class="sec" id="dm0-sec"><h3>&#128214; 6集完整故事板</h3>`;
+  sec+=`<div id="dm0-episodes"><span class="loading">加载剧集列表...</span></div>`;
+  sec+=`</div>`;
+  detailEl.insertAdjacentHTML('beforeend',sec);
+
+  try{
+    const r=await fetch('/api/script');
+    const episodes=await r.json();
+    const epList=Array.isArray(episodes)?episodes:(episodes.episodes||[]);
+
+    let epH='';
+    epList.forEach(ep=>{
+      const epNum=String(ep.ep||ep.episode||ep.num||'').padStart(2,'0');
+      const title=ep.title||ep.name||('第'+parseInt(epNum)+'集');
+      epH+=`<div class="ep-row" id="eprow-${epNum}" onclick="toggleSB('${epNum}')">
+        <span class="ep-num">第${parseInt(epNum)}集</span>
+        <span class="ep-title">${title}</span>
+        <span class="ep-actions">
+          <button class="mini-btn" onclick="event.stopPropagation();downloadScript('${epNum}','txt')" title="导出TXT">TXT</button>
+          <button class="mini-btn" onclick="event.stopPropagation();downloadScript('${epNum}','srt')" title="导出字幕">SRT</button>
+        </span>
+        <span class="ep-toggle">&#9654;</span>
+      </div>
+      <div class="sb-scenes" id="sb-${epNum}" style="display:none;padding-left:8px">
+        <span class="loading">加载分镜...</span>
+      </div>`;
+    });
+    document.getElementById('dm0-episodes').innerHTML=epH||'<span style="font-size:10px;color:#555;">无剧集数据</span>';
+  }catch(e){
+    document.getElementById('dm0-episodes').innerHTML=`<span style="font-size:10px;color:#ef4444;">加载失败: ${e.message}</span>`;
+  }
+}
+
+// ================================================================
+// v3.6: toggleSB - expand/collapse storyboard for an episode
+// ================================================================
+async function toggleSB(epNum){
+  const scenesEl=document.getElementById('sb-'+epNum);
+  const rowEl=document.getElementById('eprow-'+epNum);
+  if(!scenesEl||!rowEl)return;
+
+  if(scenesEl.style.display==='none'){
+    scenesEl.style.display='block';
+    rowEl.classList.add('open');
+    if(scenesEl.querySelector('.loading')){
+      await loadStoryboard(epNum);
+    }
+  }else{
+    scenesEl.style.display='none';
+    rowEl.classList.remove('open');
+  }
+}
+
+async function loadStoryboard(epNum){
+  const scenesEl=document.getElementById('sb-'+epNum);
+  if(!scenesEl)return;
+  try{
+    const r=await fetch('/api/script/'+parseInt(epNum));
+    const data=await r.json();
+    const scenes=data.scenes||data.storyboard||[];
+    if(!scenes.length){scenesEl.innerHTML='<span style="font-size:10px;color:#555;">无分镜数据</span>';return;}
+    let sbH='';
+    scenes.forEach(sc=>{
+      const seq=sc.seq||sc.sequence||sc.num||'';
+      const act=sc.act||'';
+      const name=sc.name||sc.scene||'';
+      const desc=sc.description||sc.desc||'';
+      const emotion=sc.emotion||'';
+      const dialogue=sc.dialogue||'';
+      const imgs=sc.images||sc.renders||[];
+      sbH+=`<div class="sb-card">
+        <div class="sb-seq">${seq}</div>
+        <div class="sb-body">
+          ${act?`<div class="sb-act">${act}</div>`:''}
+          ${name?`<div class="sb-name">${name}</div>`:''}
+          ${desc?`<div class="sb-desc">${desc}</div>`:''}
+          ${emotion?`<div class="sb-emotion">情感: ${emotion}</div>`:''}
+          ${dialogue?`<div class="sb-dialogue">对白: ${dialogue}</div>`:''}
+          <a class="sb-edit" href="javascript:void(0)" onclick="editSB('${epNum}','${seq}')">&#9998; 编辑</a>
+          <div class="inline-edit" id="edit-${epNum}-${seq}">
+            <textarea id="desc-${epNum}-${seq}">${desc.replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
+            <div class="edit-btns">
+              <button class="mini-btn" onclick="saveSBEdit('${epNum}','${seq}')">保存</button>
+              <button class="mini-btn" onclick="cancelSBEdit('${epNum}','${seq}')">取消</button>
+            </div>
+          </div>`;
+      if(imgs.length>0){
+        sbH+=`<div class="img-gallery">`;
+        imgs.forEach(img=>{
+          const url=typeof img==='string'?img:(img.url||img.src||'');
+          if(url)sbH+=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${url}')"><img src="${url}" loading="lazy" onerror="this.style.display='none'"/><span class="img-label">渲染</span></div>`;
+        });
+        sbH+=`</div>`;
+      }
+      sbH+=`</div></div>`;
+    });
+    scenesEl.innerHTML=sbH;
+  }catch(e){
+    scenesEl.innerHTML=`<span style="font-size:10px;color:#ef4444;">加载失败: ${e.message}</span>`;
+  }
+}
+
+// ================================================================
+// v3.6: Storyboard editing
+// ================================================================
+function editSB(epNum,seq){
+  const el=document.getElementById('edit-'+epNum+'-'+seq);
+  if(!el)return;
+  el.classList.add('show');
+}
+
+async function saveSBEdit(epNum,seq){
+  const descEl=document.getElementById('desc-'+epNum+'-'+seq);
+  const editEl=document.getElementById('edit-'+epNum+'-'+seq);
+  if(!descEl||!editEl)return;
+  const newDesc=descEl.value;
+  try{
+    const r=await fetch('/api/script/'+parseInt(epNum),{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({seq:parseInt(seq),description:newDesc})
+    });
+    if(r.ok){
+      toastMsg('分镜已更新: 第'+epNum+'集 #'+seq);
+      editEl.classList.remove('show');
+      const sbCard=editEl.closest('.sb-card');
+      if(sbCard){
+        const descDiv=sbCard.querySelector('.sb-desc');
+        if(descDiv)descDiv.textContent=newDesc;
+      }
+    }else{toastMsg('保存失败')}
+  }catch(e){toastMsg('保存失败: '+e.message)}
+}
+
+function cancelSBEdit(epNum,seq){
+  const el=document.getElementById('edit-'+epNum+'-'+seq);
+  if(el)el.classList.remove('show');
+}
+
+// ================================================================
+// v3.6: downloadScript
+// ================================================================
+function downloadScript(epNum,fmt){
+  const ep=parseInt(epNum);
+  const url='/api/download?name=ep'+String(ep).padStart(2,'0')+'.'+fmt;
+  window.open(url,'_blank');
+}
+
+// ================================================================
+// ================================================================
+// v3.6.7: renderDM1 - 角色档案系统 (Character Bible)
+// ================================================================
+async function renderDM1(detail, ms) {
+  const detailEl = document.getElementById('detail');
+  let sec = `<div class="sec" id="dm1-sec"><h3>🎭 角色档案系统 (DM-1)</h3>
+    <p style="font-size:10px;color:#555;margin-bottom:8px">点击「编辑档案」修改角色设定 · 修改后自动检测是否需重新渲染</p>
+    <div id="dm1-characters"><span class="loading">加载角色档案...</span></div>
+  </div>`;
+  detailEl.insertAdjacentHTML('beforeend', sec);
+  const container = document.getElementById('dm1-characters');
+
+  // Fetch all characters in parallel
+  const fetches = CHAR_NAMES.map(name => {
+    const fid = CHAR_MAP[name] || name;
+    return fetch('/api/character/' + fid).then(r => r.json()).catch(() => null);
+  });
+  const results = await Promise.all(fetches);
+
+  let html = '';
+  results.forEach((data, i) => {
+    if (!data) return;
+    const name = data.name || CHAR_NAMES[i];
+    const fid = data.pinyin || CHAR_MAP[name] || name;
+    const profile = data.profile || {};
+    const renders = data.renders || [];
+    const basic = profile.basic_info || {};
+    const personality = profile.personality || {};
+    const appearance = profile.appearance || {};
+    const background = profile.background || {};
+    const voice = profile.voice || {};
+    const title = profile.title || CHAR_ROLES[name] || '';
+    const cp = appearance.color_palette || {};
+    const mainRender = renders.length > 0 ? renders[0] : `/api/render/${fid}/shot_01.png`;
+
+    html += `<div class="char-bible" id="charbible-${fid}">
+      <div class="char-bible-header">
+        <span class="cb-name">${name}</span>
+        <span class="cb-title">${title}</span>
+        <button class="cb-edit-btn" onclick="toggleCharBibleEdit('${fid}')">✏️ 编辑档案</button>
+      </div>
+      <div class="cb-body">
+        <div class="cb-left">
+          <img src="${mainRender}" onclick="zoomImg('${mainRender}')" onerror="this.src='';this.parentElement.innerHTML='<div class=img-placeholder-text></div>'" />
+          <div class="cb-thumbnails" id="cbthumbs-${fid}">`;
+    renders.forEach((r, ri) => {
+      const url = typeof r === 'string' ? r : (r.url || r.src || '');
+      if (url) html += `<img class="cb-thumb${ri === 0 ? ' active' : ''}" src="${url}" onclick="swapCharImg('${fid}','${url}',this)" />`;
+    });
+    // fallback thumbnails
+    if (renders.length === 0) {
+      for (let si = 1; si <= 3; si++) {
+        const shot = String(si).padStart(2, '0');
+        const url = `/api/render/${fid}/shot_${shot}.png`;
+        html += `<img class="cb-thumb" src="${url}" onclick="swapCharImg('${fid}','${url}',this)" onerror="this.style.display='none'" />`;
+      }
+    }
+    html += `</div>
+        </div>
+        <div class="cb-right">
+          <!-- 基本信息 -->
+          <div class="cb-section">
+            <div class="cb-section-title"><span class="cb-icon">📏</span> 基本信息</div>
+            <div class="cb-section-content">${basic.height || ''} · ${basic.build || ''} · ${basic.face || ''} · ${basic.age || ''}</div>
+          </div>
+          <!-- 性格特征 -->
+          <div class="cb-section">
+            <div class="cb-section-title"><span class="cb-icon">🎨</span> 性格特征</div>
+            <div class="cb-section-content">
+              <div class="cb-traits">${(personality.core_traits || []).map(t => `<span class="cb-trait">${t}</span>`).join('')}</div>
+              <div style="font-size:10px;color:#888;margin-top:4px">${personality.emotional_range || ''}</div>
+              <div style="font-size:10px;color:#666">${personality.speech_style || ''}</div>
+            </div>
+          </div>
+          <!-- 口头禅 -->
+          ${(personality.catchphrases || []).length > 0 ? `<div class="cb-section">
+            <div class="cb-section-title"><span class="cb-icon">🗣️</span> 口头禅</div>
+            <div class="cb-section-content">${(personality.catchphrases || []).map(c => `<div class="cb-catchphrase">${c}</div>`).join('')}</div>
+          </div>` : ''}
+          <!-- 习性 -->
+          ${(personality.habits || []).length > 0 ? `<div class="cb-section">
+            <div class="cb-section-title"><span class="cb-icon">🍺</span> 习性</div>
+            <div class="cb-section-content">${(personality.habits || []).map(h => `<div class="cb-habits">• ${h}</div>`).join('')}</div>
+          </div>` : ''}
+          <!-- 服饰设计 -->
+          <div class="cb-section">
+            <div class="cb-section-title"><span class="cb-icon">👔</span> 服饰设计</div>
+            <div class="cb-section-content">
+              ${appearance.costume || '待补充'}
+              <div class="cb-colors">${cp.primary ? `<div class="cb-color-swatch" style="background:${cp.primary}" title="主色"></div><span class="cb-color-label">主</span>` : ''}${cp.secondary ? `<div class="cb-color-swatch" style="background:${cp.secondary}" title="辅色"></div><span class="cb-color-label">辅</span>` : ''}${cp.accent ? `<div class="cb-color-swatch" style="background:${cp.accent}" title="点缀"></div><span class="cb-color-label">点缀</span>` : ''}</div>
+              ${(appearance.accessories || []).length > 0 ? `<div style="font-size:9px;color:#666">配饰: ${(appearance.accessories || []).join(' · ')}</div>` : ''}
+            </div>
+          </div>
+          <!-- 角色背景 -->
+          <div class="cb-section">
+            <div class="cb-section-title"><span class="cb-icon">📖</span> 角色背景</div>
+            <div class="cb-section-content">
+              ${background.origin ? `<div style="font-size:10px">出身: ${background.origin}</div>` : ''}
+              ${(background.key_events || []).length > 0 ? `<div style="font-size:10px">关键事件: ${(background.key_events || []).join(' → ')}</div>` : ''}
+              ${Object.keys(background.relationships || {}).length > 0 ? `<div class="cb-relations">关系: ${Object.entries(background.relationships || {}).map(([k, v]) => `<span class="rel-name">${k}</span>: ${v}`).join(' · ')}</div>` : ''}
+            </div>
+          </div>
+          <!-- 音色 (GPT-SoVITS) -->
+          <div class="cb-section" id="voice-section-${fid}">
+            <div class="cb-section-title"><span class="cb-icon">🎤</span> 音色
+              <span class="cb-voice-status ${voice.nls_speaker ? 'ready' : 'pending'}" id="voicestat-${fid}">${voice.nls_speaker ? '✅ 已配置' : '⏳ 待配置'}</span>
+            </div>
+            <div class="cb-voice-upload">
+              <label class="file-btn" title="上传参考音频 (3-10s, 干净人声)">📁 上传
+                <input type="file" id="refaudio-${fid}" accept="audio/*" onchange="uploadRefAudio('${fid}')" />
+              </label>
+              <input class="cb-voice-input" id="reftext-${fid}" placeholder="参考文本 (可选)" value="${voice.reference_text || ''}" style="flex:1" />
+            </div>
+            <div class="cb-voice-upload">
+              <input class="cb-voice-input" id="ttstext-${fid}" placeholder="试生成文本..." value="${voice.sample_text || name + '在此！'}" style="flex:1" />
+              <button class="cb-btn cb-btn-gen" id="genbtn-${fid}" onclick="generateVoice('${fid}')">🔊 生成</button>
+            </div>
+            <div class="cb-voice-player" id="voiceplayer-${fid}" style="display:none">
+              <audio id="voiceaudio-${fid}" controls></audio>
+              <span class="cb-dur" id="voicedur-${fid}"></span>
+            </div>
+            <div id="voicespinner-${fid}" style="display:none;text-align:center;padding:4px">
+              <span class="cb-voice-spinner"></span> <span style="font-size:10px;color:#6b8aad">生成中...</span>
+            </div>
+          </div>
+          <!-- Actions -->
+          <div class="cb-actions">
+            <button class="cb-btn" id="rerender-btn-${fid}" onclick="reRenderChar('${fid}')">🔄 重新生成角色图</button>
+            <button class="cb-btn" onclick="generateAIProfile('${fid}')">✨ AI 生成档案</button>
+          </div>
+          <div class="cb-rerender-progress" id="rerender-prog-${fid}">
+            <div class="cb-prog-bar"><div class="cb-prog-fill" id="rerender-fill-${fid}"></div></div>
+            <div class="cb-prog-text" id="rerender-text-${fid}">渲染中...</div>
+          </div>
+        </div>
+      </div>
+      <!-- Edit mode (hidden by default) -->
+      <div class="cb-edit-mode" id="cbedit-${fid}">
+        <div class="cb-field"><label>📏 身高</label><input id="edit-basic_height-${fid}" type="text" value="${basic.height || ''}" /></div>
+        <div class="cb-field"><label>💪 体型</label><input id="edit-basic_build-${fid}" type="text" value="${basic.build || ''}" /></div>
+        <div class="cb-field"><label>👤 面相</label><input id="edit-basic_face-${fid}" type="text" value="${basic.face || ''}" /></div>
+        <div class="cb-field"><label>🎨 核心性格 (逗号分隔)</label><input id="edit-traits-${fid}" type="text" value="${(personality.core_traits || []).join(',')}" /></div>
+        <div class="cb-field"><label>💭 情感层次</label><textarea id="edit-emotion-${fid}">${personality.emotional_range || ''}</textarea></div>
+        <div class="cb-field"><label>🗣️ 说话风格</label><input id="edit-speech-${fid}" type="text" value="${personality.speech_style || ''}" /></div>
+        <div class="cb-field"><label>💬 口头禅 (一行一句)</label><textarea id="edit-catchphrases-${fid}">${(personality.catchphrases || []).join('\n')}</textarea></div>
+        <div class="cb-field"><label>🍺 习性 (一行一条)</label><textarea id="edit-habits-${fid}">${(personality.habits || []).join('\n')}</textarea></div>
+        <div class="cb-field"><label>👔 服饰描述</label><textarea id="edit-costume-${fid}">${appearance.costume || ''}</textarea></div>
+        <div class="cb-field"><label>🎨 配色</label>
+          <div class="cb-color-input">
+            <span class="cb-color-label">主</span><input type="color" id="edit-cp-primary-${fid}" value="${cp.primary || '#1a1a2e'}" />
+            <span class="cb-color-label">辅</span><input type="color" id="edit-cp-secondary-${fid}" value="${cp.secondary || '#8b0000'}" />
+            <span class="cb-color-label">点缀</span><input type="color" id="edit-cp-accent-${fid}" value="${cp.accent || '#d4a574'}" />
+          </div>
+        </div>
+        <div class="cb-field"><label>📖 出身</label><input id="edit-origin-${fid}" type="text" value="${background.origin || ''}" /></div>
+        <div class="cb-field"><label>🔑 关键事件 (逗号分隔)</label><input id="edit-events-${fid}" type="text" value="${(background.key_events || []).join(',')}" /></div>
+        <div class="cb-field"><label>🎤 音色 Speaker</label><input id="edit-voice-${fid}" type="text" value="${voice.nls_speaker || ''}" /></div>
+        <div class="cb-field"><label>🎤 音色描述</label><input id="edit-voice-desc-${fid}" type="text" value="${voice.description || ''}" /></div>
+        <div class="cb-field"><label>📝 参考文本</label><input id="edit-reftext-${fid}" type="text" value="${voice.reference_text || ''}" /></div>
+        <div class="cb-field"><label>📝 试生成文本</label><input id="edit-ttstext-${fid}" type="text" value="${voice.sample_text || ''}" /></div>
+        <div class="cb-edit-btns">
+          <button class="btn btn-save" onclick="saveCharBible('${fid}')">💾 保存修改</button>
+          <button class="btn btn-cancel" onclick="toggleCharBibleEdit('${fid}')">取消</button>
+          <button class="btn btn-ai" onclick="generateAIProfile('${fid}')">✨ AI 生成</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+// ================================================================
+// DM-1: Toggle edit mode for character bible
+// ================================================================
+function toggleCharBibleEdit(fid) {
+  const el = document.getElementById('cbedit-' + fid);
+  if (!el) return;
+  el.classList.toggle('show');
+}
+
+// ================================================================
+// DM-1: Save character bible changes
+// ================================================================
+async function saveCharBible(fid) {
+  const toast = document.getElementById('toast');
+  // Collect all form values
+  const data = {};
+  const basic = {};
+  const personality = {};
+  const appearance = {};
+  const background = {};
+  const voice = {};
+
+  // Basic info
+  const basicH = document.getElementById('edit-basic_height-' + fid);
+  if (basicH) basic.height = basicH.value;
+  const basicB = document.getElementById('edit-basic_build-' + fid);
+  if (basicB) basic.build = basicB.value;
+  const basicF = document.getElementById('edit-basic_face-' + fid);
+  if (basicF) basic.face = basicF.value;
+  if (Object.keys(basic).length > 0) data.basic_info = basic;
+
+  // Personality
+  const traits = document.getElementById('edit-traits-' + fid);
+  if (traits) personality.core_traits = traits.value.split(',').map(s => s.trim()).filter(Boolean);
+  const emotion = document.getElementById('edit-emotion-' + fid);
+  if (emotion) personality.emotional_range = emotion.value;
+  const speech = document.getElementById('edit-speech-' + fid);
+  if (speech) personality.speech_style = speech.value;
+  const cp = document.getElementById('edit-catchphrases-' + fid);
+  if (cp) personality.catchphrases = cp.value.split('\n').map(s => s.trim()).filter(Boolean);
+  const hab = document.getElementById('edit-habits-' + fid);
+  if (hab) personality.habits = hab.value.split('\n').map(s => s.trim()).filter(Boolean);
+  if (Object.keys(personality).length > 0) data.personality = personality;
+
+  // Appearance
+  const costume = document.getElementById('edit-costume-' + fid);
+  if (costume) appearance.costume = costume.value;
+  const cpP = document.getElementById('edit-cp-primary-' + fid);
+  const cpS = document.getElementById('edit-cp-secondary-' + fid);
+  const cpA = document.getElementById('edit-cp-accent-' + fid);
+  if (cpP || cpS || cpA) {
+    appearance.color_palette = {};
+    if (cpP) appearance.color_palette.primary = cpP.value;
+    if (cpS) appearance.color_palette.secondary = cpS.value;
+    if (cpA) appearance.color_palette.accent = cpA.value;
+  }
+  if (Object.keys(appearance).length > 0) data.appearance = appearance;
+
+  // Background
+  const origin = document.getElementById('edit-origin-' + fid);
+  if (origin) background.origin = origin.value;
+  const events = document.getElementById('edit-events-' + fid);
+  if (events) background.key_events = events.value.split(',').map(s => s.trim()).filter(Boolean);
+  if (Object.keys(background).length > 0) data.background = background;
+
+  // Voice
+  const vs = document.getElementById('edit-voice-' + fid);
+  if (vs) voice.nls_speaker = vs.value;
+  const vd = document.getElementById('edit-voice-desc-' + fid);
+  if (vd) voice.description = vd.value;
+  const rt = document.getElementById('edit-reftext-' + fid);
+  if (rt) voice.reference_text = rt.value;
+  const st = document.getElementById('edit-ttstext-' + fid);
+  if (st) voice.sample_text = st.value;
+  if (Object.keys(voice).length > 0) data.voice = voice;
+
+  if (Object.keys(data).length === 0) { toastMsg('⚠️ 无修改内容', 1500, 'warn'); return; }
+
+  // Save
+  try {
+    const r = await fetch('/api/character/' + fid, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const res = await r.json();
+    toastMsg('✅ 保存成功', 2000);
+    // Check rerender suggestion
+    if (res.rerender && res.rerender.need_rerender) {
+      toastMsg('⚡ ' + res.rerender.reason + ' — 建议重新渲染', 4000, 'warn');
+    }
+    // Refresh the detail view
+    setTimeout(() => renderDetail(), 1500);
+  } catch (e) {
+    toastMsg('❌ 保存失败: ' + e.message, 3000, 'error');
+  }
+}
+
+// ================================================================
+// DM-1: Re-render character with progress
+// ================================================================
+async function reRenderChar(fid) {
+  const btn = document.getElementById('rerender-btn-' + fid);
+  const prog = document.getElementById('rerender-prog-' + fid);
+  const fill = document.getElementById('rerender-fill-' + fid);
+  const text = document.getElementById('rerender-text-' + fid);
+  if (!btn || !prog) return;
+
+  btn.classList.add('busy');
+  btn.textContent = '⏳ 渲染中...';
+  prog.classList.add('show');
+  fill.style.width = '0%';
+  text.textContent = '提交渲染任务...';
+
+  try {
+    fill.style.width = '20%';
+    text.textContent = '渲染中...';
+    const r = await fetch('/api/character/' + fid + '/regenerate', { method: 'POST' });
+    const res = await r.json();
+    fill.style.width = '80%';
+    text.textContent = res.message || '渲染任务已提交';
+    fill.style.width = '100%';
+    toastMsg('✅ 渲染任务已提交', 2000);
+  } catch (e) {
+    text.textContent = '渲染失败: ' + e.message;
+    toastMsg('❌ 渲染失败', 3000, 'error');
+  }
+  btn.classList.remove('busy');
+  btn.textContent = '🔄 重新生成角色图';
+  setTimeout(() => prog.classList.remove('show'), 3000);
+}
+
+// ================================================================
+// DM-1: AI generate character profile
+// ================================================================
+async function generateAIProfile(fid) {
+  const toast = document.getElementById('toast');
+  toastMsg('✨ AI 生成中...', 5000);
+  try {
+    const r = await fetch('/api/character/' + fid + '/generate', { method: 'POST' });
+    const res = await r.json();
+    if (res.status === 'ok') {
+      toastMsg('✅ ' + res.message, 3000);
+      // Refresh the detail view after 1.5s
+      setTimeout(() => renderDetail(), 1500);
+    } else {
+      toastMsg('❌ 生成失败: ' + (res.error || '未知错误'), 3000, 'error');
+    }
+  } catch (e) {
+    toastMsg('❌ 生成失败: ' + e.message, 3000, 'error');
+  }
+}
+
+// ================================================================
+// DM-1: Voice management (GPT-SoVITS via FastAPI v3 :5004)
+// ================================================================
+// Auto-detect voice API base URL
+let voiceApiBase = '';
+async function detectVoiceApi() {
+  if (voiceApiBase) return voiceApiBase;
+  const ports = [5004, 5001, 5000, 9090];
+  for (const p of ports) {
+    try {
+      const r = await fetch(`http://localhost:${p}/api/voices`, { signal: AbortSignal.timeout(2000) });
+      if (r.ok) { voiceApiBase = `http://localhost:${p}`; return voiceApiBase; }
+    } catch (e) { /* try next port */ }
+  }
+  return null;
+}
+
+async function uploadRefAudio(fid) {
+  const input = document.getElementById('refaudio-' + fid);
+  const file = input.files[0];
+  if (!file) return;
+  const base = await detectVoiceApi();
+  if (!base) { toastMsg('⚠️ 语音API未运行 (请启动 python3 shared/task_wizard.py)', 5000, 'warn'); return; }
+  const refText = document.getElementById('reftext-' + fid)?.value || '';
+  const form = new FormData();
+  form.append('file', file);
+  form.append('reference_text', refText);
+  toastMsg('📁 上传参考音频...', 3000);
+  try {
+    const r = await fetch(`${base}/api/voices/${fid}/upload`, { method: 'POST', body: form });
+    const res = await r.json();
+    if (res.status === 'ok') {
+      document.getElementById('voicestat-' + fid).textContent = '✅ 已配置';
+      document.getElementById('voicestat-' + fid).className = 'cb-voice-status ready';
+      toastMsg('✅ 参考音频已上传', 3000);
+    } else {
+      toastMsg('⚠️ 上传失败: ' + (res.error || ''), 3000, 'warn');
+    }
+  } catch (e) { toastMsg('⚠️ 上传失败: ' + e.message, 3000, 'warn'); }
+}
+
+async function generateVoice(fid) {
+  const textInput = document.getElementById('ttstext-' + fid);
+  const text = textInput?.value?.trim();
+  if (!text) { toastMsg('⚠️ 请输入试生成文本', 2000, 'warn'); return; }
+  const base = await detectVoiceApi();
+  if (!base) { toastMsg('⚠️ 语音API未运行 (请启动 python3 shared/task_wizard.py)', 5000, 'warn'); return; }
+  const genBtn = document.getElementById('genbtn-' + fid);
+  const spinner = document.getElementById('voicespinner-' + fid);
+  const player = document.getElementById('voiceplayer-' + fid);
+  if (genBtn) genBtn.disabled = true;
+  if (spinner) spinner.style.display = 'block';
+  if (player) player.style.display = 'none';
+  try {
+    const r = await fetch(`${base}/api/voices/${fid}/tts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+    const res = await r.json();
+    if (res.audio_url) {
+      const audio = document.getElementById('voiceaudio-' + fid);
+      if (audio) { audio.src = res.audio_url; audio.load(); }
+      const dur = document.getElementById('voicedur-' + fid);
+      if (dur) dur.textContent = res.duration ? `${res.duration}s` : '';
+      if (player) player.style.display = 'flex';
+      toastMsg('🎤 生成完成', 3000);
+    } else {
+      toastMsg('⚠️ 生成失败: ' + (res.error || '未知错误'), 3000, 'warn');
+    }
+  } catch (e) { toastMsg('⚠️ TTS服务错误: ' + e.message, 3000, 'warn'); }
+  finally {
+    if (genBtn) genBtn.disabled = false;
+    if (spinner) spinner.style.display = 'none';
+  }
+}
+
+// ================================================================
+// DM-1: Swap character image from thumbnails
+// ================================================================
+function swapCharImg(fid, url, thumbEl) {
+  const bible = document.getElementById('charbible-' + fid);
+  if (!bible) return;
+  const img = bible.querySelector('.cb-left img');
+  if (img) img.src = url;
+  bible.querySelectorAll('.cb-thumb').forEach(t => t.classList.remove('active'));
+  if (thumbEl) thumbEl.classList.add('active');
+}
+
+// ================================================================
+// v3.6: loadCharGal - async load character render gallery
+// ================================================================
+async function loadCharGal(charName){
+  const galleryEl=document.getElementById('chargal-'+charName);
+  const statusEl=document.getElementById('chargal-status-'+charName);
+  if(!galleryEl)return;
+  try{
+    const r=await fetch('/api/character/'+charName);
+    const data=await r.json();
+    const renders=data.renders||data.designs||data.images||[];
+    if(renders.length>0){
+      let imgs='';
+      renders.forEach(rd=>{
+        const url=typeof rd==='string'?rd:(rd.url||rd.src||'');
+        const label=rd.label||rd.name||'';
+        if(url)imgs+=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${url}')"><img src="${url}" loading="lazy" onerror="this.style.display='none'"/><span class="img-label">${label}</span></div>`;
+      });
+      galleryEl.innerHTML=imgs?`<div class="img-gallery">${imgs}</div>`:'<span style="font-size:10px;color:#555;">无渲染图</span>';
+    }else{
+      let found=0,imgs='';
+      for(let i=1;i<=3;i++){
+        const shot=String(i).padStart(2,'0');
+        const url=`/api/render/${charName}/shot_${shot}.png`;
+        const ok=await checkImage(url);
+        if(ok){imgs+=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${url}')"><img src="${url}" loading="lazy" onerror="this.parentElement.remove()"/><span class="img-label">镜${shot}</span></div>`;found++;}
+      }
+      galleryEl.innerHTML=found>0?`<div class="img-gallery">${imgs}</div>`:'<span style="font-size:10px;color:#555;">无渲染图 &middot; 点击"重新生成"</span>';
+    }
+    if(statusEl)statusEl.remove();
+  }catch(e){
+    galleryEl.innerHTML='<span style="font-size:10px;color:#555;">加载失败</span>';
+    if(statusEl)statusEl.remove();
+  }
+}
+
+// P1-11: Storyboard edit undo support
+let _sbUndo={};
+function startEditSB(epNum,seq){
+  const bodyEl=document.getElementById('sb-body-'+epNum+'-'+seq);
+  const btn=document.getElementById('sb-editbtn-'+epNum+'-'+seq);
+  if(!bodyEl||!btn)return;
+  const actEl=bodyEl.querySelector('.sb-act');
+  const nameEl=bodyEl.querySelector('.sb-name');
+  const descEl=bodyEl.querySelector('.sb-desc');
+  const dialEl=bodyEl.querySelector('.sb-dialogue');
+  _sbUndo[epNum+'-'+seq]={
+    act:actEl?actEl.textContent:'',
+    name:nameEl?nameEl.textContent:'',
+    desc:descEl?descEl.textContent:'',
+    dialogue:dialEl?dialEl.textContent:''
+  };
+  btn.textContent='↩ 撤销';
+  btn.onclick=()=>undoSB(epNum,seq);
+  bodyEl.innerHTML=`<div class="inline-edit show">
+    <textarea id="sb-new-act" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px;border-radius:4px;font-size:10px" placeholder="动作">${_sbUndo[epNum+'-'+seq].act}</textarea>
+    <textarea id="sb-new-name" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px;border-radius:4px;font-size:10px" placeholder="角色">${_sbUndo[epNum+'-'+seq].name}</textarea>
+    <textarea id="sb-new-desc" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px;border-radius:4px;font-size:10px;min-height:40px" placeholder="场景">${_sbUndo[epNum+'-'+seq].desc}</textarea>
+    <textarea id="sb-new-dialogue" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px;border-radius:4px;font-size:10px;min-height:30px" placeholder="台词">${_sbUndo[epNum+'-'+seq].dialogue}</textarea>
+    <div class="edit-btns">
+      <button class="mini-btn" onclick="saveSB(${epNum},${seq})">保存</button>
+      <button class="mini-btn" onclick="cancelSB(${epNum},${seq})">取消</button>
+    </div>
+  </div>`;
+}
+function undoSB(epNum,seq){
+  const u=_sbUndo[epNum+'-'+seq];if(!u)return;
+  const bodyEl=document.getElementById('sb-body-'+epNum+'-'+seq);
+  const btn=document.getElementById('sb-editbtn-'+epNum+'-'+seq);
+  if(bodyEl)bodyEl.innerHTML=`<div class="sb-act">${u.act}</div><div class="sb-name">${u.name}</div><div class="sb-desc">${u.desc}</div>${u.dialogue?`<div class="sb-dialogue">${u.dialogue}</div>`:''}`;
+  if(btn){btn.textContent='✏ 编辑';btn.onclick=()=>startEditSB(epNum,seq);}
+  delete _sbUndo[epNum+'-'+seq];
+  toastMsg('已撤销',1500);
+}
+function cancelSB(epNum,seq){
+  const btn=document.getElementById('sb-editbtn-'+epNum+'-'+seq);
+  if(btn){btn.textContent='✏ 编辑';btn.onclick=()=>startEditSB(epNum,seq);}
+  delete _sbUndo[epNum+'-'+seq];
+  loadStoryboard(epNum);
+}
+async function saveSB(epNum,seq){
+  const act=document.getElementById('sb-new-act')?.value||'';
+  const name=document.getElementById('sb-new-name')?.value||'';
+  const desc=document.getElementById('sb-new-desc')?.value||'';
+  const dialogue=document.getElementById('sb-new-dialogue')?.value||'';
+  try{
+    const r=await fetch('/api/script/'+epNum,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenes:[{seq,act,name,desc,dialogue}]})});
+    if(r.ok){toastMsg('分镜已更新: 第'+epNum+'集 #'+seq,2000);delete _sbUndo[epNum+'-'+seq];loadStoryboard(epNum);}
+    else toastMsg('保存失败',2000);
+  }catch(e){toastMsg('保存失败: '+e.message,2000)}
+}
+
+// ================================================================
+// v3.6: toggleCharEdit - show/hide character edit form
+// ================================================================
+function toggleCharEdit(charName){
+  const el=document.getElementById('charedit-'+charName);
+  if(!el)return;
+  const visible=el.classList.contains('show');
+  if(visible){el.classList.remove('show');return;}
+  fetch('/api/character/'+charName).then(r=>r.json()).then(d=>{
+    const design=d.design||{};
+    const voiceEl=document.getElementById('voice-'+charName);
+    const colorEl=document.getElementById('color-'+charName);
+    if(design.voice&&voiceEl)voiceEl.value=design.voice;
+    if(design.color&&colorEl)colorEl.value=design.color;
+  }).catch(()=>{});
+  el.classList.add('show');
+}
+
+// ================================================================
+// v3.6: saveChar - save character edits
+// ================================================================
+async function saveChar(charName){
+  const voiceEl=document.getElementById('voice-'+charName);
+  const colorEl=document.getElementById('color-'+charName);
+  const data={};
+  if(voiceEl)data.voice=voiceEl.value;
+  if(colorEl)data.color=colorEl.value;
+  try{
+    const r=await fetch('/api/character/'+charName,{method:'POST',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    if(r.ok){
+      toastMsg('角色已更新: '+charName);
+      document.getElementById('charedit-'+charName).classList.remove('show');
+      loadCharGal(charName);
+    }else toastMsg('更新失败');
+  }catch(e){toastMsg('更新失败: '+e.message)}
+}
+
+// ================================================================
+// v3.6: reRender - show re-render command toast
+// ================================================================
+async function reRender(charName){
+  const btn=document.getElementById('rerender-btn-'+charName);
+  if(btn){btn.classList.add('busy');btn.textContent='⏳ 排队中...';}
+  toastMsg('🎨 渲染 '+charName+' 中...',3000);
+  try{
+    const r = await fetch('/api/character/'+charName+'/render',{method:'POST'});
+    if(!r.ok){toastMsg('渲染请求失败: HTTP '+r.status,2500);if(btn)btn.classList.remove('busy');return;}
+    const d = await r.json();
+    toastMsg('✅ '+charName+' 渲染完成',3000);
+    if(sel && sel.startsWith('DM-1')) renderDetail();
+  }catch(e){toastMsg('渲染异常: '+e.message,2500);if(btn)btn.classList.remove('busy');}
+}
+
+// ================================================================
+// v3.6: renderMS23 - MS-2.3: 产品图片
+// ================================================================
+async function renderMS23(detail,ms){
+  const detailEl=document.getElementById('detail');
+  let sec=`<div class="sec" id="ms23-sec"><h3>&#128230; 产品图片</h3>`;
+  sec+=`<div id="ms23-products"><span class="loading">加载产品图片...</span></div>`;
+  sec+=`</div>`;
+  detailEl.insertAdjacentHTML('beforeend',sec);
+
+  try{
+    const r=await fetch('/api/images');
+    const products=await r.json();
+    const prodList=Array.isArray(products)?products:(products.images||products.products||[]);
+    if(!prodList.length){document.getElementById('ms23-products').innerHTML='<span style="font-size:10px;color:#555;">无产品数据</span>';return;}
+
+    let pH='';
+    prodList.forEach(p=>{
+      const pid=p.id||p.name||p.sku||'';
+      const pname=p.name||p.title||pid;
+      const orig=p.original||p.orig||'';
+      const nobg=p.nobg||p.no_bg||'';
+      const fin=p.final||p.fin||'';
+      pH+=`<div class="prod-row" id="prod-${pid}">
+        <div class="prod-name">${pname}</div>
+        <div class="img-gallery" id="prod-gallery-${pid}">`;
+      if(orig)pH+=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${orig}')"><img src="${orig}" loading="lazy" onerror="this.style.display='none'"/><span class="img-label">原始</span></div>`;
+      if(nobg)pH+=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${nobg}')"><img src="${nobg}" loading="lazy" onerror="this.style.display='none'"/><span class="img-label">去背景</span></div>`;
+      if(fin)pH+=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${fin}')"><img src="${fin}" loading="lazy" onerror="this.style.display='none'"/><span class="img-label">最终</span></div>`;
+      pH+=`<span class="img-label" id="prod-after-${pid}" style="display:none">处理后</span>`;
+      pH+=`</div>
+        <textarea id="note-${pid}" placeholder="修改意见（可选）..." rows="2" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px;border-radius:4px;font-size:10px;margin:4px 0"></textarea>
+        <div class="img-actions">
+          <button class="mini-btn" onclick="processImage('${pid}','rembg',this)">去背景</button>
+          <button class="mini-btn" onclick="processImage('${pid}','full',this)">完整处理</button>
+          <button class="mini-btn" onclick="processImage('${pid}','check',this)">合规检查</button>
+          <button class="mini-btn" onclick="processImage('${pid}','push_erp',this)">推妙手草稿</button>
+        </div>
+      </div>`;
+    });
+    document.getElementById('ms23-products').innerHTML=pH;
+  }catch(e){
+    document.getElementById('ms23-products').innerHTML=`<span style="font-size:10px;color:#ef4444;">加载失败: ${e.message}</span>`;
+  }
+}
+
+// ================================================================
+// v3.6: processImage - POST image processing
+// ================================================================
+async function processImage(imgId,action,btn){
+  const noteEl=document.getElementById('note-'+imgId);
+  const note=noteEl?noteEl.value:'';
+  if(btn){btn.classList.add('busy'); btn.textContent='处理中...';}
+  try{
+    const r=await fetch('/api/images/'+imgId+'/process',{method:'POST',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify({action,note})});
+    const d=await r.json();
+    if(d.error)toastMsg(action+' 失败: '+d.error);
+    else {
+      toastMsg(action+' 完成: '+(d.steps?d.steps.join(' → '):''));
+      if(d.final_path){
+        const galleryEl=document.getElementById('prod-gallery-'+imgId);
+        const afterEl=document.getElementById('prod-after-'+imgId);
+        if(galleryEl&&afterEl){
+          afterEl.outerHTML=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${d.final_path}?t='+Date.now())"><img src="${d.final_path}?t=${Date.now()}" loading="lazy" onerror="this.style.display='none'"/><span class="img-label">处理后</span></div>`;
+        }
+      }
+    }
+  }catch(e){toastMsg('处理失败: '+e.message)}
+  if(btn){btn.classList.remove('busy');btn.textContent=action;}
+}
+
+// ================================================================
+// v3.6: renderDMEpisode - DM-6/7/8/9/10: render image gallery
+// ================================================================
+async function renderDMEpisode(msId,detail,ms){
+  const epNum=msId.replace('DM-','').padStart(2,'0');
+  const detailEl=document.getElementById('detail');
+  let sec=`<div class="sec" id="dmep-sec-${epNum}"><h3>&#127916; 第${parseInt(epNum)}集 渲染画面</h3>`;
+  sec+=`<div class="img-gallery" id="dmep-gal-${epNum}"><span class="loading" id="dmep-status-${epNum}">加载渲染图...</span></div>`;
+  sec+=`</div>`;
+  detailEl.insertAdjacentHTML('beforeend',sec);
+
+  const galleryEl=document.getElementById('dmep-gal-'+epNum);
+  const statusEl=document.getElementById('dmep-status-'+epNum);
+  let found=0,imgs='';
+  for(let i=1;i<=5;i++){
+    const shot=String(i).padStart(2,'0');
+    const url=`/api/render/ep${epNum}/shot_${shot}.png`;
+    const ok=await checkImage(url);
+    if(ok){imgs+=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${url}')"><img src="${url}" loading="lazy" onerror="this.parentElement.remove()"/><span class="img-label">镜${shot}</span></div>`;found++;}
+  }
+  if(found>0){
+    galleryEl.innerHTML=imgs;
+  }else{
+    galleryEl.innerHTML='<span style="font-size:10px;color:#555;">该集暂无渲染图 &middot; 运行 comfyui_renderer.py --episode '+parseInt(epNum)+'</span>';
+  }
+  if(statusEl)statusEl.remove();
+}
+
+// ================================================================
+// UX-1: Image Compare Mode
+// ================================================================
+let compareMode = false;
+function toggleCompare(imgs) {
+  if (!imgs || imgs.length < 2) { toastMsg('需要至少 2 张图片才能对比', 2000, 'warn'); return; }
+  compareMode = !compareMode;
+  const gal = document.querySelector('.img-gallery');
+  if (!gal) return;
+  if (compareMode) {
+    let h = '<div class="compare-view">';
+    const labels = ['原始', '处理后', '去背景', '最终'];
+    imgs.forEach((img, i) => {
+      h += `<div class="compare-col"><div class="comp-label">${labels[i] || '图'+(i+1)}</div><img src="${img.url||img}" onclick="zoomImg('${img.url||img}')"/></div>`;
+    });
+    h += '</div>';
+    gal.outerHTML = h;
+    document.getElementById('kbdToggle').textContent = '🔲 退出对比';
+  } else {
+    renderDetail();
+    document.getElementById('kbdToggle').textContent = '⌨ 快捷键';
+  }
+}
+
+// ================================================================
+// UX-3: Keyboard Shortcuts + Navigation
+// ================================================================
+let kbFocusIdx = -1;
+function toggleKbdHint() {
+  const el = document.getElementById('kbdHint');
+  el.classList.toggle('show');
+}
+
+document.addEventListener('keydown', e => {
+  // Don't capture when typing in input/textarea
+  const tag = e.target.tagName.toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') {
+    if (e.key === 'Escape') e.target.blur();
+    return;
+  }
+
+  const modal = document.getElementById('modal');
+  const kbdHint = document.getElementById('kbdHint');
+
+  if (e.key === 'Escape') {
+    if (kbdHint.classList.contains('show')) { kbdHint.classList.remove('show'); return; }
+    if (modal.classList.contains('on')) { closeModal(); return; }
+    if (sel) { sel = null; render(); return; } // back to list
+    return;
+  }
+
+  if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+    e.preventDefault();
+    toggleKbdHint();
+    return;
+  }
+
+  if (e.key === '/') {
+    e.preventDefault();
+    document.getElementById('searchInput').focus();
+    return;
+  }
+
+  if (e.key === 'r' || e.key === 'R') {
+    e.preventDefault();
+    refresh();
+    toastMsg('🔄 刷新中...', 1500);
+    return;
+  }
+
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    e.preventDefault();
+    switchTab(e.key === 'ArrowLeft' ? 'tk' : 'drama');
+    return;
+  }
+
+  // ↑↓ navigation in left panel
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const items = document.querySelectorAll('.ms-item');
+    if (!items.length) return;
+    if (kbFocusIdx < 0) kbFocusIdx = 0;
+    else if (e.key === 'ArrowDown') kbFocusIdx = Math.min(kbFocusIdx + 1, items.length - 1);
+    else kbFocusIdx = Math.max(kbFocusIdx - 1, 0);
+    items.forEach(it => it.classList.remove('kb-focus'));
+    items[kbFocusIdx].classList.add('kb-focus');
+    items[kbFocusIdx].scrollIntoView({ block: 'nearest' });
+    return;
+  }
+
+  if (e.key === 'Enter' && kbFocusIdx >= 0) {
+    e.preventDefault();
+    const items = document.querySelectorAll('.ms-item');
+    if (items[kbFocusIdx]) items[kbFocusIdx].click();
+    return;
+  }
+});
+
+// ================================================================
+// UX-5: Modal close helper (click outside)
+// ================================================================
+function closeModal() {
+  document.getElementById('modal').classList.remove('on');
+}
+
+// ================================================================
+// UX-4: Pipeline Monitor Panel
+// ================================================================
+async function renderPipelineMonitor() {
+  const detailEl = document.getElementById('detail');
+  if (!detailEl) return;
+  let sec = `<div class="sec"><h3>🔧 管线服务状态</h3><div class="pipeline-monitor" id="svcMonitor"><span class="loading">检测中...</span></div></div>`;
+  detailEl.insertAdjacentHTML('beforeend', sec);
+
+  const checks = [
+    { name: 'Flask 决策 API', url: '/api/status', port: 5001, detail: 'task_wizard.py' },
+    { name: 'GPT-SoVITS TTS', url: 'http://localhost:9880', port: 9880, detail: '推理服务' },
+    { name: 'ComfyUI', url: 'http://localhost:8188', port: 8188, detail: '图像渲染' },
+  ];
+
+  let rows = '';
+  for (const svc of checks) {
+    let status = 'unknown', detail = '';
+    try {
+      const r = await fetch(svc.url, { method: 'HEAD', mode: 'no-cors' });
+      status = 'online';
+      detail = `端口 ${svc.port} 可达`;
+    } catch (e) {
+      status = 'offline';
+      detail = `端口 ${svc.port} 不可达`;
+    }
+    rows += `<div class="svc-row">
+      <span class="svc-dot ${status}"></span>
+      <span class="svc-name">${svc.name}</span>
+      <span class="svc-detail">${detail} · ${svc.detail}</span>
+    </div>`;
+  }
+  // Add pipeline output check
+  try {
+    const r = await fetch('/api/dashboard');
+    const d = await r.json();
+    const ms = d.milestones || [];
+    const done = ms.filter(m => m.status === 'completed' || m.status === 'approved').length;
+    const total = ms.length;
+    const pct = total ? Math.round(done / total * 100) : 0;
+    rows += `<div class="svc-row">
+      <span class="svc-dot ${pct > 50 ? 'online' : 'unknown'}"></span>
+      <span class="svc-name">管线总进度</span>
+      <span class="svc-detail">${done}/${total} 里程碑 · ${pct}%</span>
+    </div>`;
+  } catch (e) {
+    rows += `<div class="svc-row">
+      <span class="svc-dot unknown"></span>
+      <span class="svc-name">管线总进度</span>
+      <span class="svc-detail">无法获取</span>
+    </div>`;
+  }
+  document.getElementById('svcMonitor').innerHTML = rows;
+}
+
+// ================================================================
+// UX-6: Refresh status indicator + toast on auto-refresh
+// ================================================================
+let _lastRefreshCount = 0;
+function setRefreshStatus(syncing) {
+  const el = document.getElementById('refreshStatus');
+  if (syncing) {
+    el.textContent = '同步中...';
+    el.className = 'refresh-status syncing';
+  } else {
+    el.textContent = '';
+    el.className = 'refresh-status';
+  }
+}
+
+// Override refresh() to add status feedback
+const _origRefresh = refresh;
+refresh = async function () {
+  setRefreshStatus(true);
+  try {
+    const r = await fetch('/api/dashboard');
+    lastData = await r.json();
+    const newAll = (lastData?.milestones || []).map(m => ({ ...m, pipeline: (String(m.ms_id || '').startsWith('DM') ? 'drama' : 'tk') }));
+    // Detect changes
+    const changed = newAll.length !== all.length || newAll.some((m, i) => m.status !== (all[i]?.status));
+    all = newAll;
+    render();
+    document.getElementById('lastRefresh').textContent = new Date().toLocaleTimeString();
+    // Auto-refresh toast (only if changed)
+    if (changed && all.length > 0) {
+      const waiting = all.filter(m => m.status === 'waiting_approval');
+      if (waiting.length > 0) {
+        toastMsg(`⚡ ${waiting.length} 项待决策: ` + waiting.map(m => m.ms_id).join(', '), 4000, 'warn');
+      }
+    }
+  } catch (e) {
+    document.getElementById('lastRefresh').textContent = '离线';
+  }
+  setRefreshStatus(false);
+};
+
+// ================================================================
+// UX-9: Stats Tooltip on Hover
+// ================================================================
+(function initStatTooltips() {
+  const tooltips = {
+    statDone: '已完成(含已批准)的里程碑数',
+    statPending: '等待人工决策的里程碑数',
+    statMock: '数据源为模拟/推算的条目(⚠️非真实API)',
+    statTotal: '当前 Tab 下的总里程碑数'
+  };
+  for (const [id, tip] of Object.entries(tooltips)) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    el.title = tip;
+    el.style.cursor = 'help';
+  }
+})();
+
+// ================================================================
+// UX-10: Search Highlight Helper
+// ================================================================
+function highlightText(text, query) {
+  if (!query || !text) return text;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escaped})`, 'gi');
+  return text.replace(regex, '<mark class="search-hl">$1</mark>');
+}
+
+// Apply highlight in render() list items - patch the render function
+const _origRender = render;
+render = function () {
+  _origRender();
+  // Apply search highlights to list items
+  if (searchQ) {
+    const listEl = document.getElementById('list');
+    if (listEl) {
+      listEl.querySelectorAll('.nm').forEach(el => {
+        const text = el.textContent;
+        if (text.toLowerCase().includes(searchQ)) {
+          el.innerHTML = highlightText(text, searchQ);
+        }
+      });
+    }
+  }
+};
+
+// ================================================================
+// UX-11: Enhanced Empty State with Action Guidance
+// ================================================================
+const _origRenderSummary = renderSummary;
+renderSummary = function () {
+  _origRenderSummary();
+  const view = document.getElementById('summaryView');
+  if (!view) return;
+  // Add action hints at bottom
+  const hints = cur === 'tk' ?
+    ['💡 点击左侧「待决策」里程碑进行审批', '💡 按 / 快速搜索，←→ 切换 Tab'] :
+    ['💡 点击 DM-0 查看故事板 + AI 审核结果', '💡 按 R 刷新，? 查看快捷键'];
+  view.innerHTML += `<div style="margin-top:16px;font-size:10px;color:#444;line-height:1.8">${hints.join('<br>')}</div>`;
+};
+
+// ================================================================
+// P1-4: Unified Download Panel
+// ================================================================
+let dlPanelOpen = false;
+function toggleDlPanel() {
+  dlPanelOpen = !dlPanelOpen;
+  document.getElementById('dlPanel').classList.toggle('show', dlPanelOpen);
+}
+document.addEventListener('click', e => {
+  if (dlPanelOpen && !e.target.closest('.dl-wrap')) {
+    dlPanelOpen = false;
+    document.getElementById('dlPanel').classList.remove('show');
+  }
+});
+
+async function downloadAs(fmt) {
+  toggleDlPanel();
+  toastMsg('📥 正在生成 ' + fmt.toUpperCase() + '...', 2000);
+  try {
+    if (!lastData) { toastMsg('⚠️ 无数据可导出，请先刷新', 2000, 'warn'); return; }
+    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const fn = `agentic-os-${ts}.${fmt}`;
+
+    if (fmt === 'json') {
+      const blob = new Blob([JSON.stringify(lastData, null, 2)], { type: 'application/json' });
+      triggerDownload(blob, fn);
+    } else if (fmt === 'csv') {
+      let csv = 'Milestone,Name,Status,DataSource,TaskID,Decision\n';
+      (lastData.milestones || []).forEach(m => {
+        csv += `"${m.ms_id}","${m.name || ''}","${m.status}","${m.data_source || ''}","${m.task_id || ''}","${m.decision || ''}"\n`;
+      });
+      triggerDownload(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }), fn);
+    } else if (fmt === 'csv-decisions') {
+      let csv = 'Milestone,Action,Reason,Timestamp\n';
+      (lastData.milestones || []).filter(m => m.decision).forEach(m => {
+        csv += `"${m.ms_id}","${m.decision}","${m.decision_reason || ''}","${m.updated_at || ''}"\n`;
+      });
+      triggerDownload(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }), fn);
+    } else if (fmt === 'md') {
+      let md = `# Agentic OS 状态报告\n\n生成时间: ${new Date().toLocaleString()}\n\n## 里程碑概览\n\n| Milestone | 名称 | 状态 | 数据源 |\n|---|---|---|---|\n`;
+      (lastData.milestones || []).forEach(m => {
+        md += `| ${m.ms_id} | ${m.name || '-'} | ${m.status} | ${m.data_source || '-'} |\n`;
+      });
+      md += `\n## 统计\n- 总计: ${(lastData.milestones || []).length}\n- 已完成: ${(lastData.milestones || []).filter(m => m.status === 'completed' || m.status === 'approved').length}\n- 待决策: ${(lastData.milestones || []).filter(m => m.status === 'waiting_approval').length}\n`;
+      triggerDownload(new Blob([md], { type: 'text/markdown' }), fn);
+    } else if (fmt === 'html') {
+      const html = document.documentElement.outerHTML;
+      triggerDownload(new Blob([html], { type: 'text/html' }), fn);
+    } else {
+      toastMsg('⚠️ 不支持格式: ' + fmt, 2000, 'warn'); return;
+    }
+    toastMsg('✅ ' + fmt.toUpperCase() + ' 导出成功', 2500);
+  } catch (e) {
+    toastMsg('❌ 导出失败: ' + e.message, 3000, 'error');
+  }
+}
+
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ================================================================
+// P1-6: Chart.js Data Visualization
+// ================================================================
+let chartInstance = null;
+let chartMode = 'status';
+
+function renderChartPanel() {
+  const rightEl = document.getElementById('detail');
+  if (!rightEl || document.getElementById('chartPanel')) return;
+
+  const chartHTML = `<div class="chart-panel" id="chartPanel">
+    <div class="chart-hdr">
+      <h4>📊 管线数据可视化</h4>
+      <div class="chart-tabs">
+        <span class="chart-tab active" onclick="switchChart('status',this)">状态分布</span>
+        <span class="chart-tab" onclick="switchChart('source',this)">数据源</span>
+        <span class="chart-tab" onclick="switchChart('pipeline',this)">管线对比</span>
+      </div>
+    </div>
+    <canvas id="mainChart"></canvas>
+  </div>`;
+  rightEl.insertAdjacentHTML('afterbegin', chartHTML);
+  updateChart('status');
+}
+
+function switchChart(mode, tabEl) {
+  chartMode = mode;
+  document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+  if (tabEl) tabEl.classList.add('active');
+  updateChart(mode);
+}
+
+function updateChart(mode) {
+  if (!lastData || !lastData.milestones) return;
+  const ms = lastData.milestones;
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+  const ctx = document.getElementById('mainChart');
+  if (!ctx) return;
+
+  let labels, data, colors;
+
+  if (mode === 'status') {
+    const counts = {};
+    ms.forEach(m => { counts[m.status] = (counts[m.status] || 0) + 1; });
+    labels = Object.keys(counts);
+    data = Object.values(counts);
+    colors = labels.map(s => {
+      if (s === 'completed' || s === 'approved') return '#22c55e';
+      if (s === 'waiting_approval') return '#f59e0b';
+      if (s === 'running') return '#3b82f6';
+      if (s === 'rejected') return '#ef4444';
+      return '#666';
+    });
+  } else if (mode === 'source') {
+    const counts = {};
+    ms.forEach(m => { counts[m.data_source || 'unknown'] = (counts[m.data_source || 'unknown'] || 0) + 1; });
+    labels = Object.keys(counts);
+    data = Object.values(counts);
+    colors = ['#3b82f6', '#f59e0b', '#22c55e', '#8b5cf6', '#666'];
+  } else if (mode === 'pipeline') {
+    const tk = ms.filter(m => m.pipeline === 'tk');
+    const dm = ms.filter(m => m.pipeline === 'drama');
+    labels = ['TK运营', '数字短剧'];
+    data = [
+      tk.filter(m => m.status === 'completed' || m.status === 'approved').length,
+      dm.filter(m => m.status === 'completed' || m.status === 'approved').length
+    ];
+    colors = ['#3b82f6', '#8b5cf6'];
+  }
+
+  chartInstance = new Chart(ctx, {
+    type: mode === 'pipeline' ? 'bar' : 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: colors,
+        borderColor: '#0f1117',
+        borderWidth: 2,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#aaa', font: { size: 10 }, padding: 12 }
+        },
+        tooltip: {
+          backgroundColor: '#1a1d27',
+          titleColor: '#e4e6eb',
+          bodyColor: '#aaa',
+          borderColor: '#333',
+          borderWidth: 1,
+          cornerRadius: 6,
+          callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed} 项` }
+        }
+      },
+      ...(mode === 'pipeline' ? {
+        scales: {
+          x: { ticks: { color: '#888', font: { size: 10 } }, grid: { color: '#222' } },
+          y: { beginAtZero: true, ticks: { stepSize: 1, color: '#888' }, grid: { color: '#222' } }
+        }
+      } : {})
+    }
+  });
+}
+
+// Patch renderDetail to inject chart
+const _origRenderDetail3 = renderDetail;
+renderDetail = async function() {
+  await _origRenderDetail3();
+  if (lastData && lastData.milestones && lastData.milestones.length > 0) {
+    requestAnimationFrame(() => renderChartPanel());
+  }
+};
+
+// ================================================================
+// v3.6.9: P0-1 Collapsible Detail Sections (摘要折叠)
+// ================================================================
+let expandedSections = new Set();
+function toggleSection(secId) {
+  const body = document.getElementById('secbody-' + secId);
+  const hdr = document.getElementById('sechdr-' + secId);
+  if (!body) return;
+  const isExpanded = body.classList.contains('expanded');
+  body.classList.toggle('expanded');
+  hdr?.classList.toggle('expanded');
+  if (isExpanded) expandedSections.delete(secId);
+  else expandedSections.add(secId);
+}
+function toggleAllSections() {
+  const allBodies = document.querySelectorAll('.sec-body.collapsible');
+  const anyCollapsed = Array.from(allBodies).some(b => !b.classList.contains('expanded'));
+  allBodies.forEach(b => {
+    if (anyCollapsed) b.classList.add('expanded');
+    else b.classList.remove('expanded');
+  });
+  document.querySelectorAll('.sec-hdr.collapsible').forEach(h => {
+    if (anyCollapsed) h.classList.add('expanded');
+    else h.classList.remove('expanded');
+  });
+}
+
+// Wrap existing section rendering to add collapsible structure
+// This patches renderDefault and all renderDM* functions to wrap sections
+function makeSectionCollapsible(secId, title, contentHTML, defaultExpanded = false) {
+  const expanded = expandedSections.has(secId) || defaultExpanded;
+  return `<div class="sec" style="padding:8px 12px;margin-bottom:6px">
+    <div class="sec-hdr collapsable ${expanded ? 'expanded' : ''}" id="sechdr-${secId}" onclick="toggleSection('${secId}')" style="cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px;font-size:11px;color:#888;padding:4px 0">
+      <span class="sec-toggle-icon" style="transition:transform .2s;display:inline-block;transform:rotate(${expanded ? '90' : '0'}deg)">▶</span>
+      ${title}
+      <span style="margin-left:auto;font-size:8px;color:#555">${expanded ? '点击收起' : '点击展开'}</span>
+    </div>
+    <div class="sec-body collapsable ${expanded ? 'expanded' : ''}" id="secbody-${secId}" style="max-height:0;overflow:hidden;transition:max-height .3s ease-out;${expanded ? 'max-height:5000px' : ''}">
+      ${contentHTML}
+    </div>
+  </div>`;
+}
+
+// ================================================================
+// v3.6.9: P0-2 DM-0 四维度审核明细展示
+// ================================================================
+function renderFourDimReview(reviewData) {
+  const dimensions = reviewData?.dimensions || [];
+  const overallScore = reviewData?.overall_score || 0;
+  const decision = reviewData?.decision || 'pending';
+  
+  let scoreColor = overallScore >= 6 ? '#22c55e' : (overallScore >= 4 ? '#f59e0b' : '#ef4444');
+  
+  let html = `<div style="text-align:center;margin-bottom:12px;padding:8px;background:#111;border-radius:6px">
+    <div style="font-size:9px;color:#555">综合评分</div>
+    <div style="font-size:28px;font-weight:700;color:${scoreColor}">${overallScore.toFixed(1)}/10</div>
+    <div style="font-size:10px;margin-top:2px">
+      <span class="bdg ${decision === 'approved' ? 'ok' : decision === 'modify' ? 'mk' : 'dc'}">
+        ${{approved: '✅ 通过', modify: '✏️ 需修改', rejected: '❌ 驳回', pending: '⏳ 待审核'}[decision] || '⏳ 待审核'}
+      </span>
+    </div>
+  </div>`;
+  
+  if (dimensions.length === 0) {
+    html += `<div style="font-size:10px;color:#555;text-align:center;padding:12px">
+      ⚠️ 四维度审核数据未返回<br>
+      <span style="font-size:9px">后端需返回 dimensions 数组 (编剧/分镜/逻辑/节奏)</span>
+    </div>`;
+  } else {
+    html += `<div class="four-dim">`;
+    const icons = { '编剧': '📝', '分镜': '🎬', '逻辑': '🧠', '节奏': '⏱️' };
+    dimensions.forEach(dim => {
+      const name = dim.name || dim.dimension || '未知';
+      const score = dim.score || dim.value || 0;
+      const note = dim.note || dim.detail || '';
+      const border = score >= 6 ? 'good' : (score >= 4 ? 'warn' : 'bad');
+      const icon = icons[name] || '📋';
+      html += `<div class="dim-card ${border}">
+        <div class="dim-icon">${icon}</div>
+        <div class="dim-name">${name}</div>
+        <div class="dim-score" style="color:${score >= 6 ? '#22c55e' : score >= 4 ? '#f59e0b' : '#ef4444'}">${score}/10</div>
+        ${note ? `<div class="dim-note">${note}</div>` : ''}
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  return html;
+}
+
+// ================================================================
+// v3.6.9: P0-3 修改→重处理→审核自动循环
+// ================================================================
+async function triggerReReview(msId) {
+  const btn = document.getElementById('rerun-btn-' + msId);
+  if (btn) { btn.classList.add('busy'); btn.textContent = '⏳ 重审中...'; }
+  toastMsg('🔄 正在触发重新审核...', 3000);
+  try {
+    // Step 1: Reset the milestone to "running"
+    const r1 = await fetch('/api/decision', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task_id: msId, action: 'modify', reason: '用户触发重新审核' })
+    });
+    if (!r1.ok) { toastMsg('重置失败: HTTP ' + r1.status, 2500, 'error'); return; }
+    
+    // Step 2: Trigger adversarial review
+    const r2 = await fetch('/api/review/' + msId, { method: 'POST' });
+    if (!r2.ok) { toastMsg('审核触发失败: HTTP ' + r2.status, 2500, 'error'); return; }
+    const reviewResult = await r2.json();
+    
+    toastMsg('✅ 审核完成: 评分 ' + (reviewResult?.overall_score || 'N/A') + '/10', 4000);
+    setTimeout(refresh, 1500);
+  } catch (e) {
+    toastMsg('❌ 重审失败: ' + e.message, 3000, 'error');
+  }
+  if (btn) { btn.classList.remove('busy'); btn.textContent = '🔄 重新审核'; }
+}
+
+// ================================================================
+// v3.6.9: UX-5 图片对比视图（修复：JS 正确调用）
+// ================================================================
+function showCompareView(galleryEl) {
+  if (!galleryEl) return;
+  const imgs = galleryEl.querySelectorAll('.img-card img');
+  if (imgs.length < 2) { toastMsg('需要至少 2 张图片才能对比', 2000, 'warn'); return; }
+  
+  compareMode = true;
+  const labels = ['原始', '处理后', '去背景', '最终', '镜1', '镜2', '镜3'];
+  let h = '<div class="compare-view" style="display:flex;gap:8px;overflow-x:auto;padding:8px 0">';
+  Array.from(imgs).forEach((img, i) => {
+    h += `<div class="compare-col" style="flex:0 0 auto;text-align:center">
+      <div class="comp-label" style="font-size:9px;color:#888;margin-bottom:4px">${labels[i] || '图'+(i+1)}</div>
+      <img src="${img.src}" style="max-height:300px;border-radius:4px;cursor:pointer" onclick="zoomImg('${img.src}')" />
+    </div>`;
+  });
+  h += '</div><div style="text-align:center;margin-top:8px"><button class="mini-btn" onclick="exitCompare(this)">✕ 退出对比</button></div>';
+  galleryEl.outerHTML = h;
+}
+function exitCompare(btn) {
+  renderDetail();
+  compareMode = false;
+}
+
+// ================================================================
+// v3.6.9: UX-6 音色试听（Web Speech API fallback）
+// ================================================================
+// Voice functions now in DM-1 section (uploadRefAudio, generateVoice, detectVoiceApi)
+// Preload voices for Web Speech API (fallback)
+if ('speechSynthesis' in window) speechSynthesis.getVoices();
+
+// ================================================================
+// v3.6.9: UX-8 操作级进度反馈（Per-operation progress bar）
+// ================================================================
+function showOpProgress(containerId, msg, percent) {
+  let bar = document.getElementById('op-prog-' + containerId);
+  if (!bar) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.insertAdjacentHTML('beforeend',
+      `<div id="op-prog-${containerId}" style="margin-top:8px">
+        <div style="font-size:9px;color:#888;margin-bottom:2px" id="op-prog-msg-${containerId}">${msg}</div>
+        <div style="height:4px;background:#222;border-radius:2px;overflow:hidden">
+          <div id="op-prog-fill-${containerId}" style="height:100%;background:#3b82f6;width:${percent}%;transition:width .3s;border-radius:2px"></div>
+        </div>
+      </div>`);
+  } else {
+    const msgEl = document.getElementById('op-prog-msg-' + containerId);
+    const fillEl = document.getElementById('op-prog-fill-' + containerId);
+    if (msgEl) msgEl.textContent = msg;
+    if (fillEl) fillEl.style.width = percent + '%';
+  }
+}
+function hideOpProgress(containerId) {
+  const el = document.getElementById('op-prog-' + containerId);
+  if (el) el.remove();
+}
+
+// ================================================================
+// v3.6.9: P2-7 质量反馈知识库
+// ================================================================
+const QUALITY_KB = [
+  { q: 'Q: 渲染图模糊怎么办？', a: '检查 ComfyUI SDXL 模型是否加载正确；确认分辨率设置为 1024×1024；尝试添加 "high quality, detailed" 到 prompt。' },
+  { q: 'Q: TTS 发音不准确？', a: '在文本中用拼音标注多音字（如「重(chóng)新」）；调整 NLS speaker 参数；检查参考音频质量。' },
+  { q: 'Q: SFX 音效不匹配场景？', a: '修改 SCENE_SFX_MAP 中的音效关键词；在 freesound.org 搜索更匹配的标签；调整音量混合比例。' },
+  { q: 'Q: 审核评分偏低？', a: '检查剧本连贯性；确保分镜描述包含机位/景别/动作；添加情绪和台词细节。' },
+  { q: 'Q: 管线服务连接失败？', a: '确认 Flask 在 :5001 运行；ComfyUI 在 :8188 运行；GPT-SoVITS 在 :9880 运行。用 `ps aux | grep python` 检查进程。' },
+  { q: 'Q: 决策按钮无响应？', a: '检查后端 /api/decision 是否返回 200；查看浏览器开发者工具 Network 面板；确认 task_id 格式正确。' },
+];
+
+function renderQualityKB() {
+  const detailEl = document.getElementById('detail');
+  if (!detailEl || document.getElementById('qualityKB')) return;
+  let html = '<div class="sec" id="qualityKB"><h3>📚 质量反馈知识库</h3>';
+  html += '<p style="font-size:9px;color:#555;margin-bottom:8px">点击问题查看答案 · 持续更新中</p>';
+  QUALITY_KB.forEach((item, i) => {
+    html += `<div class="qa-item">
+      <div class="q-q" onclick="this.nextElementSibling.classList.toggle('show')">${item.q} <span style="font-size:8px;color:#555">▼</span></div>
+      <div class="q-a">${item.a}</div>
+    </div>`;
+  });
+  html += '</div>';
+  detailEl.insertAdjacentHTML('beforeend', html);
+}
+
+// ================================================================
+// v3.6.9: P2-8 自愈提示（连续失败自动弹出）
+// ================================================================
+let failureCounts = {};
+let lastFailureKey = '';
+
+function trackFailure(key) {
+  failureCounts[key] = (failureCounts[key] || 0) + 1;
+  lastFailureKey = key;
+  if (failureCounts[key] >= 3) {
+    showSelfHealTip(key);
+  }
+}
+function trackSuccess(key) {
+  failureCounts[key] = 0;
+  hideSelfHealTip();
+}
+
+function showSelfHealTip(key) {
+  const rightEl = document.getElementById('detail');
+  if (!rightEl || document.getElementById('selfHealTip')) return;
+  
+  const tips = {
+    'render': '渲染连续失败：\n1. 检查 ComfyUI 是否在 :8188 运行\n2. 查看 ComfyUI 控制台错误日志\n3. 尝试重启 comfyui_renderer.py',
+    'tts': 'TTS 连续失败：\n1. 检查 GPT-SoVITS 是否在 :9880 运行\n2. 确认 .env 中 NLS 密钥有效\n3. 尝试 macOS say 命令 fallback',
+    'decision': '决策 API 连续失败：\n1. 检查 Flask 是否在 :5001 运行\n2. 查看 task_wizard.py 日志\n3. 确认 task_id 格式正确',
+    'default': '操作连续失败，请检查对应服务状态'  
+  };
+  
+  const tip = tips[key] || tips['default'];
+  const html = `<div class="self-heal" id="selfHealTip">
+    <span class="sh-dismiss" onclick="hideSelfHealTip()">✕</span>
+    <div class="sh-title">💡 自动诊断提示 (${key})</div>
+    <div class="sh-body" style="white-space:pre-line">${tip}</div>
+  </div>`;
+  rightEl.insertAdjacentHTML('afterbegin', html);
+}
+
+function hideSelfHealTip() {
+  const el = document.getElementById('selfHealTip');
+  if (el) el.remove();
+}
+
+// ================================================================
+// v3.6.9: Patch renderDefault to add collapsible sections
+// ================================================================
+const _origRenderDefault = renderDefault;
+renderDefault = function(detail) {
+  const html = _origRenderDefault(detail);
+  // Wrap sections in collapsible structure
+  return html.replace(/<div class="sec" id="([^"]+)"/g, (match, id) => {
+    return `<div class="sec" id="${id}" data-collapsible="true"`;
+  });
+};
+
+// ================================================================
+// v3.6.9: Patch renderDM0 to add four-dimension review + re-review button
+// ================================================================
+const _origRenderDM0 = renderDM0;
+renderDM0 = async function(detail, ms) {
+  await _origRenderDM0(detail, ms);
+  
+  // Add four-dimension review section
+  const reviewData = ms?.review || detail?.review || null;
+  if (reviewData) {
+    const reviewHTML = renderFourDimReview(reviewData);
+    const dm0Sec = document.getElementById('dm0-sec');
+    if (dm0Sec) {
+      dm0Sec.insertAdjacentHTML('beforeend', `<div class="sec" id="dm0-review" style="margin-top:10px">
+        <h3>🔍 AI 对抗审核明细</h3>
+        ${reviewHTML}
+      </div>`);
+    }
+  }
+  
+  // Add re-review button
+  const msId = ms?.ms_id || 'DM-0';
+  const dm0Sec2 = document.getElementById('dm0-sec');
+  if (dm0Sec2) {
+    dm0Sec2.insertAdjacentHTML('beforeend', `
+      <div style="margin-top:8px;display:flex;gap:6px;align-items:center">
+        <button class="btn btn-rerun" id="rerun-btn-${msId}" onclick="triggerReReview('${msId}')">🔄 重新审核</button>
+        <span style="font-size:9px;color:#555">修改后点击此按钮触发自动重审</span>
+      </div>`);
+  }
+};
+
+// ================================================================
+// v3.6.9: Patch renderDetail to inject quality KB + pipeline monitor
+// ================================================================
+const _origRenderDetail2 = renderDetail;
+renderDetail = async function() {
+  await _origRenderDetail2();
+  
+  // Add pipeline monitor to all detail views
+  if (cur === 'drama') {
+    requestAnimationFrame(() => {
+      renderPipelineMonitor();
+      renderQualityKB();
+    });
+  }
+};
+
+// ================================================================
+// v3.6.9: Auto-collapse sections by default (摘要优先)
+// ================================================================
+// After any detail render, collapse non-critical sections
+function autoCollapseDetails() {
+  const secBodies = document.querySelectorAll('.sec-body.collapsible');
+  secBodies.forEach((body, i) => {
+    // Only expand first 2 sections by default (summary + key info)
+    if (i > 1) {
+      body.classList.remove('expanded');
+      const hdr = body.previousElementSibling?.querySelector?.('.sec-hdr');
+      if (hdr) hdr.classList.remove('expanded');
+    }
+  });
+}
+
+// Patch renderDetail to apply auto-collapse
+const _origRenderDetail4 = renderDetail;
+renderDetail = async function() {
+  await _origRenderDetail4();
+  setTimeout(autoCollapseDetails, 100);
+};
+
+// ================================================================
+// v3.6.9: Init - auto-refresh every 30 seconds
+// ================================================================
+
+// ================================================================
+// v3.6.12: Debug - check if data loads
+// ================================================================
+(async function debugLoad() {
+  console.log('[DEBUG] Starting data load check...');
+  try {
+    const r = await fetch('/api/dashboard?t=' + Date.now());
+    console.log('[DEBUG] fetch status:', r.status);
+    const d = await r.json();
+    console.log('[DEBUG] milestones count:', (d.milestones || []).length);
+    if (d.milestones && d.milestones.length > 0) {
+      console.log('[DEBUG] first milestone:', d.milestones[0].ms_id, d.milestones[0].name);
+    }
+  } catch(e) {
+    console.error('[DEBUG] fetch FAILED:', e.message);
+  }
+  
+  // Also show a visible indicator
+  const el = document.getElementById('version-check');
+  if (el) {
+    try {
+      const r2 = await fetch('/api/dashboard?t=' + Date.now());
+      const d2 = await r2.json();
+      const count = (d2.milestones || []).length;
+      el.textContent = `✅ DATA OK: ${count} milestones loaded | P4-STRIP | ` + new Date().toLocaleTimeString();
+      el.style.background = count > 0 ? '#10b981' : '#ef4444';
+      if (count === 0) el.textContent += ' — API returned 0 items!';
+    } catch(e) {
+      el.textContent = `❌ FETCH FAILED: ${e.message} — check console`;
+      el.style.background = '#ef4444';
+    }
+  }
+})();
+
+refresh();
+setInterval(refresh, 30000);
+</script>
+</body>
+</html>

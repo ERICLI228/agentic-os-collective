@@ -1,0 +1,112 @@
+{
+  "_schema": "character_voices v1.0",
+  "_description": "每个角色的参考音频配置。添加新角色只需: 1) 录3-10秒角色原声 → 2) 写文本标注 → 3) python3 voice_clone_pipeline.py register ...",
+  "_tts_backend": "GPT-SoVITS v3 (s2Gv3.pth + s1bert25hz GPT)",
+  "characters": {
+    "wusong": {
+      "name": "武松",
+      "ref_audio": "~/GPT-SoVITS/output/wusong_cosyvoice.wav",
+      "prompt_text": "风雨还在下。主人，我在风雨里呼唤着你的名字。",
+      "prompt_language": "Chinese",
+      "voice_desc": "男声，有力豪迈",
+      "gpt_params": {
+        "top_k": 6,
+        "top_p": 0.9,
+        "temperature": 0.7,
+        "speed": 1.0,
+        "sample_steps": 32,
+        "how_to_cut": "不切"
+      }
+    },
+    "luzhishen": {
+      "name": "鲁智深",
+      "ref_audio": "~/GPT-SoVITS/output/luzhishen_nls_ref.wav",
+      "prompt_text": "洒家是鲁智深！倒拔垂杨柳，拳打镇关西！",
+      "prompt_language": "Chinese",
+      "voice_desc": "男声，洪亮爽朗",
+      "gpt_params": {
+        "top_k": 6,
+        "top_p": 0.9,
+        "temperature": 0.8,
+        "speed": 1.0,
+        "sample_steps": 32,
+        "how_to_cut": "不切"
+      }
+    },
+    "linchong": {
+      "name": "林冲",
+      "voice_desc": "男声，儒雅沉稳",
+      "ref_audio": "/Users/hokeli/.agentic-os/character_voices/reference/linchong_reference.wav",
+      "prompt_text": "八十万禁军教头林冲，被高太尉陷害，家破人亡。",
+      "prompt_language": "Chinese",
+      "gpt_params": {
+        "how_to_cut": "不切",
+        "top_k": 5,
+        "top_p": 0.9,
+        "temperature": 0.8,
+        "speed": 1.0,
+        "sample_steps": 32
+      },
+      "ready": true,
+      "registered_at": "2026-05-01 04:30:56"
+    },
+    "songjiang": {
+      "name": "宋江",
+      "voice_desc": "男声，沉稳内敛",
+      "ref_audio": "/Users/hokeli/.agentic-os/character_voices/reference/songjiang_reference.wav",
+      "prompt_text": "宋江一介小吏，蒙晁盖哥哥和各位兄弟抬爱，实在惭愧。",
+      "prompt_language": "Chinese",
+      "gpt_params": {
+        "how_to_cut": "不切",
+        "top_k": 5,
+        "top_p": 0.9,
+        "temperature": 0.8,
+        "speed": 1.0,
+        "sample_steps": 32
+      },
+      "ready": true,
+      "registered_at": "2026-05-01 04:31:29"
+    },
+    "likui": {
+      "name": "李逵",
+      "voice_desc": "男声，粗犷暴烈",
+      "ref_audio": "/Users/hokeli/.agentic-os/character_voices/reference/likui_reference.wav",
+      "prompt_text": "俺铁牛是个粗人，不懂什么大道理，就知道跟着哥哥干！",
+      "prompt_language": "Chinese",
+      "gpt_params": {
+        "how_to_cut": "不切",
+        "top_k": 5,
+        "top_p": 0.9,
+        "temperature": 0.8,
+        "speed": 1.0,
+        "sample_steps": 32
+      },
+      "ready": true,
+      "registered_at": "2026-05-01 04:32:16"
+    },
+    "wuyong": {
+      "name": "吴用",
+      "voice_desc": "男声，清朗智慧",
+      "ref_audio": "/Users/hokeli/.agentic-os/character_voices/reference/wuyong_reference.wav",
+      "prompt_text": "梁山军师吴用，早已算定官军必经此处，特设埋伏。",
+      "prompt_language": "Chinese",
+      "gpt_params": {
+        "how_to_cut": "不切",
+        "top_k": 5,
+        "top_p": 0.9,
+        "temperature": 0.8,
+        "speed": 1.0,
+        "sample_steps": 32
+      },
+      "ready": true,
+      "registered_at": "2026-05-01 04:33:13"
+    }
+  },
+  "gpt_sovits_config": {
+    "gpt_path": "~/GPT-SoVITS/GPT_SoVITS/pretrained_models/s1bert25hz-2kh-longer-epoch=68e-step=50232.ckpt",
+    "sovits_path": "~/GPT-SoVITS/GPT_SoVITS/pretrained_models/s2Gv3.pth",
+    "bert_path": "~/GPT-SoVITS/GPT_SoVITS/pretrained_models/chinese-roberta-wwm-ext-large",
+    "GPT_SOVITS_ROOT": "~/GPT-SoVITS",
+    "output_dir": "~/GPT-SoVITS/output/drama"
+  }
+}

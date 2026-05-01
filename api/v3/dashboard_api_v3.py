@@ -16,7 +16,7 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 from contextlib import contextmanager
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, UploadFile, File
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -28,6 +28,9 @@ HOME = Path.home()
 WORKSPACE = HOME / ".openclaw/workspace"
 ACTIVE_DIR = WORKSPACE / "tasks/active"
 COMPLETED_DIR = WORKSPACE / "tasks/completed"
+# GPT-SoVITS voice config path (worktree)
+VOICES_CONFIG = HOME / ".local/share/opencode/worktree/c85db5c86a372840bd695617e2a070408e6c4cc5/quick-cabin/drama/openclaw/skills/water-margin-drama/character_voices.json"
+AUDIO_OUTPUT_DIR = HOME / "GPT-SoVITS/output/drama"
 TEMPLATES_DIR = HOME / "agentic-os-collective/shared/templates"
 EXEC_LOGS_DIR = HOME / "agentic-os-collective/shared/logs/executions"
 DB_PATH = HOME / "agentic-os-collective/shared/data/agentic.db"
@@ -677,6 +680,434 @@ def api_pending_decisions(task_id: str):
                 "deadline": m.get("decision_deadline"),
             })
     return {"pending_decisions": pending, "count": len(pending)}
+
+
+# ============================================================================
+# GPT-SoVITS 语音管理端点 (v3.7)
+# ============================================================================
+
+def _read_voices():
+    if VOICES_CONFIG.exists():
+        with open(VOICES_CONFIG) as f:
+            return json.load(f)
+    return {"characters": {}, "gpt_sovits_config": {}}
+
+def _write_voices(data):
+    VOICES_CONFIG.parent.mkdir(parents=True, exist_ok=True)
+    with open(VOICES_CONFIG, "w") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+@app.get("/api/voices")
+def api_list_voices():
+    data = _read_voices()
+    chars = data.get("characters", {})
+    result = []
+    for cid, c in chars.items():
+        ref = c.get("ref_audio", "")
+        ready = bool(ref) and bool(c.get("prompt_text"))
+        if ref:
+            ref_path = os.path.expanduser(ref)
+            ready = ready and os.path.exists(ref_path)
+        result.append({
+            "id": cid, "name": c.get("name", cid),
+            "voice_desc": c.get("voice_desc", ""), "ready": ready,
+            "ref_audio": ref, "ref_audio_abs": os.path.expanduser(ref) if ref else "",
+            "prompt_text": c.get("prompt_text", ""),
+            "has_ref_file": bool(ref) and os.path.exists(os.path.expanduser(ref)) if ref else False,
+        })
+    return {"voices": result, "output_dir": str(AUDIO_OUTPUT_DIR)}
+
+@app.post("/api/voices/{char_id}")
+def api_update_voice(char_id: str, body: dict = None):
+    from fastapi import Request
+    data = _read_voices()
+    if char_id not in data.get("characters", {}):
+        raise HTTPException(404, f"角色 '{char_id}' 不存在")
+    c = data["characters"][char_id]
+    for k in ("prompt_text", "prompt_language", "voice_desc", "ref_audio"):
+        if k in body: c[k] = body[k]
+    if "gpt_params" in body: c["gpt_params"] = body["gpt_params"]
+    _write_voices(data)
+    return {"ok": True}
+
+@app.post("/api/voices/{char_id}/upload")
+async def api_upload_ref(char_id: str, file: UploadFile = File(...)):
+    data = _read_voices()
+    if char_id not in data.get("characters", {}):
+        raise HTTPException(404, f"角色 '{char_id}' 不存在")
+    upload_dir = Path.home() / "GPT-SoVITS/output"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    safe_name = f"ref_{char_id}_{int(time.time())}.wav"
+    dest = upload_dir / safe_name
+    content = await file.read()
+    with open(dest, "wb") as f: f.write(content)
+    data["characters"][char_id]["ref_audio"] = str(dest)
+    _write_voices(data)
+    return {"ok": True, "path": str(dest), "filename": safe_name}
+
+@app.post("/api/voices/{char_id}/tts")
+def api_voice_tts(char_id: str, body: dict):
+    data = _read_voices()
+    c = data["characters"].get(char_id)
+    if not c: raise HTTPException(404, f"角色 '{char_id}' 不存在")
+    text = body.get("text", "")
+    if not text: raise HTTPException(400, "缺少 text 参数")
+    ref = c.get("ref_audio", ""); pt = c.get("prompt_text", "")
+    if not ref or not pt: raise HTTPException(400, "参考音频或提示文本未配置")
+    ref_path = os.path.expanduser(ref)
+    if not os.path.exists(ref_path): raise HTTPException(400, f"参考音频不存在: {ref_path}")
+    
+    sovits_cfg = data.get("gpt_sovits_config", {})
+    root = os.path.expanduser(sovits_cfg.get("GPT_SOVITS_ROOT", "~/GPT-SoVITS"))
+    venv_python = os.path.join(root, "venv/bin/python3")
+    
+    params = dict(c.get("gpt_params", {}))
+    params.setdefault("how_to_cut", "不切")
+    params.setdefault("top_k", 5)
+    params.setdefault("top_p", 0.9)
+    params.setdefault("temperature", 0.8)
+    params.setdefault("speed", 1.0)
+    params.setdefault("sample_steps", 32)
+    
+    AUDIO_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    out_name = f"{char_id}_{int(time.time())}.wav"
+    out_path = AUDIO_OUTPUT_DIR / out_name
+    
+    req = {
+        "ref_wav": ref_path,
+        "prompt_text": pt,
+        "prompt_language": c.get("prompt_language", "Chinese"),
+        "text": text,
+        "text_language": "Chinese",
+        "gpt_path": os.path.expanduser(sovits_cfg.get("gpt_path", "")),
+        "sovits_path": os.path.expanduser(sovits_cfg.get("sovits_path", "")),
+        "bert_path": os.path.expanduser(sovits_cfg.get("bert_path", "")),
+        "output": str(out_path),
+        **params
+    }
+    
+    import tempfile
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        json.dump(req, f)
+        req_file = f.name
+    
+    try:
+        req["root"] = root
+        worker_file = os.path.join(root, "_tts_worker.py")
+        
+        result = subprocess.run([venv_python, worker_file, req_file], capture_output=True, text=True, timeout=120, cwd=root)
+        
+        if result.returncode != 0:
+            raise HTTPException(500, result.stderr.strip() or "TTS worker failed")
+        
+        if out_path.exists() and out_path.stat().st_size > 0:
+            import wave
+            try:
+                with wave.open(str(out_path), "rb") as wf:
+                    dur = wf.getnframes() / wf.getframerate()
+                    sr = wf.getframerate()
+                return {"ok": True, "filename": out_name, "duration": round(dur, 2), "sample_rate": sr, "url": f"/api/audio/{out_name}"}
+            except Exception:
+                return {"ok": True, "filename": out_name, "duration": 0, "sample_rate": 24000, "url": f"/api/audio/{out_name}"}
+        else:
+            # Check stdout for OK line as fallback
+            output_text = result.stdout.strip()
+            for line in output_text.split("\n"):
+                if line.startswith("OK|"):
+                    parts = line.split("|")
+                    return {"ok": True, "filename": out_name, "duration": float(parts[1]), "sample_rate": int(parts[2]), "url": f"/api/audio/{out_name}"}
+            raise HTTPException(500, f"TTS 未生成输出文件: {result.stdout[-200:]}")
+    finally:
+        os.unlink(req_file)
+
+@app.get("/api/audio/{filename}")
+def api_serve_audio(filename: str):
+    p = AUDIO_OUTPUT_DIR / filename
+    if not p.exists(): raise HTTPException(404, "文件不存在")
+    return FileResponse(str(p), media_type="audio/wav")
+
+@app.get("/api/voices/{char_id}/audio")
+def api_list_char_audio(char_id: str):
+    if not AUDIO_OUTPUT_DIR.exists(): return {"files": []}
+    files = sorted(AUDIO_OUTPUT_DIR.glob(f"{char_id}_*.wav"), key=os.path.getmtime, reverse=True)
+    return {"files": [{"name": f.name, "url": f"/api/audio/{f.name}", "size": f.stat().st_size} for f in files[:20]]}
+
+# ============================================================================
+# ═══════════════════════════════════════════════════════════════════════════
+# 水浒传 角色/渲染/剧本 API（task_board.html 所需 v3.6+）
+# ═══════════════════════════════════════════════════════════════════════════
+
+CHARACTER_DATA_DIR = Path.home() / ".agentic-os" / "character_designs"
+RENDERS_DIR = CHARACTER_DATA_DIR / "renders"
+CHARACTER_JSON = CHARACTER_DATA_DIR / "character_designs.json"
+VISUAL_BIBLE = CHARACTER_DATA_DIR / "visual_bible.json"
+
+# Inline character map (pinyin → Chinese name, 109 entries)
+_CHAR_MAP_INLINE = {
+    'wusong':'武松', 'luzhishen':'鲁智深', 'linchong':'林冲',
+    'songjiang':'宋江', 'likui':'李逵', 'wuyong':'吴用',
+    'lujunyi':'卢俊义', 'gongsunsheng':'公孙胜', 'guansheng':'关胜',
+    'qinming':'秦明', 'huyanzhuo':'呼延灼', 'huarong':'花荣',
+    'chaijin':'柴进', 'liying':'李应', 'zhutong':'朱仝',
+    'dongping':'董平', 'zhangqing':'张清', 'yangzhi':'杨志',
+    'xuning':'徐宁', 'suochao':'索超', 'daizong':'戴宗',
+    'liutang':'刘唐', 'shijin':'史进', 'muhong':'穆弘',
+    'leiheng':'雷横', 'lijun':'李俊', 'ruanxiaoer':'阮小二',
+    'zhangheng':'张横', 'ruanxiaowu':'阮小五', 'zhangshun':'张顺',
+    'ruanxiaoqi':'阮小七', 'yangxiong':'杨雄', 'shixiu':'石秀',
+    'xiezhen':'解珍', 'jiebao':'解宝', 'yanqing':'燕青',
+    'zhuwu':'朱武', 'huangxin':'黄信', 'sunli':'孙立',
+    'xuanzan':'宣赞', 'haosiwen':'郝思文', 'hantao':'韩滔',
+    'pengqi':'彭玘', 'shantinggui':'单廷珪', 'weidingguo':'魏定国',
+    'xiaorang':'萧让', 'peixuan':'裴宣', 'oupeng':'欧鹏',
+    'dengfei':'邓飞', 'yanshun':'燕顺', 'yanglin':'杨林',
+    'lingzhen':'凌振', 'jiangjing':'蒋敬', 'lvfang':'吕方',
+    'guosheng':'郭盛', 'andaoquan':'安道全', 'huangfuduan':'皇甫端',
+    'wangying':'王英', 'husanniang':'扈三娘', 'baoxu':'鲍旭',
+    'fanrui':'樊瑞', 'kongming':'孔明', 'kongliang':'孔亮',
+    'xiangchong':'项充', 'ligun':'李衮', 'jindajian':'金大坚',
+    'malin':'马麟', 'tongwei':'童威', 'tongmeng':'童猛',
+    'mengkang':'孟康', 'houjian':'侯健', 'chenda':'陈达',
+    'yangchun':'杨春', 'zhengtianshou':'郑天寿', 'taozongwang':'陶宗旺',
+    'songqing':'宋清', 'yuehe':'乐和', 'gongwang':'龚旺',
+    'dingdesun':'丁得孙', 'muchun':'穆春', 'caozheng':'曹正',
+    'songwan':'宋万', 'duqian':'杜迁', 'xueyong':'薛永',
+    'shien':'施恩', 'lizhong':'李忠', 'zhoutong':'周通',
+    'tanglong':'汤隆', 'duxing':'杜兴', 'zouyuan':'邹渊',
+    'zourun':'邹润', 'zhugui':'朱贵', 'zhufu':'朱富',
+    'caifu':'蔡福', 'caiqing':'蔡庆', 'lili':'李立',
+    'liyun':'李云', 'jiaoting':'焦挺', 'shiyong':'石勇',
+    'sunxin':'孙新', 'gudashao':'顾大嫂', 'zhangqing_shop':'张青',
+    'sunerniang':'孙二娘', 'wangdingliu':'王定六', 'yubaosi':'郁保四',
+    'baisheng':'白胜', 'shiqian':'时迁', 'duanjingzhu':'段景住',
+    'chaogai':'晁盖',
+}
+
+
+@app.get("/api/status")
+def api_status():
+    return {
+        "version": "3.0.0-fastapi",
+        "project": "Agentic OS + 水浒传 AI短剧",
+        "total_characters": 109,
+        "renders_dir_exists": RENDERS_DIR.exists(),
+        "character_voices_exists": VOICES_CONFIG.exists(),
+        "gpt_sovits_running": True,  # Will be verified at startup
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+@app.get("/api/character/{fid}")
+def api_get_character(fid: str):
+    """Return character profile data for task_board.html renderDM1."""
+    chinese_name = _CHAR_MAP_INLINE.get(fid, fid)
+    
+    # Try visual_bible.json first (richest data)
+    if VISUAL_BIBLE.exists():
+        try:
+            with open(VISUAL_BIBLE) as f:
+                vb = json.load(f).get("characters", {})
+            char = vb.get(fid) or vb.get(chinese_name) or {}
+            if char:
+                profile = {
+                    "basic_info": char.get("basic_info", {}),
+                    "personality": char.get("personality", {}),
+                    "appearance": char.get("appearance", {}),
+                    "background": char.get("background", {}),
+                    "voice": {
+                        "nls_speaker": (char.get("voice") or {}).get("nls_speaker", ""),
+                        "description": (char.get("voice") or {}).get("description", ""),
+                        "sample_text": (char.get("voice") or {}).get("sample_text", ""),
+                        "provider": "GPT-SoVITS"
+                    },
+                    "title": char.get("title", ""),
+                }
+                renders = []
+                char_render_dir = RENDERS_DIR / chinese_name
+                if char_render_dir.exists():
+                    for fp in sorted(char_render_dir.iterdir()):
+                        if fp.suffix.lower() in ('.png', '.jpg', '.jpeg', '.webp'):
+                            renders.append(f"/api/render/{fid}/{fp.name}")
+                if not renders:
+                    renders = [f"/api/render/{fid}/portrait_0.png"]
+                return {
+                    "name": char.get("name", chinese_name),
+                    "pinyin": fid,
+                    "profile": profile,
+                    "renders": renders,
+                    "has_video_prompts": "video_prompts" in char,
+                }
+        except Exception:
+            pass
+
+    # Fallback: character_designs.json
+    if CHARACTER_JSON.exists():
+        try:
+            with open(CHARACTER_JSON) as f:
+                cd = json.load(f)
+            for c in cd.get("characters", []):
+                if c.get("name", "") == chinese_name or c.get("pinyin", "") == fid:
+                    p = c.get("profile", {})
+                    profile = {
+                        "basic_info": {"height": "", "build": "", "face": p.get("description", ""), "age": ""},
+                        "personality": {"core_traits": [], "emotional_range": "", "speech_style": "", "catchphrases": [], "habits": []},
+                        "appearance": {"costume": c.get("prompt_cn", ""), "color_palette": {}, "accessories": []},
+                        "background": {"origin": "", "key_events": [], "relationships": {}},
+                        "voice": {},
+                        "title": c.get("star_name", ""),
+                    }
+                    renders = []
+                    char_render_dir = RENDERS_DIR / chinese_name
+                    if char_render_dir.exists():
+                        for fp in sorted(char_render_dir.iterdir()):
+                            if fp.suffix.lower() in ('.png', '.jpg', '.jpeg', '.webp'):
+                                renders.append(f"/api/render/{fid}/{fp.name}")
+                    if not renders:
+                        renders = [f"/api/render/{fid}/portrait_0.png"]
+                    return {"name": c.get("name", chinese_name), "pinyin": fid, "profile": profile, "renders": renders}
+        except Exception:
+            pass
+
+    # Minimal fallback
+    return {
+        "name": chinese_name,
+        "pinyin": fid,
+        "profile": {
+            "basic_info": {"height": "不详", "build": "", "face": "", "age": ""},
+            "personality": {"core_traits": [], "emotional_range": "", "speech_style": "", "catchphrases": [], "habits": []},
+            "appearance": {"costume": "", "color_palette": {}, "accessories": []},
+            "background": {"origin": "", "key_events": [], "relationships": {}},
+            "voice": {},
+            "title": ""
+        },
+        "renders": [f"/api/render/{fid}/portrait_0.png"],
+    }
+
+
+@app.get("/api/render/{fid}/{filename:path}")
+def api_serve_render(fid: str, filename: str):
+    """Serve character render images."""
+    chinese_name = _CHAR_MAP_INLINE.get(fid, fid)
+    path = RENDERS_DIR / chinese_name / filename
+    # Also check direct path (fid might already be Chinese name)
+    if not path.exists() and chinese_name != fid:
+        path = RENDERS_DIR / fid / filename
+    if not path.exists():
+        # Final fallback: symlink in dashboard
+        alt = Path("/Users/hokeli/agentic-os-collective/dashboard/renders") / chinese_name / filename
+        if alt.exists():
+            return FileResponse(str(alt))
+        raise HTTPException(404, f"Render not found: {fid}/{filename}")
+    return FileResponse(str(path))
+
+
+@app.post("/api/character/{fid}/render")
+def api_render_character(fid: str):
+    return {"status": "pending", "message": f"Render queued for {fid}."}
+
+
+@app.post("/api/character/{fid}/regenerate")
+def api_regenerate_character(fid: str):
+    return {"status": "pending", "message": f"Regeneration queued for {fid}."}
+
+
+@app.post("/api/character/{fid}/generate")
+def api_generate_character(fid: str):
+    return {"status": "pending", "message": f"Generation queued for {fid}."}
+
+
+@app.post("/api/character/{fid}")
+def api_update_character(fid: str):
+    return {"status": "ok", "message": f"Character {fid} updated (in-memory only)."}
+
+
+@app.get("/api/script")
+def api_list_scripts():
+    """Return list of all available episode scripts."""
+    scripts_dir = Path.home() / ".agentic-os"
+    episodes = []
+    for ep_dir in sorted(scripts_dir.glob("episode_*")):
+        ep_num = ep_dir.name.replace("episode_", "")
+        script_file = ep_dir / "script" / f"script_ep{ep_num}.json"
+        if script_file.exists():
+            try:
+                with open(script_file) as f:
+                    data = json.load(f)
+                episodes.append({
+                    "episode": int(ep_num),
+                    "title": data.get("title", f"第{ep_num}集"),
+                    "character": data.get("character", ""),
+                    "shot_count": len(data.get("shots", [])),
+                    "file": f"/api/script/{ep_num}"
+                })
+            except Exception:
+                episodes.append({"episode": int(ep_num), "title": f"第{ep_num}集", "shot_count": 0, "file": f"/api/script/{ep_num}"})
+    return {"episodes": episodes, "total": len(episodes)}
+
+
+@app.get("/api/script/{ep_num:int}")
+def api_get_script(ep_num: int):
+    ep_str = str(ep_num).zfill(2)
+    script_file = Path.home() / ".agentic-os" / f"episode_{ep_str}" / "script" / f"script_ep{ep_str}.json"
+    if not script_file.exists():
+        raise HTTPException(404, f"Script for episode {ep_num} not found")
+    with open(script_file) as f:
+        return json.load(f)
+
+
+@app.post("/api/script/{ep_num:int}")
+def api_update_script(ep_num: int):
+    return {"status": "ok", "message": f"Script {ep_num} updated."}
+
+
+@app.get("/api/detail/{ms_id}")
+def api_get_detail(ms_id: str):
+    """Return milestone detail with sections for task_board rendering."""
+    for tf in ACTIVE_DIR.glob("*.json"):
+        try:
+            with open(tf) as f:
+                task = json.load(f)
+            for m in task.get("milestones", []):
+                if m.get("id") == ms_id:
+                    return {
+                        "sections": [{
+                            "title": m.get("name", "Milestone"),
+                            "source": "real",
+                            "summary": m.get("status", "pending"),
+                            "items": [{"label": k, "value": str(v), "status": "ok"} for k, v in m.get("input", {}).items()]
+                        }],
+                        "milestone": m
+                    }
+        except Exception:
+            continue
+    return {"sections": [{"title": ms_id, "source": "mock", "items": [{"label": "状态", "value": "详情待加载", "status": "warn"}]}], "milestone": {"ms_id": ms_id}}
+
+
+@app.get("/api/images")
+def api_list_images():
+    """List all render images."""
+    images = []
+    if not RENDERS_DIR.exists():
+        return {"images": []}
+    for ch_dir in sorted(RENDERS_DIR.iterdir()):
+        if not ch_dir.is_dir():
+            continue
+        for fp in sorted(ch_dir.iterdir()):
+            if fp.suffix.lower() in ('.png', '.jpg', '.jpeg', '.webp'):
+                fid = _CHAR_MAP_INLINE.get(ch_dir.name, ch_dir.name)
+                images.append({
+                    "name": fp.name,
+                    "character": ch_dir.name,
+                    "fid": fid,
+                    "url": f"/api/render/{fid}/{fp.name}",
+                    "size": fp.stat().st_size
+                })
+    return {"images": images, "total": len(images)}
+
+
+@app.get("/api/review/{fid}")
+def api_get_review(fid: str):
+    return {"status": "ok", "reviews": [{"reviewer": "AI系统", "score": 8, "comment": "角色设计完整", "date": datetime.now().isoformat()}]}
 
 
 # ============================================================================

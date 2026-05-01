@@ -222,3 +222,14 @@ Sender (untrusted metadata):
   - 更新: `wiki/index.md` (total_pages: 10→14, 新增实体+综合分析)
   - 更新: `wiki/log.md` (本条目)
   - 更新: `reports/PRD-v3.6.md` (v3.6.1 注释版)
+
+- **会话**: 2026-05-01, 05:45 PDT — PRD 全面修订 v3.6.9→v3.6.20 + Git push + Obsidian 同步
+- **完成工作**:
+  - PRD-v3.6.md 修订历史新增 12 个里程碑 (v3.6.9~v3.6.20)
+  - CLAUDE.md 版本号同步 v3.6.2→v3.6.20
+  - Git push to origin/main (commit 59c7ba4)
+  - Obsidian sync 9/9 tasks
+- **关键文件变更**:
+  - `reports/PRD-v3.6.md` (564→613+ lines, +12 version entries)
+  - `CLAUDE.md` (v3.6.2→v3.6.20, 完成度更新)
+- **版本覆盖**: v3.6.9 Gallery · v3.6.10 Dashboard UI · v3.6.11 NLS音色 · v3.6.12 CHARACTER_VOICES 108 · v3.6.13 角色数据补全 · v3.6.14 GPT-SoVITS · v3.6.15 音色UI · v3.6.16 gallery修复 · v3.6.17 目录清理 · v3.6.18 video_prompts三方案 · v3.6.19 CSS修复 · v3.6.20 图像路由修复

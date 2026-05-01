@@ -1,7 +1,7 @@
 ---
 title: "知识库总索引"
 date_modified: 2026-04-30
-total_pages: 14
+total_pages: 16
 
 # 知识库总索引
 
@@ -39,6 +39,7 @@ total_pages: 14
 
 ## 最近新增
 
+1. [2026-05-01] PRD v3.6.20 全量修订 — 音色克隆+视频提示词+108将全角色可视化 (commit 59c7ba4)
 1. [2026-04-30] [[agentic-os-v3.6-architecture]] — v3.6.1架构实体 · QA 80/80 · GitHub df10af7→240a068
 2. [2026-04-27] wiki-ingest.py（脚本）
 3. [2026-04-27] wiki-query.py（脚本）

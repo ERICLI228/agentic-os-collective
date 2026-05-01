@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agentic OS 指挥中心 v3.6</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>[P5-SHOW] Agentic OS 指挥中心 v3.6</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;color:#e4e6eb;height:100vh;display:flex;flex-direction:column}
@@ -62,7 +65,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 .toast{position:fixed;bottom:16px;right:16px;background:#22c55e;color:#000;padding:6px 14px;border-radius:6px;font-size:11px;opacity:0;transition:opacity .3s;z-index:100}
 .toast.on{opacity:1}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.ic{font-size:11px;margin-right:2px}.ic.ok{color:#22c55e}.ic.ng{color:#ef4444}.ic.wn{color:#f59e0b}
+.ic{font-size:11px;margin-right:2px}.ic.ok{color:#22c55e}.ic.ng{color:#ef4444}.ic.wn{color:#f59e0b}.ic.cr{color:#ff0040}
 .empty-state{color:#555;text-align:center;padding:40px 20px;font-size:13px}
 
 /* v3.6: Image gallery */
@@ -179,6 +182,48 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 .cb-color-label{font-size:9px;color:#5a7a9a}
 .cb-relations{font-size:10px;color:#94a3b8}
 .cb-relations .rel-name{color:#70b8ff;font-weight:500}
+/* DM-1: Voice section */
+.cb-voice-card{background:rgba(0,0,0,.15);border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.cb-voice-card-body{flex:1;min-width:0}
+.cb-voice-card-row{display:flex;gap:8px;padding:2px 0;font-size:10px}
+.cb-voice-card-row .vc-label{color:#5a7a9a;min-width:32px;flex-shrink:0}
+.cb-voice-card-row .vc-val{color:#94a3b8;word-break:break-all}
+.cb-voice-card-btns{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+.cb-voice-config-form{margin:6px 0;padding:8px;background:rgba(74,158,255,.04);border:1px solid rgba(74,158,255,.1);border-radius:6px}
+.cb-voice-config-form-row{display:flex;align-items:center;gap:8px;margin:4px 0}
+.cb-voice-config-form-row label{font-size:10px;color:#5a7a9a;min-width:50px}
+.cb-voice-config-form-row select,.cb-voice-config-form-row input{padding:3px 6px;border-radius:4px;border:1px solid rgba(74,158,255,.15);background:rgba(0,0,0,.3);color:#c4d4e8;font-size:10px;flex:1}
+.cb-voice-config-form-btns{display:flex;gap:6px;margin-top:6px}
+.cb-voice-player-row{display:flex;align-items:center;gap:6px;margin:4px 0}
+.cb-voice-player-row .cb-voice-player{flex:1}
+.cb-voice-close{font-size:14px;padding:2px 6px;border-radius:3px;border:1px solid rgba(239,68,68,.3);color:#ef4444;background:rgba(239,68,68,.08);cursor:pointer;line-height:1;flex-shrink:0}
+.cb-voice-close:hover{background:rgba(239,68,68,.2)}
+/* Video prompts three-scheme cards */
+.cb-vp-card{background:rgba(0,0,0,.1);border-radius:4px;margin:3px 0;overflow:hidden}
+.cb-vp-card-hdr{display:flex;align-items:center;gap:6px;padding:4px 8px;font-size:10px;color:#94a3b8;cursor:pointer;user-select:none;background:rgba(74,158,255,.04)}
+.cb-vp-card-hdr:hover{background:rgba(74,158,255,.08)}
+.cb-vp-card-hdr .vp-icon{font-size:12px}
+.cb-vp-card-body{padding:4px 8px 6px 8px}
+.cb-vp-line{display:flex;gap:6px;padding:2px 0;font-size:9px}
+.cb-vp-line .vp-label{color:#5a7a9a;min-width:36px;flex-shrink:0}
+.cb-vp-line .vp-val{color:#7a8ea8;word-break:break-word}
+.cb-vp-line .vp-prompt{font-family:monospace;font-size:8px;line-height:1.5}
+.cb-voice-row{display:flex;align-items:center;gap:6px;margin:4px 0}
+.cb-voice-input{width:100%;padding:3px 6px;border-radius:4px;border:1px solid rgba(74,158,255,.15);background:rgba(0,0,0,.3);color:#c4d4e8;font-size:10px;margin:3px 0}
+.cb-voice-input::placeholder{color:#5a7a9a;font-size:10px}
+.cb-voice-player{display:flex;align-items:center;gap:6px;padding:4px 8px;background:rgba(34,197,94,.05);border-radius:4px}
+.cb-voice-player audio{height:24px;flex:1}
+.cb-voice-player .cb-dur{font-size:10px;color:#4ade80;white-space:nowrap}
+.cb-btn-cfg{font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid rgba(74,158,255,.2);color:#4a9eff;background:rgba(74,158,255,.05);cursor:pointer;white-space:nowrap}
+.cb-btn-cfg:hover{background:rgba(74,158,255,.15)}
+.cb-btn-aud{font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid rgba(34,197,94,.2);color:#4ade80;background:rgba(34,197,94,.1);cursor:pointer;white-space:nowrap}
+.cb-btn-aud:hover{background:rgba(34,197,94,.2)}
+.cb-btn-aud:disabled{opacity:.4;cursor:not-allowed}
+.cb-btn-gen{font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid rgba(34,197,94,.2);color:#4ade80;background:rgba(34,197,94,.1);cursor:pointer;transition:all .15s;white-space:nowrap}
+.cb-btn-gen:hover{background:rgba(34,197,94,.2)}
+.cb-btn-gen:disabled{opacity:.4;cursor:not-allowed}
+.cb-voice-spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(74,158,255,.2);border-top-color:#4a9eff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
 .cb-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(74,158,255,.1);flex-wrap:wrap}
 .cb-actions .cb-btn{font-size:10px;padding:4px 12px;border-radius:6px;cursor:pointer;border:1px solid rgba(74,158,255,.2);color:#8ab4f8;background:rgba(74,158,255,.05);display:flex;align-items:center;gap:4px;transition:all .15s}
 .cb-actions .cb-btn:hover{background:rgba(74,158,255,.15);color:#bbdefb;border-color:#4a9eff}
@@ -259,8 +304,8 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 .sec-hdr:hover{background:rgba(255,255,255,.03)}
 .sec-hdr .sec-toggle-icon{display:inline-block;transition:transform .2s;font-size:10px;margin-right:4px;color:#555}
 .sec-hdr.expanded .sec-toggle-icon{transform:rotate(90deg)}
-.sec-body{max-height:0;overflow:hidden;transition:max-height .3s ease-out}
-.sec-body.expanded{max-height:5000px}
+.sec-body{transition:max-height .3s ease-out}
+.sec-body.collapsed{max-height:0;overflow:hidden}
 
 /* v3.6.8: P0-2 Four-dimension review cards */
 .dim-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
@@ -304,8 +349,8 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 .sec-collapsible{cursor:pointer;user-select:none}
 .sec-collapsible .sec-toggle{display:inline-block;transition:transform .2s;font-size:9px;margin-right:4px;color:#555}
 .sec-collapsible.expanded .sec-toggle{transform:rotate(90deg)}
-.sec-body{max-height:0;overflow:hidden;transition:max-height .3s ease-out}
-.sec-body.expanded{max-height:5000px}
+.sec-body{transition:max-height .3s ease-out}
+.sec-body.collapsed{max-height:0;overflow:hidden}
 
 /* v3.6.8: P0-2 Four-dimension review */
 .four-dim{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0}
@@ -338,11 +383,18 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 .qa-item .q-a.show{display:block}
 </style>
 <!-- P1-6: Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer id="chartjs"></script>
+<script>
+// FORCE JS cache bust via localStorage — reloads exactly once on version change
+if(localStorage.getItem('_dash_v')!=='3.6.20'){localStorage.setItem('_dash_v','3.6.20');if(document.referrer.indexOf(location.hostname)>=0){location.reload(true);}}
+</script>
 </head>
 <body>
+<div id="version-check" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#10b981;color:#fff;text-align:center;padding:6px 12px;font-size:13px;font-family:monospace;letter-spacing:0.5px;cursor:pointer" onclick="this.remove()">✅ P3-FILTER-ACTIVE — 服务器版本已更新 (21:12:37) — 点击关闭</div>
+
 <div class="topbar">
-  <h1 id="appTitle">Agentic OS 指挥中心 v3.6</h1>
+  <h1 id="appTitle">Agentic OS 指挥中心 v3.6.20</h1>
+  <span id="VER_BADGE" style="background:#ff0040;color:#fff;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:700">v3.6.20</span>
   <div class="tabs">
     <button class="tab active" id="tabTK" onclick="switchTab('tk')">TK运营 <span id="tkCount" style="font-size:9px;color:#666"></span></button>
     <button class="tab" id="tabDM" onclick="switchTab('drama')">数字短剧 <span id="dmCount" style="font-size:9px;color:#666"></span></button>
@@ -362,8 +414,9 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
       <div class="dl-divider"></div>
       <a onclick="downloadAs('md')">📝 Markdown 报告</a>
       <a onclick="downloadAs('html')">🌐 HTML 快照</a>
-    </div>
-  </div>
+</div>
+<div id="prdStaleAlert" style="display:none;width:100%;background:#7f1d1d;color:#fca5a5;text-align:center;font-size:11px;padding:6px 16px;border-bottom:1px solid #991b1b;flex-shrink:0">
+  ⚠️ <b>PRD 版本滞后</b>: 代码已到 <span id="prdAlertCodeVer">v3.6.XX</span>，但 PRD 仅记录到 <span id="prdAlertPrdVer">v3.6.YY</span> — <a href="#" onclick="alert('请在 reports/PRD-v3.6.md 新增版本条目，然后 git commit+push')" style="color:#f87171;text-decoration:underline">查看修复步骤</a>
 </div>
 <div class="main">
   <div class="left">
@@ -411,10 +464,128 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 // ================================================================
 // CONSTANTS
 // ================================================================
-const CHAR_MAP={'武松':'wusong','鲁智深':'luzhishen','林冲':'linchong','宋江':'songjiang','李逵':'likui','吴用':'wuyong'};
-const VOICE_OPTS=['zhiming(浑厚有力)','zhiming(粗犷豪迈)','zhiming(稳重威严)','zhilun(沉郁悲壮)','zhilun(沉稳内敛)','zhiqiang(深沉自尊)','zhiqi(年轻活力)'];
-const CHAR_NAMES=['武松','鲁智深','林冲','宋江','李逵','吴用'];
-const CHAR_ROLES={武松:'行者・打虎英雄',鲁智深:'花和尚・倒拔垂杨柳',林冲:'豹子头・八十万禁军教头',宋江:'及时雨・呼保义',李逵:'黑旋风・沂岭杀四虎',吴用:'智多星・智取生辰纲'};
+const CHAR_MAP={武松:'wusong',鲁智深:'luzhishen',林冲:'linchong',宋江:'songjiang',李逵:'likui',吴用:'wuyong',卢俊义:'lujunyi',公孙胜:'gongsunsheng',关胜:'guansheng',秦明:'qinming',呼延灼:'huyanzhuo',花荣:'huarong',柴进:'chaijin',李应:'liying',朱仝:'zhutong',董平:'dongping',张清:'zhangqing',杨志:'yangzhi',徐宁:'xuning',索超:'suochao',戴宗:'daizong',刘唐:'liutang',史进:'shijin',穆弘:'muhong',雷横:'leiheng',李俊:'lijun',阮小二:'ruanxiaoer',张横:'zhangheng',阮小五:'ruanxiaowu',张顺:'zhangshun',阮小七:'ruanxiaoqi',杨雄:'yangxiong',石秀:'shixiu',解珍:'xiezhen',解宝:'jiebao',燕青:'yanqing',朱武:'zhuwu',黄信:'huangxin',孙立:'sunli',宣赞:'xuanzan',郝思文:'haosiwen',韩滔:'hantao',彭玘:'pengqi',单廷珪:'shantinggui',魏定国:'weidingguo',萧让:'xiaorang',裴宣:'peixuan',欧鹏:'oupeng',邓飞:'dengfei',燕顺:'yanshun',杨林:'yanglin',凌振:'lingzhen',蒋敬:'jiangjing',吕方:'lvfang',郭盛:'guosheng',安道全:'andaoquan',皇甫端:'huangfuduan',王英:'wangying',扈三娘:'husanniang',鲍旭:'baoxu',樊瑞:'fanrui',孔明:'kongming',孔亮:'kongliang',项充:'xiangchong',李衮:'ligun',金大坚:'jindajian',马麟:'malin',童威:'tongwei',童猛:'tongmeng',孟康:' mengkang',侯健:'houjian',陈达:'chenda',杨春:'yangchun',郑天寿:'zhengtianshou',陶宗旺:'taozongwang',宋清:'songqing',乐和:'yuehe',龚旺:'gongwang',丁得孙:'dingdesun',穆春:'muchun',曹正:'caozheng',宋万:'songwan',杜迁:'duqian',薛永:'xueyong',施恩:'shien',李忠:'lizhong',周通:'zhoutong',汤隆:'tanglong',杜兴:'duxing',邹渊:'zouyuan',邹润:'zourun',朱贵:'zhugui',朱富:'zhufu',蔡福:'caifu',蔡庆:'caiqing',李立:'lili',李云:'liyun',焦挺:'jiaoting',石勇:'shiyong',孙新:'sunxin',顾大嫂:'gudasao',张青:'zhangqing_shop',孙二娘:'sunerniang',王定六:'wangdingliu',郁保四:'yubaosi',白胜:'baisheng',时迁:'shiqian',段景住:'duanjingzhu',晁盖:'chaogai'};
+const CHAR_NAMES=['武松','鲁智深','林冲','宋江','李逵','吴用','卢俊义','公孙胜','关胜','秦明','呼延灼','花荣','柴进','李应','朱仝','董平','张清','杨志','徐宁','索超','戴宗','刘唐','史进','穆弘','雷横','李俊','阮小二','张横','阮小五','张顺','阮小七','杨雄','石秀','解珍','解宝','燕青','朱武','黄信','孙立','宣赞','郝思文','韩滔','彭玘','单廷珪','魏定国','萧让','裴宣','欧鹏','邓飞','燕顺','杨林','凌振','蒋敬','吕方','郭盛','安道全','皇甫端','王英','扈三娘','鲍旭','樊瑞','孔明','孔亮','项充','李衮','金大坚','马麟','童威','童猛','孟康','侯健','陈达','杨春','郑天寿','陶宗旺','宋清','乐和','龚旺','丁得孙','穆春','曹正','宋万','杜迁','薛永','施恩','李忠','周通','汤隆','杜兴','邹渊','邹润','朱贵','朱富','蔡福','蔡庆','李立','李云','焦挺','石勇','孙新','顾大嫂','张青','孙二娘','王定六','郁保四','白胜','时迁','段景住','晁盖'];
+const CHAR_ROLES={武松:'行者・打虎英雄',鲁智深:'花和尚・倒拔垂杨柳',林冲:'豹子头・八十万禁军教头',宋江:'及时雨・呼保义',李逵:'黑旋风・沂岭杀四虎',吴用:'智多星・智取生辰纲',卢俊义:'玉麒麟・河北三绝',公孙胜:'入云龙・道法通天',关胜:'大刀・武圣后裔',秦明:'霹雳火・性如烈火',呼延灼:'双鞭・开国名将之后',花荣:'小李广・百步穿杨',柴进:'小旋风・皇室贵胄',李应:'扑天雕・独龙冈庄主',朱仝:'美髯公・义释宋江',董平:'双枪将・风流猛将',张清:'没羽箭・飞石无敌',杨志:'青面兽・杨家将后裔',徐宁:'金枪手・钩镰枪破连环马',索超:'急先锋・性急如火',戴宗:'神行太保・日行八百里',刘唐:'赤发鬼・鬓边朱砂记',史进:'九纹龙・华山好汉',穆弘:'没遮拦・揭阳一霸',雷横:'插翅虎・郓城都头',李俊:'混江龙・水军之首',阮小二:'立地太岁・石碣村渔民',张横:'船火儿・浔阳江好汉',阮小五:'短命二郎・水中好汉',张顺:'浪里白条・水底伏龙',阮小七:'活阎罗・最野老三',杨雄:'病关索・蓟州两院押狱',石秀:'拼命三郎・路见不平',解珍:'两头蛇・登州猎户',解宝:'双尾蝎・解珍之弟',燕青:'浪子・多才多艺'};
+let VOICE_CONFIG={};
+const CHARACTER_VOICES={
+  wusong:{ref:'/Users/hokeli/GPT-SoVITS/output/wusong_cosyvoice.wav',prompt:'风雨还在下。主人，我在风雨里呼唤着你的名字。'},
+  luzhishen:{ref:'/Users/hokeli/GPT-SoVITS/output/luzhishen_nls_ref.wav',prompt:'洒家是鲁智深！倒拔垂杨柳，拳打镇关西！'},
+  linchong:{ref:'/Users/hokeli/GPT-SoVITS/output/linchong_nls_ref.wav',prompt:'林冲一生忍辱，今日便要雪恨！'},
+  songjiang:{ref:'/Users/hokeli/GPT-SoVITS/output/songjiang_nls_ref.wav',prompt:'宋江一介小吏，蒙各位哥哥厚爱，替天行道！'},
+  likui:{ref:'/Users/hokeli/GPT-SoVITS/output/likui_nls_ref.wav',prompt:'哈哈哈！俺李逵来也！谁敢挡俺的路！'},
+  wuyong:{ref:'/Users/hokeli/GPT-SoVITS/output/wuyong_nls_ref.wav',prompt:'且看吴某如何智取这十万贯生辰纲。'},
+  lujunyi:{ref:'/Users/hokeli/GPT-SoVITS/output/lujunyi_nls_ref.wav',prompt:'卢俊义在此！谁敢与我一战！'},
+  gongsunsheng:{ref:'/Users/hokeli/GPT-SoVITS/output/gongsunsheng_nls_ref.wav',prompt:'公孙胜在此！谁敢与我一战！'},
+  guansheng:{ref:'/Users/hokeli/GPT-SoVITS/output/guansheng_nls_ref.wav',prompt:'关胜在此！谁敢与我一战！'},
+  qinming:{ref:'/Users/hokeli/GPT-SoVITS/output/qinming_nls_ref.wav',prompt:'秦明在此！谁敢与我一战！'},
+  huyanzhuo:{ref:'/Users/hokeli/GPT-SoVITS/output/huyanzhuo_nls_ref.wav',prompt:'呼延灼在此！谁敢与我一战！'},
+  huarong:{ref:'/Users/hokeli/GPT-SoVITS/output/huarong_nls_ref.wav',prompt:'花荣在此！谁敢与我一战！'},
+  chaijin:{ref:'/Users/hokeli/GPT-SoVITS/output/chaijin_nls_ref.wav',prompt:'柴进在此！谁敢与我一战！'},
+  liying:{ref:'/Users/hokeli/GPT-SoVITS/output/liying_nls_ref.wav',prompt:'李应在此！谁敢与我一战！'},
+  zhutong:{ref:'/Users/hokeli/GPT-SoVITS/output/zhutong_nls_ref.wav',prompt:'朱仝在此！谁敢与我一战！'},
+  dongping:{ref:'/Users/hokeli/GPT-SoVITS/output/dongping_nls_ref.wav',prompt:'董平在此！谁敢与我一战！'},
+  zhangqing:{ref:'/Users/hokeli/GPT-SoVITS/output/zhangqing_nls_ref.wav',prompt:'张清在此！谁敢与我一战！'},
+  yangzhi:{ref:'/Users/hokeli/GPT-SoVITS/output/yangzhi_nls_ref.wav',prompt:'杨志在此！谁敢与我一战！'},
+  xuning:{ref:'/Users/hokeli/GPT-SoVITS/output/xuning_nls_ref.wav',prompt:'徐宁在此！谁敢与我一战！'},
+  suochao:{ref:'/Users/hokeli/GPT-SoVITS/output/suochao_nls_ref.wav',prompt:'索超在此！谁敢与我一战！'},
+  daizong:{ref:'/Users/hokeli/GPT-SoVITS/output/daizong_nls_ref.wav',prompt:'戴宗在此！谁敢与我一战！'},
+  liutang:{ref:'/Users/hokeli/GPT-SoVITS/output/liutang_nls_ref.wav',prompt:'刘唐在此！谁敢与我一战！'},
+  shijin:{ref:'/Users/hokeli/GPT-SoVITS/output/shijin_nls_ref.wav',prompt:'史进在此！谁敢与我一战！'},
+  muhong:{ref:'/Users/hokeli/GPT-SoVITS/output/muhong_nls_ref.wav',prompt:'穆弘在此！谁敢与我一战！'},
+  leiheng:{ref:'/Users/hokeli/GPT-SoVITS/output/leiheng_nls_ref.wav',prompt:'雷横在此！谁敢与我一战！'},
+  lijun:{ref:'/Users/hokeli/GPT-SoVITS/output/lijun_nls_ref.wav',prompt:'李俊在此！谁敢与我一战！'},
+  ruanxiaoer:{ref:'/Users/hokeli/GPT-SoVITS/output/ruanxiaoer_nls_ref.wav',prompt:'阮小二在此！谁敢与我一战！'},
+  zhangheng:{ref:'/Users/hokeli/GPT-SoVITS/output/zhangheng_nls_ref.wav',prompt:'张横在此！谁敢与我一战！'},
+  ruanxiaowu:{ref:'/Users/hokeli/GPT-SoVITS/output/ruanxiaowu_nls_ref.wav',prompt:'阮小五在此！谁敢与我一战！'},
+  zhangshun:{ref:'/Users/hokeli/GPT-SoVITS/output/zhangshun_nls_ref.wav',prompt:'张顺在此！谁敢与我一战！'},
+  ruanxiaoqi:{ref:'/Users/hokeli/GPT-SoVITS/output/ruanxiaoqi_nls_ref.wav',prompt:'阮小七在此！谁敢与我一战！'},
+  yangxiong:{ref:'/Users/hokeli/GPT-SoVITS/output/yangxiong_nls_ref.wav',prompt:'杨雄在此！谁敢与我一战！'},
+  shixiu:{ref:'/Users/hokeli/GPT-SoVITS/output/shixiu_nls_ref.wav',prompt:'石秀在此！谁敢与我一战！'},
+  xiezhen:{ref:'/Users/hokeli/GPT-SoVITS/output/xiezhen_nls_ref.wav',prompt:'解珍在此！谁敢与我一战！'},
+  jiebao:{ref:'/Users/hokeli/GPT-SoVITS/output/jiebao_nls_ref.wav',prompt:'解宝在此！谁敢与我一战！'},
+  yanqing:{ref:'/Users/hokeli/GPT-SoVITS/output/yanqing_nls_ref.wav',prompt:'燕青在此！谁敢与我一战！'},
+  zhuwu:{ref:'/Users/hokeli/GPT-SoVITS/output/zhuwu_nls_ref.wav',prompt:'朱武在此！谁敢与我一战！'},
+  huangxin:{ref:'/Users/hokeli/GPT-SoVITS/output/huangxin_nls_ref.wav',prompt:'黄信在此！谁敢与我一战！'},
+  sunli:{ref:'/Users/hokeli/GPT-SoVITS/output/sunli_nls_ref.wav',prompt:'孙立在此！谁敢与我一战！'},
+  xuanzan:{ref:'/Users/hokeli/GPT-SoVITS/output/xuanzan_nls_ref.wav',prompt:'宣赞在此！谁敢与我一战！'},
+  haosiwen:{ref:'/Users/hokeli/GPT-SoVITS/output/haosiwen_nls_ref.wav',prompt:'郝思文在此！谁敢与我一战！'},
+  hantao:{ref:'/Users/hokeli/GPT-SoVITS/output/hantao_nls_ref.wav',prompt:'韩滔在此！谁敢与我一战！'},
+  pengqi:{ref:'/Users/hokeli/GPT-SoVITS/output/pengqi_nls_ref.wav',prompt:'彭玘在此！谁敢与我一战！'},
+  shantinggui:{ref:'/Users/hokeli/GPT-SoVITS/output/shantinggui_nls_ref.wav',prompt:'单廷珪在此！谁敢与我一战！'},
+  weidingguo:{ref:'/Users/hokeli/GPT-SoVITS/output/weidingguo_nls_ref.wav',prompt:'魏定国在此！谁敢与我一战！'},
+  xiaorang:{ref:'/Users/hokeli/GPT-SoVITS/output/xiaorang_nls_ref.wav',prompt:'萧让在此！谁敢与我一战！'},
+  peixuan:{ref:'/Users/hokeli/GPT-SoVITS/output/peixuan_nls_ref.wav',prompt:'裴宣在此！谁敢与我一战！'},
+  oupeng:{ref:'/Users/hokeli/GPT-SoVITS/output/oupeng_nls_ref.wav',prompt:'欧鹏在此！谁敢与我一战！'},
+  dengfei:{ref:'/Users/hokeli/GPT-SoVITS/output/dengfei_nls_ref.wav',prompt:'邓飞在此！谁敢与我一战！'},
+  yanshun:{ref:'/Users/hokeli/GPT-SoVITS/output/yanshun_nls_ref.wav',prompt:'燕顺在此！谁敢与我一战！'},
+  yanglin:{ref:'/Users/hokeli/GPT-SoVITS/output/yanglin_nls_ref.wav',prompt:'杨林在此！谁敢与我一战！'},
+  lingzhen:{ref:'/Users/hokeli/GPT-SoVITS/output/lingzhen_nls_ref.wav',prompt:'凌振在此！谁敢与我一战！'},
+  jiangjing:{ref:'/Users/hokeli/GPT-SoVITS/output/jiangjing_nls_ref.wav',prompt:'蒋敬在此！谁敢与我一战！'},
+  lvfang:{ref:'/Users/hokeli/GPT-SoVITS/output/lvfang_nls_ref.wav',prompt:'吕方在此！谁敢与我一战！'},
+  guosheng:{ref:'/Users/hokeli/GPT-SoVITS/output/guosheng_nls_ref.wav',prompt:'郭盛在此！谁敢与我一战！'},
+  andaoquan:{ref:'/Users/hokeli/GPT-SoVITS/output/andaoquan_nls_ref.wav',prompt:'安道全在此！谁敢与我一战！'},
+  huangfuduan:{ref:'/Users/hokeli/GPT-SoVITS/output/huangfuduan_nls_ref.wav',prompt:'皇甫端在此！谁敢与我一战！'},
+  wangying:{ref:'/Users/hokeli/GPT-SoVITS/output/wangying_nls_ref.wav',prompt:'王英在此！谁敢与我一战！'},
+  husanniang:{ref:'/Users/hokeli/GPT-SoVITS/output/husanniang_nls_ref.wav',prompt:'扈三娘在此！谁敢与我一战！'},
+  baoxu:{ref:'/Users/hokeli/GPT-SoVITS/output/baoxu_nls_ref.wav',prompt:'鲍旭在此！谁敢与我一战！'},
+  fanrui:{ref:'/Users/hokeli/GPT-SoVITS/output/fanrui_nls_ref.wav',prompt:'樊瑞在此！谁敢与我一战！'},
+  kongming:{ref:'/Users/hokeli/GPT-SoVITS/output/kongming_nls_ref.wav',prompt:'孔明在此！谁敢与我一战！'},
+  kongliang:{ref:'/Users/hokeli/GPT-SoVITS/output/kongliang_nls_ref.wav',prompt:'孔亮在此！谁敢与我一战！'},
+  xiangchong:{ref:'/Users/hokeli/GPT-SoVITS/output/xiangchong_nls_ref.wav',prompt:'项充在此！谁敢与我一战！'},
+  ligun:{ref:'/Users/hokeli/GPT-SoVITS/output/ligun_nls_ref.wav',prompt:'李衮在此！谁敢与我一战！'},
+  jindajian:{ref:'/Users/hokeli/GPT-SoVITS/output/jindajian_nls_ref.wav',prompt:'金大坚在此！谁敢与我一战！'},
+  malin:{ref:'/Users/hokeli/GPT-SoVITS/output/malin_nls_ref.wav',prompt:'马麟在此！谁敢与我一战！'},
+  tongwei:{ref:'/Users/hokeli/GPT-SoVITS/output/tongwei_nls_ref.wav',prompt:'童威在此！谁敢与我一战！'},
+  tongmeng:{ref:'/Users/hokeli/GPT-SoVITS/output/tongmeng_nls_ref.wav',prompt:'童猛在此！谁敢与我一战！'},
+  houjian:{ref:'/Users/hokeli/GPT-SoVITS/output/houjian_nls_ref.wav',prompt:'侯健在此！谁敢与我一战！'},
+  chenda:{ref:'/Users/hokeli/GPT-SoVITS/output/chenda_nls_ref.wav',prompt:'陈达在此！谁敢与我一战！'},
+  yangchun:{ref:'/Users/hokeli/GPT-SoVITS/output/yangchun_nls_ref.wav',prompt:'杨春在此！谁敢与我一战！'},
+  zhengtianshou:{ref:'/Users/hokeli/GPT-SoVITS/output/zhengtianshou_nls_ref.wav',prompt:'郑天寿在此！谁敢与我一战！'},
+  taozongwang:{ref:'/Users/hokeli/GPT-SoVITS/output/taozongwang_nls_ref.wav',prompt:'陶宗旺在此！谁敢与我一战！'},
+  songqing:{ref:'/Users/hokeli/GPT-SoVITS/output/songqing_nls_ref.wav',prompt:'宋清在此！谁敢与我一战！'},
+  yuehe:{ref:'/Users/hokeli/GPT-SoVITS/output/yuehe_nls_ref.wav',prompt:'乐和在此！谁敢与我一战！'},
+  gongwang:{ref:'/Users/hokeli/GPT-SoVITS/output/gongwang_nls_ref.wav',prompt:'龚旺在此！谁敢与我一战！'},
+  dingdesun:{ref:'/Users/hokeli/GPT-SoVITS/output/dingdesun_nls_ref.wav',prompt:'丁得孙在此！谁敢与我一战！'},
+  muchun:{ref:'/Users/hokeli/GPT-SoVITS/output/muchun_nls_ref.wav',prompt:'穆春在此！谁敢与我一战！'},
+  caozheng:{ref:'/Users/hokeli/GPT-SoVITS/output/caozheng_nls_ref.wav',prompt:'曹正在此！谁敢与我一战！'},
+  songwan:{ref:'/Users/hokeli/GPT-SoVITS/output/songwan_nls_ref.wav',prompt:'宋万在此！谁敢与我一战！'},
+  duqian:{ref:'/Users/hokeli/GPT-SoVITS/output/duqian_nls_ref.wav',prompt:'杜迁在此！谁敢与我一战！'},
+  xueyong:{ref:'/Users/hokeli/GPT-SoVITS/output/xueyong_nls_ref.wav',prompt:'薛永在此！谁敢与我一战！'},
+  shien:{ref:'/Users/hokeli/GPT-SoVITS/output/shien_nls_ref.wav',prompt:'施恩在此！谁敢与我一战！'},
+  lizhong:{ref:'/Users/hokeli/GPT-SoVITS/output/lizhong_nls_ref.wav',prompt:'李忠在此！谁敢与我一战！'},
+  zhoutong:{ref:'/Users/hokeli/GPT-SoVITS/output/zhoutong_nls_ref.wav',prompt:'周通在此！谁敢与我一战！'},
+  tanglong:{ref:'/Users/hokeli/GPT-SoVITS/output/tanglong_nls_ref.wav',prompt:'汤隆在此！谁敢与我一战！'},
+  duxing:{ref:'/Users/hokeli/GPT-SoVITS/output/duxing_nls_ref.wav',prompt:'杜兴在此！谁敢与我一战！'},
+  zouyuan:{ref:'/Users/hokeli/GPT-SoVITS/output/zouyuan_nls_ref.wav',prompt:'邹渊在此！谁敢与我一战！'},
+  zourun:{ref:'/Users/hokeli/GPT-SoVITS/output/zourun_nls_ref.wav',prompt:'邹润在此！谁敢与我一战！'},
+  zhugui:{ref:'/Users/hokeli/GPT-SoVITS/output/zhugui_nls_ref.wav',prompt:'朱贵在此！谁敢与我一战！'},
+  zhufu:{ref:'/Users/hokeli/GPT-SoVITS/output/zhufu_nls_ref.wav',prompt:'朱富在此！谁敢与我一战！'},
+  caifu:{ref:'/Users/hokeli/GPT-SoVITS/output/caifu_nls_ref.wav',prompt:'蔡福在此！谁敢与我一战！'},
+  caiqing:{ref:'/Users/hokeli/GPT-SoVITS/output/caiqing_nls_ref.wav',prompt:'蔡庆在此！谁敢与我一战！'},
+  lili:{ref:'/Users/hokeli/GPT-SoVITS/output/lili_nls_ref.wav',prompt:'李立在此！谁敢与我一战！'},
+  liyun:{ref:'/Users/hokeli/GPT-SoVITS/output/liyun_nls_ref.wav',prompt:'李云在此！谁敢与我一战！'},
+  jiaoting:{ref:'/Users/hokeli/GPT-SoVITS/output/jiaoting_nls_ref.wav',prompt:'焦挺在此！谁敢与我一战！'},
+  shiyong:{ref:'/Users/hokeli/GPT-SoVITS/output/shiyong_nls_ref.wav',prompt:'石勇在此！谁敢与我一战！'},
+  sunxin:{ref:'/Users/hokeli/GPT-SoVITS/output/sunxin_nls_ref.wav',prompt:'孙新在此！谁敢与我一战！'},
+  gudasao:{ref:'/Users/hokeli/GPT-SoVITS/output/gudasao_nls_ref.wav',prompt:'顾大嫂在此！谁敢与我一战！'},
+  zhangqing_shop:{ref:'/Users/hokeli/GPT-SoVITS/output/zhangqing_shop_nls_ref.wav',prompt:'张青在此！谁敢与我一战！'},
+  sunerniang:{ref:'/Users/hokeli/GPT-SoVITS/output/sunerniang_nls_ref.wav',prompt:'孙二娘在此！谁敢与我一战！'},
+  wangdingliu:{ref:'/Users/hokeli/GPT-SoVITS/output/wangdingliu_nls_ref.wav',prompt:'王定六在此！谁敢与我一战！'},
+  yubaosi:{ref:'/Users/hokeli/GPT-SoVITS/output/yubaosi_nls_ref.wav',prompt:'郁保四在此！谁敢与我一战！'},
+  baisheng:{ref:'/Users/hokeli/GPT-SoVITS/output/baisheng_nls_ref.wav',prompt:'白胜在此！谁敢与我一战！'},
+  shiqian:{ref:'/Users/hokeli/GPT-SoVITS/output/shiqian_nls_ref.wav',prompt:'时迁在此！谁敢与我一战！'},
+  duanjingzhu:{ref:'/Users/hokeli/GPT-SoVITS/output/duanjingzhu_nls_ref.wav',prompt:'段景住在此！谁敢与我一战！'},
+  chaogai:{ref:'/Users/hokeli/GPT-SoVITS/output/chaogai_nls_ref.wav',prompt:'晁盖在此！谁敢与我一战！'}
+};
+const generatedAudios = {};  // fid → {url, size, text}
+(async function loadVoiceConfig(){
+  try{
+    const r=await fetch('http://localhost:9880/set_model',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    const r2=await fetch('http://localhost:5004/api/voices');
+    if(r2.ok){const d=await r2.json();(d.voices||[]).forEach(v=>{VOICE_CONFIG[v.id]=v;});}
+  }catch(e){console.warn('Voice config load failed:',e.message);}
+})();
 
 let searchQ='',filterSt='all';
 let cur='tk',sel=null,all=[],lastData=null;
@@ -640,6 +811,8 @@ document.addEventListener('keydown',e=>{
 // ================================================================
 // v3.6: renderDefault - existing entity item rendering logic
 // ================================================================
+// [v3.6.14-DIAG] Runtime ic2 check — REMOVE after fix verified
+window._ic2_diag = {'ok':'✓','ng':'✗','warn':'⚠','critical':'🛑','FIX':'v3.6.14','time':new Date().toLocaleTimeString()};
 // v3.6.8: P0-1 Collapsible section toggle
 function toggleSec(secId){
   const sec = document.getElementById(secId);
@@ -648,7 +821,7 @@ function toggleSec(secId){
   const body = sec.querySelector('.sec-body');
   if(!hdr || !body) return;
   hdr.classList.toggle('expanded');
-  body.classList.toggle('expanded');
+  body.classList.toggle('collapsed');
 }
 
 function renderDefault(detail){
@@ -668,15 +841,23 @@ function renderDefault(detail){
       h+=`<div class="sec" id="${secId}">`;
       h+=`<div class="sec-hdr" onclick="toggleSec('${secId}')"><h3><span class="sec-toggle-icon">&#9654;</span>${s.title} <span class="src-tag src-${st}">[${st}]</span> <span style="font-size:9px;color:#555;font-weight:400">${summary}</span></h3></div>`;
       h+=`<div class="sec-body">`;
-      if(s.items)s.items.forEach(it=>{
-        const ic2={'ok':'<span class="ic ok">&#10003;</span>','ng':'<span class="ic ng">&#10007;</span>','warn':'<span class="ic wn">&#9888;</span>'};
-        if(it.key==='rv_decision') return;
-        // P2: Skip items with no meaningful label or value
-        if(!it.label && !it.key) return;
-        if(!it.value && !it.before && !it.after && !it.note) return;
+      if(s.items){
+        // P4-FIX: Pre-filter bad items before rendering (strip undefined/null/empty)
+        const valid = (s.items||[]).filter(it => {
+          if (!it) return false;
+          if (it.key === 'rv_decision') return false;
+          const l = it.label, k = it.key, v = it.value;
+          const labelOk = (l != null && String(l).trim()) || (k != null && String(k).trim());
+          const valOk = v != null && String(v).trim() || it.before || it.after || it.note;
+          if (!labelOk && !valOk) { console.warn('[P4-STRIP]', JSON.stringify(it)); return false; }
+          return labelOk && valOk;
+        });
+        valid.forEach(it=>{
+        const ic2={'ok':'<span class="ic ok">&#10003;</span>','ng':'<span class="ic ng">&#10007;</span>','warn':'<span class="ic wn">&#9888;</span>','critical':'<span class="ic cr">&#128721;</span>','DIAG':'v3.6.19'};
         const displayLabel = it.label || it.key || '';
         const displayValue = it.value || '';
-        h+=`<div class="ent-row">${ic2[it.status]||' '}<span class="ent-lbl">${displayLabel}</span><div class="ent-val"><span>${displayValue}</span>`;
+        const statusIcon = ic2[it.status] || ('[DIAG:'+it.status+']');
+        h+=`<div class="ent-row">${statusIcon}<span class="ent-lbl">${displayLabel}</span><div class="ent-val"><span>${displayValue}</span>`;
         if(it.before)h+=`<div class="before">&larr; ${it.before}</div>`;
         if(it.after)h+=`<div class="after">&rarr; ${it.after}</div>`;
         if(it.note)h+=`<div class="note">&#9432; ${it.note}</div>`;
@@ -693,6 +874,7 @@ function renderDefault(detail){
         }
         h+=`</div></div>`;
       });
+      }
       h+=`</div></div>`;
     });
   }
@@ -703,10 +885,13 @@ function renderDefault(detail){
 // v3.6: SMART ROUTING renderDetail
 // ================================================================
 async function renderDetail(){
+  const banner = document.getElementById('version-check');
+  if (banner) banner.textContent = '⏳ 加载详情... ' + sel;
   document.getElementById('empty').style.display='none';
   document.getElementById('detail').style.display='block';
   const ms=all.find(m=>m.ms_id===sel);
-  if(!ms)return;
+  if(!ms){if(banner)banner.textContent='⚠️ 未找到: '+sel;return;}
+  if(banner) banner.textContent = '⏳ 加载 ' + ms.ms_id + ' 详情...';
 
   const done=ms.status=='completed'||ms.status=='approved';
   const sl={completed:'已完成',waiting_approval:'等待决策',pending:'待执行',running:'执行中',approved:'已批准',rejected:'已驳回'};
@@ -722,8 +907,11 @@ async function renderDetail(){
   try{
     const r=await fetch('/api/detail/'+ms.ms_id);
     detail=await r.json();
+    const sectionCount = (detail.sections||[]).length;
+    const itemCount = (detail.sections||[]).reduce((sum,s)=>sum+(s.items||[]).length,0);
+    if(banner) banner.textContent = '✅ ' + ms.ms_id + ': ' + sectionCount + ' sections, ' + itemCount + ' items';
     h+=renderDefault(detail);
-  }catch(e){h+=`<div class="sec"><h3>详情</h3><div style="color:#555;font-size:11px;">加载失败: ${e.message}</div></div>`}
+  }catch(e){h+=`<div class="sec"><h3>详情</h3><div style="color:#555;font-size:11px;">加载失败: ${e.message}</div></div>`;if(banner)banner.textContent='❌ 加载失败: '+e.message;}
 
   // Decision actions
   if(ms.decision_point&&ms.status=='waiting_approval'){
@@ -807,7 +995,7 @@ async function renderDM0(detail,ms){
     decH += `<button class="btn btn-s" onclick="decideDM0('approved')">&#10003; 通过</button>`;
     decH += `<button class="btn btn-w" onclick="decideDM0('rework')">&#9998; 回流重写</button>`;
     decH += `<button class="btn btn-d" onclick="decideDM0('reject')">&#10007; 驳回</button>`;
-    decH += `<button class="btn btn-rerun" id="dm0-rerun-btn" onclick="reReviewDM0()" style="margin-left:auto">&#128260; 重新审核</button>`;
+    decH += `<button class="btn btn-rerun" id="dm0-rerun-btn" onclick="triggerReReview('DM-0')" style="margin-left:auto">&#128260; 重新审核</button>`;
     decH += `</div></div>`;
     decH += `<div style="font-size:10px;color:#666;">&#9432; CODING 免费额度 · 上次审核耗时 ~87s · 点击按钮后自动执行</div>`;
     decH += `</div>`;
@@ -986,13 +1174,18 @@ async function renderDM1(detail, ms) {
     if (!data) return;
     const name = data.name || CHAR_NAMES[i];
     const fid = data.pinyin || CHAR_MAP[name] || name;
-    const profile = data.profile || {};
+    let profile = data.profile || {};
+    // Normalize: some profiles have an inner .profile wrapper
+    if (profile.profile && typeof profile.profile === 'object' && !Array.isArray(profile.profile)) {
+      profile = profile.profile;
+    }
     const renders = data.renders || [];
     const basic = profile.basic_info || {};
     const personality = profile.personality || {};
     const appearance = profile.appearance || {};
     const background = profile.background || {};
     const voice = profile.voice || {};
+    const videoPrompts = profile.video_prompts || {};
     const title = profile.title || CHAR_ROLES[name] || '';
     const cp = appearance.color_palette || {};
     const mainRender = renders.length > 0 ? renders[0] : `/api/render/${fid}/shot_01.png`;
@@ -1064,14 +1257,82 @@ async function renderDM1(detail, ms) {
               ${Object.keys(background.relationships || {}).length > 0 ? `<div class="cb-relations">关系: ${Object.entries(background.relationships || {}).map(([k, v]) => `<span class="rel-name">${k}</span>: ${v}`).join(' · ')}</div>` : ''}
             </div>
           </div>
-          <!-- 音色 -->
-          <div class="cb-section">
+          <!-- 音色 (Voice Config) -->
+          <div class="cb-section cb-voice-wrap" id="voice-section-${fid}">
             <div class="cb-section-title"><span class="cb-icon">🎤</span> 音色</div>
-            <div class="cb-section-content">${voice.nls_speaker || ''} — ${voice.description || ''}</div>
+            <!-- Voice info card -->
+            <div class="cb-voice-card" id="voicecard-${fid}">
+              <div class="cb-voice-card-body">
+                <div class="cb-voice-card-row"><span class="vc-label">角色</span><span class="vc-val">${name}</span></div>
+                <div class="cb-voice-card-row"><span class="vc-label">类型</span><span class="vc-val" id="vc-type-${fid}">${voice.nls_speaker ? 'NLS' : (voice.provider || '—')}</span></div>
+                <div class="cb-voice-card-row"><span class="vc-label">音色</span><span class="vc-val" id="vc-voice-${fid}">${voice.nls_speaker ? voice.nls_speaker + ' · ' + (voice.description || '') : '未配置'}</span></div>
+                <div class="cb-voice-card-row"><span class="vc-label">参考</span><span class="vc-val" id="vc-ref-${fid}">${voice.sample_text || voice.reference_text || '—'}</span></div>
+              </div>
+              <div class="cb-voice-card-btns">
+                <button type="button" class="cb-btn cb-btn-cfg" id="cfgbtn-${fid}" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();toggleVoiceConfigForm('${fid}');return false">🎤 配置音色</button>
+                <button type="button" class="cb-btn cb-btn-aud" id="audbtn-${fid}" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();auditionVoice('${fid}');return false" ${(voice.nls_speaker || CHARACTER_VOICES[fid]) ? '' : 'disabled'}>🔊 试听</button>
+              </div>
+            </div>
+            <!-- Inline config form -->
+            <div class="cb-voice-config-form" id="voicecfgform-${fid}" style="display:none">
+              <div class="cb-voice-config-form-row">
+                <label>提供商</label>
+                <select id="cfg-provider-${fid}">
+                  <option value="NLS" ${!voice.provider || voice.provider==='NLS' ? 'selected' : ''}>NLS（阿里云）</option>
+                  <option value="MiniMax" ${voice.provider==='MiniMax' ? 'selected' : ''}>MiniMax</option>
+                  <option value="ElevenLabs" ${voice.provider==='ElevenLabs' ? 'selected' : ''}>ElevenLabs</option>
+                </select>
+              </div>
+              <div class="cb-voice-config-form-row">
+                <label>音色名称</label>
+                <input id="cfg-voice-${fid}" value="${voice.nls_speaker || ''}" placeholder="如 zhiming" />
+              </div>
+              <div class="cb-voice-config-form-row">
+                <label>参考文本</label>
+                <input id="cfg-reftext-${fid}" value="${voice.reference_text || voice.sample_text || ''}" placeholder="试听参考文本" />
+              </div>
+              <div class="cb-voice-config-form-btns">
+                <button type="button" class="btn btn-save" onclick="saveVoiceConfig('${fid}')">💾 保存并试听</button>
+                <button type="button" class="btn btn-cancel" onclick="toggleVoiceConfigForm('${fid}')">取消</button>
+              </div>
+            </div>
+            <!-- Audio player row -->
+            <div class="cb-voice-player-row" id="voiceplayerrow-${fid}" style="display:none">
+              <div class="cb-voice-player" id="voiceplayer-${fid}">
+                <audio id="voiceaudio-${fid}" controls></audio>
+                <span class="cb-dur" id="voicedur-${fid}"></span>
+              </div>
+              <button type="button" class="cb-voice-close" id="voiceclose-${fid}" onclick="closeVoicePlayer('${fid}')" title="关闭播放">✕</button>
+            </div>
+            <!-- Custom TTS generation row -->
+            <div class="cb-voice-row">
+              <input class="cb-voice-input" id="ttstext-${fid}" placeholder="试生成文本..." value="${voice.sample_text || name + '在此！'}" style="flex:1" />
+              <button type="button" class="cb-btn cb-btn-gen" id="genbtn-${fid}" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();generateVoice('${fid}');return false">🔊 生成</button>
+              <button type="button" class="cb-btn cb-btn-gen" id="regenbtn-${fid}" style="display:none" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();generateVoice('${fid}');return false">🔄 重新生成</button>
+            </div>
+            <div id="voicespinner-${fid}" style="display:none;text-align:center;padding:4px">
+              <span class="cb-voice-spinner"></span> <span style="font-size:10px;color:#6b8aad">生成中...</span>
+            </div>
           </div>
+          <!-- Video Prompts (三方案) -->
+          ${Object.keys(videoPrompts).length > 0 ? `<div class="cb-section">
+            <div class="cb-section-title"><span class="cb-icon">🎬</span> 视频提示词（三方案）</div>
+            ${Object.entries(videoPrompts).map(([key, v]) => `
+              <div class="cb-vp-card">
+                <div class="cb-vp-card-hdr" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+                  <span class="vp-icon">📋</span> ${v.title || key}
+                  <span style="margin-left:auto;font-size:9px;color:#555">${v.get ? v.get('参数') || '' : (v['参数'] || '')}</span>
+                </div>
+                <div class="cb-vp-card-body" style="display:none">
+                  <div class="cb-vp-line"><span class="vp-label">描述</span><span class="vp-val">${v.desc || v.get ? v.get('desc') || '' : ''}</span></div>
+                  <div class="cb-vp-line"><span class="vp-label">提示词</span><span class="vp-val vp-prompt">${v.prompt || v.get ? v.get('prompt') || '' : ''}</span></div>
+                  ${v['简练版'] ? `<div class="cb-vp-line"><span class="vp-label">简练版</span><span class="vp-val vp-prompt">${v['简练版']}</span></div>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>` : ''}
           <!-- Actions -->
           <div class="cb-actions">
-            <button class="cb-btn" onclick="auditionVoice('${fid}')">🎤 试听音色</button>
             <button class="cb-btn" id="rerender-btn-${fid}" onclick="reRenderChar('${fid}')">🔄 重新生成角色图</button>
             <button class="cb-btn" onclick="generateAIProfile('${fid}')">✨ AI 生成档案</button>
           </div>
@@ -1103,6 +1364,8 @@ async function renderDM1(detail, ms) {
         <div class="cb-field"><label>🔑 关键事件 (逗号分隔)</label><input id="edit-events-${fid}" type="text" value="${(background.key_events || []).join(',')}" /></div>
         <div class="cb-field"><label>🎤 音色 Speaker</label><input id="edit-voice-${fid}" type="text" value="${voice.nls_speaker || ''}" /></div>
         <div class="cb-field"><label>🎤 音色描述</label><input id="edit-voice-desc-${fid}" type="text" value="${voice.description || ''}" /></div>
+        <div class="cb-field"><label>📝 参考文本</label><input id="edit-reftext-${fid}" type="text" value="${voice.reference_text || ''}" /></div>
+        <div class="cb-field"><label>📝 试生成文本</label><input id="edit-ttstext-${fid}" type="text" value="${voice.sample_text || ''}" /></div>
         <div class="cb-edit-btns">
           <button class="btn btn-save" onclick="saveCharBible('${fid}')">💾 保存修改</button>
           <button class="btn btn-cancel" onclick="toggleCharBibleEdit('${fid}')">取消</button>
@@ -1112,6 +1375,12 @@ async function renderDM1(detail, ms) {
     </div>`;
   });
   container.innerHTML = html;
+  // Restore previously generated audios
+  Object.keys(generatedAudios).forEach(fid => {
+    if (document.getElementById('voiceplayer-' + fid)) {
+      showVoicePlayback(fid);
+    }
+  });
 }
 
 // ================================================================
@@ -1184,6 +1453,10 @@ async function saveCharBible(fid) {
   if (vs) voice.nls_speaker = vs.value;
   const vd = document.getElementById('edit-voice-desc-' + fid);
   if (vd) voice.description = vd.value;
+  const rt = document.getElementById('edit-reftext-' + fid);
+  if (rt) voice.reference_text = rt.value;
+  const st = document.getElementById('edit-ttstext-' + fid);
+  if (st) voice.sample_text = st.value;
   if (Object.keys(voice).length > 0) data.voice = voice;
 
   if (Object.keys(data).length === 0) { toastMsg('⚠️ 无修改内容', 1500, 'warn'); return; }
@@ -1264,42 +1537,222 @@ async function generateAIProfile(fid) {
 }
 
 // ================================================================
-// DM-1: Audition voice
+// DM-1: Voice management (GPT-SoVITS via FastAPI v3 :5004)
 // ================================================================
-async function auditionVoice(fid) {
-  const toast = document.getElementById('toast');
-  toastMsg('🎤 正在合成试听音频...', 3000);
-  try {
-    // Fetch character profile to get voice config
-    const r = await fetch('/api/character/' + fid);
-    const data = await r.json();
-    const profile = data.profile || {};
-    const voice = profile.voice || {};
-    const sampleText = voice.sample_text || `${data.name}在此！`;
-    const nlsSpeaker = voice.nls_speaker || 'zhiming';
+// Auto-detect voice API base URL
+let voiceApiBase = '';
+async function detectVoiceApi() {
+  if (voiceApiBase) return voiceApiBase;
+  const ports = [5004, 5001, 5000, 9090];
+  for (const p of ports) {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 2000);
+      const r = await fetch(`http://localhost:${p}/api/voices`, { signal: ctrl.signal });
+      clearTimeout(t);
+      if (r.ok) { voiceApiBase = `http://localhost:${p}`; console.log('[VOICE] detected API at port', p); return voiceApiBase; }
+    } catch (e) { /* try next port */ }
+  }
+  return null;
+}
 
-    // Call NLS TTS to generate sample audio
-    const ttsR = await fetch('/api/tts', {
+async function uploadRefAudio(fid) {
+  const input = document.getElementById('refaudio-' + fid);
+  const file = input.files[0];
+  if (!file) return;
+  const base = await detectVoiceApi();
+  if (!base) { toastMsg('⚠️ 语音API未运行 (请启动 python3 shared/task_wizard.py)', 5000, 'warn'); return; }
+  const refText = document.getElementById('reftext-' + fid)?.value || '';
+  const form = new FormData();
+  form.append('file', file);
+  form.append('reference_text', refText);
+  toastMsg('📁 上传参考音频...', 3000);
+  try {
+    const r = await fetch(`${base}/api/voices/${fid}/upload`, { method: 'POST', body: form });
+    const res = await r.json();
+    if (res.status === 'ok') {
+      updateVoiceCard(fid, 'NLS', res.voice_name || '', res.reference_text || '');
+      refreshVoiceButtons(fid);
+      toastMsg('✅ 参考音频已上传', 3000);
+    } else {
+      toastMsg('⚠️ 上传失败: ' + (res.error || ''), 3000, 'warn');
+    }
+  } catch (e) { toastMsg('⚠️ 上传失败: ' + e.message, 3000, 'warn'); }
+}
+
+async function generateVoice(fid) {
+  const banner = document.getElementById('version-check');
+  const ch = CHARACTER_VOICES[fid];
+  if (!ch) { toastMsg('⚠️ 该角色尚未配置参考音频', 3000, 'warn'); return; }
+  const textInput = document.getElementById('ttstext-' + fid);
+  const text = textInput?.value?.trim();
+  if (!text) { toastMsg('⚠️ 请输入试生成文本', 2000, 'warn'); return; }
+  const genBtn = document.getElementById('genbtn-' + fid);
+  const regenBtn = document.getElementById('regenbtn-' + fid);
+  const spinner = document.getElementById('voicespinner-' + fid);
+  const voiceSection = document.getElementById('voice-section-' + fid);
+  const scrollY = window.scrollY;
+  if (genBtn) genBtn.disabled = true;
+  if (regenBtn) regenBtn.disabled = true;
+  if (spinner) spinner.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  try {
+    const params = new URLSearchParams({
+      refer_wav_path: ch.ref,
+      prompt_text: ch.prompt,
+      prompt_language: 'zh',
+      text: text,
+      text_language: 'zh',
+      top_k: '6', top_p: '0.9', temperature: '0.7', speed: '1.0'
+    });
+    if (banner) banner.textContent = '🎤 生成中...';
+    const r = await fetch('http://localhost:9880/?' + params.toString());
+    if (!r.ok) { toastMsg('⚠️ API错误 HTTP ' + r.status, 5000, 'warn'); if(banner)banner.textContent='❌ HTTP '+r.status; return; }
+    const blob = await r.blob();
+    const audioUrl = URL.createObjectURL(blob);
+    generatedAudios[fid] = { url: audioUrl, size: blob.size, text: text };
+    showVoicePlayback(fid);
+    window.scrollTo(0, scrollY);
+    if (voiceSection) voiceSection.scrollIntoView({behavior:'smooth',block:'center'});
+  } catch (e) { toastMsg('⚠️ TTS错误: ' + e.message, 5000, 'warn'); if(banner)banner.textContent='❌ '+e.message; window.scrollTo(0, scrollY); }
+  finally {
+    if (genBtn) genBtn.disabled = false;
+    if (regenBtn) regenBtn.disabled = false;
+    if (spinner) spinner.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+}
+
+// ================================================================
+// DM-1: Voice config management
+// ================================================================
+function toggleVoiceConfigForm(fid) {
+  const form = document.getElementById('voicecfgform-' + fid);
+  if (!form) return;
+  const showing = form.style.display !== 'none';
+  form.style.display = showing ? 'none' : 'block';
+}
+
+async function saveVoiceConfig(fid) {
+  const provider = document.getElementById('cfg-provider-' + fid)?.value || 'NLS';
+  const voiceName = document.getElementById('cfg-voice-' + fid)?.value?.trim() || '';
+  const refText = document.getElementById('cfg-reftext-' + fid)?.value?.trim() || '';
+  
+  try {
+    const name = Object.keys(CHAR_MAP).find(k => CHAR_MAP[k] === fid) || fid;
+    const r = await fetch('/api/character/' + fid, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        text: sampleText,
-        voice: nlsSpeaker,
-        format: 'mp3',
-        sample_rate: 48000,
-      }),
+        profile: {
+          voice: {
+            provider: provider,
+            nls_speaker: voiceName,
+            reference_text: refText
+          }
+        }
+      })
     });
-    const ttsRes = await ttsR.json();
-    if (ttsRes.audio_url) {
-      // Play the audio
-      const audio = new Audio(ttsRes.audio_url);
-      audio.play();
-      toastMsg('🎤 正在播放: ' + sampleText.substring(0, 20) + '...', 3000);
-    } else {
-      toastMsg('⚠️ TTS 合成失败: ' + (ttsRes.error || '未知错误'), 3000, 'warn');
-    }
-  } catch (e) {
-    toastMsg('⚠️ TTS 服务未连接: ' + e.message, 3000, 'warn');
+    if (!r.ok) { toastMsg('⚠️ 保存失败 HTTP ' + r.status, 3000, 'warn'); return; }
+    toastMsg('✅ 音色已保存', 2000);
+    toggleVoiceConfigForm(fid);
+    updateVoiceCard(fid, provider, voiceName, refText);
+    refreshVoiceButtons(fid);
+  } catch (e) { toastMsg('⚠️ 保存失败: ' + e.message, 3000, 'warn'); }
+}
+
+function updateVoiceCard(fid, provider, voiceName, refText) {
+  const typeEl = document.getElementById('vc-type-' + fid);
+  const voiceEl = document.getElementById('vc-voice-' + fid);
+  const refEl = document.getElementById('vc-ref-' + fid);
+  if (typeEl) typeEl.textContent = provider || '—';
+  if (voiceEl) voiceEl.textContent = voiceName || '未配置';
+  if (refEl) refEl.textContent = refText || '—';
+}
+
+function refreshVoiceButtons(fid) {
+  const audBtn = document.getElementById('audbtn-' + fid);
+  if (audBtn) audBtn.disabled = false;
+}
+
+async function auditionVoice(fid) {
+  const ch = CHARACTER_VOICES[fid];
+  const cfgVoiceEl = document.getElementById('cfg-voice-' + fid);
+  const cfgRefEl = document.getElementById('cfg-reftext-' + fid);
+  const refText = cfgRefEl?.value?.trim() || document.getElementById('vc-ref-' + fid)?.textContent || '';
+  if (!refText || refText === '—') { toastMsg('⚠️ 请先配置参考文本', 2000, 'warn'); return; }
+  
+  const banner = document.getElementById('version-check');
+  const audBtn = document.getElementById('audbtn-' + fid);
+  const spinner = document.getElementById('voicespinner-' + fid);
+  const playerRow = document.getElementById('voiceplayerrow-' + fid);
+  if (audBtn) audBtn.disabled = true;
+  if (spinner) spinner.style.display = 'block';
+  
+  try {
+    const referPath = ch ? ch.ref : '/Users/hokeli/GPT-SoVITS/output/wusong_cosyvoice.wav';
+    const prompt = ch ? ch.prompt : '风雨还在下。主人，我在风雨里呼唤着你的名字。';
+    const params = new URLSearchParams({
+      refer_wav_path: referPath,
+      prompt_text: prompt,
+      prompt_language: 'zh',
+      text: refText,
+      text_language: 'zh',
+      top_k: '6', top_p: '0.9', temperature: '0.7', speed: '1.0'
+    });
+    if (banner) banner.textContent = '🔊 试听生成中...';
+    const r = await fetch('http://localhost:9880/?' + params.toString());
+    if (!r.ok) { toastMsg('⚠️ API错误 HTTP ' + r.status, 5000, 'warn'); return; }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const audio = document.getElementById('voiceaudio-' + fid);
+    const dur = document.getElementById('voicedur-' + fid);
+    if (playerRow) playerRow.style.display = 'flex';
+    if (audio) { audio.src = url; audio.load(); audio.play().catch(() => {}); }
+    if (dur) dur.textContent = (blob.size/1024).toFixed(0) + 'KB';
+    if (banner) banner.textContent = '✅ 试听: ' + refText.substring(0,20);
+  } catch (e) { toastMsg('⚠️ 试听失败: ' + e.message, 3000, 'warn'); }
+  finally {
+    if (audBtn) audBtn.disabled = false;
+    if (spinner) spinner.style.display = 'none';
+  }
+}
+
+function closeVoicePlayer(fid) {
+  const audio = document.getElementById('voiceaudio-' + fid);
+  const playerRow = document.getElementById('voiceplayerrow-' + fid);
+  if (audio) { audio.pause(); audio.currentTime = 0; }
+  if (playerRow) playerRow.style.display = 'none';
+}
+
+function showVoicePlayback(fid) {
+  const info = generatedAudios[fid];
+  if (!info) return;
+  const playerRow = document.getElementById('voiceplayerrow-' + fid);
+  const audio = document.getElementById('voiceaudio-' + fid);
+  const dur = document.getElementById('voicedur-' + fid);
+  const genBtn = document.getElementById('genbtn-' + fid);
+  const regenBtn = document.getElementById('regenbtn-' + fid);
+  const banner = document.getElementById('version-check');
+  if (playerRow) playerRow.style.display = 'flex';
+  if (audio) { audio.src = info.url; audio.load(); }
+  if (dur) dur.textContent = (info.size/1024).toFixed(0) + 'KB';
+  if (genBtn) genBtn.style.display = 'none';
+  if (regenBtn) regenBtn.style.display = 'inline-block';
+  toastMsg('🎤 生成完成', 3000);
+  if (banner) banner.textContent = '✅ ' + info.text.substring(0,20) + ' — ' + (info.size/1024).toFixed(0) + 'KB';
+}
+
+function regenerateVoice(fid) {
+  const playerRow = document.getElementById('voiceplayerrow-' + fid);
+  const genBtn = document.getElementById('genbtn-' + fid);
+  const regenBtn = document.getElementById('regenbtn-' + fid);
+  if (playerRow) playerRow.style.display = 'none';
+  if (genBtn) genBtn.style.display = 'inline-block';
+  if (regenBtn) regenBtn.style.display = 'none';
+  if (generatedAudios[fid]) {
+    URL.revokeObjectURL(generatedAudios[fid].url);
+    delete generatedAudios[fid];
   }
 }
 
@@ -1780,6 +2233,31 @@ refresh = async function () {
   }
 })();
 
+// ⛔ 铁则 #0 自动检测: PRD 版本滞后告警
+(function checkPRDStaleness() {
+  const el = document.getElementById('prdStaleAlert');
+  if (!el) return;
+  // Extract current code version from title/badge
+  const titleEl = document.getElementById('appTitle');
+  const codeVerMatch = titleEl ? titleEl.textContent.match(/v3\.6\.(\d+)/) : null;
+  if (!codeVerMatch) return;
+  const codeVer = parseInt(codeVerMatch[1], 10);
+  // Fetch PRD latest version
+  fetch('/reports/PRD-v3.6.md?_=' + Date.now(), {cache: 'no-store'})
+    .then(r => r.ok ? r.text() : Promise.reject())
+    .then(txt => {
+      const m = txt.match(/v3\.6\.(\d+)/g);
+      if (!m) return;
+      const nums = m.map(s => parseInt(s.replace('v3.6.',''), 10)).filter(n => !isNaN(n));
+      const prdMax = Math.max(...nums);
+      if (codeVer > prdMax) {
+        document.getElementById('prdAlertCodeVer').textContent = 'v3.6.' + codeVer;
+        document.getElementById('prdAlertPrdVer').textContent = 'v3.6.' + prdMax;
+        el.style.display = 'block';
+      }
+    }).catch(() => {});
+})();
+
 // ================================================================
 // UX-10: Search Highlight Helper
 // ================================================================
@@ -1937,12 +2415,16 @@ function updateChart(mode) {
     ms.forEach(m => { counts[m.status] = (counts[m.status] || 0) + 1; });
     labels = Object.keys(counts);
     data = Object.values(counts);
-    colors = labels.map(s => {
-      if (s === 'completed' || s === 'approved') return '#22c55e';
-      if (s === 'waiting_approval') return '#f59e0b';
-      if (s === 'running') return '#3b82f6';
-      if (s === 'rejected') return '#ef4444';
-      return '#666';
+    colors = labels.map(function(status) {
+      switch(status) {
+        case 'completed': return '#3b82f6';  // 蓝色
+        case 'approved': return '#8b5cf6';   // 紫色
+        case 'waiting_approval': return '#f59e0b';  // 橙色
+        case 'pending': return '#06b6d4';    // 青色
+        case 'running': return '#ec4899';    // 粉色
+        case 'rejected': return '#ef4444';   // 红色
+        default: return '#64748b';           // 石板灰
+      }
     });
   } else if (mode === 'source') {
     const counts = {};
@@ -1958,6 +2440,8 @@ function updateChart(mode) {
       tk.filter(m => m.status === 'completed' || m.status === 'approved').length,
       dm.filter(m => m.status === 'completed' || m.status === 'approved').length
     ];
+    // Ensure we have valid values to prevent undefined in tooltips
+    data = data.map(value => (typeof value !== 'undefined' && value !== null) ? value : 0);
     colors = ['#3b82f6', '#8b5cf6'];
   }
 
@@ -1988,7 +2472,24 @@ function updateChart(mode) {
           borderColor: '#333',
           borderWidth: 1,
           cornerRadius: 6,
-          callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed} 项` }
+          callbacks: {
+            label: function(context) {
+              let label = context.label || '';
+              let value = '';
+              
+              if (context.parsed !== null) {
+                if (mode === 'pipeline') {
+                  value = context.parsed.y !== undefined ? context.parsed.y : context.raw;
+                } else {
+                  value = context.parsed !== undefined ? context.parsed : context.raw;
+                }
+              } else {
+                value = context.raw || 0;
+              }
+              
+              return label + ': ' + value + ' 项';
+            }
+          }
         }
       },
       ...(mode === 'pipeline' ? {
@@ -2156,41 +2657,8 @@ function exitCompare(btn) {
 // ================================================================
 // v3.6.9: UX-6 音色试听（Web Speech API fallback）
 // ================================================================
-async function auditionVoice(fid) {
-  toastMsg('🎤 正在试听...', 2000);
-  try {
-    // Try backend TTS first
-    const r = await fetch('/api/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: `${fid}在此，听我号令！`, voice: 'zhiming', format: 'mp3', sample_rate: 48000 })
-    });
-    if (r.ok) {
-      const data = await r.json();
-      if (data.audio_url) {
-        new Audio(data.audio_url).play();
-        return;
-      }
-    }
-  } catch (e) {}
-  
-  // Fallback: Web Speech API
-  if ('speechSynthesis' in window) {
-    const utter = new SpeechSynthesisUtterance(`${fid}在此，听我号令！`);
-    utter.lang = 'zh-CN';
-    utter.rate = 0.9;
-    utter.pitch = 0.8;
-    // Try to find a Chinese voice
-    const voices = speechSynthesis.getVoices();
-    const zhVoice = voices.find(v => v.lang.startsWith('zh'));
-    if (zhVoice) utter.voice = zhVoice;
-    speechSynthesis.speak(utter);
-    toastMsg('🎤 浏览器语音试听（非TTS模型）', 2500, 'warn');
-  } else {
-    toastMsg('⚠️ 浏览器不支持语音合成', 2000, 'error');
-  }
-}
-// Preload voices for Web Speech API
+// Voice functions now in DM-1 section (uploadRefAudio, generateVoice, detectVoiceApi)
+// Preload voices for Web Speech API (fallback)
 if ('speechSynthesis' in window) speechSynthesis.getVoices();
 
 // ================================================================
@@ -2351,31 +2819,72 @@ renderDetail = async function() {
 };
 
 // ================================================================
-// v3.6.9: Auto-collapse sections by default (摘要优先)
+// v3.6.13: Expand ALL sections by default (show all data)
 // ================================================================
-// After any detail render, collapse non-critical sections
 function autoCollapseDetails() {
-  const secBodies = document.querySelectorAll('.sec-body.collapsible');
-  secBodies.forEach((body, i) => {
-    // Only expand first 2 sections by default (summary + key info)
-    if (i > 1) {
-      body.classList.remove('expanded');
-      const hdr = body.previousElementSibling?.querySelector?.('.sec-hdr');
-      if (hdr) hdr.classList.remove('expanded');
-    }
+  const secBodies = document.querySelectorAll('.sec-body');
+  secBodies.forEach((body) => {
+    body.classList.remove('collapsed');
+    const hdr = body.closest('.sec')?.querySelector('.sec-hdr');
+    if (hdr) hdr.classList.add('expanded');
   });
 }
 
-// Patch renderDetail to apply auto-collapse
+// Patch renderDetail to expand all sections
 const _origRenderDetail4 = renderDetail;
 renderDetail = async function() {
   await _origRenderDetail4();
-  setTimeout(autoCollapseDetails, 100);
+  setTimeout(autoCollapseDetails, 50);
 };
 
 // ================================================================
 // v3.6.9: Init - auto-refresh every 30 seconds
 // ================================================================
+
+// ================================================================
+// v3.6.12: Debug - check if data loads
+// ================================================================
+(async function debugLoad() {
+  console.log('[DEBUG] Starting data load check...');
+  try {
+    const r = await fetch('/api/dashboard?t=' + Date.now());
+    console.log('[DEBUG] fetch status:', r.status);
+    const d = await r.json();
+    console.log('[DEBUG] milestones count:', (d.milestones || []).length);
+    if (d.milestones && d.milestones.length > 0) {
+      console.log('[DEBUG] first milestone:', d.milestones[0].ms_id, d.milestones[0].name);
+    }
+  } catch(e) {
+    console.error('[DEBUG] fetch FAILED:', e.message);
+  }
+  
+  // Also show a visible indicator
+  const el = document.getElementById('version-check');
+  if (el) {
+    try {
+      const r2 = await fetch('/api/dashboard?t=' + Date.now());
+      const d2 = await r2.json();
+      const count = (d2.milestones || []).length;
+      el.textContent = `✅ DATA OK: ${count} milestones loaded | P4-STRIP | ` + new Date().toLocaleTimeString();
+      el.style.background = count > 0 ? '#10b981' : '#ef4444';
+      if (count === 0) el.textContent += ' — API returned 0 items!';
+    } catch(e) {
+      el.textContent = `❌ FETCH FAILED: ${e.message} — check console`;
+      el.style.background = '#ef4444';
+    }
+  }
+  
+  // Global error catcher — show JS errors in the banner
+  window.onerror = function(msg, url, line, col, error) {
+    const el = document.getElementById('version-check');
+    if (el) {
+      el.textContent = '❌ JS ERROR: ' + msg + ' (line ' + line + ')';
+      el.style.background = '#ef4444';
+    }
+    return false;
+  };
+})();
+
 refresh();
 setInterval(refresh, 30000);
 </script>

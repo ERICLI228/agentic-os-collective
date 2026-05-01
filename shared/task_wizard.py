@@ -745,8 +745,15 @@ def api_character_regenerate(char_name):
 
 @app.route('/api/render/<char_id>/<filename>')
 def api_render_image(char_id, filename):
-    """渲染图静态文件服务"""
-    path = Path.home() / ".agentic-os" / "character_designs" / "renders" / char_id / filename
+    """渲染图静态文件服务（支持拼音id和中文名目录）"""
+    renders_dir = Path.home() / ".agentic-os" / "character_designs" / "renders"
+    path = renders_dir / char_id / filename
+    if not path.exists():
+        # Fallback: try CHARACTER_ID_MAP reverse lookup (pinyin → Chinese name)
+        from script_manager import CHARACTER_ID_MAP
+        REVERSE_MAP = {v: k for k, v in CHARACTER_ID_MAP.items()}
+        cn_name = REVERSE_MAP.get(char_id, char_id)
+        path = renders_dir / cn_name / filename
     if not path.exists():
         return "Not found", 404
     from flask import send_file

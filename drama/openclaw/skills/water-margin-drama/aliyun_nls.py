@@ -15,6 +15,7 @@ VOICE_MAP = {
     "李逵": "zhihao",
     "林冲": "zhiming",
     "鲁智深": "zhihao",
+    "吴用": "zhiming",
     "旁白": "zhiqi",
     "default": "zhiming",
 }
