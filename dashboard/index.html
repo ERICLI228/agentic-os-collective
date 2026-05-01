@@ -41,6 +41,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:linear-g
 .modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center}
 .modal.active{display:flex}
 .modal-content{background:#1e293b;border-radius:20px;padding:30px;max-width:700px;width:90%;max-height:80vh;overflow-y:auto;border:1px solid #38bdf8}
+.voice-panel{background:rgba(0,0,0,0.2);border-radius:16px;padding:20px;border:1px solid #334155;margin-bottom:20px}
+.voice-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.voice-card{background:rgba(255,255,255,0.05);border-radius:12px;padding:16px;border:1px solid #334155;transition:all .2s}
+.voice-card.ready{border-color:#4ade80}
+.voice-card:hover{border-color:#38bdf8}
+.voice-card h4{font-size:16px;color:#38bdf8;margin-bottom:8px}
+.voice-card .desc{font-size:13px;color:#94a3b8;margin-bottom:8px}
+.voice-card .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;margin-right:6px}
+.voice-card .badge.ready{background:#4ade80;color:#0f172a}
+.voice-card .badge.pending{background:#facc15;color:#0f172a}
+.voice-card input, .voice-card textarea{width:100%;padding:6px 10px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#f1f5f9;font-size:13px;margin:4px 0}
+.voice-card textarea{min-height:50px;resize:vertical}
+.voice-card .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.voice-card button,.voice-panel-header button{padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .2s}
+.voice-card button.primary{background:#38bdf8;color:#0f172a}
+.voice-card button.success{background:#4ade80;color:#0f172a}
+.voice-card button.warn{background:#facc15;color:#0f172a}
+.voice-card button:hover{transform:translateY(-1px);opacity:.9}
+.voice-card audio{width:100%;margin-top:8px;height:32px}
+.voice-panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.voice-panel-header h3{font-size:18px;color:#cbd5e1}
+.voice-upload-hint{font-size:11px;color:#64748b;margin-top:4px}
+.file-upload{position:relative;overflow:hidden}
+.file-upload input[type=file]{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.toast{position:fixed;bottom:20px;right:20px;padding:12px 20px;border-radius:8px;color:#fff;font-weight:600;z-index:2000;animation:slideIn .3s}
+.toast.success{background:#4ade80;color:#0f172a}
+.toast.error{background:#f87171}
+@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
 .close{float:right;cursor:pointer;font-size:24px;color:#94a3b8}
 .milestone-item{padding:10px;border-bottom:1px solid #334155;display:flex;align-items:center}
 .milestone-status{margin-left:auto;padding:2px 10px;border-radius:12px;font-size:12px;background:#334155;color:#fff}
@@ -94,6 +122,16 @@ button{background:#38bdf8;color:#0f172a;border:none;padding:8px 20px;border-radi
 <div class="section-title">📌 活跃任务</div>
 <div id="taskList" class="task-list"><div class="loading">加载中...</div></div>
 
+<div class="section-title" style="margin-top:28px">🎤 语音管理</div>
+<div class="voice-panel">
+<div class="voice-panel-header">
+<h3>角色配音</h3>
+<button class="primary" onclick="refreshVoices()">🔄 刷新</button>
+</div>
+<div id="voiceGrid" class="voice-grid"><div style="color:#64748b;padding:12px">加载中...</div></div>
+<div id="voiceAudio"><div style="margin-top:16px;padding:12px;background:#0f172a;border-radius:8px;color:#64748b;font-size:13px;text-align:center">等待生成...</div></div>
+</div>
+
 <div id="taskModal" class="modal">
 <div class="modal-content">
 <span class="close" onclick="closeModal()">&times;</span>
@@ -106,7 +144,7 @@ button{background:#38bdf8;color:#0f172a;border:none;padding:8px 20px;border-radi
 </div>
 
 <script>
-const API_PORTS=[5001,5000,9090];
+const API_PORTS=[5004,5001,5000,9090];
 let API_BASE="",currentFilter="all",currentProject="all",allTasks=[];
 
 async function detectApiPort(){
@@ -357,7 +395,86 @@ content.innerHTML=h||"<div style='color:#64748b'>暂无内容</div>";
 document.querySelectorAll(".kpi-card").forEach(c=>c.addEventListener("click",()=>{if(c.dataset.filter)setFilter(c.dataset.filter)}));
 document.getElementById("projectSelect").addEventListener("change",(e)=>{currentProject=e.target.value;fetchData()});
 
-(async()=>{if(await detectApiPort()){await fetchData();setInterval(fetchData,30000)}})();
+(async()=>{if(await detectApiPort()){await fetchData();setInterval(fetchData,30000);refreshVoices()}})();
+
+// ─────────── 语音管理 ───────────
+async function refreshVoices(){
+  if(!API_BASE)return;
+  const g=document.getElementById("voiceGrid");
+  try{
+    let r=await fetch(`${API_BASE}/api/voices`),d=await r.json();
+    let h="";
+    (d.voices||[]).forEach(v=>{
+      h+=`<div class="voice-card${v.ready?' ready':''}">
+        <h4>${v.name} <span class="badge ${v.ready?'ready':'pending'}">${v.ready?'✅ 就绪':'⏳ 待配置'}</span></h4>
+        <div class="desc">${v.voice_desc||''}</div>
+        <div class="file-upload" style="display:inline-block">
+          <button class="warn">📁 上传参考音频 (3-10s)</button>
+          <input type="file" accept="audio/*" onchange="uploadVoice('${v.id}',this)" ${!API_BASE?'disabled':''}>
+        </div>
+        <div class="voice-upload-hint">${v.has_ref_file?'已上传: '+v.ref_audio.split('/').pop():'未上传'}</div>
+        <input type="text" placeholder="输入参考文本（音频里说的什么）" value="${escHtml(v.prompt_text||'')}" onchange="updateVoiceText('${v.id}',this.value)">
+        <div class="actions">
+          <button class="primary" onclick="testVoice('${v.id}')" ${!v.ready?'disabled':''}>🗣 测试生成</button>
+        </div>
+      </div>`;
+    });
+    g.innerHTML=h||"<div style='color:#64748b'>无角色数据</div>";
+    if(d.output_dir)document.getElementById("voiceAudio").dataset.dir=d.output_dir;
+  }catch(e){g.innerHTML="<div style='color:#f87171'>加载失败</div>"}
+}
+
+function escHtml(s){return(String(s||"")).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+async function uploadVoice(id,f){
+  if(!API_BASE||!f.files||!f.files[0])return;
+  let fd=new FormData();fd.append("file",f.files[0]);
+  try{
+    let r=await fetch(`${API_BASE}/api/voices/${id}/upload`,{method:"POST",body:fd}),d=await r.json();
+    toast(d.ok?"上传成功":"上传失败",d.ok);
+    refreshVoices();
+  }catch(e){toast("上传失败: "+e.message,false)}
+}
+
+async function updateVoiceText(id,text){
+  if(!API_BASE||!text)return;
+  try{
+    await fetch(`${API_BASE}/api/voices/${id}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt_text:text})});
+  }catch(e){}
+}
+
+async function testVoice(id){
+  if(!API_BASE)return;
+  const va=document.getElementById("voiceAudio");
+  va.innerHTML="<div style='padding:12px;color:#facc15'>⏳ 生成中...</div>";
+  try{
+    let r=await fetch(`${API_BASE}/api/voices/${id}/tts`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:"你好，这是声音测试。"})}),d=await r.json();
+    if(d.ok&&d.url){
+      let url=`${API_BASE}${d.url}`;
+      va.innerHTML=`<div style="display:flex;align-items:center;gap:12px"><span style="color:#4ade80">✅ ${d.duration.toFixed(1)}s</span><audio controls src="${url}" style="flex:1;height:36px"></audio><button class="primary" onclick="testVoiceCustom('${id}')">自定义文本</button></div>`;
+    }else{
+      va.innerHTML=`<div style="color:#f87171">❌ ${d.error||'未知错误'}</div>`;
+    }
+  }catch(e){va.innerHTML=`<div style="color:#f87171">❌ ${e.message}</div>`}
+}
+
+async function testVoiceCustom(id){
+  let text=prompt("输入测试台词:", "武松大喝一声，手提哨棒冲上山岗");
+  if(!text||!API_BASE)return;
+  const va=document.getElementById("voiceAudio");
+  va.innerHTML="<div style='padding:12px;color:#facc15'>⏳ 生成中...</div>";
+  try{
+    let r=await fetch(`${API_BASE}/api/voices/${id}/tts`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text})}),d=await r.json();
+    if(d.ok&&d.url){
+      let url=`${API_BASE}${d.url}`;
+      va.innerHTML=`<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="color:#4ade80">✅ ${d.duration.toFixed(1)}s</span><span style="color:#94a3b8;font-size:13px">"${escHtml(text)}"</span><audio controls src="${url}" style="flex:1;min-width:200px;height:36px"></audio></div>`;
+    }else{
+      va.innerHTML=`<div style="color:#f87171">❌ ${d.error||'未知错误'}</div>`;
+    }
+  }catch(e){va.innerHTML=`<div style="color:#f87171">❌ ${e.message}</div>`}
+}
+
+function toast(msg,ok){let t=document.createElement("div");t.className=`toast ${ok?'success':'error'}`;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3000)}
 </script>
 </body>
 </html>

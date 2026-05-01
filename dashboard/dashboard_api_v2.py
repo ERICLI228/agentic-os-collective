@@ -847,4 +847,168 @@ if __name__ == '__main__':
         return jsonify({'task_id': task_id, 'pending_decisions': pending})
     
     ACTIVE_DIR.mkdir(parents=True, exist_ok=True)
+    
+    # ─────────────── GPT-SoVITS 语音管理 API ───────────────
+    VOICES_CONFIG = Path(__file__).resolve().parent.parent / "drama/openclaw/skills/water-margin-drama/character_voices.json"
+    AUDIO_OUTPUT_DIR = Path.home() / "GPT-SoVITS/output/drama"
+    
+    def _read_voices():
+        if VOICES_CONFIG.exists():
+            with open(VOICES_CONFIG) as f:
+                return json.load(f)
+        return {"characters": {}, "gpt_sovits_config": {}}
+    
+    def _write_voices(data):
+        VOICES_CONFIG.parent.mkdir(parents=True, exist_ok=True)
+        with open(VOICES_CONFIG, "w") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    
+    @app.route("/api/voices", methods=["GET"])
+    def list_voices():
+        data = _read_voices()
+        chars = data.get("characters", {})
+        result = []
+        for cid, c in chars.items():
+            ref = c.get("ref_audio", "")
+            ready = bool(ref) and bool(c.get("prompt_text"))
+            if ref:
+                ref_path = os.path.expanduser(ref)
+                ready = ready and os.path.exists(ref_path)
+            result.append({
+                "id": cid, "name": c.get("name", cid),
+                "voice_desc": c.get("voice_desc", ""),
+                "ready": ready,
+                "ref_audio": ref,
+                "prompt_text": c.get("prompt_text", ""),
+                "has_ref_file": bool(ref) and os.path.exists(os.path.expanduser(ref)) if ref else False,
+            })
+        return jsonify({"voices": result, "output_dir": str(AUDIO_OUTPUT_DIR)})
+    
+    @app.route("/api/voices/<char_id>", methods=["GET"])
+    def get_voice(char_id):
+        data = _read_voices()
+        c = data["characters"].get(char_id)
+        if not c:
+            return jsonify({"error": f"角色 '{char_id}' 不存在"}), 404
+        ref = c.get("ref_audio", "")
+        return jsonify({**c, "id": char_id, "has_ref_file": bool(ref) and os.path.exists(os.path.expanduser(ref)) if ref else False})
+    
+    @app.route("/api/voices/<char_id>", methods=["POST"])
+    def update_voice(char_id):
+        data = _read_voices()
+        if char_id not in data.get("characters", {}):
+            return jsonify({"error": f"角色 '{char_id}' 不存在"}), 404
+        body = request.get_json(silent=True) or {}
+        c = data["characters"][char_id]
+        for k in ("prompt_text", "prompt_language", "voice_desc"):
+            if k in body:
+                c[k] = body[k]
+        if "ref_audio" in body:
+            c["ref_audio"] = body["ref_audio"]
+        if "gpt_params" in body:
+            c["gpt_params"] = body["gpt_params"]
+        _write_voices(data)
+        return jsonify({"ok": True, "character": c})
+    
+    @app.route("/api/voices/<char_id>/upload", methods=["POST"])
+    def upload_ref_audio(char_id):
+        data = _read_voices()
+        if char_id not in data.get("characters", {}):
+            return jsonify({"error": f"角色 '{char_id}' 不存在"}), 404
+        if "file" not in request.files:
+            return jsonify({"error": "缺少 file 字段"}), 400
+        f = request.files["file"]
+        if f.filename == "":
+            return jsonify({"error": "文件名为空"}), 400
+        upload_dir = Path.home() / "GPT-SoVITS/output"
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        safe_name = f"ref_{char_id}_{int(time.time())}.wav"
+        dest = upload_dir / safe_name
+        f.save(str(dest))
+        data["characters"][char_id]["ref_audio"] = str(dest)
+        _write_voices(data)
+        return jsonify({"ok": True, "path": str(dest), "filename": safe_name})
+    
+    @app.route("/api/voices/<char_id>/tts", methods=["POST"])
+    def voice_tts(char_id):
+        data = _read_voices()
+        c = data["characters"].get(char_id)
+        if not c:
+            return jsonify({"error": f"角色 '{char_id}' 不存在"}), 404
+        body = request.get_json(silent=True) or {}
+        text = body.get("text", "")
+        if not text:
+            return jsonify({"error": "缺少 text 参数"}), 400
+        ref = c.get("ref_audio", "")
+        pt = c.get("prompt_text", "")
+        if not ref or not pt:
+            return jsonify({"error": "参考音频或提示文本未配置"}), 400
+        ref_path = os.path.expanduser(ref)
+        if not os.path.exists(ref_path):
+            return jsonify({"error": f"参考音频不存在: {ref_path}"}), 400
+        
+        sovits_cfg = data.get("gpt_sovits_config", {})
+        root = os.path.expanduser(sovits_cfg.get("GPT_SOVITS_ROOT", "~/GPT-SoVITS"))
+        
+        import sys as _sys
+        _sys.path.insert(0, os.path.join(root, "GPT_SoVITS", "GPT_SoVITS"))
+        _sys.path.insert(0, os.path.join(root, "GPT_SoVITS"))
+        os.environ.update({
+            "gpt_path": os.path.expanduser(sovits_cfg.get("gpt_path", "")),
+            "sovits_path": os.path.expanduser(sovits_cfg.get("sovits_path", "")),
+            "bert_path": os.path.expanduser(sovits_cfg.get("bert_path", "")),
+        })
+        
+        _cwd = os.getcwd()
+        try:
+            os.chdir(root)
+            import inference_webui as w
+            import numpy as np
+            import soundfile
+            
+            gen_w = w.change_sovits_weights(os.environ["sovits_path"])
+            list(gen_w)
+            
+            params = dict(c.get("gpt_params", {}))
+            params.setdefault("how_to_cut", "不切")
+            params.setdefault("top_k", 5)
+            params.setdefault("top_p", 0.9)
+            params.setdefault("temperature", 0.8)
+            params.setdefault("speed", 1.0)
+            params.setdefault("sample_steps", 32)
+            
+            gen = w.get_tts_wav(ref_path, pt, c.get("prompt_language", "Chinese"), text, "Chinese", **params)
+            sr, audio = next(gen)
+            
+            AUDIO_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+            out_name = f"{char_id}_{int(time.time())}.wav"
+            out_path = AUDIO_OUTPUT_DIR / out_name
+            soundfile.write(str(out_path), np.clip(audio, -32768, 32767).astype(np.int16), sr)
+            
+            return jsonify({
+                "ok": True,
+                "filename": out_name,
+                "duration": len(audio) / sr,
+                "sample_rate": sr,
+                "url": f"/api/audio/{out_name}",
+            })
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+        finally:
+            os.chdir(_cwd)
+    
+    @app.route("/api/audio/<filename>")
+    def serve_audio(filename):
+        p = AUDIO_OUTPUT_DIR / filename
+        if not p.exists():
+            return jsonify({"error": "文件不存在"}), 404
+        return send_file(str(p), mimetype="audio/wav")
+    
+    @app.route("/api/voices/<char_id>/audio", methods=["GET"])
+    def list_char_audio(char_id):
+        if not AUDIO_OUTPUT_DIR.exists():
+            return jsonify({"files": []})
+        files = sorted(AUDIO_OUTPUT_DIR.glob(f"{char_id}_*.wav"), key=os.path.getmtime, reverse=True)
+        return jsonify({"files": [{"name": f.name, "url": f"/api/audio/{f.name}", "size": f.stat().st_size} for f in files[:20]]})
+    
     app.run(host='0.0.0.0', port=5001, debug=False)

@@ -16,7 +16,7 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 from contextlib import contextmanager
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, UploadFile, File
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -28,6 +28,9 @@ HOME = Path.home()
 WORKSPACE = HOME / ".openclaw/workspace"
 ACTIVE_DIR = WORKSPACE / "tasks/active"
 COMPLETED_DIR = WORKSPACE / "tasks/completed"
+# GPT-SoVITS voice config path (worktree)
+VOICES_CONFIG = HOME / ".local/share/opencode/worktree/c85db5c86a372840bd695617e2a070408e6c4cc5/quick-cabin/drama/openclaw/skills/water-margin-drama/character_voices.json"
+AUDIO_OUTPUT_DIR = HOME / "GPT-SoVITS/output/drama"
 TEMPLATES_DIR = HOME / "agentic-os-collective/shared/templates"
 EXEC_LOGS_DIR = HOME / "agentic-os-collective/shared/logs/executions"
 DB_PATH = HOME / "agentic-os-collective/shared/data/agentic.db"
@@ -565,6 +568,268 @@ def api_drama_audio():
         for f in DRAMA_OUTPUT_DIR.glob("*.mp3"):
             audio_files.append({"id": f.stem, "name": f.stem, "path": str(f), "size": f.stat().st_size})
     return {"audio": audio_files, "count": len(audio_files)}
+
+# ============================================================================
+# 决策端点 (v3.3 迁移新增)
+# ============================================================================
+
+class DecisionRequest(BaseModel):
+    task_id: str
+    milestone_id: str
+    decision_type: str = Field(..., description="approve | modify | reject")
+    comment: str = ""
+
+
+class RetryRequest(BaseModel):
+    task_id: str
+    milestone_id: str
+    comment: str = ""
+
+
+@app.post("/api/decision/submit")
+def api_submit_decision(req: DecisionRequest):
+    """提交决策 - 通过/修改/驳回 (对应 FR-DR-006 审核面板)"""
+    search_dirs = [ACTIVE_DIR, ACTIVE_DIR / "drama", ACTIVE_DIR / "tk"]
+    task_file = None
+    for d in search_dirs:
+        tf = d / f"{req.task_id}.json"
+        if tf.exists():
+            task_file = tf
+            break
+    if not task_file:
+        raise HTTPException(404, "Task not found")
+
+    with open(task_file, "r+") as f:
+        task = json.load(f)
+        for m in task.get("milestones", []):
+            if m.get("id") == req.milestone_id:
+                m.setdefault("decision_history", []).append({
+                    "decision_type": req.decision_type,
+                    "decision_at": datetime.now().isoformat(),
+                    "decision_by": "human",
+                    "comment": req.comment,
+                })
+                if req.decision_type == "approve":
+                    m["status"] = "completed"
+                elif req.decision_type == "modify":
+                    m["status"] = "pending"
+                elif req.decision_type == "reject":
+                    m["status"] = "rejected"
+                break
+
+        if all(mm.get("status") == "completed" for mm in task.get("milestones", [])):
+            task["status"] = "completed"
+
+        f.seek(0)
+        json.dump(task, f, ensure_ascii=False, indent=2)
+        f.truncate()
+
+    return {"status": "ok", "decision_type": req.decision_type}
+
+
+@app.post("/api/decision/retry")
+def api_retry_milestone(req: RetryRequest):
+    """重新执行里程碑 (修改后重试)"""
+    search_dirs = [ACTIVE_DIR, ACTIVE_DIR / "drama", ACTIVE_DIR / "tk"]
+    task_file = None
+    for d in search_dirs:
+        tf = d / f"{req.task_id}.json"
+        if tf.exists():
+            task_file = tf
+            break
+    if not task_file:
+        raise HTTPException(404, "Task not found")
+
+    with open(task_file, "r+") as f:
+        task = json.load(f)
+        for m in task.get("milestones", []):
+            if m.get("id") == req.milestone_id:
+                m["status"] = "running"
+                m["retry_comment"] = req.comment
+                m["retried_at"] = datetime.now().isoformat()
+                break
+        f.seek(0)
+        json.dump(task, f, ensure_ascii=False, indent=2)
+        f.truncate()
+
+    return {"status": "retry_triggered"}
+
+
+@app.get("/api/tasks/{task_id}/pending-decisions")
+def api_pending_decisions(task_id: str):
+    """获取任务的待决策里程碑列表"""
+    search_dirs = [ACTIVE_DIR, ACTIVE_DIR / "drama", ACTIVE_DIR / "tk"]
+    task_file = None
+    for d in search_dirs:
+        tf = d / f"{task_id}.json"
+        if tf.exists():
+            task_file = tf
+            break
+    if not task_file:
+        raise HTTPException(404, "Task not found")
+
+    task = json.loads(task_file.read_text())
+    pending = []
+    for m in task.get("milestones", []):
+        if m.get("decision_required") and m.get("status") in ("pending", "pending_decision"):
+            pending.append({
+                "milestone_id": m.get("id"),
+                "milestone_name": m.get("name"),
+                "status": m.get("status"),
+                "output_content": m.get("execution_details", {}).get("output_content"),
+                "deadline": m.get("decision_deadline"),
+            })
+    return {"pending_decisions": pending, "count": len(pending)}
+
+
+# ============================================================================
+# GPT-SoVITS 语音管理端点 (v3.7)
+# ============================================================================
+
+def _read_voices():
+    if VOICES_CONFIG.exists():
+        with open(VOICES_CONFIG) as f:
+            return json.load(f)
+    return {"characters": {}, "gpt_sovits_config": {}}
+
+def _write_voices(data):
+    VOICES_CONFIG.parent.mkdir(parents=True, exist_ok=True)
+    with open(VOICES_CONFIG, "w") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+@app.get("/api/voices")
+def api_list_voices():
+    data = _read_voices()
+    chars = data.get("characters", {})
+    result = []
+    for cid, c in chars.items():
+        ref = c.get("ref_audio", "")
+        ready = bool(ref) and bool(c.get("prompt_text"))
+        if ref:
+            ref_path = os.path.expanduser(ref)
+            ready = ready and os.path.exists(ref_path)
+        result.append({
+            "id": cid, "name": c.get("name", cid),
+            "voice_desc": c.get("voice_desc", ""), "ready": ready,
+            "ref_audio": ref, "prompt_text": c.get("prompt_text", ""),
+            "has_ref_file": bool(ref) and os.path.exists(os.path.expanduser(ref)) if ref else False,
+        })
+    return {"voices": result, "output_dir": str(AUDIO_OUTPUT_DIR)}
+
+@app.post("/api/voices/{char_id}")
+def api_update_voice(char_id: str, body: dict = None):
+    from fastapi import Request
+    data = _read_voices()
+    if char_id not in data.get("characters", {}):
+        raise HTTPException(404, f"角色 '{char_id}' 不存在")
+    c = data["characters"][char_id]
+    for k in ("prompt_text", "prompt_language", "voice_desc", "ref_audio"):
+        if k in body: c[k] = body[k]
+    if "gpt_params" in body: c["gpt_params"] = body["gpt_params"]
+    _write_voices(data)
+    return {"ok": True}
+
+@app.post("/api/voices/{char_id}/upload")
+async def api_upload_ref(char_id: str, file: UploadFile = File(...)):
+    data = _read_voices()
+    if char_id not in data.get("characters", {}):
+        raise HTTPException(404, f"角色 '{char_id}' 不存在")
+    upload_dir = Path.home() / "GPT-SoVITS/output"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    safe_name = f"ref_{char_id}_{int(time.time())}.wav"
+    dest = upload_dir / safe_name
+    content = await file.read()
+    with open(dest, "wb") as f: f.write(content)
+    data["characters"][char_id]["ref_audio"] = str(dest)
+    _write_voices(data)
+    return {"ok": True, "path": str(dest), "filename": safe_name}
+
+@app.post("/api/voices/{char_id}/tts")
+def api_voice_tts(char_id: str, body: dict):
+    data = _read_voices()
+    c = data["characters"].get(char_id)
+    if not c: raise HTTPException(404, f"角色 '{char_id}' 不存在")
+    text = body.get("text", "")
+    if not text: raise HTTPException(400, "缺少 text 参数")
+    ref = c.get("ref_audio", ""); pt = c.get("prompt_text", "")
+    if not ref or not pt: raise HTTPException(400, "参考音频或提示文本未配置")
+    ref_path = os.path.expanduser(ref)
+    if not os.path.exists(ref_path): raise HTTPException(400, f"参考音频不存在: {ref_path}")
+    
+    sovits_cfg = data.get("gpt_sovits_config", {})
+    root = os.path.expanduser(sovits_cfg.get("GPT_SOVITS_ROOT", "~/GPT-SoVITS"))
+    venv_python = os.path.join(root, "venv/bin/python3")
+    
+    params = dict(c.get("gpt_params", {}))
+    params.setdefault("how_to_cut", "不切")
+    params.setdefault("top_k", 5)
+    params.setdefault("top_p", 0.9)
+    params.setdefault("temperature", 0.8)
+    params.setdefault("speed", 1.0)
+    params.setdefault("sample_steps", 32)
+    
+    AUDIO_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    out_name = f"{char_id}_{int(time.time())}.wav"
+    out_path = AUDIO_OUTPUT_DIR / out_name
+    
+    req = {
+        "ref_wav": ref_path,
+        "prompt_text": pt,
+        "prompt_language": c.get("prompt_language", "Chinese"),
+        "text": text,
+        "text_language": "Chinese",
+        "gpt_path": os.path.expanduser(sovits_cfg.get("gpt_path", "")),
+        "sovits_path": os.path.expanduser(sovits_cfg.get("sovits_path", "")),
+        "bert_path": os.path.expanduser(sovits_cfg.get("bert_path", "")),
+        "output": str(out_path),
+        **params
+    }
+    
+    import tempfile
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        json.dump(req, f)
+        req_file = f.name
+    
+    try:
+        req["root"] = root
+        worker_file = os.path.join(root, "_tts_worker.py")
+        
+        result = subprocess.run([venv_python, worker_file, req_file], capture_output=True, text=True, timeout=120, cwd=root)
+        
+        if result.returncode != 0:
+            raise HTTPException(500, result.stderr.strip() or "TTS worker failed")
+        
+        if out_path.exists() and out_path.stat().st_size > 0:
+            import wave
+            try:
+                with wave.open(str(out_path), "rb") as wf:
+                    dur = wf.getnframes() / wf.getframerate()
+                    sr = wf.getframerate()
+                return {"ok": True, "filename": out_name, "duration": round(dur, 2), "sample_rate": sr, "url": f"/api/audio/{out_name}"}
+            except Exception:
+                return {"ok": True, "filename": out_name, "duration": 0, "sample_rate": 24000, "url": f"/api/audio/{out_name}"}
+        else:
+            # Check stdout for OK line as fallback
+            output_text = result.stdout.strip()
+            for line in output_text.split("\n"):
+                if line.startswith("OK|"):
+                    parts = line.split("|")
+                    return {"ok": True, "filename": out_name, "duration": float(parts[1]), "sample_rate": int(parts[2]), "url": f"/api/audio/{out_name}"}
+            raise HTTPException(500, f"TTS 未生成输出文件: {result.stdout[-200:]}")
+    finally:
+        os.unlink(req_file)
+
+@app.get("/api/audio/{filename}")
+def api_serve_audio(filename: str):
+    p = AUDIO_OUTPUT_DIR / filename
+    if not p.exists(): raise HTTPException(404, "文件不存在")
+    return FileResponse(str(p), media_type="audio/wav")
+
+@app.get("/api/voices/{char_id}/audio")
+def api_list_char_audio(char_id: str):
+    if not AUDIO_OUTPUT_DIR.exists(): return {"files": []}
+    files = sorted(AUDIO_OUTPUT_DIR.glob(f"{char_id}_*.wav"), key=os.path.getmtime, reverse=True)
+    return {"files": [{"name": f.name, "url": f"/api/audio/{f.name}", "size": f.stat().st_size} for f in files[:20]]}
 
 # ============================================================================
 # 启动入口
