@@ -1543,7 +1543,7 @@ function startEditSB(epNum,seq){
   </div>`;
 }
 
-// v3.7: S2-1 Storyboard visual loader — load scenes with like/dislike + video scheme preview
+// v3.7: S2-1 Storyboard visual loader — real video_prompts + like/dislike + voice audition
 async function loadStoryboard(epNum){
   var el = document.getElementById('sb-' + epNum);
   if (!el) return;
@@ -1552,6 +1552,18 @@ async function loadStoryboard(epNum){
     var d = await r.json();
     var shots = d.shots || [];
     if (!shots.length) { el.innerHTML = '<span style="color:#555;font-size:10px">无分镜</span>'; return; }
+    // Fetch character video prompts for scheme preview
+    var charName = d.character || '';
+    var videoPrompts = {};
+    if (charName) {
+      try {
+        var cr = await fetch('/api/character/' + charName);
+        var cd = await cr.json();
+        var design = cd.design || cd;
+        videoPrompts = design.video_prompts || {};
+      } catch(e) {}
+    }
+    var schemes = ['方案一','方案二','方案三'];
     var h = '';
     shots.forEach(function(s, i) {
       var seq = s.id || s.seq || (i + 1);
@@ -1559,26 +1571,89 @@ async function loadStoryboard(epNum){
       var name = s.character || s.char_name || d.character || '';
       var desc = s.narration || s.description || s.scene || '';
       var dialogue = s.dialogue || s.line || '';
+      var sid = epNum + '-' + seq;
+      // Like/Dislike state from localStorage
+      var fb = localStorage.getItem('sb_fb_' + sid);
+      var liked = fb === 'like', disliked = fb === 'dislike';
       h += '<div class="sb-card" style="margin-bottom:8px">';
       h += '<div class="sb-seq">' + seq + '</div>';
-      h += '<div class="sb-body" id="sb-body-' + epNum + '-' + seq + '">';
+      h += '<div class="sb-body" id="sb-body-' + sid + '">';
       if (act) h += '<div class="sb-act">' + act + '</div>';
       if (name) h += '<div class="sb-name">' + name + '</div>';
       if (desc) h += '<div class="sb-desc">' + desc + '</div>';
       if (dialogue) h += '<div class="sb-dialogue">' + dialogue + '</div>';
-      // Video scheme preview buttons (方案一/二/三)
-      h += '<div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">';
-      h += '<button class="mini-btn" onclick="alert(\'方案一: 静态肖像特写\')">🎬 方案一</button>';
-      h += '<button class="mini-btn" onclick="alert(\'方案二: 经典场景动态\')">🎬 方案二</button>';
-      h += '<button class="mini-btn" onclick="alert(\'方案三: 电影感运镜\')">🎬 方案三</button>';
-      h += '<button class="mini-btn" style="color:#22c55e;border-color:#22c55e" onclick="alert(\'已标记喜欢\')">👍</button>';
-      h += '<button class="mini-btn" style="color:#ef4444;border-color:#ef4444" onclick="alert(\'已标记不喜欢\')">👎</button>';
-      h += '<button class="mini-btn" id="sb-editbtn-' + epNum + '-' + seq + '" onclick="startEditSB(' + epNum + ',' + seq + ')">✏ 编辑</button>';
-      h += '</div></div></div>';
+      // Scheme buttons + preview panel
+      h += '<div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;align-items:center">';
+      schemes.forEach(function(scheme) {
+        var vp = videoPrompts[scheme] || {};
+        var title = vp.title || '';
+        var prompt = vp.prompt || vp['简练版'] || '';
+        var hasData = !!prompt;
+        h += '<button class="mini-btn scheme-btn" id="schbtn-' + sid + '-' + scheme + '" '
+          + 'onclick="toggleSchemePreview(\'' + sid + '\',\'' + scheme + '\')" '
+          + 'data-prompt="' + (prompt ? prompt.replace(/"/g,'&quot;').substring(0,120) : '') + '" '
+          + 'data-title="' + (title ? title.replace(/"/g,'&quot;') : '') + '" '
+          + 'style="' + (hasData ? '' : 'opacity:.4') + '">🎬 ' + scheme + (title ? '<span style="font-size:7px;display:block;color:#666">' + title + '</span>' : '') + '</button>';
+      });
+      // Like/Dislike
+      h += '<button class="mini-btn sb-fb-btn" id="sblike-' + sid + '" onclick="toggleSBFeedback(\'' + sid + '\',\'like\',\'' + charName + '\')" style="color:' + (liked ? '#22c55e' : '#666') + ';border-color:' + (liked ? '#22c55e' : '#333') + ';margin-left:4px">' + (liked ? '❤️' : '👍') + '</button>';
+      h += '<button class="mini-btn sb-fb-btn" id="sbdislike-' + sid + '" onclick="toggleSBFeedback(\'' + sid + '\',\'dislike\',\'' + charName + '\')" style="color:' + (disliked ? '#ef4444' : '#666') + ';border-color:' + (disliked ? '#ef4444' : '#333') + '">' + (disliked ? '💔' : '👎') + '</button>';
+      h += '<button class="mini-btn" id="sb-editbtn-' + sid + '" onclick="startEditSB(' + epNum + ',' + seq + ')">✏ 编辑</button>';
+      h += '</div>';
+      // Scheme preview panel (hidden by default)
+      h += '<div class="scheme-preview" id="schpreview-' + sid + '" style="display:none;background:rgba(0,0,0,.2);border-radius:4px;padding:8px;margin-top:4px;font-size:9px;color:#888"></div>';
+      h += '</div></div>';
     });
     el.innerHTML = h;
   } catch(e) {
     el.innerHTML = '<span style="color:#ef4444;font-size:10px">加载失败: ' + e.message + '</span>';
+  }
+}
+
+function toggleSchemePreview(sid, scheme){
+  var cont = document.getElementById('schpreview-' + sid);
+  var btn = document.getElementById('schbtn-' + sid + '-' + scheme);
+  var title = btn.getAttribute('data-title') || '';
+  var prompt = btn.getAttribute('data-prompt') || '';
+  if (!cont) return;
+  // Close if already open for this scheme
+  if (cont.getAttribute('data-active') === scheme) {
+    cont.style.display = 'none';
+    cont.removeAttribute('data-active');
+    return;
+  }
+  cont.setAttribute('data-active', scheme);
+  cont.style.display = 'block';
+  cont.innerHTML = '<div style="font-weight:600;color:#93c5fd;margin-bottom:4px">' + scheme + (title ? ': ' + title : '') + '</div>'
+    + '<div style="color:#ccc;white-space:pre-wrap;line-height:1.5;max-height:120px;overflow-y:auto">' + (prompt || '—') + '</div>'
+    + '<div style="margin-top:6px;display:flex;gap:4px">'
+    + '<button class="mini-btn" style="color:#22c55e" onclick="toggleSBFeedback(\'' + sid + '\',\'like\')">❤️</button>'
+    + '<button class="mini-btn" style="color:#ef4444" onclick="toggleSBFeedback(\'' + sid + '\',\'dislike\')">💔</button>'
+    + '</div>';
+}
+
+function toggleSBFeedback(sid, type, charName){
+  var likeBtn = document.getElementById('sblike-' + sid);
+  var disBtn = document.getElementById('sbdislike-' + sid);
+  var current = localStorage.getItem('sb_fb_' + sid);
+  if (current === type) {
+    localStorage.removeItem('sb_fb_' + sid);
+    if (likeBtn) { likeBtn.style.color = '#666'; likeBtn.style.borderColor = '#333'; likeBtn.textContent = '👍'; }
+    if (disBtn) { disBtn.style.color = '#666'; disBtn.style.borderColor = '#333'; disBtn.textContent = '👎'; }
+    toastMsg('已清除反馈', 1000);
+  } else {
+    localStorage.setItem('sb_fb_' + sid, type);
+    if (likeBtn) { likeBtn.style.color = type === 'like' ? '#22c55e' : '#666'; likeBtn.style.borderColor = type === 'like' ? '#22c55e' : '#333'; likeBtn.textContent = type === 'like' ? '❤️' : '👍'; }
+    if (disBtn) { disBtn.style.color = type === 'dislike' ? '#ef4444' : '#666'; disBtn.style.borderColor = type === 'dislike' ? '#ef4444' : '#333'; disBtn.textContent = type === 'dislike' ? '💔' : '👎'; }
+    toastMsg(type === 'like' ? '❤️ 标记喜欢' : '💔 标记不喜欢', 1500);
+    // Log feedback
+    try {
+      var ts = new Date().toISOString();
+      var fb = JSON.parse(localStorage.getItem('sb_feedback_log') || '[]');
+      fb.push({sid: sid, type: type, character: charName || '', timestamp: ts});
+      if (fb.length > 200) fb = fb.slice(-100);
+      localStorage.setItem('sb_feedback_log', JSON.stringify(fb));
+    } catch(e) {}
   }
 }
 
