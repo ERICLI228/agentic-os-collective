@@ -30,6 +30,14 @@ CURRENT_EPISODES = {
             "idx": 9, "dir": "episode_05", "scene_key": "梁山"},
     "06": {"id": "zhiqu_shengchengang", "title": "智取生辰纲", "chapter": 16, "character": "吴用",
             "idx": 8, "dir": "episode_06", "scene_key": "景阳冈"},
+    "07": {"id": "wusong_dahu", "title": "武松打虎", "chapter": 23, "character": "武松",
+            "idx": 2, "dir": "episode_07", "scene_key": "景阳冈"},
+    "08": {"id": "wusong_dousha_ximenqing", "title": "武松斗杀西门庆", "chapter": 27, "character": "武松",
+            "idx": 3, "dir": "episode_08", "scene_key": "狮子楼"},
+    "09": {"id": "linchong_xueye_shang_liangshan", "title": "林冲雪夜上梁山", "chapter": 11, "character": "林冲",
+            "idx": 7, "dir": "episode_09", "scene_key": "梁山"},
+    "10": {"id": "huaheshang_danao_wutaishan", "title": "花和尚大闹五台山", "chapter": 4, "character": "鲁智深",
+            "idx": 11, "dir": "episode_10", "scene_key": "五台山"},
 }
 
 ROLE_OVERVIEW = {
@@ -46,7 +54,7 @@ ROLE_OVERVIEW = {
 CHARACTER_DESIGNS_DIR = Path.home() / ".agentic-os" / "character_designs"
 RENDER_DIR = CHARACTER_DESIGNS_DIR / "renders"
 
-EP_ORDER = ["01", "02", "03", "04", "05", "06"]
+EP_ORDER = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10"]
 
 # 角色名→文件ID映射
 CHARACTER_ID_MAP = {
@@ -319,6 +327,34 @@ def _build_storyboard(title, chapter, character):
             {"seq": 3, "act": "冲突", "scene": "黄泥岗", "description": f"押送队伍到达，{character}以掺药酒为计，表面争吵掩护", "emotion": "紧张→博弈", "duration": "12秒"},
             {"seq": 4, "act": "高潮", "scene": "黄泥岗", "description": f"{character}与众好汉假装抢酒喝，军士纷纷倒地，计谋得逞", "emotion": "暗喜→胜利", "duration": "14秒"},
             {"seq": 5, "act": "结局", "scene": "黄泥岗·夕阳", "description": f"{character}摇扇微笑，望着满载珠宝的车队消失在暮色中", "emotion": "得意→从容", "duration": "10秒"},
+        ],
+        "武松打虎": [
+            {"seq": 1, "act": "开场", "scene": "景阳冈酒家", "description": f"{character}来到景阳冈下的酒店，连饮十八碗烈酒，店家劝阻有猛虎出没", "emotion": "豪迈→微醺", "duration": "12秒", "dialogue": "再来三碗！"},
+            {"seq": 2, "act": "发展", "scene": "景阳冈山路", "description": f"{character}摇摇晃晃走上景阳冈，看到官府告示才知道真有猛虎，但已进退两难", "emotion": "警觉→犹豫", "duration": "10秒"},
+            {"seq": 3, "act": "冲突", "scene": "景阳冈乱石岗", "description": f"狂风骤起，吊睛白额大虫从乱石后跳出，{character}酒醒大半，抽出哨棒", "emotion": "震惊→迎战", "duration": "14秒"},
+            {"seq": 4, "act": "高潮", "scene": "景阳冈松林", "description": f"{character}哨棒打断，赤手空拳骑上虎背，铁拳如雨，打得猛虎七窍流血", "emotion": "爆发→搏杀", "duration": "16秒"},
+            {"seq": 5, "act": "结局", "scene": "景阳冈·朝阳", "description": f"{character}坐在死虎旁喘息，晨曦洒在血迹斑斑的脸上，露出疲惫而自豪的笑容", "emotion": "疲惫→荣耀", "duration": "10秒"},
+        ],
+        "武松斗杀西门庆": [
+            {"seq": 1, "act": "开场", "scene": "武大家灵堂", "description": f"{character}跪在兄长灵前，面色阴沉，手握灵位牌", "emotion": "悲痛→仇恨", "duration": "10秒", "dialogue": "哥哥，武二今日必为你报仇"},
+            {"seq": 2, "act": "发展", "scene": "狮子楼", "description": f"{character}怒气冲冲闯入狮子楼，西门庆正与友人饮酒作乐", "emotion": "愤怒→锁敌", "duration": "10秒"},
+            {"seq": 3, "act": "冲突", "scene": "狮子楼大厅", "description": f"{character}与西门庆激烈搏斗，桌椅碎裂，客人四散奔逃", "emotion": "爆发→搏杀", "duration": "14秒"},
+            {"seq": 4, "act": "高潮", "scene": "狮子楼窗边", "description": f"{character}一脚将西门庆踢出窗外，西门庆从楼上坠落，毙命当场", "emotion": "决绝→复仇", "duration": "12秒"},
+            {"seq": 5, "act": "结局", "scene": "武大家·灵堂", "description": f"{character}擦去手上血迹，跪在兄长灵前三叩首，转身踏入夜色", "emotion": "释然→决断", "duration": "10秒"},
+        ],
+        "林冲雪夜上梁山": [
+            {"seq": 1, "act": "开场", "scene": "沧州道·大雪", "description": f"{character}杀死陆谦后，风雪中提枪独行，身后草料场火光冲天", "emotion": "决绝→孤独", "duration": "10秒"},
+            {"seq": 2, "act": "发展", "scene": "梁山脚下酒馆", "description": f"{character}在酒馆中遇到朱贵，得知梁山可接纳落难英雄", "emotion": "犹豫→希望", "duration": "10秒"},
+            {"seq": 3, "act": "冲突", "scene": "梁山泊水寨", "description": f"王伦刁难{character}，要他纳投名状，{character}隐忍不发", "emotion": "屈辱→忍耐", "duration": "12秒"},
+            {"seq": 4, "act": "高潮", "scene": "聚义厅", "description": f"晁盖等人上山，{character}火并王伦，推举晁盖为寨主", "emotion": "爆发→转折", "duration": "14秒"},
+            {"seq": 5, "act": "结局", "scene": "梁山泊·雪晴", "description": f"雪后天晴，{character}站在梁山顶上，回望来路，目光坚毅", "emotion": "解脱→新生", "duration": "10秒"},
+        ],
+        "花和尚大闹五台山": [
+            {"seq": 1, "act": "开场", "scene": "五台山文殊院", "description": f"{character}出家为僧，但因不守清规，屡犯戒律，众僧颇有不悦", "emotion": "压抑→烦闷", "duration": "10秒"},
+            {"seq": 2, "act": "发展", "scene": "五台山下酒馆", "description": f"{character}下山偷买酒肉，喝得酩酊大醉，醉态可掬", "emotion": "放纵→畅快", "duration": "12秒"},
+            {"seq": 3, "act": "冲突", "scene": "半山亭", "description": f"{character}酒醉后大发酒疯，拆倒半山亭金刚，众僧惊慌躲避", "emotion": "狂暴→混乱", "duration": "14秒"},
+            {"seq": 4, "act": "高潮", "scene": "文殊院山门", "description": f"{character}撞开山门，醉打哼哈二将泥塑，真长老出面喝止", "emotion": "疯狂→震怒", "duration": "14秒"},
+            {"seq": 5, "act": "结局", "scene": "五台山·清晨", "description": f"{character}酒醒后跪在佛前忏悔，真长老授书一封命他投奔大相国寺", "emotion": "悔悟→新生", "duration": "12秒"},
         ],
     }
 

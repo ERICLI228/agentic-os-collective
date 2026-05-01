@@ -52,6 +52,7 @@
 | **v3.6.25** | **2026-05-01** | **阿牛** | **鲁智深 basic_info/appearance/background 补全: 从profile嵌套结构迁移到顶层字段 · height/build/face/age/costume/accessories/color_palette/origin/key_events/relationships 全量写入 visual_bible.json · 仪表盘DM-1角色卡片正常显示** |
 | **v3.6.26** | **2026-05-01** | **阿牛** | **LLM对抗审核管线验证通过: adversarial_review.py CODING模式实际运行93.8s · 真实LLM审核EP01剧本 · 评分3.0/10 ✅ reject · 4维度真实审计(编剧规则1.0/场景完整性1.0/剧情节奏3.0/逻辑一致性3.0) · pipeline_ep01.py --review coding 完整链通 · 实际堵塞点CODING免费额度已解决** |
 | **v3.6.27** | **2026-05-01** | **OpenCode** | **客观诚实收尾: visual_bible 113→109清理完毕 (删yanglin_hs/kongming_hs·补star_rank to chaogai·恢复yanglin/kongming) · reReviewDM0()修复 (→triggerReReview) · PRD v3.6.9~27全量里程碑 · CLAUDE.md 铁则#0强化(任务完成强制闭环+版本滞后告警) · VERSION文件创建 · /dashboard PRD告警条 · Git全量提交+推送 · Obsidian同步 · wiki日志更新** |
+| **v3.6.28** | **2026-05-01** | **OpenCode** | **剧本新产出: EP07 武松打虎 (249KB/23s) + EP08 武松斗杀西门庆 (226KB/21s) + EP09 林冲雪夜上梁山 (240KB/22s) + EP10 花和尚大闹五台山 (266KB/22s) · script_manager.py CURRENT_EPISODES 6→10集 + _build_storyboard 新增4模板 · shuihuzhuan.yaml 预留12集已用10集 (剩武松醉打蒋门神/血溅鸳鸯楼) · NLS→TV原声待素材 (现有98版视频仅8秒测试片段)** |
 ---
 
 ## 📊 PHASE 1-4 完成记录 (v3.6.4 新增)

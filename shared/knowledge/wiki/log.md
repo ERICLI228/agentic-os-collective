@@ -233,3 +233,12 @@ Sender (untrusted metadata):
   - `reports/PRD-v3.6.md` (564→613+ lines, +12 version entries)
   - `CLAUDE.md` (v3.6.2→v3.6.20, 完成度更新)
 - **版本覆盖**: v3.6.9 Gallery · v3.6.10 Dashboard UI · v3.6.11 NLS音色 · v3.6.12 CHARACTER_VOICES 108 · v3.6.13 角色数据补全 · v3.6.14 GPT-SoVITS · v3.6.15 音色UI · v3.6.16 gallery修复 · v3.6.17 目录清理 · v3.6.18 video_prompts三方案 · v3.6.19 CSS修复 · v3.6.20 图像路由修复
+
+- **会话**: 2026-05-01, 08:45 PDT — v3.6.27 诚实收尾 + 全量推送
+- **修复**:
+  - visual_bible 109字符完整 (删 yanglin_hs/kongming_hs, 补 star_rank to chaogai, 恢复 yanglin/kongming)
+  - reReviewDM0() → triggerReReview('DM-0')
+  - CLAUDE.md 铁则#0 强化 (任务完成强制闭环)
+  - VERSION 文件 + 仪表盘 PRD 告警条
+- **Git**: commit ef82f68 → origin/main (125 files changed)
+- **协同**: OpenClaw v3.6.9~26 + OpenCode v3.6.27 收尾
