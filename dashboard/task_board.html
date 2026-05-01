@@ -1031,34 +1031,11 @@ async function renderDM0(detail,ms){
     const scoreIcon = scoreNum >= 8.0 ? '&#128994;' : scoreNum >= 6.0 ? '&#128992;' : '&#128308;';
     const decisionText = scoreNum >= 8.0 ? '表现优异，可进入下一环节' : '建议回流重写';
 
-    // v3.6.8 P0-2: 四维度审核明细卡片
-    const dims = [
-      {icon:'✍️',name:'编剧质量'},
-      {icon:'🎬',name:'分镜设计'},
-      {icon:'🧠',name:'逻辑一致性'},
-      {icon:'🎵',name:'节奏把控'}
-    ];
-    const dimScores = [];
-    findings.forEach((f, i) => {
-      const s = parseFloat(f.match(/([0-9]+)\/10/)?.[1]);
-      dimScores.push(s || (scoreNum >= 8 ? 8+i%3 : scoreNum >= 6 ? 6+i%3 : 4+i%3));
-    });
-    while(dimScores.length < 4) dimScores.push(scoreNum);
-
-    let dimCards = '<div class="four-dim">';
-    dims.forEach((d, i) => {
-      const ds = dimScores[i] || scoreNum;
-      const dc = ds >= 8 ? 'good' : ds >= 6 ? 'warn' : 'bad';
-      const di = ds >= 8 ? '&#128994;' : ds >= 6 ? '&#128992;' : '&#128308;';
-      const note = findings[i] ? findings[i].substring(0, 60) + (findings[i].length > 60 ? '...' : '') : '—';
-      dimCards += `<div class="dim-card ${dc}"><div class="dim-icon">${d.icon}</div><div class="dim-name">${d.name}</div><div class="dim-score" style="color:${dc==='good'?'#22c55e':dc==='warn'?'#f59e0b':'#ef4444'}">${ds.toFixed(1)} ${di}</div><div class="dim-note">${note}</div></div>`;
-    });
-    dimCards += '</div>';
+    // v3.7: 四维度审核明细 — 由 patch 统一渲染, 从 review_dimensions 提取
 
     let decH = `<div class="sec" id="dm0-decision-sec" style="border-left:3px solid ${scoreColor}">`;
     decH += `<h3>&#129302; AI 对抗审核结果 (CODING 自动运行)</h3>`;
     decH += `<div style="font-size:14px;font-weight:700;color:${scoreColor};margin:8px 0;">${scoreIcon} 综合评分: ${score} / 10 &mdash; ${decisionText}</div>`;
-    decH += dimCards;
     decH += `<div style="margin:12px 0;">`;
     decH += `<div style="font-size:10px;color:#888;margin-bottom:6px;">&#9889; 你的决策 (选择后 Agent 自动执行):</div>`;
     decH += `<div style="display:flex;gap:8px;flex-wrap:wrap;">`;
@@ -1359,13 +1336,13 @@ async function renderDM1(detail, ms) {
             <div class="cb-voice-card" id="voicecard-${fid}">
               <div class="cb-voice-card-body">
                 <div class="cb-voice-card-row"><span class="vc-label">角色</span><span class="vc-val">${name}</span></div>
-                <div class="cb-voice-card-row"><span class="vc-label">类型</span><span class="vc-val" id="vc-type-${fid}">${voice.nls_speaker ? 'NLS' : (voice.provider || '—')}</span></div>
-                <div class="cb-voice-card-row"><span class="vc-label">音色</span><span class="vc-val" id="vc-voice-${fid}">${voice.nls_speaker ? voice.nls_speaker + ' · ' + (voice.description || '') : '未配置'}</span></div>
-                <div class="cb-voice-card-row"><span class="vc-label">参考</span><span class="vc-val" id="vc-ref-${fid}">${voice.sample_text || voice.reference_text || '—'}</span></div>
+                <div class="cb-voice-card-row"><span class="vc-label">类型</span><span class="vc-val" id="vc-type-${fid}">${(function(){const cv=CHARACTER_VOICES[fid];const hasNLS=!!voice.nls_speaker;return hasNLS?'NLS':(cv&&cv.ref?'GPT-SoVITS':'—')})()}</span></div>
+                <div class="cb-voice-card-row"><span class="vc-label">音色</span><span class="vc-val" id="vc-voice-${fid}">${(function(){const cv=CHARACTER_VOICES[fid];if(voice.nls_speaker)return voice.nls_speaker+' · '+(voice.description||'');if(cv&&cv.ref)return '有参考音频 · '+(voice.provider||'GPT-SoVITS');return '<span style=\"color:#c96d3b\">请配置参照音色</span>'})()}</span></div>
+                <div class="cb-voice-card-row"><span class="vc-label">参考</span><span class="vc-val" id="vc-ref-${fid}">${voice.sample_text || voice.reference_text || ((CHARACTER_VOICES[fid]||{}).prompt) || '—'}</span></div>
               </div>
               <div class="cb-voice-card-btns">
-                <button type="button" class="cb-btn cb-btn-cfg" id="cfgbtn-${fid}" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();toggleVoiceConfigForm('${fid}');return false">🎤 配置音色</button>
-                <button type="button" class="cb-btn cb-btn-aud" id="audbtn-${fid}" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();auditionVoice('${fid}');return false" ${(voice.nls_speaker || CHARACTER_VOICES[fid]) ? '' : 'disabled'}>🔊 试听</button>
+                <button type="button" class="cb-btn cb-btn-cfg" id="cfgbtn-${fid}" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();toggleVoiceConfigForm('${fid}');return false">${(voice.nls_speaker||(CHARACTER_VOICES[fid]||{}).ref)?'⚙️ 配置':'🎤 设置音色'}</button>
+                <button type="button" class="cb-btn cb-btn-aud" id="audbtn-${fid}" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();auditionVoice('${fid}');return false" ${(voice.nls_speaker||(CHARACTER_VOICES[fid]||{}).ref)?'':'disabled'}>🔊 试听</button>
               </div>
             </div>
             <!-- Inline config form -->
@@ -2974,7 +2951,23 @@ renderDM0 = async function(detail, ms) {
   await _origRenderDM0(detail, ms);
   
   // Add four-dimension review section
-  const reviewData = ms?.review || detail?.review || null;
+  // Backend returns detail.review_dimensions [{dimension, score, status}]
+  // Also try detail.review (legacy) or sections extraction
+  let reviewData = null;
+  if (detail?.review_dimensions && detail.review_dimensions.length > 0) {
+    const dims = detail.review_dimensions;
+    const scores = dims.map(d => parseFloat(d.score) || 0).filter(s => s > 0);
+    const overall = scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : 0;
+    reviewData = {
+      dimensions: dims,
+      overall_score: overall,
+      decision: overall >= 6 ? 'approved' : overall >= 4 ? 'modify' : 'rejected'
+    };
+  } else if (detail?.review) {
+    reviewData = detail.review;
+  } else if (ms?.review) {
+    reviewData = ms.review;
+  }
   if (reviewData) {
     const reviewHTML = renderFourDimReview(reviewData);
     const dm0Sec = document.getElementById('dm0-sec');
@@ -3085,6 +3078,7 @@ refresh();
 setInterval(refresh, 30000);
 
 function toggleAssetPanel(){
+  console.log("assetToggle clicked");
   const p=document.getElementById('assetPanel'),o=document.getElementById('assetOverlay');
   if(p.classList.contains('open')){p.classList.remove('open');o.classList.remove('on')}
   else{p.classList.add('open');o.classList.add('on');loadAssetPanel()}
@@ -3135,7 +3129,7 @@ async function loadAssetPanel(type){
     <span onclick="toggleAssetPanel()" style="cursor:pointer;font-size:16px">&times;</span>
   </div>
   <div class="asset-panel-body" id="assetBody">
-    <div class="loading"><span class="spinner"></span>加载资产...</div>
+    <div id="assetContent" style="font-size:11px;color:#888;text-align:center;padding:20px">加载中...</div>
   </div>
 </div>
 <div class="asset-overlay" id="assetOverlay" onclick="toggleAssetPanel()"></div>
