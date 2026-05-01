@@ -458,6 +458,7 @@ if(localStorage.getItem('_dash_v')!=='3.6.20'){localStorage.setItem('_dash_v','3
   <span class="compare-toggle" id="kbdToggle" onclick="toggleKbdHint()">⌨ 快捷键</span>
   <span class="compare-toggle" id="expandAll" onclick="toggleAllSections()">📂 全展开</span>
   <a href="/gallery" class="compare-toggle" style="text-decoration:none" target="_blank">🖼 画廊</a>
+  <span class="compare-toggle" id="dirModeBtn" onclick="toggleDirectorMode()" style="color:#f59e0b">🎬 导演模式</span>
   <span class="compare-toggle" id="assetToggle" onclick="toggleAssetPanel()" style="position:relative">📦 资产</span>
   <!-- P1-4: Unified download button -->
   <div class="dl-wrap">
@@ -666,6 +667,14 @@ async function fetchVersion(){
     }
   }catch(e){}
 }
+// Restore director mode on load
+if (localStorage.getItem('director_mode') === '1') {
+  setTimeout(function() {
+    var btn = document.getElementById('dirModeBtn');
+    if (btn) btn.click();
+  }, 500);
+}
+
 fetchVersion();
 
 // ================================================================
@@ -825,9 +834,38 @@ async function decide(msId,action){
 // ================================================================
 // v3.6.5: decideDM0 — DM-0 审核决策按钮
 // ================================================================
-async function decideDM0(action){
+async 
+// S4-4: Submit structured feedback
+async function submitFeedback() {
+  var typeEl = document.getElementById('fb-type');
+  var descEl = document.getElementById('fb-desc');
+  if (!typeEl || !descEl) return;
+  try {
+    await fetch('/api/feedback', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({type: typeEl.value, description: descEl.value, severity: 'minor', source: 'DM-0'})
+    });
+  } catch(e) {}
+}
+
+function decideDM0(action){
   const labels = {approved:'批准',rework:'回流重写',reject:'驳回'};
-  if(!confirm(`确认「${labels[action]}」？此操作将触发 Agent 自动执行。`)) return;
+  // S4-4: Show feedback form on reject/rework
+  if (action === 'reject' || action === 'rework') {
+    var fbTypes = ['剧本质量','角色形象','配音','剧情节奏','逻辑一致性','其他'];
+    var fbDiv = document.createElement('div');
+    fbDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1d27;border:1px solid #f59e0b;border-radius:8px;padding:16px;z-index:500;width:350px;box-shadow:0 8px 32px rgba(0,0,0,.5)';
+    fbDiv.innerHTML = '<div style="font-size:13px;font-weight:600;margin-bottom:8px">✍️ 请描述问题 (可选)</div>' +
+      '<select id="fb-type" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:5px;border-radius:4px;font-size:11px;margin-bottom:6px">' +
+      fbTypes.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('') + '</select>' +
+      '<textarea id="fb-desc" placeholder="详细描述..." style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:5px;border-radius:4px;font-size:10px;min-height:60px;margin-bottom:8px"></textarea>' +
+      '<div style="display:flex;gap:6px">' +
+      '<button class="btn btn-s" onclick="this.parentElement.parentElement.remove();submitFeedback();toastMsg(\'反馈已记录\',1500)">发送反馈</button>' +
+      '<button class="btn btn-cancel" onclick="this.parentElement.parentElement.remove()">跳过</button></div>';
+    document.body.appendChild(fbDiv);
+  }
+  if(!confirm('确认「'+labels[action]+'」？此操作将触发 Agent 自动执行。')) return;
   toastMsg('决策提交中...',3000);
   try{
     const actionMap = {approved:'approved',rework:'modify',reject:'rejected'};
@@ -2948,6 +2986,51 @@ async function loadAssetPanel(type){
     }
   }, 1000);
 })();
+
+
+// v3.7: S4-2 Director Mode
+function toggleDirectorMode() {
+  var left = document.querySelector('.left');
+  var topbar = document.querySelector('.topbar');
+  var version = document.getElementById('VER_BADGE');
+  var kbd = document.getElementById('kbdToggle');
+  var expandAll = document.getElementById('expandAll');
+  var dlwrap = document.querySelector('.dl-wrap');
+  var assetBtn = document.getElementById('assetToggle');
+  var galleryLink = document.querySelector('a[href="/gallery"]');
+  var dirBtn = document.getElementById('dirModeBtn');
+  var prdAlert = document.getElementById('prdStaleAlert');
+  var isActive = document.body.classList.toggle('director-mode');
+
+  if (isActive) {
+    if (left) left.style.display = 'none';
+    if (version) version.style.display = 'none';
+    if (kbd) kbd.style.display = 'none';
+    if (expandAll) expandAll.style.display = 'none';
+    if (dlwrap) dlwrap.style.display = 'none';
+    if (assetBtn) assetBtn.style.display = 'none';
+    if (galleryLink) galleryLink.style.display = 'none';
+    if (prdAlert) prdAlert.style.display = 'none';
+    if (dirBtn) dirBtn.textContent = '🎬 退出导演模式';
+    // Hide src-tags
+    document.querySelectorAll('.src-tag').forEach(function(e) { e.style.display = 'none'; });
+    // Hide stats bar
+    document.querySelectorAll('.stats').forEach(function(e) { e.style.display = 'none'; });
+  } else {
+    if (left) left.style.display = '';
+    if (version) version.style.display = '';
+    if (kbd) kbd.style.display = '';
+    if (expandAll) expandAll.style.display = '';
+    if (dlwrap) dlwrap.style.display = '';
+    if (assetBtn) assetBtn.style.display = '';
+    if (galleryLink) galleryLink.style.display = '';
+    if (prdAlert) prdAlert.style.display = '';
+    if (dirBtn) dirBtn.textContent = '🎬 导演模式';
+    document.querySelectorAll('.src-tag').forEach(function(e) { e.style.display = ''; });
+    document.querySelectorAll('.stats').forEach(function(e) { e.style.display = ''; });
+  }
+  localStorage.setItem('director_mode', isActive ? '1' : '0');
+}
 
 </script>
 <!-- v3.7: Asset Panel (slide-out drawer) -->

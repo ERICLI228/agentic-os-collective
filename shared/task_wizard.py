@@ -1040,6 +1040,27 @@ def api_characters_all():
     return jsonify({"characters": results, "total": len(results)})
 
 
+@app.route('/api/feedback', methods=['GET', 'POST'])
+def api_feedback():
+    """S4-4: 结构化反馈收集与查询"""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from scripts import feedback_collector as fc
+    if request.method == 'POST':
+        data = request.get_json() or {}
+        entry = fc.save_feedback(
+            fb_type=data.get('type', '其他'),
+            desc=data.get('description', ''),
+            severity=data.get('severity', 'minor'),
+            task_id=data.get('task_id', ''),
+            source=data.get('source', '')
+        )
+        return jsonify({"status": "ok", "entry": entry})
+    # GET
+    entries = fc.list_feedback(limit=int(request.args.get('limit', 50)))
+    stats = fc.stats()
+    return jsonify({"feedback": entries, "stats": stats, "total": len(entries)})
+
+
 @app.route('/api/review/<fid>', methods=['GET', 'POST'])
 def api_review(fid):
     if request.method == 'POST':
