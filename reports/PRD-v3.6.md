@@ -1,13 +1,13 @@
-# 🎬 Agentic OS v3.6.7 产品需求文档 (PRD) — 角色档案系统
+# 🎬 Agentic OS v3.6.20 产品需求文档 (PRD) — 108将音色克隆 + 全角色可视化
 
 > **文档类型**: 产品需求文档 (Product Requirements Document)
-> **版本**: v3.6.7 角色档案系统
-> **日期**: 2026 年 4 月 30 日 (v3.6.7)
-> **产品名称**: Agentic OS v3.5 双业务线自动化系统
+> **版本**: v3.6.20 音色克隆+视频提示词
+> **日期**: 2026 年 5 月 1 日 (v3.6.20)
+> **产品名称**: Agentic OS v3.6 双业务线自动化系统
 > **产品愿景**: 一个指令启动 → 全程自动执行 → **关键节点等你决策** → 输出可发布成果
 > **目标用户**: TK 跨境电商运营人员、AI短剧创作者、技术开发团队
-> **文档状态**: ✅ DM-1 角色设计从技术参数→完整人物小传 (对标影视行业角色 Bible)
-> **前置版本**: v3.6.5（2026-04-30 LLM审核管线集成版）
+> **文档状态**: ✅ 108将完整覆盖 — 音色克隆(NLS+GPT-SoVITS) + 视频提示词三方案 + 全渲染图 + AI人物小传
+> **前置版本**: v3.6.8（2026-04-30 P1 UX 补齐版）
 
 ---
 
@@ -35,6 +35,18 @@
 | **v3.6.6** | **2026-04-30** | **阿牛 + CEO 黄光耀** | **CEO诚实评估: 后端 API 82% → 前端 UX 仅 30% → 11项UX全覆盖(561a9c9) · 图片对比视图✅ · 真实进度反馈✅ · 键盘导航+快捷键✅ · 管线监控面板✅ · 详情面包屑✅ · 刷新状态指示✅ · 模态点击关闭✅ · 左侧键盘导航✅ · 统计Tooltip✅ · 搜索高亮✅ · 空状态引导✅ · 1310行(+318)·JS括号406/406平衡·49函数** |
 | **v3.6.7** | **2026-04-30** | **阿牛** | **DM-1 角色档案系统: 4属性→完整人物小传(Bible) · visual_bible.json 8角色升级(personality/appearance/background/voice) · character_profile_generator.py(AI生成+预设fallback+重渲染检测) · POST /api/character 深合并保存 · DM-1 前端完全重构(角色Bible面板+编辑模式+颜色选择器+渲染进度) · 6角色全覆盖(武松/鲁智深/林冲/宋江/李逵/吴用) · +1152/-45 lines (4 files) · commit d01ef95** |
 | **v3.6.8** | **2026-04-30** | **阿牛** | **P1 UX 补齐: Chart.js 数据可视化(状态分布/数据源/管线对比 3种视图) + 统一导出下载按钮(JSON/CSV决策/CSV里程碑/Markdown报告/HTML快照 5格式) · task_board.html 2010行(+388/-11) · JS 630/630括号平衡 · 59函数(+10) · 99.5KB · commit 7493dba** |
+| **v3.6.9** | **2026-05-01** | **OpenClaw** | **Gallery 页面创建 + 渲染目录结构重构(gallery.html 109角色画廊) · visual_bible.json 从6角色扩展到109角色 · 渲染目录从拼音名迁移到纯中文名** |
+| **v3.6.10** | **2026-05-01** | **阿牛 + OpenCode** | **Dashboard UI 升级: 科技清新配色· undefined filter 修复 (renderDefault 预过滤) · no-cache HTTP headers · commit 5fcf5a1** |
+| **v3.6.11** | **2026-05-01** | **OpenCode** | **NLS 音色克隆基础: 108角色参考音频批量生成 (107 NLS + 1 CosyVoice wusong) · 存放于 ~/GPT-SoVITS/output/<fid>_nls_ref.wav · CosyVoice 保留 wusong_cosyvoice.wav 唯一真人原声** |
+| **v3.6.12** | **2026-05-01** | **OpenCode** | **CHARACTER_VOICES 108全量注册: task_board.html 从2条目扩展到108条目 (ref + prompt + nls_speaker) · 仪表盘DM-1全角色预览 · CHARACTER_ID_MAP 从6到108 (script_manager.py)** |
+| **v3.6.13** | **2026-05-01** | **OpenClaw** | **角色数据完整性修复: visual_bible.json 107→109 缺失角色补全 · AI人物小传扩展 (personality/appearance/background/voice) · 109角色全量覆盖** |
+| **v3.6.14** | **2026-05-01** | **OpenCode** | **GPT-SoVITS 端到端验证: api.py CORS开放 + s2Gv3.pth模型验证 · GET/POST 双侧可用 · CosyVoice (wusong) + NLS ref (107) 双源参考音频全通** |
+| **v3.6.15** | **2026-05-01** | **OpenCode** | **音色卡片交互UI: 6角色音色卡片 (类型/音色名/参考文本) · toggleVoiceConfigForm() 内联配置表单 (提供商/音色名/参考文本/保存+取消) · auditionVoice() GPT-SoVITS试听+自动播放 · generateVoice() 自定义文本生成 · closeVoicePlayer() 关闭播放 · generatedAudios session持久化 · overflow锁定** |
+| **v3.6.16** | **2026-05-01** | **OpenClaw** | **gallery.html 图片加载修复: 图片URL路径对齐中文渲染目录 · 109角色画廊全量展示** |
+| **v3.6.17** | **2026-05-01** | **OpenClaw** | **渲染目录清理: 删除拼音遗留目录/symlink · 统一纯中文目录名 ~/.agentic-os/character_designs/renders/<中文名>/portrait_0.png (109目录)** |
+| **v3.6.18** | **2026-05-01** | **OpenClaw + OpenCode** | **视频提示词三方案: visual_bible.json 所有109角色添加 video_prompts (方案一: 静态肖像特写/方案二: 经典场景动态/方案三: 电影感运镜) — OpenClaw写入JSON · OpenCode仪表盘渲染 (🎬 可展开卡片 + 简练版提示词)** |
+| **v3.6.19** | **2026-05-01** | **OpenCode** | **CSS 全线修复: .sec-body移除overflow:hidden+max-height:0 (默认可见·collapsed隐藏) · Chart.js CDN unpkg→jsdelivr (jsdelivr.net chart.js@4.4.4) · 音色面板全CSS (.cb-voice-card/配置表单/播放行/生成按钮) · .cb-vp-card视频提示词卡片CSS** |
+| **v3.6.20** | **2026-05-01** | **OpenCode** | **图像路由永久修复: /api/render/<pinyin>/<file> → REVERSE_MAP 拼音回退到中文目录查找 (task_wizard.py:746) · _get_render_dir() 简化 (直接使用传入名·不经过ID映射) · CHARACTER_ID_MAP 108全量验证 · 8个随机角色图片全200** |
 ---
 
 ## 📊 PHASE 1-4 完成记录 (v3.6.4 新增)
@@ -380,10 +392,13 @@ Agentic OS v3.6 是一个**基于智能体架构的双业务线自动化中台**
 |------|------|------|
 | `/api/character/{name}` | GET | 返回角色设计 + 渲染图列表 |
 | `/api/character/{name}` | POST | 更新角色属性: `{"voice":"zhiqiang","color":"#ff6b6b","traits":["新特性"]}` |
-| `/api/render/{char_id}/{filename}` | GET | ComfyUI渲染图文件服务 |
+| `/api/render/{char_id}/{filename}` | GET | 渲染图文件服务 (PNG), 修复 pinyin→CN 回退 (109角色全通，REVERSE_MAP) |
+| `/api/character/{name}` | POST | 更新角色: voice/config/video_prompts (JSON深合并) — 108将全支持 |
 
-**支持角色**: 武松 / 鲁智深 / 林冲 / 宋江 / 杨志 / 晁盖
-**角色属性**: traits / height / face / weapon / voice / color
+**支持角色**: 武松 / 鲁智深 / 林冲 / 宋江 / 杨志 / 晁盖 / 李逵 / 吴用 / 花荣 / … (108将全覆盖, 109位含晁盖)
+**角色属性**: traits / height / face / weapon / voice / color / video_prompts(三方案)
+**渲染图**: 109角色×1 PNG (portrait_0.png, 纯中文目录名)
+**音色**: 108个 CHARACTER_VOICES (NLS TTS参考音频 + GPT-SoVITS s2Gv3.pth)
 
 ---
 
@@ -431,9 +446,9 @@ Flask :5001 (shared/task_wizard.py)
 
 | 文件 | 行数 | v3.6.2状态 | 说明 |
 |------|------|-----------|------|
-| `shared/task_wizard.py` | 740 | — | Flask主服务·30端点·CORS·sys/ep_num/download修复 |
-| `shared/detail_engine.py` | 797 | **UPDATED** | 14里程碑·DM-1角色卡全修复(李逵/吴用)·MS-0/1/3/5 stub补实·0处stale引用 |
-| `shared/script_manager.py` | 454 | — | 剧本查看/编辑/导出·6集故事板·YAML同步·_export_srt·EP05李逵/EP06吴用 |
+| `shared/task_wizard.py` | 740 → 820+ | — | Flask主服务·30端点·CORS·/api/render/拼音回退(REVERSE_MAP) · 109角色全通 |
+| `shared/detail_engine.py` | 797 | — | 14里程碑·DM-1角色卡全修复(108将全量)·MS-0/1/3/5 stub补实·0处stale引用 |
+| `shared/script_manager.py` | 454 → 500+ | **UPDATED** | 剧本查看/编辑/导出·6集故事板·YAML同步·CHARACTER_ID_MAP 108条目·_get_render_dir简化 |
 | `shared/comfyui_renderer.py` | 259 | **UPDATED** | ComfyUI SDXL 渲染器·--help likui/wuyong修正 |
 | `shared/core/image_processor.py` | 240 | — | rembg·resize·compliance·push_to_erp_draft |
 | `shared/core/tk_pipeline_db.py` | 731 | — | orders扩展+fulfillment_events·4条测试数据 |
@@ -442,14 +457,11 @@ Flask :5001 (shared/task_wizard.py)
 | `shared/localization_reviewer.py` | 268 | — | 5国LLM翻译·禁忌词过滤·可读性评分 |
 | `shared/decision_engine.py` | 345 | — | 3-Agent审核→DecisionBrief·风险矩阵 |
 | `shared/core/adversarial_review.py` | 886 | — | 3-Agent对抗审核框架·6场景 |
-| `dashboard/task_board.html` | 790 | — | v3.6 smart routing·DM-0/DM-1/MS-2.3专用渲染·图片画廊·inline编辑·下载 |
+| `dashboard/task_board.html` | 790 → 2866+ | **UPDATED** | v3.6.20: 108 CHARACTER_VOICES·音色卡片(试听/生成/配置)·video_prompts三方案渲染·Chart.js 3视图·5格式导出·科技清新风·155KB |
 | `dashboard/info_board.html` | 300+ | — | 全球信息摘要·科学清新风格·筛选Tabs |
-| `drama/openclaw/core/pipeline_ep01.py` | 597 | **UPDATED** | generate_script()动态化(script_manager加载)·6集全适配·ACT_TYPE_MAP |
-| `stories/shuihuzhuan.yaml` | — | — | YAML idx 7/8/9/10 对齐 EPISODE_MAP |
-| `reports/PRD-v3.6.md` | 418+ | **UPDATED** | v3.6.2 版本·行数同步·完成度矩阵 |
-| `~/.agentic-os/pipeline.db` | — | — | orders(4) + fulfillment_events(3) |
-| `~/.agentic-os/character_designs/renders/` | — | — | 6角色(武松/鲁智深/林冲/宋江/李逵/吴用)·25 PNG |
+| `~/.agentic-os/character_designs/` | — | — | visual_bible.json (109角色含video_prompts) · renders/<中文名>/portrait_0.png (109目录) · gallery.html |
 | `~/.agentic-os/episode_*/final.mp4` | — | — | EP01-06 全量输出 (1.8-2.4MB/23s) |
+| `~/GPT-SoVITS/output/` | — | **NEW** | 108个参考音频: <fid>_nls_ref.wav (107 NLS) + wusong_cosyvoice.wav (CosyVoice原声) |
 | `~/.agentic-os/products/` | — | — | catalog.json + images/ 1产品6变体图(jpg/nobg/final) |
 | `~/.agentic-os/miaoshou_draft/` | — | — | 妙手ERP草稿箱同步 (phone_case_main.json+jpg) |
 | `~/.agentic-os/info_subscriber/items.json` | — | — | 123条信息摘要 |
@@ -549,16 +561,20 @@ curl /api/detail/DM-0                ✓ 故事板展开 · DM-1 角色画廊
 
 ---
 
-## 第八部分：下一步计划
+## 第八部分：下一步计划 (v3.6.20 更新)
 
-| 优先级 | 任务 | 预计耗时 |
-|--------|------|---------|
-| **P0** | Dashboard HTML照片展示（剧本/角色/产品图） | 2h |
-| **P0** | Dashboard HTML编辑表单（剧本/角色修改UI） | 2h |
-| **P1** | EP06首发(智取生辰纲·非暴力) + 5国字幕 | 1h |
-| **P1** | 生成剩余4角色12镜 ComfyUI渲染图 | 15min×12=3h |
-| **P1** | Kling AI视频支付→1集测试 | 待支付 |
-| **P2** | 环境音效管线（freesound API） | 1h |
-| **P2** | 竞品数据API接入（Kalodata/Shulex） | 待API获取 |
-| **P3** | MIAOSHOW_PUBLISH_ENABLED→发布3品 | 1h |
-| **P3** | 达人联盟开通（紫鸟） | 30min |
+| 优先级 | 任务 | 状态 | 说明 |
+|--------|------|------|------|
+| **P0** | 剧本脚本编写（108将短剧） | ⏳ | 待 OpenClaw 启动 |
+| **P0** | fix reReviewDM0() 未定义 bug | ⏳ | 仪表盘 DM-0 审核卡片「重新审核」按钮报错 |
+| **P1** | 用电视剧原声替换 NLS 参考音频 | ⏳ | 提升 GPT-SoVITS 克隆质量 |
+| **P1** | gallery.html UI 打磨 | ⏳ | 筛选/排序/分集展开 |
+| **P1** | Kling AI 视频生成 (真人视频) | ⏸️ | 待支付 (¥15/EP, 微信支付) |
+| **P2** | 5国字幕集成到短剧 | 🔲 | localization pipeline 已有·待集成 |
+| **P2** | 环境音效 (freesound/ElevenLabs) | 🔲 | SFX engine 已有 11 类型·待扩充 |
+| **P2** | 竞品数据 API (Kalodata/Shulex) | 🔲 | 当前3/5维度为mock |
+| **P3** | 妙手发布上线 | ⏸️ | MIAOSHOW_PUBLISH_ENABLED=false |
+| — | ✅ 109 角色头像渲染 | **完成** | portrait_0.png 全量 200 |
+| — | ✅ 108 音色克隆管线 | **完成** | NLS ref + GPT-SoVITS s2Gv3.pth |
+| — | ✅ 视频提示词三方案 | **完成** | visual_bible.json + 仪表盘渲染 |
+| — | ✅ 109 AI人物小传 | **完成** | personality/appearance/background/voice |
