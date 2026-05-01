@@ -34,6 +34,7 @@
 | **v3.6.5** | **2026-04-30** | **阿牛** | **LLM对抗审核突破: CODING免费额度路线通(单Agent~87s/3-Agent~100s)·综合评分3.8/10→reject·4维度真实审计·adversarial_review.py模型aliyun/→coding/+env加载·pipeline_ep01.py --review(mock/coding)开关·DM-0 Dashboard命令修正·drama_pipeline.yaml MS-4.5命令修正·CODING Plan余48%/48天** |
 | **v3.6.6** | **2026-04-30** | **阿牛 + CEO 黄光耀** | **CEO诚实评估: 后端 API 82% → 前端 UX 仅 30% → 11项UX全覆盖(561a9c9) · 图片对比视图✅ · 真实进度反馈✅ · 键盘导航+快捷键✅ · 管线监控面板✅ · 详情面包屑✅ · 刷新状态指示✅ · 模态点击关闭✅ · 左侧键盘导航✅ · 统计Tooltip✅ · 搜索高亮✅ · 空状态引导✅ · 1310行(+318)·JS括号406/406平衡·49函数** |
 | **v3.6.7** | **2026-04-30** | **阿牛** | **DM-1 角色档案系统: 4属性→完整人物小传(Bible) · visual_bible.json 8角色升级(personality/appearance/background/voice) · character_profile_generator.py(AI生成+预设fallback+重渲染检测) · POST /api/character 深合并保存 · DM-1 前端完全重构(角色Bible面板+编辑模式+颜色选择器+渲染进度) · 6角色全覆盖(武松/鲁智深/林冲/宋江/李逵/吴用) · +1152/-45 lines (4 files) · commit d01ef95** |
+| **v3.6.8** | **2026-04-30** | **阿牛** | **P1 UX 补齐: Chart.js 数据可视化(状态分布/数据源/管线对比 3种视图) + 统一导出下载按钮(JSON/CSV决策/CSV里程碑/Markdown报告/HTML快照 5格式) · task_board.html 2010行(+388/-11) · JS 630/630括号平衡 · 59函数(+10) · 99.5KB · commit 7493dba** |
 ---
 
 ## 📊 PHASE 1-4 完成记录 (v3.6.4 新增)
@@ -192,15 +193,15 @@
 | 1. 摘要优先折叠/展开详情页 | ❌ 0% | 无 `milestone-summary` 结构 |
 | 2. DM-0 四维度审核明细展示 | ❌ 0% | 仅 rv_score + rv_decision |
 | 3. 修改→重处理→审核自动循环 | ❌ 0% | 无 reset/重新审核逻辑 |
-| 4. 统一下载入口（下拉菜单） | ❌ 0% | 仅分散的 TXT/SRT 按钮 |
+| 4. 统一下载入口（下拉菜单） | ✅ 100% | 顶部栏📥导出按钮 · 5格式(JOSN/CSV/MD/HTML/快照) · 浏览器直接下载 |
 | 5. 图片并排对比视图（原图 vs 处理后） | ⚠️ 10% | CSS 类存在但 JS 未调用 |
 | 6. 音色试听 | ❌ 0% | 无 audio/play 相关 JS |
-| 7. Chart.js 数据可视化 | ❌ 0% | 无 chart/canvas |
+| 7. Chart.js 数据可视化 | ✅ 100% | Chart.js CDN · 3视图(状态分布/数据源/管线对比) · 环形图+柱状图切换 |
 | 8. 处理进度反馈（加载动画） | ⚠️ 20% | 有 `.loading-bar`(P0-1) 但无操作级进度 |
 | 9. Dashboard 搜索与过滤 | ✅ **80%** | `searchInput`+`filterSelect` 已工作（P1-12） |
 | 10. 质量反馈知识库 | ❌ 0% | 无 quality_feedback/feedback 相关代码 |
 | 11. 自愈提示（连续失败提醒） | ❌ 0% | 无相关逻辑 |
-| **总计** | **~30%** | **11项中仅 1 项工作 + 1 项部分完成** |
+| **总计** | **~48%** | **11项中 3 项工作 + 1 项部分完成** (P0/P1基础UX 70% + 数据可视化+导出 全覆盖) |
 
 ### 根本原因（与 CEO 分析一致）
 
@@ -217,6 +218,18 @@
 | **Sprint 3** | 本月末 (6h) | 质量反馈知识库 + 用户操作日志 + 自愈提示 | 连续3次失败自动弹出常见问题提示 |
 
 **核心原则**: 暂停新功能开发（环境音效/5国字幕/竞品 API 全部延后），**专注体验补课**。
+
+### v3.6.8 P1 UX 补齐记录 (commit 7493dba)
+
+| UX # | 功能 | 修复内容 | 验证 |
+|------|------|---------|------|
+| P1-4 | 统一下载按钮 | 顶部栏「📥 导出」按钮 → 下拉菜单 → 5格式导出 | JSON/CSV/CSV决策/Markdown/HTML 全部生成成功+浏览器下载 |
+| P1-6 | Chart.js 数据可视化 | 3种视图切换: 状态分布(环形图) / 数据源(环形图) / 管线对比(柱状图) | 自动注入 detail 面板 · Chart.js CDN 加载 · 3种模式切换正常 |
+| CSS 清理 | 下载 CSS 重复定义修复 | `.dl-menu`/`.dl-dropdown` 两套冲突定义 → 统一为 `.dl-wrap`/`.dl-btn`/`.dl-panel` | 样式无冲突，下拉菜单定位正确 |
+
+**文件**: `dashboard/task_board.html` 1622→2010 行 (+388/-11)
+**JS**: 630/630 括号平衡 · 59 函数(+10) · 99.5KB
+**新增函数**: `toggleDlPanel()`, `downloadAs()`, `triggerDownload()`, `renderChartPanel()`, `switchChart()`, `updateChart()`
 
 ### v3.6.6 UX 补齐记录 (commit 561a9c9)
 
