@@ -1,6 +1,6 @@
-# Agentic OS v3.6.20 — Agent Quick Reference
+# Agentic OS v3.7 — Agent Quick Reference
 
-> 最后更新: 2026-05-01 | 完成度 基础设施97% / 核心功能82% | `~/agentic-os-collective/`
+> 最后更新: 2026-05-01 | 完成度 基础设施97% / 核心功能85% | `~/agentic-os-collective/`
 
 ---
 
