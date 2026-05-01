@@ -1187,22 +1187,26 @@ async function renderDM1(detail, ms) {
   detailEl.insertAdjacentHTML('beforeend', sec);
   const container = document.getElementById('dm1-characters');
 
-  // Fetch all characters with bulk endpoint (single request instead of 108)
+  // Fetch all characters with bulk endpoint (single request)
   let results = [];
   try {
-    const r = await fetch('/api/characters/all', { signal: AbortSignal.timeout(8000) });
-    if (r.ok) { const d = await r.json(); results = d.characters || []; }
-  } catch(e) {
-    console.warn('Bulk fetch failed, falling back to individual', e);
-    for (let b = 0; b < CHAR_NAMES.length; b += 6) {
-      const batch = CHAR_NAMES.slice(b, b + 6).map(n => {
-        const fid = CHAR_MAP[n] || n;
-        return fetch('/api/character/' + fid, { signal: AbortSignal.timeout(2000) })
-          .then(r => r.ok ? r.json() : null).catch(() => null);
-      });
-      (await Promise.all(batch)).forEach(r => results.push(r));
-      await new Promise(r => setTimeout(r, 50));
+    const resp = await fetch('/api/characters/all');
+    console.log('DM-1 fetch status:', resp.status);
+    if (resp.ok) {
+      const json = await resp.json();
+      console.log('DM-1 json keys:', Object.keys(json));
+      if (json && json.characters && Array.isArray(json.characters)) {
+        results = json.characters;
+        console.log('DM-1 first char:', results[0].name);
+      }
     }
+  } catch(e) {
+    console.warn('DM-1 bulk fetch error:', e.message);
+  }
+  console.log('DM-1 results count:', results.length);
+  if (results.length === 0) {
+    container.innerHTML = '<div style="color:#f59e0b;padding:20px;text-align:center">⚠️ 角色数据加载失败。请检查服务端 /api/characters/all 端点是否正常。<br><button onclick="renderDM1(null,null)" style="margin-top:8px">🔄 重试</button></div>';
+    return;
   }
 
   let html = '';
@@ -1357,11 +1361,11 @@ async function renderDM1(detail, ms) {
               <div class="cb-vp-card">
                 <div class="cb-vp-card-hdr" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
                   <span class="vp-icon">📋</span> ${v.title || key}
-                  <span style="margin-left:auto;font-size:9px;color:#555">${v.get ? v.get('参数') || '' : (v['参数'] || '')}</span>
+                  <span style="margin-left:auto;font-size:9px;color:#555">${v['参数'] || ''}</span>
                 </div>
                 <div class="cb-vp-card-body" style="display:none">
-                  <div class="cb-vp-line"><span class="vp-label">描述</span><span class="vp-val">${v.desc || v.get ? v.get('desc') || '' : ''}</span></div>
-                  <div class="cb-vp-line"><span class="vp-label">提示词</span><span class="vp-val vp-prompt">${v.prompt || v.get ? v.get('prompt') || '' : ''}</span></div>
+                  <div class="cb-vp-line"><span class="vp-label">描述</span><span class="vp-val">${v.desc || v['desc'] || ''}</span></div>
+                  <div class="cb-vp-line"><span class="vp-label">提示词</span><span class="vp-val vp-prompt">${v.prompt || v['prompt'] || ''}</span></div>
                   ${v['简练版'] ? `<div class="cb-vp-line"><span class="vp-label">简练版</span><span class="vp-val vp-prompt">${v['简练版']}</span></div>` : ''}
                 </div>
               </div>
@@ -1416,7 +1420,7 @@ async function renderDM1(detail, ms) {
     if (!data) return null;
     const name = data.name || CHAR_NAMES[i];
     const fid = data.pinyin || CHAR_MAP[name] || name;
-    let profile = data.profile || {};
+    let profile = data.profile || data;
     if (profile.profile && typeof profile.profile === 'object' && !Array.isArray(profile.profile)) profile = profile.profile;
     const personality = profile.personality || {};
     const title = profile.title || CHAR_ROLES[name] || '';

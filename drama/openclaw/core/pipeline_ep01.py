@@ -413,7 +413,7 @@ def run_review(script_file, review_mode="mock", output_dir=None):
 
 
 def merge_to_final(video_files, audio_files, output_dir):
-    """Step 4: 合并视频+音频 → final.mp4"""
+    """Step 4: 合并视频+音频 → final.mp4 (优先使用 SFX 混音输出)"""
     output_file = output_dir / "final.mp4"
 
     # Step 4a: 拼接所有视频片段
@@ -431,8 +431,12 @@ def merge_to_final(video_files, audio_files, output_dir):
     ]
     subprocess.run(concat_cmd, capture_output=True, check=True)
 
-    # Step 4b: 拼接所有音频
-    if len(audio_files) > 1:
+    # Step 4b: 确定音频源 — 优先使用 SFX 混音输出
+    sfx_audio = output_dir / "final_with_sfx.aac"
+    if sfx_audio.exists():
+        print("  🎵 使用 SFX 混音音频")
+        audio_input = str(sfx_audio)
+    elif len(audio_files) > 1:
         concat_audio_file = output_dir / "_audio_concat.txt"
         with open(concat_audio_file, "w") as f:
             for a in audio_files:
@@ -445,8 +449,11 @@ def merge_to_final(video_files, audio_files, output_dir):
         ]
         subprocess.run(concat_audio_cmd, capture_output=True, check=True)
         audio_input = str(output_dir / "_temp_audio.aac")
-    else:
+    elif len(audio_files) == 1:
         audio_input = audio_files[0]
+    else:
+        print("  ⚠️ 无音频文件可用")
+        return None
 
     # Step 4c: 视频+音频合并
     merge_cmd = [
