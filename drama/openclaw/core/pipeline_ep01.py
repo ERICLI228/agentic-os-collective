@@ -261,6 +261,9 @@ def generate_video(script, video_dir=None, render_mode="pillow", ep_id="03"):
     ep_num = ep_id
     ep_cfg = EPISODE_MAP.get(ep_id, {})
     char_id = _SM.CHARACTER_ID_MAP.get(ep_cfg.get("character", ""), "linchong").lower()
+    # Resolve Chinese name for render directory (renders/<中文名>/)
+    RENDER_CHAR_DIR = RENDER_BASE / ep_cfg.get("character", "林冲")
+    print(f"    🎯 ComfyUI render dir: {RENDER_CHAR_DIR} (char_id={char_id})")
 
     for i, shot in enumerate(script["shots"]):
         video_file = video_dir / f"{shot['id']}.mp4"
@@ -276,9 +279,11 @@ def generate_video(script, video_dir=None, render_mode="pillow", ep_id="03"):
 
         # ── ComfyUI mode: load AI render image ──
         if use_comfyui:
-            # Cycle through available renders (3 renders → 5 shots: 0,1,2,0,1)
             render_idx = (i % 3) + 1
-            render_file = RENDER_BASE / char_id / f"ep{ep_num}_shot_{render_idx:02d}.png"
+            # Try Chinese name dir first, fallback to pinyin dir
+            render_file = RENDER_CHAR_DIR / f"ep{ep_num}_shot_{render_idx:02d}.png"
+            if not render_file.exists():
+                render_file = RENDER_BASE / char_id / f"ep{ep_num}_shot_{render_idx:02d}.png"
             if render_file.exists():
                 try:
                     img = Image.open(render_file).convert("RGB")

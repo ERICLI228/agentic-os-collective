@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>水浒传 · 109将画廊</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;color:#e4e6eb;min-height:100vh}
+a{color:#4a9eff;text-decoration:none}
+
+.header{background:#1a1d27;border-bottom:1px solid #222;padding:12px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:100}
+.header h1{font-size:16px;color:#e4e6eb}
+.header .nav-link{font-size:11px;color:#666;padding:2px 8px;border:1px solid #333;border-radius:4px}
+.header .nav-link:hover{color:#ccc;border-color:#555}
+
+.controls{padding:10px 20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#0f1117;border-bottom:1px solid #1a1d27;position:sticky;top:48px;z-index:99}
+.controls input{flex:1;min-width:200px;max-width:300px;background:#111;border:1px solid #333;color:#e4e6eb;padding:6px 10px;border-radius:6px;font-size:12px;outline:none;transition:border-color .15s}
+.controls input:focus{border-color:#4a9eff}
+.controls select{background:#111;border:1px solid #333;color:#e4e6eb;padding:6px 10px;border-radius:6px;font-size:11px;outline:none}
+.filter-chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:3px 12px;border-radius:12px;font-size:11px;cursor:pointer;border:1px solid rgba(74,158,255,.15);color:#6b8aad;background:rgba(74,158,255,.04);transition:all .15s;user-select:none}
+.chip:hover{border-color:#4a9eff;color:#93c5fd}
+.chip.active{background:rgba(74,158,255,.15);border-color:#4a9eff;color:#e8f0fe}
+.stats{font-size:10px;color:#555;white-space:nowrap}
+
+.gallery{padding:14px 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.card{background:#1a1d27;border-radius:8px;overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s;border:1px solid rgba(74,158,255,.05)}
+.card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(74,158,255,.12);border-color:rgba(74,158,255,.15)}
+.card-img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;background:#111}
+.card-img.placeholder{background:linear-gradient(135deg,#1a1d27,#111);display:flex;align-items:center;justify-content:center;font-size:32px;color:#333}
+.card-info{padding:6px 8px 8px}
+.card-name{font-size:12px;font-weight:700;color:#e4e6eb;margin-bottom:2px}
+.card-title{font-size:10px;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-star{font-size:9px;color:#555;margin-top:2px}
+.card-star .rank{color:#4a9eff;font-weight:600}
+
+.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.92);z-index:200;justify-content:center;align-items:center;cursor:pointer}
+.modal.on{display:flex}
+.modal img{max-width:95vw;max-height:95vh;object-fit:contain;border-radius:4px}
+.modal-close{position:absolute;top:16px;right:20px;color:#fff;font-size:28px;cursor:pointer;line-height:1;z-index:201}
+
+.loading{padding:40px;text-align:center;color:#555;font-size:12px;grid-column:1/-1}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid #333;border-top-color:#4a9eff;border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{grid-column:1/-1;text-align:center;padding:40px;color:#555;font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>水浒传 · 109将画廊</h1>
+  <a href="/dashboard" class="nav-link">← 仪表盘</a>
+</div>
+
+<div class="controls">
+  <input id="search" placeholder="搜索角色名、称号、星宿..." oninput="onFilterChange()" />
+  <select id="sort" onchange="onFilterChange()">
+    <option value="rank">排序: 星宿排位</option>
+    <option value="name">排序: 名称</option>
+    <option value="star">排序: 星宿名</option>
+  </select>
+  <div class="filter-chips" id="chips">
+    <span class="chip active" onclick="setFilter(this,'')">全部</span>
+    <span class="chip" onclick="setFilter(this,'tiangang')">三十六天罡</span>
+    <span class="chip" onclick="setFilter(this,'dishap')">七十二地煞</span>
+    <span class="chip" onclick="setFilter(this,'core')">主要角色</span>
+  </div>
+  <span class="stats" id="stats"></span>
+</div>
+
+<div class="gallery" id="gallery">
+  <div class="loading"><span class="spinner"></span>加载 109 将档案...</div>
+</div>
+
+<div class="modal" id="modal" onclick="closeModal()">
+  <span class="modal-close">&times;</span>
+  <img id="modalImg" src="" alt="zoom" />
+</div>
+
+<script>
+const TIANGANG_COUNT = 36;
+let allChars = [];
+let filter = { query: '', category: '', sort: 'rank' };
+
+function setFilter(el, cat) {
+  document.querySelectorAll('#chips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  filter.category = cat;
+  filter.query = '';
+  document.getElementById('search').value = '';
+  render();
+}
+
+function onFilterChange() {
+  filter.query = document.getElementById('search').value.toLowerCase();
+  filter.sort = document.getElementById('sort').value;
+  render();
+}
+
+function render() {
+  let chars = [...allChars];
+  if (filter.category === 'tiangang') chars = chars.filter(c => c.rank <= TIANGANG_COUNT);
+  else if (filter.category === 'dishap') chars = chars.filter(c => c.rank > TIANGANG_COUNT);
+  else if (filter.category === 'core') chars = chars.filter(c => c.rank <= 12);
+  if (filter.query) {
+    const q = filter.query;
+    chars = chars.filter(c => (c.name + ' ' + c.title + ' ' + c.star).toLowerCase().includes(q));
+  }
+  if (filter.sort === 'name') chars.sort((a, b) => a.name.localeCompare(b.name, 'zh'));
+  else if (filter.sort === 'star') chars.sort((a, b) => a.star.localeCompare(b.star, 'zh'));
+  else chars.sort((a, b) => a.rank - b.rank);
+
+  const gallery = document.getElementById('gallery');
+  if (chars.length === 0) {
+    gallery.innerHTML = '<div class="empty">无匹配角色</div>';
+    document.getElementById('stats').textContent = '0 / 109';
+    return;
+  }
+
+  let html = '';
+  chars.forEach(c => {
+    html += `<div class="card" onclick="zoomImg('${c.render}')">
+      <img class="card-img" src="${c.render}" loading="lazy" onerror="this.onerror=null;this.className='card-img placeholder';this.innerHTML='🎭'" />
+      <div class="card-info">
+        <div class="card-name">${c.name}</div>
+        <div class="card-title">${c.title || ''}</div>
+        <div class="card-star"><span class="rank">#${c.rank}</span> ${c.star || ''}</div>
+      </div>
+    </div>`;
+  });
+  gallery.innerHTML = html;
+  document.getElementById('stats').textContent = chars.length + ' / ' + allChars.length;
+}
+
+function zoomImg(url) {
+  document.getElementById('modalImg').src = url;
+  document.getElementById('modal').classList.add('on');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('on');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('modal').classList.remove('on');
+});
+
+async function load() {
+  try {
+    const r = await fetch('/api/characters/all');
+    const d = await r.json();
+    const chars = d.characters || [];
+    allChars = chars.map(c => ({
+      name: c.name || '',
+      title: c.title || '',
+      star: c.star_name || '',
+      rank: c.star_rank || 999,
+      render: (c.renders && c.renders.length > 0) ? c.renders[0] : `/api/render/${c.pinyin}/shot_01.png`
+    }));
+    render();
+  } catch (e) {
+    document.getElementById('gallery').innerHTML = '<div class="empty">加载失败: ' + e.message + '</div>';
+  }
+}
+
+load();
+</script>
+
+</body>
+</html>

@@ -17,6 +17,21 @@ app = Flask(__name__)
 CORS(app)
 
 
+@app.route('/gallery')
+def serve_gallery():
+    """109将画廊 HTML"""
+    gallery_path = Path(__file__).resolve().parent.parent / "dashboard" / "gallery.html"
+    if gallery_path.exists():
+        html = gallery_path.read_text(encoding="utf-8")
+        return html, 200, {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        }
+    return "<h1>Gallery not found</h1>", 404
+
+
 @app.route('/dashboard')
 def serve_dashboard():
     """驾驶舱 HTML"""
