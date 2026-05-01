@@ -1059,6 +1059,7 @@ async function renderDetail(){
   }else if(ms.ms_id && !ms.ms_id.startsWith('DM-') && !ms.ms_id.startsWith('daily')){
     await renderTKDetail(detail,ms);
     await renderDM1(detail,ms);
+    await renderTKEnriched(detail,ms);
   }else if(ms.ms_id==='MS-2.3'){
     await renderMS23(detail,ms);
   }else if(ms.ms_id&&/^DM-(6|7|8|9|10)$/.test(ms.ms_id)){
@@ -1158,8 +1159,66 @@ async function renderTKDetail(detail, ms) {
     h += \'</div></div>\';
   }
   
-  el.insertAdjacentHTML(\'beforeend\', h);
-}function toggleCharBibleEdit(fid) {
+  el.insertAdjacentHTML('beforeend', h);
+}
+
+// v3.7: TK enriched post-render — data-driven pricing/shipping cards for milestones not covered inline
+async function renderTKEnriched(detail, ms){
+  var el = document.getElementById('detail');
+  if (!el || !detail || !detail.sections) return;
+  if (!ms || !ms.ms_id || !ms.ms_id.startsWith('MS-')) return;
+  var mid = ms.ms_id;
+  var h = '';
+
+  // MS-2.4: Pricing table extract from API data
+  if (mid === 'MS-2.4'){
+    var prices = [];
+    detail.sections.forEach(function(s){
+      (s.items||[]).forEach(function(it){
+        var val = it.value || '';
+        if (val.indexOf('¥')>=0 || val.indexOf('PHP')>=0 || val.indexOf('SGD')>=0 || val.indexOf('VND')>=0 || val.indexOf('THB')>=0 || val.indexOf('MYR')>=0)
+          prices.push({label: it.label||'', value: val});
+      });
+    });
+    if (prices.length > 5){
+      h += '<div class="sec"><h3>💰 5国定价速览</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:6px">';
+      prices.slice(0,10).forEach(function(p){
+        h += '<div style="background:rgba(255,255,255,.02);border-radius:6px;padding:8px;border:1px solid #222">';
+        h += '<div style="font-size:9px;color:#666;margin-bottom:2px">'+p.label+'</div>';
+        h += '<div style="font-size:11px;font-weight:700;color:#4ade80">'+p.value+'</div>';
+        h += '</div>';
+      });
+      h += '</div></div>';
+    }
+  }
+
+  // MS-2.5: Shipping carrier cards
+  if (mid === 'MS-2.5'){
+    var carriers = [];
+    detail.sections.forEach(function(s){
+      (s.items||[]).forEach(function(it){
+        var val = (it.value||'').trim();
+        if (val.indexOf('¥')>=0 || val.indexOf('PH')>=0 || val.indexOf('SG')>=0 || val.indexOf('VN')>=0 || val.indexOf('TH')>=0 || val.indexOf('MY')>=0)
+          carriers.push({label: it.label||'', value: val});
+      });
+    });
+    if (carriers.length > 3){
+      h += '<div class="sec"><h3>🚚 物流方案</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:6px">';
+      carriers.slice(0,12).forEach(function(c){
+        h += '<div style="background:rgba(255,255,255,.02);border-radius:6px;padding:8px;border:1px solid #222">';
+        h += '<div style="font-size:9px;color:#666;margin-bottom:2px">'+c.label+'</div>';
+        h += '<div style="font-size:10px;font-weight:600;color:#93c5fd">'+c.value+'</div>';
+        h += '</div>';
+      });
+      h += '</div></div>';
+    }
+  }
+
+  // TK pipeline summary bar (all MS milestones)
+  if (h) el.insertAdjacentHTML('beforeend', h);
+}
+
+function toggleCharBibleEdit(fid) {
   const el = document.getElementById('cbedit-' + fid);
   if (!el) return;
   el.classList.toggle('show');
