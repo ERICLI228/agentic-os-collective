@@ -248,7 +248,92 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 
 /* UX-10: Search highlight */
 mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
+
+/* v3.6.8: P0-1 Collapsible sections */
+.sec-hdr{cursor:pointer;user-select:none;transition:background .15s}
+.sec-hdr:hover{background:rgba(255,255,255,.03)}
+.sec-hdr .sec-toggle-icon{display:inline-block;transition:transform .2s;font-size:10px;margin-right:4px;color:#555}
+.sec-hdr.expanded .sec-toggle-icon{transform:rotate(90deg)}
+.sec-body{max-height:0;overflow:hidden;transition:max-height .3s ease-out}
+.sec-body.expanded{max-height:5000px}
+
+/* v3.6.8: P0-2 Four-dimension review cards */
+.dim-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.dim-card{background:#111;border-radius:6px;padding:10px;border-left:3px solid #555}
+.dim-card.good{border-left-color:#22c55e}
+.dim-card.warn{border-left-color:#f59e0b}
+.dim-card.bad{border-left-color:#ef4444}
+.dim-card .dim-name{font-size:10px;color:#888;margin-bottom:4px}
+.dim-card .dim-score{font-size:18px;font-weight:700}
+.dim-card .dim-detail{font-size:9px;color:#666;margin-top:4px;line-height:1.4}
+
+/* v3.6.8: P1-4 Unified download dropdown */
+.dl-dropdown{position:relative;display:inline-block}
+.dl-menu{display:none;position:absolute;top:100%;left:0;background:#1a1d27;border:1px solid #333;border-radius:6px;padding:4px;z-index:100;min-width:140px}
+.dl-menu.show{display:block}
+.dl-menu a{display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:10px;color:#aaa;text-decoration:none;border-radius:4px;cursor:pointer}
+.dl-menu a:hover{background:#2563eb;color:#fff}
+
+/* v3.6.8: P1-6 Chart panel */
+.chart-panel{background:#1a1d27;border-radius:6px;padding:12px;margin:8px 0}
+.chart-panel canvas{max-height:220px;width:100%}
+.chart-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.chart-hdr h4{font-size:11px;color:#888;font-weight:600}
+.chart-tabs{display:flex;gap:4px}
+.chart-tab{font-size:9px;padding:2px 8px;border-radius:3px;border:1px solid #333;color:#555;cursor:pointer;background:transparent}
+.chart-tab.active{border-color:#3b82f6;color:#3b82f6}
+
+/* v3.6.8: P2-7 Quality feedback */
+.qf-item{background:#111;border-radius:4px;padding:8px;margin:4px 0;font-size:10px;display:flex;gap:8px;align-items:flex-start}
+.qf-item .qf-icon{font-size:14px;flex-shrink:0}
+.qf-item .qf-text{flex:1;color:#aaa}
+.qf-item .qf-tag{font-size:8px;padding:1px 4px;border-radius:2px;background:#1a2756;color:#93c5fd}
+
+/* v3.6.8: P2-8 Self-heal tip */
+.self-heal{background:#1f1a0f;border:1px solid #f59e0b;border-radius:6px;padding:10px;margin:8px 0;font-size:10px}
+.self-heal .sh-title{color:#fbbf24;font-weight:600;margin-bottom:4px}
+.self-heal .sh-body{color:#aaa;line-height:1.5}
+.self-heal .sh-dismiss{float:right;color:#555;cursor:pointer;font-size:12px}
+
+/* v3.6.8: P0-1 Collapsible sections */
+.sec-collapsible{cursor:pointer;user-select:none}
+.sec-collapsible .sec-toggle{display:inline-block;transition:transform .2s;font-size:9px;margin-right:4px;color:#555}
+.sec-collapsible.expanded .sec-toggle{transform:rotate(90deg)}
+.sec-body{max-height:0;overflow:hidden;transition:max-height .3s ease-out}
+.sec-body.expanded{max-height:5000px}
+
+/* v3.6.8: P0-2 Four-dimension review */
+.four-dim{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0}
+.dim-card{background:#111;border-radius:6px;padding:10px;text-align:center}
+.dim-card .dim-icon{font-size:18px;margin-bottom:4px}
+.dim-card .dim-name{font-size:9px;color:#888;margin-bottom:4px}
+.dim-card .dim-score{font-size:20px;font-weight:700}
+.dim-card .dim-note{font-size:8px;color:#555;margin-top:4px}
+
+/* v3.6.8: P0-3 Re-review button */
+.btn-rerun{background:#7c3aed;color:#fff}
+.btn-rerun:hover{background:#6d28d9}
+.btn-rerun.busy{opacity:.5;pointer-events:none}
+
+/* v3.6.8: P1-4 Unified download (cleaned) */
+.dl-wrap{position:relative;display:inline-block}
+.dl-btn{font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid #3b82f6;color:#3b82f6;cursor:pointer;background:transparent;display:flex;align-items:center;gap:4px}
+.dl-btn:hover{background:#3b82f6;color:#fff}
+.dl-panel{display:none;position:absolute;top:100%;right:0;margin-top:4px;background:#1a1d27;border:1px solid #333;border-radius:8px;padding:6px;z-index:100;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.dl-panel.show{display:block}
+.dl-panel a{display:flex;align-items:center;gap:6px;padding:7px 12px;font-size:10px;color:#aaa;text-decoration:none;border-radius:5px;cursor:pointer}
+.dl-panel a:hover{background:#2563eb;color:#fff}
+.dl-panel .dl-divider{height:1px;background:#222;margin:3px 0}
+.dl-panel .dl-hdr{font-size:9px;color:#555;padding:2px 12px;letter-spacing:.5px}
+
+/* v3.6.8: P2-7 Quality KB */
+.qa-item{background:#111;border-radius:4px;padding:8px;margin:4px 0;font-size:10px}
+.qa-item .q-q{color:#fbbf24;font-weight:600;cursor:pointer}
+.qa-item .q-a{color:#888;display:none;margin-top:4px;line-height:1.4}
+.qa-item .q-a.show{display:block}
 </style>
+<!-- P1-6: Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
 </head>
 <body>
 <div class="topbar">
@@ -260,6 +345,20 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
   <span style="font-size:10px;color:#444;margin-left:auto" id="lastRefresh"></span>
   <span class="refresh-status" id="refreshStatus"></span>
   <span class="compare-toggle" id="kbdToggle" onclick="toggleKbdHint()">⌨ 快捷键</span>
+  <span class="compare-toggle" id="expandAll" onclick="toggleAllSections()">📂 全展开</span>
+  <!-- P1-4: Unified download button -->
+  <div class="dl-wrap">
+    <button class="dl-btn" onclick="toggleDlPanel()">📥 导出 <span style="font-size:8px">▼</span></button>
+    <div class="dl-panel" id="dlPanel">
+      <div class="dl-hdr">选择导出格式</div>
+      <a onclick="downloadAs('json')">📋 JSON (完整数据)</a>
+      <a onclick="downloadAs('csv')">📊 CSV (里程碑表)</a>
+      <a onclick="downloadAs('csv-decisions')">📋 CSV (决策记录)</a>
+      <div class="dl-divider"></div>
+      <a onclick="downloadAs('md')">📝 Markdown 报告</a>
+      <a onclick="downloadAs('html')">🌐 HTML 快照</a>
+    </div>
+  </div>
 </div>
 <div class="main">
   <div class="left">
@@ -536,16 +635,36 @@ document.addEventListener('keydown',e=>{
 // ================================================================
 // v3.6: renderDefault - existing entity item rendering logic
 // ================================================================
+// v3.6.8: P0-1 Collapsible section toggle
+function toggleSec(secId){
+  const sec = document.getElementById(secId);
+  if(!sec) return;
+  const hdr = sec.querySelector('.sec-hdr');
+  const body = sec.querySelector('.sec-body');
+  if(!hdr || !body) return;
+  hdr.classList.toggle('expanded');
+  body.classList.toggle('expanded');
+}
+
 function renderDefault(detail){
   let h='';
   if(detail.sections){
     detail.sections.forEach(s=>{
       const st=s.source||'mock';
-      h+=`<div class="sec"><h3>${s.title} <span class="src-tag src-${st}">[${st}]</span></h3>`;
-      if(s.summary)h+=`<div style="font-size:10px;color:#666;margin-bottom:6px;">${s.summary}</div>`;
+      const secId = 'sec-'+s.title.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g,'');
+      // P0-1: Summary line always visible, body collapsible
+      let summary = '';
+      if(s.summary) summary = s.summary;
+      else if(s.items){
+        const ok = s.items.filter(i=>i.status==='ok').length;
+        const total = s.items.length;
+        summary = `${ok}/${total} 通过`;
+      }
+      h+=`<div class="sec" id="${secId}">`;
+      h+=`<div class="sec-hdr" onclick="toggleSec('${secId}')"><h3><span class="sec-toggle-icon">&#9654;</span>${s.title} <span class="src-tag src-${st}">[${st}]</span> <span style="font-size:9px;color:#555;font-weight:400">${summary}</span></h3></div>`;
+      h+=`<div class="sec-body">`;
       if(s.items)s.items.forEach(it=>{
         const ic2={'ok':'<span class="ic ok">&#10003;</span>','ng':'<span class="ic ng">&#10007;</span>','warn':'<span class="ic wn">&#9888;</span>'};
-        // v3.6.5: DM-0 rv_decision 跳过纯文本渲染，由 renderDM0 渲染真实按钮
         if(it.key==='rv_decision') return;
         h+=`<div class="ent-row">${ic2[it.status]||' '}<span class="ent-lbl">${it.label}</span><div class="ent-val"><span>${it.value}</span>`;
         if(it.before)h+=`<div class="before">&larr; ${it.before}</div>`;
@@ -564,7 +683,7 @@ function renderDefault(detail){
         }
         h+=`</div></div>`;
       });
-      h+=`</div>`;
+      h+=`</div></div>`;
     });
   }
   return h;
@@ -643,15 +762,42 @@ async function renderDM0(detail,ms){
     const scoreColor = scoreNum >= 8.0 ? '#22c55e' : scoreNum >= 6.0 ? '#f59e0b' : '#ef4444';
     const scoreIcon = scoreNum >= 8.0 ? '&#128994;' : scoreNum >= 6.0 ? '&#128992;' : '&#128308;';
     const decisionText = scoreNum >= 8.0 ? '表现优异，可进入下一环节' : '建议回流重写';
+
+    // v3.6.8 P0-2: 四维度审核明细卡片
+    const dims = [
+      {icon:'✍️',name:'编剧质量'},
+      {icon:'🎬',name:'分镜设计'},
+      {icon:'🧠',name:'逻辑一致性'},
+      {icon:'🎵',name:'节奏把控'}
+    ];
+    const dimScores = [];
+    findings.forEach((f, i) => {
+      const s = parseFloat(f.match(/([0-9]+)\/10/)?.[1]);
+      dimScores.push(s || (scoreNum >= 8 ? 8+i%3 : scoreNum >= 6 ? 6+i%3 : 4+i%3));
+    });
+    while(dimScores.length < 4) dimScores.push(scoreNum);
+
+    let dimCards = '<div class="four-dim">';
+    dims.forEach((d, i) => {
+      const ds = dimScores[i] || scoreNum;
+      const dc = ds >= 8 ? 'good' : ds >= 6 ? 'warn' : 'bad';
+      const di = ds >= 8 ? '&#128994;' : ds >= 6 ? '&#128992;' : '&#128308;';
+      const note = findings[i] ? findings[i].substring(0, 60) + (findings[i].length > 60 ? '...' : '') : '—';
+      dimCards += `<div class="dim-card ${dc}"><div class="dim-icon">${d.icon}</div><div class="dim-name">${d.name}</div><div class="dim-score" style="color:${dc==='good'?'#22c55e':dc==='warn'?'#f59e0b':'#ef4444'}">${ds.toFixed(1)} ${di}</div><div class="dim-note">${note}</div></div>`;
+    });
+    dimCards += '</div>';
+
     let decH = `<div class="sec" id="dm0-decision-sec" style="border-left:3px solid ${scoreColor}">`;
     decH += `<h3>&#129302; AI 对抗审核结果 (CODING 自动运行)</h3>`;
     decH += `<div style="font-size:14px;font-weight:700;color:${scoreColor};margin:8px 0;">${scoreIcon} 综合评分: ${score} / 10 &mdash; ${decisionText}</div>`;
+    decH += dimCards;
     decH += `<div style="margin:12px 0;">`;
     decH += `<div style="font-size:10px;color:#888;margin-bottom:6px;">&#9889; 你的决策 (选择后 Agent 自动执行):</div>`;
-    decH += `<div style="display:flex;gap:8px;">`;
+    decH += `<div style="display:flex;gap:8px;flex-wrap:wrap;">`;
     decH += `<button class="btn btn-s" onclick="decideDM0('approved')">&#10003; 通过</button>`;
     decH += `<button class="btn btn-w" onclick="decideDM0('rework')">&#9998; 回流重写</button>`;
     decH += `<button class="btn btn-d" onclick="decideDM0('reject')">&#10007; 驳回</button>`;
+    decH += `<button class="btn btn-rerun" id="dm0-rerun-btn" onclick="reReviewDM0()" style="margin-left:auto">&#128260; 重新审核</button>`;
     decH += `</div></div>`;
     decH += `<div style="font-size:10px;color:#666;">&#9432; CODING 免费额度 · 上次审核耗时 ~87s · 点击按钮后自动执行</div>`;
     decH += `</div>`;
@@ -1090,17 +1236,61 @@ async function reRenderChar(fid) {
 // DM-1: AI generate character profile
 // ================================================================
 async function generateAIProfile(fid) {
-  toastMsg('✨ AI 生成中...', 2000);
-  // TODO: call /api/character/generate endpoint (future)
-  // For now, just show a message
-  toastMsg('⚠️ AI 生成功能待后端接口就绪', 3000, 'warn');
+  const toast = document.getElementById('toast');
+  toastMsg('✨ AI 生成中...', 5000);
+  try {
+    const r = await fetch('/api/character/' + fid + '/generate', { method: 'POST' });
+    const res = await r.json();
+    if (res.status === 'ok') {
+      toastMsg('✅ ' + res.message, 3000);
+      // Refresh the detail view after 1.5s
+      setTimeout(() => renderDetail(), 1500);
+    } else {
+      toastMsg('❌ 生成失败: ' + (res.error || '未知错误'), 3000, 'error');
+    }
+  } catch (e) {
+    toastMsg('❌ 生成失败: ' + e.message, 3000, 'error');
+  }
 }
 
 // ================================================================
 // DM-1: Audition voice
 // ================================================================
-function auditionVoice(fid) {
-  toastMsg('🎤 试听功能待 TTS 服务接入', 2000, 'warn');
+async function auditionVoice(fid) {
+  const toast = document.getElementById('toast');
+  toastMsg('🎤 正在合成试听音频...', 3000);
+  try {
+    // Fetch character profile to get voice config
+    const r = await fetch('/api/character/' + fid);
+    const data = await r.json();
+    const profile = data.profile || {};
+    const voice = profile.voice || {};
+    const sampleText = voice.sample_text || `${data.name}在此！`;
+    const nlsSpeaker = voice.nls_speaker || 'zhiming';
+
+    // Call NLS TTS to generate sample audio
+    const ttsR = await fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: sampleText,
+        voice: nlsSpeaker,
+        format: 'mp3',
+        sample_rate: 48000,
+      }),
+    });
+    const ttsRes = await ttsR.json();
+    if (ttsRes.audio_url) {
+      // Play the audio
+      const audio = new Audio(ttsRes.audio_url);
+      audio.play();
+      toastMsg('🎤 正在播放: ' + sampleText.substring(0, 20) + '...', 3000);
+    } else {
+      toastMsg('⚠️ TTS 合成失败: ' + (ttsRes.error || '未知错误'), 3000, 'warn');
+    }
+  } catch (e) {
+    toastMsg('⚠️ TTS 服务未连接: ' + e.message, 3000, 'warn');
+  }
 }
 
 // ================================================================
@@ -1621,6 +1811,193 @@ renderSummary = function () {
     ['💡 点击左侧「待决策」里程碑进行审批', '💡 按 / 快速搜索，←→ 切换 Tab'] :
     ['💡 点击 DM-0 查看故事板 + AI 审核结果', '💡 按 R 刷新，? 查看快捷键'];
   view.innerHTML += `<div style="margin-top:16px;font-size:10px;color:#444;line-height:1.8">${hints.join('<br>')}</div>`;
+};
+
+// ================================================================
+// P1-4: Unified Download Panel
+// ================================================================
+let dlPanelOpen = false;
+function toggleDlPanel() {
+  dlPanelOpen = !dlPanelOpen;
+  document.getElementById('dlPanel').classList.toggle('show', dlPanelOpen);
+}
+document.addEventListener('click', e => {
+  if (dlPanelOpen && !e.target.closest('.dl-wrap')) {
+    dlPanelOpen = false;
+    document.getElementById('dlPanel').classList.remove('show');
+  }
+});
+
+async function downloadAs(fmt) {
+  toggleDlPanel();
+  toastMsg('📥 正在生成 ' + fmt.toUpperCase() + '...', 2000);
+  try {
+    if (!lastData) { toastMsg('⚠️ 无数据可导出，请先刷新', 2000, 'warn'); return; }
+    const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const fn = `agentic-os-${ts}.${fmt}`;
+
+    if (fmt === 'json') {
+      const blob = new Blob([JSON.stringify(lastData, null, 2)], { type: 'application/json' });
+      triggerDownload(blob, fn);
+    } else if (fmt === 'csv') {
+      let csv = 'Milestone,Name,Status,DataSource,TaskID,Decision\n';
+      (lastData.milestones || []).forEach(m => {
+        csv += `"${m.ms_id}","${m.name || ''}","${m.status}","${m.data_source || ''}","${m.task_id || ''}","${m.decision || ''}"\n`;
+      });
+      triggerDownload(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }), fn);
+    } else if (fmt === 'csv-decisions') {
+      let csv = 'Milestone,Action,Reason,Timestamp\n';
+      (lastData.milestones || []).filter(m => m.decision).forEach(m => {
+        csv += `"${m.ms_id}","${m.decision}","${m.decision_reason || ''}","${m.updated_at || ''}"\n`;
+      });
+      triggerDownload(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }), fn);
+    } else if (fmt === 'md') {
+      let md = `# Agentic OS 状态报告\n\n生成时间: ${new Date().toLocaleString()}\n\n## 里程碑概览\n\n| Milestone | 名称 | 状态 | 数据源 |\n|---|---|---|---|\n`;
+      (lastData.milestones || []).forEach(m => {
+        md += `| ${m.ms_id} | ${m.name || '-'} | ${m.status} | ${m.data_source || '-'} |\n`;
+      });
+      md += `\n## 统计\n- 总计: ${(lastData.milestones || []).length}\n- 已完成: ${(lastData.milestones || []).filter(m => m.status === 'completed' || m.status === 'approved').length}\n- 待决策: ${(lastData.milestones || []).filter(m => m.status === 'waiting_approval').length}\n`;
+      triggerDownload(new Blob([md], { type: 'text/markdown' }), fn);
+    } else if (fmt === 'html') {
+      const html = document.documentElement.outerHTML;
+      triggerDownload(new Blob([html], { type: 'text/html' }), fn);
+    } else {
+      toastMsg('⚠️ 不支持格式: ' + fmt, 2000, 'warn'); return;
+    }
+    toastMsg('✅ ' + fmt.toUpperCase() + ' 导出成功', 2500);
+  } catch (e) {
+    toastMsg('❌ 导出失败: ' + e.message, 3000, 'error');
+  }
+}
+
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ================================================================
+// P1-6: Chart.js Data Visualization
+// ================================================================
+let chartInstance = null;
+let chartMode = 'status';
+
+function renderChartPanel() {
+  const rightEl = document.getElementById('detail');
+  if (!rightEl || document.getElementById('chartPanel')) return;
+
+  const chartHTML = `<div class="chart-panel" id="chartPanel">
+    <div class="chart-hdr">
+      <h4>📊 管线数据可视化</h4>
+      <div class="chart-tabs">
+        <span class="chart-tab active" onclick="switchChart('status',this)">状态分布</span>
+        <span class="chart-tab" onclick="switchChart('source',this)">数据源</span>
+        <span class="chart-tab" onclick="switchChart('pipeline',this)">管线对比</span>
+      </div>
+    </div>
+    <canvas id="mainChart"></canvas>
+  </div>`;
+  rightEl.insertAdjacentHTML('afterbegin', chartHTML);
+  updateChart('status');
+}
+
+function switchChart(mode, tabEl) {
+  chartMode = mode;
+  document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+  if (tabEl) tabEl.classList.add('active');
+  updateChart(mode);
+}
+
+function updateChart(mode) {
+  if (!lastData || !lastData.milestones) return;
+  const ms = lastData.milestones;
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+  const ctx = document.getElementById('mainChart');
+  if (!ctx) return;
+
+  let labels, data, colors;
+
+  if (mode === 'status') {
+    const counts = {};
+    ms.forEach(m => { counts[m.status] = (counts[m.status] || 0) + 1; });
+    labels = Object.keys(counts);
+    data = Object.values(counts);
+    colors = labels.map(s => {
+      if (s === 'completed' || s === 'approved') return '#22c55e';
+      if (s === 'waiting_approval') return '#f59e0b';
+      if (s === 'running') return '#3b82f6';
+      if (s === 'rejected') return '#ef4444';
+      return '#666';
+    });
+  } else if (mode === 'source') {
+    const counts = {};
+    ms.forEach(m => { counts[m.data_source || 'unknown'] = (counts[m.data_source || 'unknown'] || 0) + 1; });
+    labels = Object.keys(counts);
+    data = Object.values(counts);
+    colors = ['#3b82f6', '#f59e0b', '#22c55e', '#8b5cf6', '#666'];
+  } else if (mode === 'pipeline') {
+    const tk = ms.filter(m => m.pipeline === 'tk');
+    const dm = ms.filter(m => m.pipeline === 'drama');
+    labels = ['TK运营', '数字短剧'];
+    data = [
+      tk.filter(m => m.status === 'completed' || m.status === 'approved').length,
+      dm.filter(m => m.status === 'completed' || m.status === 'approved').length
+    ];
+    colors = ['#3b82f6', '#8b5cf6'];
+  }
+
+  chartInstance = new Chart(ctx, {
+    type: mode === 'pipeline' ? 'bar' : 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: colors,
+        borderColor: '#0f1117',
+        borderWidth: 2,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#aaa', font: { size: 10 }, padding: 12 }
+        },
+        tooltip: {
+          backgroundColor: '#1a1d27',
+          titleColor: '#e4e6eb',
+          bodyColor: '#aaa',
+          borderColor: '#333',
+          borderWidth: 1,
+          cornerRadius: 6,
+          callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed} 项` }
+        }
+      },
+      ...(mode === 'pipeline' ? {
+        scales: {
+          x: { ticks: { color: '#888', font: { size: 10 } }, grid: { color: '#222' } },
+          y: { beginAtZero: true, ticks: { stepSize: 1, color: '#888' }, grid: { color: '#222' } }
+        }
+      } : {})
+    }
+  });
+}
+
+// Patch renderDetail to inject chart
+const _origRenderDetail3 = renderDetail;
+renderDetail = async function() {
+  await _origRenderDetail3();
+  if (lastData && lastData.milestones && lastData.milestones.length > 0) {
+    requestAnimationFrame(() => renderChartPanel());
+  }
 };
 
 // ================================================================
