@@ -423,6 +423,8 @@ if(localStorage.getItem('_dash_v')!=='3.6.20'){localStorage.setItem('_dash_v','3
       <div class="dl-divider"></div>
       <a onclick="downloadAs('md')">📝 Markdown 报告</a>
       <a onclick="downloadAs('html')">🌐 HTML 快照</a>
+  </div>
+</div>
 </div>
 <div id="prdStaleAlert" style="display:none;width:100%;background:#7f1d1d;color:#fca5a5;text-align:center;font-size:11px;padding:6px 16px;border-bottom:1px solid #991b1b;flex-shrink:0">
   ⚠️ <b>PRD 版本滞后</b>: 代码已到 <span id="prdAlertCodeVer">v3.6.XX</span>，但 PRD 仅记录到 <span id="prdAlertPrdVer">v3.6.YY</span> — <a href="#" onclick="alert('请在 reports/PRD-v3.6.md 新增版本条目，然后 git commit+push')" style="color:#f87171;text-decoration:underline">查看修复步骤</a>
@@ -1185,10 +1187,10 @@ async function renderDM1(detail, ms) {
   detailEl.insertAdjacentHTML('beforeend', sec);
   const container = document.getElementById('dm1-characters');
 
-  // Fetch all characters in parallel
+  // Fetch all characters
   const fetches = CHAR_NAMES.map(name => {
     const fid = CHAR_MAP[name] || name;
-    return fetch('/api/character/' + fid).then(r => r.json()).catch(() => null);
+    return fetch('/api/character/' + fid).then(r => r.ok ? r.json() : null).catch(() => null);
   });
   const results = await Promise.all(fetches);
 
