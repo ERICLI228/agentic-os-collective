@@ -931,11 +931,26 @@ def api_image_process(img_id):
 
 @app.route('/api/detail/<ms_id>', methods=['GET'])
 def api_detail(ms_id):
-    """里程碑详情 — v3.6 返回实体数据(非状态标签)"""
+    """里程碑详情 — v3.7 返回实体数据 + review_dimensions"""
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     try:
         from detail_engine import get_all_details
-        return jsonify(get_all_details(ms_id))
+        data = get_all_details(ms_id)
+        # v3.7: Extract review dimensions into top-level field for front-end card display
+        if ms_id == "DM-0" and "sections" in data:
+            for sec in data["sections"]:
+                if "AI 对抗审核" in sec.get("title", ""):
+                    dims = []
+                    for item in sec.get("items", []):
+                        label = item.get("label", "")
+                        val = item.get("value", "")
+                        status = item.get("status", "")
+                        if label in ["编剧规则合规","场景完整性","剧情节奏","逻辑一致性","综合评分","角色一致性","剧情张力","台词自然度","时长适配","合规"]:
+                            dims.append({"dimension": label, "score": val, "status": status})
+                    if dims:
+                        data["review_dimensions"] = dims
+                        break
+        return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e), "ms_id": ms_id}), 500
 
