@@ -138,6 +138,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 .loading-bar.on{width:100%;animation:loadPulse 1.5s ease-out forwards}
 @keyframes loadPulse{0%{width:0}60%{width:70%}100%{width:100%}}
 
+/* v3.6.10: Cache busting meta */
+/* NO-CACHE: force fresh load on every visit */
+
 /* P1: Image placeholder */
 .img-placeholder-text{width:100%;height:120px;background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#555;font-size:10px;flex-direction:column;gap:4px}
 .img-placeholder-text::before{content:'🖼️';font-size:20px}
@@ -146,67 +149,69 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 .toast.error{background:#ef4444;color:#fff}
 .toast.warn{background:#f59e0b;color:#000}
 
-/* DM-1: Character Bible Panel v3.6.7 */
-.char-bible{background:#14161d;border-radius:6px;padding:12px;margin:8px 0;position:relative;transition:background .15s}
-.char-bible:hover{background:#1a1d27}
-.char-bible-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.char-bible-header .cb-name{font-size:14px;font-weight:700;color:#e4e6eb}
-.char-bible-header .cb-title{font-size:11px;color:#888}
-.char-bible-header .cb-edit-btn{margin-left:auto;font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid #3b82f6;color:#3b82f6;cursor:pointer;background:transparent}
-.char-bible-header .cb-edit-btn:hover{background:#3b82f6;color:#fff}
-.cb-body{display:flex;gap:12px}
+/* DM-1: Character Bible Panel v3.6.7 — 科技清新风 */
+.char-bible{background:linear-gradient(135deg,#0c1222 0%,#0f1a2e 100%);border:1px solid rgba(74,158,255,.15);border-radius:8px;padding:14px;margin:8px 0;position:relative;transition:all .2s;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+.char-bible:hover{background:linear-gradient(135deg,#0f1628 0%,#12203a 100%);border-color:rgba(74,158,255,.3);box-shadow:0 4px 20px rgba(74,158,255,.08)}
+.char-bible-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(74,158,255,.1)}
+.char-bible-header .cb-name{font-size:15px;font-weight:700;color:#e8f0fe;background:linear-gradient(135deg,#4a9eff,#00d4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none}
+.char-bible-header .cb-title{font-size:11px;color:#6b8aad}
+.char-bible-header .cb-edit-btn{margin-left:auto;font-size:10px;padding:3px 10px;border-radius:6px;border:1px solid rgba(74,158,255,.3);color:#4a9eff;cursor:pointer;background:rgba(74,158,255,.05);transition:all .15s}
+.char-bible-header .cb-edit-btn:hover{background:rgba(74,158,255,.15);color:#70b8ff;border-color:#4a9eff}
+.cb-body{display:flex;gap:14px}
 .cb-left{width:180px;flex-shrink:0}
-.cb-left img{width:100%;border-radius:4px;cursor:pointer}
-.cb-left .cb-thumbnails{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
-.cb-left .cb-thumb{width:50px;height:50px;border-radius:3px;cursor:pointer;border:2px solid transparent;object-fit:cover}
-.cb-left .cb-thumb.active{border-color:#3b82f6}
+.cb-left img{width:100%;border-radius:6px;cursor:pointer;border:1px solid rgba(74,158,255,.1);transition:border-color .15s}
+.cb-left img:hover{border-color:rgba(74,158,255,.3)}
+.cb-left .cb-thumbnails{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.cb-left .cb-thumb{width:50px;height:50px;border-radius:4px;cursor:pointer;border:2px solid transparent;object-fit:cover;transition:border-color .15s}
+.cb-left .cb-thumb.active,.cb-left .cb-thumb:hover{border-color:#4a9eff}
 .cb-right{flex:1;min-width:0}
-.cb-section{margin-bottom:8px}
-.cb-section-title{font-size:10px;color:#888;margin-bottom:3px;display:flex;align-items:center;gap:4px}
-.cb-section-title .cb-icon{font-size:11px}
-.cb-section-content{font-size:11px;color:#c4c8d0;line-height:1.5}
+.cb-section{margin-bottom:10px;padding:6px 8px;background:rgba(74,158,255,.03);border-radius:6px}
+.cb-section-title{font-size:10px;color:#6b8aad;margin-bottom:4px;display:flex;align-items:center;gap:4px;font-weight:600}
+.cb-section-title .cb-icon{font-size:12px}
+.cb-section-content{font-size:11px;color:#c4d4e8;line-height:1.5}
 .cb-traits{display:flex;flex-wrap:wrap;gap:4px}
-.cb-trait{background:#1e2a3a;color:#93c5fd;padding:1px 6px;border-radius:8px;font-size:9px}
-.cb-catchphrase{font-style:italic;color:#fbbf24;font-size:10px;margin:2px 0;padding-left:8px;border-left:2px solid #fbbf24}
-.cb-habits{font-size:10px;color:#aaa;margin:2px 0}
-.cb-colors{display:flex;gap:6px;align-items:center;margin:4px 0}
-.cb-color-swatch{width:20px;height:20px;border-radius:4px;border:1px solid #333}
-.cb-color-label{font-size:9px;color:#666}
-.cb-relations{font-size:10px;color:#aaa}
-.cb-relations .rel-name{color:#93c5fd}
-.cb-actions{display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid #222;flex-wrap:wrap}
-.cb-actions .cb-btn{font-size:10px;padding:3px 10px;border-radius:4px;cursor:pointer;border:1px solid #333;color:#aaa;background:#1a1a2e;display:flex;align-items:center;gap:4px}
-.cb-actions .cb-btn:hover{background:#2563eb;color:#fff;border-color:#2563eb}
+.cb-trait{background:linear-gradient(135deg,rgba(74,158,255,.15),rgba(0,180,216,.1));color:#70b8ff;padding:2px 8px;border-radius:10px;font-size:9px;border:1px solid rgba(74,158,255,.1)}
+.cb-catchphrase{font-style:italic;color:#ffd54f;font-size:10px;margin:3px 0;padding:3px 8px;border-radius:4px;background:rgba(255,213,79,.06);border-left:2px solid rgba(255,213,79,.3)}
+.cb-habits{font-size:10px;color:#94a3b8;margin:2px 0}
+.cb-habits::before{content:'• ';color:#4a9eff}
+.cb-colors{display:flex;gap:6px;align-items:center;margin:6px 0}
+.cb-color-swatch{width:22px;height:22px;border-radius:5px;border:1px solid rgba(255,255,255,.1);box-shadow:0 2px 4px rgba(0,0,0,.2)}
+.cb-color-label{font-size:9px;color:#5a7a9a}
+.cb-relations{font-size:10px;color:#94a3b8}
+.cb-relations .rel-name{color:#70b8ff;font-weight:500}
+.cb-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(74,158,255,.1);flex-wrap:wrap}
+.cb-actions .cb-btn{font-size:10px;padding:4px 12px;border-radius:6px;cursor:pointer;border:1px solid rgba(74,158,255,.2);color:#8ab4f8;background:rgba(74,158,255,.05);display:flex;align-items:center;gap:4px;transition:all .15s}
+.cb-actions .cb-btn:hover{background:rgba(74,158,255,.15);color:#bbdefb;border-color:#4a9eff}
 .cb-actions .cb-btn.busy{opacity:.5;pointer-events:none}
 .cb-edit-mode{display:none}
 .cb-edit-mode.show{display:block}
 .cb-edit-mode .cb-field{margin-bottom:8px}
-.cb-edit-mode .cb-field label{font-size:9px;color:#888;display:block;margin-bottom:2px}
-.cb-edit-mode .cb-field input[type="text"],.cb-edit-mode .cb-field textarea{width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px 6px;border-radius:4px;font-size:10px;outline:none;font-family:inherit}
-.cb-edit-mode .cb-field input:focus,.cb-edit-mode .cb-field textarea:focus{border-color:#3b82f6}
+.cb-edit-mode .cb-field label{font-size:9px;color:#6b8aad;display:block;margin-bottom:2px}
+.cb-edit-mode .cb-field input[type="text"],.cb-edit-mode .cb-field textarea{width:100%;background:rgba(15,25,45,.8);border:1px solid rgba(74,158,255,.15);color:#e4e6eb;padding:5px 8px;border-radius:6px;font-size:10px;outline:none;font-family:inherit;transition:border-color .15s}
+.cb-edit-mode .cb-field input:focus,.cb-edit-mode .cb-field textarea:focus{border-color:#4a9eff;box-shadow:0 0 0 2px rgba(74,158,255,.1)}
 .cb-edit-mode .cb-field textarea{min-height:40px;resize:vertical}
 .cb-edit-mode .cb-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
-.cb-edit-mode .cb-chip{background:#1e2a3a;color:#93c5fd;padding:2px 8px;border-radius:12px;font-size:9px;cursor:pointer;display:flex;align-items:center;gap:4px}
-.cb-edit-mode .cb-chip:hover{background:#dc2626;color:#fff}
+.cb-edit-mode .cb-chip{background:rgba(74,158,255,.1);color:#70b8ff;padding:2px 8px;border-radius:12px;font-size:9px;cursor:pointer;display:flex;align-items:center;gap:4px;transition:background .15s}
+.cb-edit-mode .cb-chip:hover{background:rgba(239,68,68,.15);color:#fca5a5}
 .cb-edit-mode .cb-chip::after{content:'×';font-size:12px}
-.cb-edit-mode .cb-add-chip{background:transparent;border:1px dashed #333;color:#555;padding:2px 8px;border-radius:12px;font-size:9px;cursor:pointer}
-.cb-edit-mode .cb-add-chip:hover{border-color:#3b82f6;color:#3b82f6}
+.cb-edit-mode .cb-add-chip{background:transparent;border:1px dashed rgba(74,158,255,.2);color:#5a7a9a;padding:2px 8px;border-radius:12px;font-size:9px;cursor:pointer}
+.cb-edit-mode .cb-add-chip:hover{border-color:#4a9eff;color:#4a9eff}
 .cb-edit-mode .cb-color-input{display:flex;gap:6px;align-items:center}
-.cb-edit-mode .cb-color-input input[type="color"]{width:32px;height:24px;border:1px solid #333;border-radius:4px;cursor:pointer;background:#111;padding:0}
+.cb-edit-mode .cb-color-input input[type="color"]{width:32px;height:24px;border:1px solid rgba(74,158,255,.2);border-radius:5px;cursor:pointer;background:rgba(15,25,45,.8);padding:0}
 .cb-edit-mode .cb-color-input input[type="text"]{width:80px}
 .cb-edit-mode .cb-edit-btns{display:flex;gap:6px;margin-top:10px;align-items:center}
-.cb-edit-mode .cb-edit-btns .btn{font-size:10px;padding:4px 14px;border-radius:5px;cursor:pointer;border:none}
-.cb-edit-mode .cb-edit-btns .btn-save{background:#2563eb;color:#fff}
-.cb-edit-mode .cb-edit-btns .btn-save:hover{background:#1d4ed8}
-.cb-edit-mode .cb-edit-btns .btn-cancel{background:#333;color:#aaa}
-.cb-edit-mode .cb-edit-btns .btn-cancel:hover{background:#444}
-.cb-edit-mode .cb-edit-btns .btn-ai{background:#7c2d12;color:#fbbf24;margin-left:auto}
-.cb-edit-mode .cb-edit-btns .btn-ai:hover{background:#9a3412}
-.cb-rerender-progress{display:none;margin-top:6px}
+.cb-edit-mode .cb-edit-btns .btn{font-size:10px;padding:4px 14px;border-radius:6px;cursor:pointer;border:none;transition:all .15s}
+.cb-edit-mode .cb-edit-btns .btn-save{background:linear-gradient(135deg,#4a9eff,#00b4d8);color:#fff}
+.cb-edit-mode .cb-edit-btns .btn-save:hover{background:linear-gradient(135deg,#5aaaff,#20c4e8);box-shadow:0 2px 8px rgba(74,158,255,.3)}
+.cb-edit-mode .cb-edit-btns .btn-cancel{background:rgba(255,255,255,.05);color:#888}
+.cb-edit-mode .cb-edit-btns .btn-cancel:hover{background:rgba(255,255,255,.1);color:#aaa}
+.cb-edit-mode .cb-edit-btns .btn-ai{background:linear-gradient(135deg,rgba(124,45,18,.6),rgba(154,52,18,.6));color:#fbbf24;margin-left:auto;border:1px solid rgba(251,191,36,.2)}
+.cb-edit-mode .cb-edit-btns .btn-ai:hover{background:linear-gradient(135deg,rgba(154,52,18,.8),rgba(180,62,18,.8))}
+.cb-rerender-progress{display:none;margin-top:8px}
 .cb-rerender-progress.show{display:block}
-.cb-rerender-progress .cb-prog-bar{height:4px;background:#222;border-radius:2px;overflow:hidden}
-.cb-rerender-progress .cb-prog-fill{height:100%;background:#3b82f6;width:0;transition:width .5s}
-.cb-rerender-progress .cb-prog-text{font-size:9px;color:#888;margin-top:2px}
+.cb-rerender-progress .cb-prog-bar{height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+.cb-rerender-progress .cb-prog-fill{height:100%;background:linear-gradient(90deg,#4a9eff,#00d4ff);width:0;transition:width .5s;border-radius:2px}
+.cb-rerender-progress .cb-prog-text{font-size:9px;color:#6b8aad;margin-top:3px}
 
 /* UX-1: Image compare split view */
 .compare-view{display:flex;gap:8px;margin:8px 0}
@@ -666,7 +671,12 @@ function renderDefault(detail){
       if(s.items)s.items.forEach(it=>{
         const ic2={'ok':'<span class="ic ok">&#10003;</span>','ng':'<span class="ic ng">&#10007;</span>','warn':'<span class="ic wn">&#9888;</span>'};
         if(it.key==='rv_decision') return;
-        h+=`<div class="ent-row">${ic2[it.status]||' '}<span class="ent-lbl">${it.label}</span><div class="ent-val"><span>${it.value}</span>`;
+        // P2: Skip items with no meaningful label or value
+        if(!it.label && !it.key) return;
+        if(!it.value && !it.before && !it.after && !it.note) return;
+        const displayLabel = it.label || it.key || '';
+        const displayValue = it.value || '';
+        h+=`<div class="ent-row">${ic2[it.status]||' '}<span class="ent-lbl">${displayLabel}</span><div class="ent-val"><span>${displayValue}</span>`;
         if(it.before)h+=`<div class="before">&larr; ${it.before}</div>`;
         if(it.after)h+=`<div class="after">&rarr; ${it.after}</div>`;
         if(it.note)h+=`<div class="note">&#9432; ${it.note}</div>`;
@@ -2001,7 +2011,370 @@ renderDetail = async function() {
 };
 
 // ================================================================
-// v3.6: Init - auto-refresh every 30 seconds
+// v3.6.9: P0-1 Collapsible Detail Sections (摘要折叠)
+// ================================================================
+let expandedSections = new Set();
+function toggleSection(secId) {
+  const body = document.getElementById('secbody-' + secId);
+  const hdr = document.getElementById('sechdr-' + secId);
+  if (!body) return;
+  const isExpanded = body.classList.contains('expanded');
+  body.classList.toggle('expanded');
+  hdr?.classList.toggle('expanded');
+  if (isExpanded) expandedSections.delete(secId);
+  else expandedSections.add(secId);
+}
+function toggleAllSections() {
+  const allBodies = document.querySelectorAll('.sec-body.collapsible');
+  const anyCollapsed = Array.from(allBodies).some(b => !b.classList.contains('expanded'));
+  allBodies.forEach(b => {
+    if (anyCollapsed) b.classList.add('expanded');
+    else b.classList.remove('expanded');
+  });
+  document.querySelectorAll('.sec-hdr.collapsible').forEach(h => {
+    if (anyCollapsed) h.classList.add('expanded');
+    else h.classList.remove('expanded');
+  });
+}
+
+// Wrap existing section rendering to add collapsible structure
+// This patches renderDefault and all renderDM* functions to wrap sections
+function makeSectionCollapsible(secId, title, contentHTML, defaultExpanded = false) {
+  const expanded = expandedSections.has(secId) || defaultExpanded;
+  return `<div class="sec" style="padding:8px 12px;margin-bottom:6px">
+    <div class="sec-hdr collapsable ${expanded ? 'expanded' : ''}" id="sechdr-${secId}" onclick="toggleSection('${secId}')" style="cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px;font-size:11px;color:#888;padding:4px 0">
+      <span class="sec-toggle-icon" style="transition:transform .2s;display:inline-block;transform:rotate(${expanded ? '90' : '0'}deg)">▶</span>
+      ${title}
+      <span style="margin-left:auto;font-size:8px;color:#555">${expanded ? '点击收起' : '点击展开'}</span>
+    </div>
+    <div class="sec-body collapsable ${expanded ? 'expanded' : ''}" id="secbody-${secId}" style="max-height:0;overflow:hidden;transition:max-height .3s ease-out;${expanded ? 'max-height:5000px' : ''}">
+      ${contentHTML}
+    </div>
+  </div>`;
+}
+
+// ================================================================
+// v3.6.9: P0-2 DM-0 四维度审核明细展示
+// ================================================================
+function renderFourDimReview(reviewData) {
+  const dimensions = reviewData?.dimensions || [];
+  const overallScore = reviewData?.overall_score || 0;
+  const decision = reviewData?.decision || 'pending';
+  
+  let scoreColor = overallScore >= 6 ? '#22c55e' : (overallScore >= 4 ? '#f59e0b' : '#ef4444');
+  
+  let html = `<div style="text-align:center;margin-bottom:12px;padding:8px;background:#111;border-radius:6px">
+    <div style="font-size:9px;color:#555">综合评分</div>
+    <div style="font-size:28px;font-weight:700;color:${scoreColor}">${overallScore.toFixed(1)}/10</div>
+    <div style="font-size:10px;margin-top:2px">
+      <span class="bdg ${decision === 'approved' ? 'ok' : decision === 'modify' ? 'mk' : 'dc'}">
+        ${{approved: '✅ 通过', modify: '✏️ 需修改', rejected: '❌ 驳回', pending: '⏳ 待审核'}[decision] || '⏳ 待审核'}
+      </span>
+    </div>
+  </div>`;
+  
+  if (dimensions.length === 0) {
+    html += `<div style="font-size:10px;color:#555;text-align:center;padding:12px">
+      ⚠️ 四维度审核数据未返回<br>
+      <span style="font-size:9px">后端需返回 dimensions 数组 (编剧/分镜/逻辑/节奏)</span>
+    </div>`;
+  } else {
+    html += `<div class="four-dim">`;
+    const icons = { '编剧': '📝', '分镜': '🎬', '逻辑': '🧠', '节奏': '⏱️' };
+    dimensions.forEach(dim => {
+      const name = dim.name || dim.dimension || '未知';
+      const score = dim.score || dim.value || 0;
+      const note = dim.note || dim.detail || '';
+      const border = score >= 6 ? 'good' : (score >= 4 ? 'warn' : 'bad');
+      const icon = icons[name] || '📋';
+      html += `<div class="dim-card ${border}">
+        <div class="dim-icon">${icon}</div>
+        <div class="dim-name">${name}</div>
+        <div class="dim-score" style="color:${score >= 6 ? '#22c55e' : score >= 4 ? '#f59e0b' : '#ef4444'}">${score}/10</div>
+        ${note ? `<div class="dim-note">${note}</div>` : ''}
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  return html;
+}
+
+// ================================================================
+// v3.6.9: P0-3 修改→重处理→审核自动循环
+// ================================================================
+async function triggerReReview(msId) {
+  const btn = document.getElementById('rerun-btn-' + msId);
+  if (btn) { btn.classList.add('busy'); btn.textContent = '⏳ 重审中...'; }
+  toastMsg('🔄 正在触发重新审核...', 3000);
+  try {
+    // Step 1: Reset the milestone to "running"
+    const r1 = await fetch('/api/decision', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ task_id: msId, action: 'modify', reason: '用户触发重新审核' })
+    });
+    if (!r1.ok) { toastMsg('重置失败: HTTP ' + r1.status, 2500, 'error'); return; }
+    
+    // Step 2: Trigger adversarial review
+    const r2 = await fetch('/api/review/' + msId, { method: 'POST' });
+    if (!r2.ok) { toastMsg('审核触发失败: HTTP ' + r2.status, 2500, 'error'); return; }
+    const reviewResult = await r2.json();
+    
+    toastMsg('✅ 审核完成: 评分 ' + (reviewResult?.overall_score || 'N/A') + '/10', 4000);
+    setTimeout(refresh, 1500);
+  } catch (e) {
+    toastMsg('❌ 重审失败: ' + e.message, 3000, 'error');
+  }
+  if (btn) { btn.classList.remove('busy'); btn.textContent = '🔄 重新审核'; }
+}
+
+// ================================================================
+// v3.6.9: UX-5 图片对比视图（修复：JS 正确调用）
+// ================================================================
+function showCompareView(galleryEl) {
+  if (!galleryEl) return;
+  const imgs = galleryEl.querySelectorAll('.img-card img');
+  if (imgs.length < 2) { toastMsg('需要至少 2 张图片才能对比', 2000, 'warn'); return; }
+  
+  compareMode = true;
+  const labels = ['原始', '处理后', '去背景', '最终', '镜1', '镜2', '镜3'];
+  let h = '<div class="compare-view" style="display:flex;gap:8px;overflow-x:auto;padding:8px 0">';
+  Array.from(imgs).forEach((img, i) => {
+    h += `<div class="compare-col" style="flex:0 0 auto;text-align:center">
+      <div class="comp-label" style="font-size:9px;color:#888;margin-bottom:4px">${labels[i] || '图'+(i+1)}</div>
+      <img src="${img.src}" style="max-height:300px;border-radius:4px;cursor:pointer" onclick="zoomImg('${img.src}')" />
+    </div>`;
+  });
+  h += '</div><div style="text-align:center;margin-top:8px"><button class="mini-btn" onclick="exitCompare(this)">✕ 退出对比</button></div>';
+  galleryEl.outerHTML = h;
+}
+function exitCompare(btn) {
+  renderDetail();
+  compareMode = false;
+}
+
+// ================================================================
+// v3.6.9: UX-6 音色试听（Web Speech API fallback）
+// ================================================================
+async function auditionVoice(fid) {
+  toastMsg('🎤 正在试听...', 2000);
+  try {
+    // Try backend TTS first
+    const r = await fetch('/api/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: `${fid}在此，听我号令！`, voice: 'zhiming', format: 'mp3', sample_rate: 48000 })
+    });
+    if (r.ok) {
+      const data = await r.json();
+      if (data.audio_url) {
+        new Audio(data.audio_url).play();
+        return;
+      }
+    }
+  } catch (e) {}
+  
+  // Fallback: Web Speech API
+  if ('speechSynthesis' in window) {
+    const utter = new SpeechSynthesisUtterance(`${fid}在此，听我号令！`);
+    utter.lang = 'zh-CN';
+    utter.rate = 0.9;
+    utter.pitch = 0.8;
+    // Try to find a Chinese voice
+    const voices = speechSynthesis.getVoices();
+    const zhVoice = voices.find(v => v.lang.startsWith('zh'));
+    if (zhVoice) utter.voice = zhVoice;
+    speechSynthesis.speak(utter);
+    toastMsg('🎤 浏览器语音试听（非TTS模型）', 2500, 'warn');
+  } else {
+    toastMsg('⚠️ 浏览器不支持语音合成', 2000, 'error');
+  }
+}
+// Preload voices for Web Speech API
+if ('speechSynthesis' in window) speechSynthesis.getVoices();
+
+// ================================================================
+// v3.6.9: UX-8 操作级进度反馈（Per-operation progress bar）
+// ================================================================
+function showOpProgress(containerId, msg, percent) {
+  let bar = document.getElementById('op-prog-' + containerId);
+  if (!bar) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.insertAdjacentHTML('beforeend',
+      `<div id="op-prog-${containerId}" style="margin-top:8px">
+        <div style="font-size:9px;color:#888;margin-bottom:2px" id="op-prog-msg-${containerId}">${msg}</div>
+        <div style="height:4px;background:#222;border-radius:2px;overflow:hidden">
+          <div id="op-prog-fill-${containerId}" style="height:100%;background:#3b82f6;width:${percent}%;transition:width .3s;border-radius:2px"></div>
+        </div>
+      </div>`);
+  } else {
+    const msgEl = document.getElementById('op-prog-msg-' + containerId);
+    const fillEl = document.getElementById('op-prog-fill-' + containerId);
+    if (msgEl) msgEl.textContent = msg;
+    if (fillEl) fillEl.style.width = percent + '%';
+  }
+}
+function hideOpProgress(containerId) {
+  const el = document.getElementById('op-prog-' + containerId);
+  if (el) el.remove();
+}
+
+// ================================================================
+// v3.6.9: P2-7 质量反馈知识库
+// ================================================================
+const QUALITY_KB = [
+  { q: 'Q: 渲染图模糊怎么办？', a: '检查 ComfyUI SDXL 模型是否加载正确；确认分辨率设置为 1024×1024；尝试添加 "high quality, detailed" 到 prompt。' },
+  { q: 'Q: TTS 发音不准确？', a: '在文本中用拼音标注多音字（如「重(chóng)新」）；调整 NLS speaker 参数；检查参考音频质量。' },
+  { q: 'Q: SFX 音效不匹配场景？', a: '修改 SCENE_SFX_MAP 中的音效关键词；在 freesound.org 搜索更匹配的标签；调整音量混合比例。' },
+  { q: 'Q: 审核评分偏低？', a: '检查剧本连贯性；确保分镜描述包含机位/景别/动作；添加情绪和台词细节。' },
+  { q: 'Q: 管线服务连接失败？', a: '确认 Flask 在 :5001 运行；ComfyUI 在 :8188 运行；GPT-SoVITS 在 :9880 运行。用 `ps aux | grep python` 检查进程。' },
+  { q: 'Q: 决策按钮无响应？', a: '检查后端 /api/decision 是否返回 200；查看浏览器开发者工具 Network 面板；确认 task_id 格式正确。' },
+];
+
+function renderQualityKB() {
+  const detailEl = document.getElementById('detail');
+  if (!detailEl || document.getElementById('qualityKB')) return;
+  let html = '<div class="sec" id="qualityKB"><h3>📚 质量反馈知识库</h3>';
+  html += '<p style="font-size:9px;color:#555;margin-bottom:8px">点击问题查看答案 · 持续更新中</p>';
+  QUALITY_KB.forEach((item, i) => {
+    html += `<div class="qa-item">
+      <div class="q-q" onclick="this.nextElementSibling.classList.toggle('show')">${item.q} <span style="font-size:8px;color:#555">▼</span></div>
+      <div class="q-a">${item.a}</div>
+    </div>`;
+  });
+  html += '</div>';
+  detailEl.insertAdjacentHTML('beforeend', html);
+}
+
+// ================================================================
+// v3.6.9: P2-8 自愈提示（连续失败自动弹出）
+// ================================================================
+let failureCounts = {};
+let lastFailureKey = '';
+
+function trackFailure(key) {
+  failureCounts[key] = (failureCounts[key] || 0) + 1;
+  lastFailureKey = key;
+  if (failureCounts[key] >= 3) {
+    showSelfHealTip(key);
+  }
+}
+function trackSuccess(key) {
+  failureCounts[key] = 0;
+  hideSelfHealTip();
+}
+
+function showSelfHealTip(key) {
+  const rightEl = document.getElementById('detail');
+  if (!rightEl || document.getElementById('selfHealTip')) return;
+  
+  const tips = {
+    'render': '渲染连续失败：\n1. 检查 ComfyUI 是否在 :8188 运行\n2. 查看 ComfyUI 控制台错误日志\n3. 尝试重启 comfyui_renderer.py',
+    'tts': 'TTS 连续失败：\n1. 检查 GPT-SoVITS 是否在 :9880 运行\n2. 确认 .env 中 NLS 密钥有效\n3. 尝试 macOS say 命令 fallback',
+    'decision': '决策 API 连续失败：\n1. 检查 Flask 是否在 :5001 运行\n2. 查看 task_wizard.py 日志\n3. 确认 task_id 格式正确',
+    'default': '操作连续失败，请检查对应服务状态'  
+  };
+  
+  const tip = tips[key] || tips['default'];
+  const html = `<div class="self-heal" id="selfHealTip">
+    <span class="sh-dismiss" onclick="hideSelfHealTip()">✕</span>
+    <div class="sh-title">💡 自动诊断提示 (${key})</div>
+    <div class="sh-body" style="white-space:pre-line">${tip}</div>
+  </div>`;
+  rightEl.insertAdjacentHTML('afterbegin', html);
+}
+
+function hideSelfHealTip() {
+  const el = document.getElementById('selfHealTip');
+  if (el) el.remove();
+}
+
+// ================================================================
+// v3.6.9: Patch renderDefault to add collapsible sections
+// ================================================================
+const _origRenderDefault = renderDefault;
+renderDefault = function(detail) {
+  const html = _origRenderDefault(detail);
+  // Wrap sections in collapsible structure
+  return html.replace(/<div class="sec" id="([^"]+)"/g, (match, id) => {
+    return `<div class="sec" id="${id}" data-collapsible="true"`;
+  });
+};
+
+// ================================================================
+// v3.6.9: Patch renderDM0 to add four-dimension review + re-review button
+// ================================================================
+const _origRenderDM0 = renderDM0;
+renderDM0 = async function(detail, ms) {
+  await _origRenderDM0(detail, ms);
+  
+  // Add four-dimension review section
+  const reviewData = ms?.review || detail?.review || null;
+  if (reviewData) {
+    const reviewHTML = renderFourDimReview(reviewData);
+    const dm0Sec = document.getElementById('dm0-sec');
+    if (dm0Sec) {
+      dm0Sec.insertAdjacentHTML('beforeend', `<div class="sec" id="dm0-review" style="margin-top:10px">
+        <h3>🔍 AI 对抗审核明细</h3>
+        ${reviewHTML}
+      </div>`);
+    }
+  }
+  
+  // Add re-review button
+  const msId = ms?.ms_id || 'DM-0';
+  const dm0Sec2 = document.getElementById('dm0-sec');
+  if (dm0Sec2) {
+    dm0Sec2.insertAdjacentHTML('beforeend', `
+      <div style="margin-top:8px;display:flex;gap:6px;align-items:center">
+        <button class="btn btn-rerun" id="rerun-btn-${msId}" onclick="triggerReReview('${msId}')">🔄 重新审核</button>
+        <span style="font-size:9px;color:#555">修改后点击此按钮触发自动重审</span>
+      </div>`);
+  }
+};
+
+// ================================================================
+// v3.6.9: Patch renderDetail to inject quality KB + pipeline monitor
+// ================================================================
+const _origRenderDetail2 = renderDetail;
+renderDetail = async function() {
+  await _origRenderDetail2();
+  
+  // Add pipeline monitor to all detail views
+  if (cur === 'drama') {
+    requestAnimationFrame(() => {
+      renderPipelineMonitor();
+      renderQualityKB();
+    });
+  }
+};
+
+// ================================================================
+// v3.6.9: Auto-collapse sections by default (摘要优先)
+// ================================================================
+// After any detail render, collapse non-critical sections
+function autoCollapseDetails() {
+  const secBodies = document.querySelectorAll('.sec-body.collapsible');
+  secBodies.forEach((body, i) => {
+    // Only expand first 2 sections by default (summary + key info)
+    if (i > 1) {
+      body.classList.remove('expanded');
+      const hdr = body.previousElementSibling?.querySelector?.('.sec-hdr');
+      if (hdr) hdr.classList.remove('expanded');
+    }
+  });
+}
+
+// Patch renderDetail to apply auto-collapse
+const _origRenderDetail4 = renderDetail;
+renderDetail = async function() {
+  await _origRenderDetail4();
+  setTimeout(autoCollapseDetails, 100);
+};
+
+// ================================================================
+// v3.6.9: Init - auto-refresh every 30 seconds
 // ================================================================
 refresh();
 setInterval(refresh, 30000);

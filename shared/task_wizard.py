@@ -21,7 +21,13 @@ def serve_dashboard():
     """驾驶舱 HTML"""
     dashboard_path = Path(__file__).resolve().parent.parent / "dashboard" / "task_board.html"
     if dashboard_path.exists():
-        return dashboard_path.read_text(encoding="utf-8"), 200, {"Content-Type": "text/html; charset=utf-8"}
+        html = dashboard_path.read_text(encoding="utf-8")
+        return html, 200, {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        }
     return "<h1>Dashboard not found</h1>", 404
 
 WORKSPACE = Path.home() / "agentic-os-collective"
@@ -638,6 +644,60 @@ def api_character_detail(char_name):
             "pinyin": char_id,
             "profile": profile,
             "renders": renders,
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/character/<char_name>/generate', methods=['POST'])
+def api_character_generate(char_name):
+    """AI 生成/刷新角色档案 (v3.6.8)"""
+    try:
+        from script_manager import CHARACTER_ID_MAP, ROLE_OVERVIEW
+        from character_profile_generator import generate_character_profile, KNOWN_PROFILES
+
+        REVERSE_ID_MAP = {v: k for k, v in CHARACTER_ID_MAP.items()}
+        cn_name = REVERSE_ID_MAP.get(char_name, char_name)
+
+        # Get title from role overview
+        role = ROLE_OVERVIEW.get(cn_name, {})
+        title = role.get("title", "")
+
+        # Generate profile (uses KNOWN_PROFILES fallback if AI fails)
+        profile = generate_character_profile(cn_name, title)
+
+        # Merge into visual_bible.json
+        bible_path = Path.home() / ".agentic-os" / "character_designs" / "visual_bible.json"
+        bible = {}
+        if bible_path.exists():
+            with open(bible_path, encoding="utf-8") as f:
+                bible = json.load(f)
+
+        char_id = CHARACTER_ID_MAP.get(cn_name, char_name)
+        chars = bible.setdefault("characters", {})
+        if char_id not in chars:
+            chars[char_id] = {"name": cn_name, "id": char_id}
+
+        # Deep merge profile sections
+        for section in ["personality", "appearance", "voice"]:
+            if section in profile:
+                existing = chars[char_id].get("profile", {}).get(section, {})
+                existing.update(profile[section])
+                if "profile" not in chars[char_id]:
+                    chars[char_id]["profile"] = {}
+                chars[char_id]["profile"][section] = existing
+
+        chars[char_id]["profile"]["_updated_at"] = datetime.now().isoformat()
+        chars[char_id]["profile"]["_generated_by"] = "ai_profile_generator"
+
+        with open(bible_path, "w", encoding="utf-8") as f:
+            json.dump(bible, f, ensure_ascii=False, indent=2)
+
+        return jsonify({
+            "status": "ok",
+            "character": cn_name,
+            "profile": profile,
+            "message": f"✅ {cn_name} 档案已生成/刷新",
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
