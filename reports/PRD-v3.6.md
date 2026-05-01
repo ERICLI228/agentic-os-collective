@@ -46,7 +46,10 @@
 | **v3.6.17** | **2026-05-01** | **OpenClaw** | **渲染目录清理: 删除拼音遗留目录/symlink · 统一纯中文目录名 ~/.agentic-os/character_designs/renders/<中文名>/portrait_0.png (109目录)** |
 | **v3.6.18** | **2026-05-01** | **OpenClaw + OpenCode** | **视频提示词三方案: visual_bible.json 所有109角色添加 video_prompts (方案一: 静态肖像特写/方案二: 经典场景动态/方案三: 电影感运镜) — OpenClaw写入JSON · OpenCode仪表盘渲染 (🎬 可展开卡片 + 简练版提示词)** |
 | **v3.6.19** | **2026-05-01** | **OpenCode** | **CSS 全线修复: .sec-body移除overflow:hidden+max-height:0 (默认可见·collapsed隐藏) · Chart.js CDN unpkg→jsdelivr (jsdelivr.net chart.js@4.4.4) · 音色面板全CSS (.cb-voice-card/配置表单/播放行/生成按钮) · .cb-vp-card视频提示词卡片CSS** |
-| **v3.6.20** | **2026-05-01** | **OpenCode** | **图像路由永久修复: /api/render/<pinyin>/<file> → REVERSE_MAP 拼音回退到中文目录查找 (task_wizard.py:746) · _get_render_dir() 简化 (直接使用传入名·不经过ID映射) · CHARACTER_ID_MAP 108全量验证 · 8个随机角色图片全200** |
+| **v3.6.21** | **2026-05-01** | **阿牛** | **v3 API新增8端点: /api/status · /api/character/{fid} · /api/render/{fid}/{filename} · /api/script · /api/script/{ep_num} · /api/detail/{ms_id} · /api/images · /api/review/{fid} — 写入 dashboard_api_v3.py (FastAPI port 5004) · 109角色数据从visual_bible.json读取 · 渲染图通过/api/render代理服务 · 35端点总计** |
+| **v3.6.22** | **2026-05-01** | **阿牛** | **voice_clone_pipeline.py 创建 + 6角色全注册: GPT-SoVITS自动化管线(register/test/batch/list) · 339行 · ~/agentic-os-collective/drama/openclaw/core/voice_clone_pipeline.py · character_voices.json 从2→6角色(武松/鲁智深/林冲/宋江/李逵/吴用) · 参考音频均测试通过(8-463KB) · 同步opencode worktree** |
+| **v3.6.23** | **2026-05-01** | **阿牛** | **add_video_prompts.py 脚本: 107角色自动生成三方案视频提示词 + 2角色保留原始(武松/鲁智深) · 写入 visual_bible.json · 基于角色外观/性格/场景数据个性化 · ~/agentic-os-collective/scripts/add_video_prompts.py** |
+| **v3.6.24** | **2026-05-01** | **阿牛** | **Task Completion Protocol 强制引入: AGENTS.md 新增后处理四步骤(更新代码→标注PRD→Git push→Obsidian sync) · 任何任务完成后自动执行** |
 ---
 
 ## 📊 PHASE 1-4 完成记录 (v3.6.4 新增)
