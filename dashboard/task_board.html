@@ -1873,10 +1873,13 @@ function connectPipelineSSE(){
       const el = document.getElementById('svcMonitor');
       if (el) el.innerHTML = rows;
     } catch(e) {}
+    // Also poll every 30s as fallback
+    setTimeout(updatePipelineMonitor, 30000);
   };
   es.onerror = function(){
     const el = document.getElementById('svcMonitor');
     if (el) el.innerHTML = '<span class="loading" style="color:#ef4444">SSE 断线，5秒后重连...</span>';
+    setTimeout(updatePipelineMonitor, 5000);
   };
 }
 
