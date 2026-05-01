@@ -1614,10 +1614,9 @@ async function loadStoryboard(epNum){
   try {
     var r = await fetch('/api/script/' + epNum);
     var d = await r.json();
-    var shots = d.shots || [];
+    var shots = d.shots || d.storyboard || [];
     if (!shots.length) { el.innerHTML = '<span style="color:#555;font-size:10px">无分镜</span>'; return; }
-    // Fetch character video prompts for scheme preview
-    var charName = d.character || '';
+    var charName = d.character || d.char_name || d.main_character || '';
     var videoPrompts = {};
     if (charName) {
       try {
