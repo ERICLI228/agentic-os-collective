@@ -409,6 +409,32 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 .qa-item .q-q{color:#fbbf24;font-weight:600;cursor:pointer}
 .qa-item .q-a{color:#888;display:none;margin-top:4px;line-height:1.4}
 .qa-item .q-a.show{display:block}
+
+/* S3-1: Shot Sorter (video merge UI) */
+.shot-sorter{background:#14161d;border-radius:8px;padding:12px;margin:10px 0;border:1px solid #222}
+.shot-sorter h3{font-size:11px;color:#888;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.shot-list{min-height:40px}
+.shot-item{display:flex;align-items:center;gap:8px;padding:6px 8px;background:#1a1d27;border-radius:6px;margin:4px 0;font-size:10px;transition:background .15s}
+.shot-item:hover{background:#1e2130}
+.shot-item .shot-thumb{width:64px;height:36px;border-radius:4px;object-fit:cover;background:#111;flex-shrink:0}
+.shot-item .shot-thumb-placeholder{width:64px;height:36px;border-radius:4px;background:#111;display:flex;align-items:center;justify-content:center;color:#333;font-size:8px;flex-shrink:0}
+.shot-item .shot-name{flex:1;color:#c4d4e8;font-weight:500}
+.shot-item .shot-dur{color:#666;font-size:9px;min-width:40px;text-align:right}
+.shot-item .shot-actions{display:flex;gap:3px;flex-shrink:0}
+.shot-move-btn{width:24px;height:24px;border-radius:4px;border:1px solid #333;background:transparent;color:#aaa;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.shot-move-btn:hover{background:#2563eb;color:#fff;border-color:#2563eb}
+.shot-move-btn:disabled{opacity:.3;cursor:not-allowed}
+.shot-sort-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.shot-empty{text-align:center;color:#555;padding:20px;font-size:10px}
+.btn-merge{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;padding:6px 16px;border-radius:6px;border:none;cursor:pointer;font-size:11px;font-weight:600}
+.btn-merge:hover{background:linear-gradient(135deg,#3b82f6,#8b5cf6)}
+.btn-merge:disabled{opacity:.4;cursor:not-allowed}
+.btn-subtitle{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;padding:6px 16px;border-radius:6px;border:none;cursor:pointer;font-size:11px;font-weight:600}
+.btn-subtitle:hover{background:linear-gradient(135deg,#4ade80,#22c55e)}
+.btn-subtitle:disabled{opacity:.4;cursor:not-allowed}
+.shot-merge-progress{margin-top:8px;font-size:10px;color:#fbbf24}
+/* S3-1: draggable hint */
+.shot-item.dragging{opacity:.5;border:1px dashed #3b82f6}
 </style>
 <!-- P1-6: Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer id="chartjs"></script>
@@ -1836,6 +1862,134 @@ async function renderDMEpisode(msId,detail,ms){
     galleryEl.innerHTML='<span style="font-size:10px;color:#555;">该集暂无渲染图 &middot; 运行 comfyui_renderer.py --episode '+parseInt(epNum)+'</span>';
   }
   if(statusEl)statusEl.remove();
+
+  // S3-1: Add shot sorter section for video merge
+  renderShotSorter(epNum);
+}
+
+// ================================================================
+// S3-1: Shot Sorter — DM-F video merge UI
+// ================================================================
+async function renderShotSorter(epNum){
+  const detailEl=document.getElementById('detail');
+  if(!detailEl)return;
+
+  // Check if already rendered
+  if(document.getElementById('shot-sorter-'+epNum))return;
+
+  let sec=`<div class="shot-sorter" id="shot-sorter-${epNum}">`;
+  sec+=`<h3>&#127916; 视频片段排序 · 第${parseInt(epNum)}集</h3>`;
+  sec+=`<div class="shot-list" id="shot-list-${epNum}"><span class="loading">加载片段列表...</span></div>`;
+  sec+=`<div class="shot-sort-actions" id="shot-actions-${epNum}" style="display:none">`;
+  sec+=`<button class="btn-merge" onclick="mergeShots('${epNum}')">&#9654; 合并生成</button>`;
+  sec+=`<button class="btn-subtitle" onclick="generateSubtitle('${epNum}')">&#128172; 自动生成字幕</button>`;
+  sec+=`</div>`;
+  sec+=`<div id="shot-msg-${epNum}" class="shot-merge-progress" style="display:none"></div>`;
+  sec+=`</div>`;
+  detailEl.insertAdjacentHTML('beforeend',sec);
+
+  // Fetch shots from backend
+  try{
+    const r=await fetch('/api/shots/'+parseInt(epNum));
+    const d=await r.json();
+    const shots=d.shots||[];
+    renderShotList(epNum,shots);
+  }catch(e){
+    document.getElementById('shot-list-'+epNum).innerHTML='<div class="shot-empty">暂无视频片段</div>';
+  }
+}
+
+function renderShotList(epNum,shots){
+  const listEl=document.getElementById('shot-list-'+epNum);
+  const actionsEl=document.getElementById('shot-actions-'+epNum);
+  if(!listEl)return;
+
+  if(!shots.length){
+    listEl.innerHTML='<div class="shot-empty">该集暂无已生成视频片段</div>';
+    if(actionsEl)actionsEl.style.display='none';
+    return;
+  }
+
+  if(actionsEl)actionsEl.style.display='flex';
+
+  let h='';
+  shots.forEach((shot,i)=>{
+    const thumbUrl=shot.thumbnail||'';
+    const thumb=thumbUrl?`<img class="shot-thumb" src="${thumbUrl}" loading="lazy" onerror="this.outerHTML='<div class=shot-thumb-placeholder>🎬</div>'">`:'<div class="shot-thumb-placeholder">🎬</div>';
+    const dur=shot.duration||'--:--';
+    h+=`<div class="shot-item" data-idx="${i}" data-name="${shot.name||''}">`;
+    h+=thumb;
+    h+=`<span class="shot-name">${shot.name||shot.file}</span>`;
+    h+=`<span class="shot-dur">${dur}</span>`;
+    h+=`<span class="shot-actions">`;
+    h+=`<button class="shot-move-btn" onclick="moveShotUp('${epNum}',${i})" ${i===0?'disabled':''} title="上移">&uarr;</button>`;
+    h+=`<button class="shot-move-btn" onclick="moveShotDown('${epNum}',${i})" ${i===shots.length-1?'disabled':''} title="下移">&darr;</button>`;
+    h+=`</span></div>`;
+  });
+  listEl.innerHTML=h;
+}
+
+function getShotOrder(epNum){
+  const listEl=document.getElementById('shot-list-'+epNum);
+  if(!listEl)return[];
+  const items=listEl.querySelectorAll('.shot-item');
+  return Array.from(items).map(it=>it.dataset.name);
+}
+
+function moveShotUp(epNum,idx){
+  const listEl=document.getElementById('shot-list-'+epNum);
+  if(!listEl||idx<=0)return;
+  const items=listEl.querySelectorAll('.shot-item');
+  const curr=items[idx];
+  const prev=items[idx-1];
+  listEl.insertBefore(curr,prev);
+  // Re-render with updated indices
+  const names=Array.from(listEl.querySelectorAll('.shot-item')).map(it=>({name:it.dataset.name,dur:it.querySelector('.shot-dur').textContent,thumb:it.querySelector('.shot-thumb')?.src||''}));
+  renderShotList(epNum,names.map(n=>({name:n.name,file:n.name,duration:n.dur,thumbnail:n.thumb})));
+}
+
+function moveShotDown(epNum,idx){
+  const listEl=document.getElementById('shot-list-'+epNum);
+  if(!listEl)return;
+  const items=listEl.querySelectorAll('.shot-item');
+  if(idx>=items.length-1)return;
+  const curr=items[idx];
+  const next=items[idx+1];
+  listEl.insertBefore(next,curr);
+  const names=Array.from(listEl.querySelectorAll('.shot-item')).map(it=>({name:it.dataset.name,dur:it.querySelector('.shot-dur').textContent,thumb:it.querySelector('.shot-thumb')?.src||''}));
+  renderShotList(epNum,names.map(n=>({name:n.name,file:n.name,duration:n.dur,thumbnail:n.thumb})));
+}
+
+async function mergeShots(epNum){
+  const files=getShotOrder(epNum);
+  if(!files.length){toastMsg('没有可合并的片段',2000,'warn');return;}
+
+  const msgEl=document.getElementById('shot-msg-'+epNum);
+  if(msgEl){msgEl.style.display='block';msgEl.textContent='正在合并 '+files.length+' 个片段...';}
+
+  try{
+    const r=await fetch('/api/merge',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({episode:String(epNum),files})});
+    const d=await r.json();
+    if(d.error){toastMsg('合并失败: '+d.error,3000,'error');}
+    else{toastMsg('合并成功: '+d.output_file,3000);}
+  }catch(e){toastMsg('合并请求失败: '+e.message,3000,'error');}
+  if(msgEl)msgEl.style.display='none';
+}
+
+// S3-2: Generate subtitle with whisper
+async function generateSubtitle(epNum){
+  const msgEl=document.getElementById('shot-msg-'+epNum);
+  if(msgEl){msgEl.style.display='block';msgEl.textContent='正在生成字幕...';}
+
+  try{
+    const r=await fetch('/api/subtitle',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({episode:String(epNum)})});
+    const d=await r.json();
+    if(d.error){toastMsg('字幕生成失败: '+d.error,3000,'error');}
+    else{toastMsg('字幕生成成功',3000);if(d.srt)console.log('SRT:',d.srt);}
+  }catch(e){toastMsg('字幕请求失败: '+e.message,3000,'error');}
+  if(msgEl)msgEl.style.display='none';
 }
 
 // ================================================================

@@ -7,6 +7,8 @@ import sys
 import json
 import yaml
 import re
+import subprocess
+import shutil
 from pathlib import Path
 import random
 from datetime import datetime
@@ -15,6 +17,18 @@ import time
 import urllib.request
 import threading
 from flask_cors import CORS
+
+# S3-1/S3-2: Find ffmpeg/ffprobe in common paths (launchd may have limited PATH)
+def _find_binary(name):
+    """Find binary by name, checking PATH + common Homebrew paths."""
+    found = shutil.which(name)
+    if found:
+        return found
+    for prefix in ["/opt/homebrew/bin", "/usr/local/bin"]:
+        p = Path(prefix) / name
+        if p.exists():
+            return str(p)
+    return name  # fallback: let subprocess try and fail
 
 app = Flask(__name__)
 CORS(app)
@@ -1082,6 +1096,210 @@ def api_pipeline_stream():
         "X-Accel-Buffering": "no",
         "Access-Control-Allow-Origin": "*"
     })
+
+
+# ================================================================
+# S3-1: /api/shots/<ep_num> — list video shots for an episode
+# ================================================================
+@app.route('/api/shots/<ep_num>', methods=['GET'])
+def list_shots(ep_num):
+    """List all video shots for a given episode."""
+    video_dir = Path.home() / f".agentic-os/episode_{int(ep_num):02d}/video"
+    shots = []
+    if not video_dir.exists():
+        return jsonify({"shots": []})
+
+    for f in sorted(video_dir.iterdir()):
+        if f.suffix.lower() in ('.mp4', '.mov', '.avi', '.mkv'):
+            # Try to get duration via ffprobe
+            duration = None
+            try:
+                result = subprocess.run(
+                    [_find_binary("ffprobe"), "-v", "error", "-show_entries", "format=duration",
+                     "-of", "json", str(f)],
+                    capture_output=True, text=True, timeout=5
+                )
+                if result.returncode == 0:
+                    dur_data = json.loads(result.stdout)
+                    duration = float(dur_data.get("format", {}).get("duration", 0))
+            except Exception:
+                pass
+
+            dur_str = f"{int(duration // 60):02d}:{int(duration % 60):02d}" if duration else "--:--"
+            # Try to find matching thumbnail
+            thumb_name = f.stem + ".png"
+            thumb_path = Path.home() / f".agentic-os/episode_{int(ep_num):02d}/video/{thumb_name}"
+            thumb_url = f"/api/shots/{int(ep_num):02d}/thumb/{thumb_name}" if thumb_path.exists() else ""
+
+            shots.append({
+                "file": f.name,
+                "name": f.stem,
+                "duration": dur_str,
+                "duration_sec": duration or 0,
+                "thumbnail": thumb_url,
+                "path": str(f)
+            })
+
+    return jsonify({"episode": ep_num, "shots": shots})
+
+
+# ================================================================
+# S3-1: /api/shots/<ep_num>/thumb/<filename> — serve shot thumbnail
+# ================================================================
+@app.route('/api/shots/<ep_num>/thumb/<filename>', methods=['GET'])
+def serve_shot_thumb(ep_num, filename):
+    """Serve a shot thumbnail image."""
+    thumb_path = Path.home() / f".agentic-os/episode_{int(ep_num):02d}/video/{filename}"
+    if thumb_path.exists() and thumb_path.suffix.lower() in ('.png', '.jpg', '.jpeg', '.webp'):
+        return send_file(str(thumb_path))
+    return jsonify({"error": "Thumbnail not found"}), 404
+
+
+# ================================================================
+# S3-1: /api/merge — merge video shots via ffmpeg concat
+# ================================================================
+@app.route('/api/merge', methods=['POST'])
+def merge_shots():
+    """Merge video shots in order using ffmpeg concat."""
+    data = request.get_json()
+    if not data or 'episode' not in data or 'files' not in data:
+        return jsonify({"error": "Missing episode or files parameter"}), 400
+
+    ep_num = str(int(data['episode'])).zfill(2)
+    files = data['files']
+    if not files:
+        return jsonify({"error": "No files to merge"}), 400
+
+    video_dir = Path.home() / f".agentic-os/episode_{ep_num}/video"
+    if not video_dir.exists():
+        return jsonify({"error": f"Video directory not found: episode_{ep_num}/video"}), 404
+
+    # Resolve file paths
+    full_paths = []
+    for fname in files:
+        fpath = video_dir / fname
+        if not fpath.exists():
+            return jsonify({"error": f"File not found: {fname}"}), 404
+        full_paths.append(str(fpath))
+
+    # Create ffmpeg concat file list
+    concat_file = video_dir / f"_concat_{ep_num}.txt"
+    with open(concat_file, 'w') as cf:
+        for fp in full_paths:
+            cf.write(f"file '{fp}'\n")
+
+    # Output file path
+    output_file = video_dir / f"episode_{ep_num}_merged.mp4"
+
+    try:
+        FFMPEG = _find_binary("ffmpeg")
+        result = subprocess.run(
+            [FFMPEG, "-y", "-f", "concat", "-safe", "0",
+             "-i", str(concat_file),
+             "-c", "copy",
+             str(output_file)],
+            capture_output=True, text=True, timeout=300
+        )
+        if result.returncode != 0:
+            # If codec copy fails, try re-encode
+            result = subprocess.run(
+                [FFMPEG, "-y", "-f", "concat", "-safe", "0",
+                 "-i", str(concat_file),
+                 "-c:v", "libx264", "-preset", "fast",
+                 "-c:a", "aac",
+                 str(output_file)],
+                capture_output=True, text=True, timeout=600
+            )
+            if result.returncode != 0:
+                return jsonify({
+                    "error": f"ffmpeg failed: {result.stderr[:500]}"
+                }), 500
+
+        # Cleanup concat file
+        if concat_file.exists():
+            concat_file.unlink()
+
+        return jsonify({
+            "success": True,
+            "output_file": str(output_file),
+            "file_count": len(files)
+        })
+    except subprocess.TimeoutExpired:
+        return jsonify({"error": "ffmpeg timed out (300s)"}), 500
+    except FileNotFoundError:
+        return jsonify({"error": "ffmpeg not found. Install ffmpeg first."}), 500
+
+
+# ================================================================
+# S3-2: /api/subtitle — generate subtitle with whisper
+# ================================================================
+@app.route('/api/subtitle', methods=['POST'])
+def generate_subtitle():
+    """Generate SRT subtitle for an episode using whisper."""
+    data = request.get_json()
+    if not data or 'episode' not in data:
+        return jsonify({"error": "Missing episode parameter"}), 400
+
+    ep_num = str(int(data['episode'])).zfill(2)
+    episode_dir = Path.home() / f".agentic-os/episode_{ep_num}"
+    if not episode_dir.exists():
+        return jsonify({"error": f"Episode directory not found: episode_{ep_num}"}), 404
+
+    # Look for audio file (merged or any wav/mp3)
+    audio_file = None
+    video_dir = episode_dir / "video"
+    if video_dir.exists():
+        # Check for merged video first
+        merged = video_dir / f"episode_{ep_num}_merged.mp4"
+        if merged.exists():
+            audio_file = str(merged)
+        else:
+            # Use first available video file
+            for f in sorted(video_dir.iterdir()):
+                if f.suffix.lower() in ('.mp4', '.mov', '.avi', '.mkv', '.wav', '.mp3'):
+                    audio_file = str(f)
+                    break
+
+    if not audio_file:
+        return jsonify({
+            "error": "No video or audio file found for subtitle generation",
+            "hint": "Generate video first, then create subtitle"
+        }), 404
+
+    # Output SRT path
+    srt_output = str(video_dir / f"episode_{ep_num}_subtitle.srt") if video_dir.exists() else str(episode_dir / f"episode_{ep_num}_subtitle.srt")
+
+    # Run whisper_subtitle.py script
+    script_path = Path(__file__).resolve().parent / "scripts" / "whisper_subtitle.py"
+    if not script_path.exists():
+        return jsonify({"error": f"whisper_subtitle.py not found at {script_path}"}), 500
+
+    try:
+        result = subprocess.run(
+            [sys.executable or "python3", str(script_path),
+             "--input", audio_file, "--output", srt_output],
+            capture_output=True, text=True, timeout=600
+        )
+
+        if result.returncode != 0:
+            return jsonify({
+                "error": f"whisper_subtitle.py failed: {result.stderr[:500]}"
+            }), 500
+
+        # Read back SRT content
+        srt_path = Path(srt_output)
+        srt_content = srt_path.read_text(encoding="utf-8") if srt_path.exists() else ""
+
+        return jsonify({
+            "success": True,
+            "srt": srt_content,
+            "srt_path": srt_output,
+            "audio_input": audio_file
+        })
+    except subprocess.TimeoutExpired:
+        return jsonify({"error": "Subtitle generation timed out (600s)"}), 500
+    except FileNotFoundError:
+        return jsonify({"error": "python3 not found"}), 500
 
 
 if __name__ == '__main__':
