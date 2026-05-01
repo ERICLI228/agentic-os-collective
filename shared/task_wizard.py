@@ -10,7 +10,10 @@ import re
 from pathlib import Path
 import random
 from datetime import datetime
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, Response
+import time
+import urllib.request
+import threading
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -801,13 +804,40 @@ def api_render_episode(ep_num, shot_num):
 
 @app.route('/api/images', methods=['GET'])
 def api_images_list():
-    """商品图片列表"""
+    """商品图片列表 — v3.7 增加fallback到renders目录"""
     catalog_path = Path.home() / ".agentic-os" / "products" / "catalog.json"
-    if not catalog_path.exists():
-        return jsonify({"products": []})
-    with open(catalog_path) as f:
-        catalog = json.load(f)
-    return jsonify(catalog)
+    if catalog_path.exists():
+        with open(catalog_path) as f:
+            catalog = json.load(f)
+        return jsonify(catalog)
+    # v3.7: Fallback — return render images from character_designs
+    renders_dir = Path.home() / ".agentic-os" / "character_designs" / "renders"
+    images = []
+    if renders_dir.exists():
+        for ch_dir in sorted(renders_dir.iterdir()):
+            if not ch_dir.is_dir():
+                continue
+            for fp in sorted(ch_dir.iterdir()):
+                if fp.suffix.lower() in ('.png', '.jpg', '.jpeg', '.webp'):
+                    images.append({
+                        "id": ch_dir.name + "_" + fp.stem,
+                        "name": fp.name,
+                        "character": ch_dir.name,
+                        "url": f"/api/render/{ch_dir.name}/{fp.name}",
+                        "size": fp.stat().st_size,
+                        "source": "render"
+                    })
+    # Also add demo product images
+    demo = [
+        {"id": "phone_case_main", "name": "phone_case_main.jpg", "product": "防水手机壳", "status": "待处理", "url": "", "demo": True},
+        {"id": "phone_case_worn", "name": "phone_case_worn.jpg", "product": "防水手机壳", "status": "待处理", "url": "", "demo": True},
+        {"id": "phone_case_detail", "name": "phone_case_detail.jpg", "product": "防水手机壳", "status": "待处理", "url": "", "demo": True},
+        {"id": "charger_main", "name": "charger_main.jpg", "product": "无线充电器15W", "status": "已处理", "url": "", "demo": True},
+        {"id": "stand_main", "name": "stand_main.jpg", "product": "磁吸手机支架", "status": "已处理", "url": "", "demo": True},
+    ]
+    images.extend(demo)
+    return jsonify({"images": images, "total": len(images), "demo_products": demo})
+
 
 
 @app.route('/api/images/<img_id>', methods=['GET'])
@@ -1007,6 +1037,51 @@ def api_review(fid):
             "message": f"对抗审核完成 ({fid})"
         })
     return jsonify({"status": "ok", "reviews": [{"reviewer": "AI系统", "score": 8, "comment": "角色设计完整"}]})
+
+
+@app.route('/api/pipeline/stream')
+def api_pipeline_stream():
+    """SSE: 实时管线进度推送 — v3.7 Sprint 1 Pipeline Monitor"""
+    def event_stream():
+        while True:
+            data = {"time": time.strftime("%H:%M:%S"), "services": {}, "pipeline": {}}
+            # ComfyUI status
+            try:
+                req = urllib.request.Request("http://localhost:8188/queue", headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=2) as resp:
+                    d = json.loads(resp.read())
+                data["services"]["comfyui"] = {
+                    "online": True,
+                    "running": len(d.get("queue_running", [])),
+                    "pending": len(d.get("queue_pending", []))
+                }
+            except Exception:
+                data["services"]["comfyui"] = {"online": False, "running": 0, "pending": 0}
+            # GPT-SoVITS status
+            try:
+                req = urllib.request.Request("http://localhost:9880/control", headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=2) as resp:
+                    resp.read()
+                data["services"]["tts"] = {"online": True}
+            except Exception:
+                data["services"]["tts"] = {"online": False}
+            # Pipeline milestones
+            try:
+                sys.path.insert(0, str(Path(__file__).resolve().parent))
+                from detail_engine import get_dashboard_data
+                dash = get_dashboard_data()
+                ms = dash.get("milestones", [])
+                done = sum(1 for m in ms if m.get("status") in ("completed", "approved"))
+                data["pipeline"] = {"done": done, "total": len(ms), "milestones": ms}
+            except Exception:
+                data["pipeline"] = {"done": 0, "total": 0}
+            yield f"data: {json.dumps(data)}\n\n"
+            time.sleep(3)
+    return Response(event_stream(), mimetype="text/event-stream", headers={
+        "Cache-Control": "no-cache",
+        "X-Accel-Buffering": "no",
+        "Access-Control-Allow-Origin": "*"
+    })
 
 
 if __name__ == '__main__':

@@ -468,6 +468,10 @@ if(localStorage.getItem('_dash_v')!=='3.6.20'){localStorage.setItem('_dash_v','3
       <div class="stat"><div class="num" id="statMock" style="color:#fbbf24">-</div><div class="lbl">模拟</div></div>
       <div class="stat"><div class="num" id="statTotal" style="color:#666">-</div><div class="lbl">总计</div></div>
     </div>
+    <!-- v3.7: TK search/filter bar -->
+    <div id="tkSearchBar" style="display:none;padding:4px 8px">
+      <input id="tkSearch" placeholder="🔍 搜索里程碑..." style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:3px 6px;border-radius:4px;font-size:10px;outline:none" oninput="onTKSearch(this.value)">
+    </div>
     <div id="list"></div>
   </div>
   <div class="right">
@@ -670,7 +674,30 @@ function switchTab(t){
 // ================================================================
 function render(){
   let f=all.filter(m=>m.pipeline===cur);
-  // P1-12: apply search & filter
+  
+// v3.7: TK milestone search filter
+function onTKSearch(val) {
+  var q = val.toLowerCase();
+  var items = document.querySelectorAll('#list .ms-item');
+  var visible = 0;
+  items.forEach(function(el) {
+    var text = (el.textContent || '').toLowerCase();
+    var show = !q || text.indexOf(q) >= 0;
+    el.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  var total = document.querySelectorAll('#list .ms-item').length;
+  var hint = document.getElementById('tkSearchHint');
+  if (!hint) {
+    hint = document.createElement('div');
+    hint.id = 'tkSearchHint';
+    hint.style.cssText = 'font-size:9px;color:#555;text-align:center;padding:4px';
+    document.getElementById('list').appendChild(hint);
+  }
+  if (q) hint.textContent = visible + '/' + total + ' 匹配';
+  else hint.textContent = '';
+}
+\n// P1-12: apply search & filter
   if(searchQ) f=f.filter(m=>(m.ms_id+' '+(m.name||'')+' '+(m.task_id||'')).toLowerCase().includes(searchQ));
   if(filterSt!=='all') f=f.filter(m=>m.status===filterSt);
   document.getElementById('tkCount').textContent=all.filter(m=>m.pipeline=='tk').length;
@@ -978,549 +1005,97 @@ async function renderDetail(){
 // ================================================================
 // v3.7: TK milestone rich panels
 async function renderTKDetail(detail, ms) {
-  var el = document.getElementById('detail');
+  var el = document.getElementById(\'detail\');
   if (!detail || !detail.sections) return;
-  var h = '';
+  var h = \'\';
   detail.sections.forEach(function(s) {
-    h += '<div class="sec"><h3>' + (s.title||'') + ' <span class="src-tag src-' + (s.source||'mock') + '">[' + (s.source||'mock') + ']</span></h3>';
+    h += \'<div class="sec"><h3>\' + (s.title||\'\') + \' <span class="src-tag src-\' + (s.source||\'mock\') + \'\">[\' + (s.source||\'mock\') + \']</span></h3>\';
     (s.items||[]).forEach(function(it) {
-      h += '<div class="ent-row"><span class="ent-lbl">' + (it.label||it.key||'') + '</span><div class="ent-val"><span>' + (it.value||'') + '</span>';
-      if (it.note) h += '<div class="note">' + it.note + '</div>';
-      h += '</div></div>';
+      var label = it.label || it.key || \'\';
+      var val = it.value || \'\';
+      var note = it.note || \'\';
+      h += \'<div class="ent-row"><span class="ent-lbl">\' + label + \'</span><div class="ent-val"><span>\' + val + \'</span>\';
+      if (it.before) h += \'<div class="before">← \' + it.before + \'</div>\';
+      if (it.after) h += \'<div class="after">→ \' + it.after + \'</div>\';
+      if (note) h += \'<div class="note">\' + note + \'</div>\';
+      h += \'</div></div>\';
     });
-    h += '</div>';
+    h += \'</div>\';
   });
-  if (ms.ms_id === 'MS-2.3') {
-    try {
-      var r = await fetch('/api/images');
-      var d = await r.json();
-      var imgs = d.images || [];
-      if (imgs.length > 0) {
-        h += '<div class="sec"><h3>📷 产品图片</h3><div class="img-gallery">';
-        imgs.slice(0, 12).forEach(function(img) {
-          h += '<div class="img-card" onclick="zoomImg(\'' + img.url + '\')"><img src="' + img.url + '" loading="lazy" onerror="this.style.display=\'none\'" style="max-width:150px"/><span class="img-label">' + img.name + '</span></div>';
-        });
-        h += '</div></div>';
+  
+  // MS-2: Add product comparison cards
+  if (ms.ms_id === \'MS-2\') {
+    var prods = [
+      { name: \'防水手机壳 X Pro\', price: \'¥102\', cost: \'¥11.30\', margin: \'40%\', score: \'8.42\', rank: \'TOP1\', img: \'phone_case\' },
+      { name: \'无线充电器 15W\', price: \'¥158\', cost: \'¥53.50\', margin: \'41%\', score: \'8.30\', rank: \'TOP2\', img: \'charger\' },
+      { name: \'磁吸手机支架\', price: \'¥38\', cost: \'¥9.80\', margin: \'55%\', score: \'8.24\', rank: \'TOP3\', img: \'stand\' }
+    ];
+    h += \'<div class="sec"><h3>📦 选品对比</h3><div style="display:flex;gap:10px;flex-wrap:wrap">\';
+    prods.forEach(function(p) {
+      var barW = parseInt(p.margin) + 20;
+      h += \'<div style="flex:1;min-width:180px;background:rgba(255,255,255,.03);border-radius:8px;padding:12px;border:1px solid rgba(74,158,255,.1)">\';
+      h += \'<div style="font-size:10px;color:#4a9eff;font-weight:700;margin-bottom:4px">\' + p.rank + \'</div>\';
+      h += \'<div style="font-size:12px;font-weight:700;margin-bottom:6px">\' + p.name + \'</div>\';
+      h += \'<div style="display:flex;justify-content:space-between;font-size:10px;color:#888;margin:2px 0">\';
+      h += \'<span>售价</span><span style="color:#4ade80;font-weight:600">\' + p.price + \'</span></div>\';
+      h += \'<div style="display:flex;justify-content:space-between;font-size:10px;color:#888;margin:2px 0">\';
+      h += \'<span>成本</span><span style="color:#f59e0b">\' + p.cost + \'</span></div>\';
+      h += \'<div style="margin-top:8px;height:18px;background:#222;border-radius:9px;overflow:hidden;position:relative">\';
+      h += \'<div style="width:\' + barW + \'%;height:100%;background:linear-gradient(90deg,#22c55e,#4ade80);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#000;font-weight:600">\' + p.margin + \'</div></div>\';
+      h += \'<div style="margin-top:4px;font-size:9px;color:#666;text-align:center">毛利率</div>\';
+      h += \'<div style="margin-top:6px;display:flex;gap:2px">\';
+      for (var i=0;i<5;i++) {
+        var filled = i < Math.round(parseFloat(p.score)-3);
+        h += \'<span style="font-size:12px">\' + (filled ? \'⭐\' : \'☆\') + \'</span>\';
       }
-    } catch(e) {}
-  }
-  el.insertAdjacentHTML('beforeend', h);
-}
-
-// v3.6: renderDM0 - DM-0: 6集完整故事板
-// ================================================================
-async function renderDM0(detail,ms){
-  const detailEl=document.getElementById('detail');
-
-  // v3.6.5: 决策区 — Agent 审核结果 + 用户决策按钮
-  const hasReview = detail && detail.sections && detail.sections.some(s =>
-    s.items && s.items.some(it => it.key && it.key.startsWith('rv_'))
-  );
-  if(hasReview){
-    // 提取审核分数
-    let score='-', decision='', findings=[];
-    detail.sections.forEach(s=>{
-      (s.items||[]).forEach(it=>{
-        if(it.key==='rv_score') score=it.value||'-';
-        if(it.key==='rv_decision') decision=it.value||'';
-        if(it.key && it.key.startsWith('rv_') && it.note && it.note.length>20) findings.push(it.note);
-      });
+      h += \' <span style="font-size:9px;color:#888">\' + p.score + \'/10</span>\';
+      h += \'</div></div>\';
     });
-    const scoreNum = parseFloat(score) || 0;
-    const scoreColor = scoreNum >= 8.0 ? '#22c55e' : scoreNum >= 6.0 ? '#f59e0b' : '#ef4444';
-    const scoreIcon = scoreNum >= 8.0 ? '&#128994;' : scoreNum >= 6.0 ? '&#128992;' : '&#128308;';
-    const decisionText = scoreNum >= 8.0 ? '表现优异，可进入下一环节' : '建议回流重写';
-
-    // v3.7: 四维度审核明细 — 由 patch 统一渲染, 从 review_dimensions 提取
-
-    let decH = `<div class="sec" id="dm0-decision-sec" style="border-left:3px solid ${scoreColor}">`;
-    decH += `<h3>&#129302; AI 对抗审核结果 (CODING 自动运行)</h3>`;
-    decH += `<div style="font-size:14px;font-weight:700;color:${scoreColor};margin:8px 0;">${scoreIcon} 综合评分: ${score} / 10 &mdash; ${decisionText}</div>`;
-    decH += `<div style="margin:12px 0;">`;
-    decH += `<div style="font-size:10px;color:#888;margin-bottom:6px;">&#9889; 你的决策 (选择后 Agent 自动执行):</div>`;
-    decH += `<div style="display:flex;gap:8px;flex-wrap:wrap;">`;
-    decH += `<button class="btn btn-s" onclick="decideDM0('approved')">&#10003; 通过</button>`;
-    decH += `<button class="btn btn-w" onclick="decideDM0('rework')">&#9998; 回流重写</button>`;
-    decH += `<button class="btn btn-d" onclick="decideDM0('reject')">&#10007; 驳回</button>`;
-    decH += `<button class="btn btn-rerun" id="dm0-rerun-btn" onclick="triggerReReview('DM-0')" style="margin-left:auto">&#128260; 重新审核</button>`;
-    decH += `</div></div>`;
-    decH += `<div style="font-size:10px;color:#666;">&#9432; CODING 免费额度 · 上次审核耗时 ~87s · 点击按钮后自动执行</div>`;
-    decH += `</div>`;
-    detailEl.insertAdjacentHTML('beforeend', decH);
+    h += \'</div></div>\';
   }
-
-  let sec=`<div class="sec" id="dm0-sec"><h3>&#128214; 6集完整故事板</h3>`;
-  sec+=`<div id="dm0-episodes"><span class="loading">加载剧集列表...</span></div>`;
-  sec+=`</div>`;
-  detailEl.insertAdjacentHTML('beforeend',sec);
-
-  try{
-    const r=await fetch('/api/script');
-    const episodes=await r.json();
-    const epList=Array.isArray(episodes)?episodes:(episodes.episodes||[]);
-
-    let epH='';
-    epList.forEach(ep=>{
-      const epNum=String(ep.ep||ep.episode||ep.num||'').padStart(2,'0');
-      const title=ep.title||ep.name||('第'+parseInt(epNum)+'集');
-      epH+=`<div class="ep-row" id="eprow-${epNum}" onclick="toggleSB('${epNum}')">
-        <span class="ep-num">第${parseInt(epNum)}集</span>
-        <span class="ep-title">${title}</span>
-        <span class="ep-actions">
-          <button class="mini-btn" onclick="event.stopPropagation();downloadScript('${epNum}','txt')" title="导出TXT">TXT</button>
-          <button class="mini-btn" onclick="event.stopPropagation();downloadScript('${epNum}','srt')" title="导出字幕">SRT</button>
-        </span>
-        <span class="ep-toggle">&#9654;</span>
-      </div>
-      <div class="sb-scenes" id="sb-${epNum}" style="display:none;padding-left:8px">
-        <span class="loading">加载分镜...</span>
-      </div>`;
+  
+  // MS-2.3: image gallery and processing controls
+  if (ms.ms_id === \'MS-2.3\') {
+    h += \'<div class="sec"><h3>📷 图片处理</h3><div style="display:flex;gap:10px;flex-wrap:wrap">\';
+    var demoImages = [
+      { name: \'主图 (白底)\", file: \'phone_case_main\', status: \'待处理\' },
+      { name: \'佩戴图\", file: \'phone_case_worn\', status: \'待处理\' },
+      { name: \'细节特写\", file: \'phone_case_detail\', status: \'待处理\' }
+    ];
+    demoImages.forEach(function(img) {
+      h += \'<div style="width:150px;background:rgba(255,255,255,.03);border-radius:6px;padding:8px;text-align:center;border:1px solid #222">\';
+      h += \'<div style="width:100%;height:120px;background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:6px">📱</div>\';
+      h += \'<div style="font-size:10px;color:#c4d4e8;font-weight:600">\' + img.name + \'</div>\';
+      h += \'<div style="font-size:9px;color:#f59e0b;margin:2px 0">\' + img.status + \'</div>\';
+      h += \'<button class="mini-btn" style="margin-top:4px">去背景</button>\';
+      h += \'</div>\';
     });
-    document.getElementById('dm0-episodes').innerHTML=epH||'<span style="font-size:10px;color:#555;">无剧集数据</span>';
-  }catch(e){
-    document.getElementById('dm0-episodes').innerHTML=`<span style="font-size:10px;color:#ef4444;">加载失败: ${e.message}</span>`;
+    h += \'</div></div>\';
   }
-}
-
-// ================================================================
-// v3.6: toggleSB - expand/collapse storyboard for an episode
-// ================================================================
-async function toggleSB(epNum){
-  const scenesEl=document.getElementById('sb-'+epNum);
-  const rowEl=document.getElementById('eprow-'+epNum);
-  if(!scenesEl||!rowEl)return;
-
-  if(scenesEl.style.display==='none'){
-    scenesEl.style.display='block';
-    rowEl.classList.add('open');
-    if(scenesEl.querySelector('.loading')){
-      await loadStoryboard(epNum);
-    }
-  }else{
-    scenesEl.style.display='none';
-    rowEl.classList.remove('open');
-  }
-}
-
-async function loadStoryboard(epNum){
-  const scenesEl=document.getElementById('sb-'+epNum);
-  if(!scenesEl)return;
-  try{
-    const r=await fetch('/api/script/'+parseInt(epNum));
-    const data=await r.json();
-    const scenes=data.scenes||data.storyboard||[];
-    if(!scenes.length){scenesEl.innerHTML='<span style="font-size:10px;color:#555;">无分镜数据</span>';return;}
-    let sbH='';
-    scenes.forEach(sc=>{
-      const seq=sc.seq||sc.sequence||sc.num||'';
-      const act=sc.act||'';
-      const name=sc.name||sc.scene||'';
-      const desc=sc.description||sc.desc||'';
-      const emotion=sc.emotion||'';
-      const dialogue=sc.dialogue||'';
-      const imgs=sc.images||sc.renders||[];
-      sbH+=`<div class="sb-card">
-        <div class="sb-seq">${seq}</div>
-        <div class="sb-body">
-          ${act?`<div class="sb-act">${act}</div>`:''}
-          ${name?`<div class="sb-name">${name}</div>`:''}
-          ${desc?`<div class="sb-desc">${desc}</div>`:''}
-          ${emotion?`<div class="sb-emotion">情感: ${emotion}</div>`:''}
-          ${dialogue?`<div class="sb-dialogue">对白: ${dialogue}</div>`:''}
-          <a class="sb-edit" href="javascript:void(0)" onclick="editSB('${epNum}','${seq}')">&#9998; 编辑</a>
-          <div class="inline-edit" id="edit-${epNum}-${seq}">
-            <textarea id="desc-${epNum}-${seq}">${desc.replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
-            <div class="edit-btns">
-              <button class="mini-btn" onclick="saveSBEdit('${epNum}','${seq}')">保存</button>
-              <button class="mini-btn" onclick="cancelSBEdit('${epNum}','${seq}')">取消</button>
-            </div>
-          </div>`;
-      if(imgs.length>0){
-        sbH+=`<div class="img-gallery">`;
-        imgs.forEach(img=>{
-          const url=typeof img==='string'?img:(img.url||img.src||'');
-          if(url)sbH+=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${url}')"><img src="${url}" loading="lazy" onerror="this.style.display='none'"/><span class="img-label">渲染</span></div>`;
-        });
-        sbH+=`</div>`;
-      }
-      sbH+=`</div></div>`;
+  
+  // MS-2.1: localization reviews
+  if (ms.ms_id === \'MS-2.1\') {
+    h += \'<div class="sec"><h3>🌏 5国本地化状态</h3><div style="display:flex;gap:8px;flex-wrap:wrap">\';
+    var countries = [
+      { code: \'PH\', name: \'菲律宾\', status: \'待翻译\' },
+      { code: \'TH\', name: \'泰国\', status: \'已完成\' },
+      { code: \'VN\', name: \'越南\', status: \'待翻译\' },
+      { code: \'MY\', name: \'马来西亚\', status: \'已完成\' },
+      { code: \'SG\', name: \'新加坡\', status: \'进行中\' }
+    ];
+    countries.forEach(function(c) {
+      var cStatus = c.status === \'已完成\' ? \'#22c55e\' : c.status === \'进行中\' ? \'#f59e0b\' : \'#555\';
+      h += \'<div style="flex:1;min-width:100px;background:rgba(255,255,255,.03);border-radius:6px;padding:10px;text-align:center;border:1px solid #222">\';
+      h += \'<div style="font-size:20px;margin-bottom:4px">\' + (c.code === \'PH\' ? \'🇵🇭\' : c.code === \'TH\' ? \'🇹🇭\' : c.code === \'VN\' ? \'🇻🇳\' : c.code === \'MY\' ? \'🇲🇾\' : \'🇸🇬\') + \'</div>\';
+      h += \'<div style="font-size:11px;color:#c4d4e8;font-weight:600">\' + c.name + \'</div>\';
+      h += \'<div style="font-size:9px;margin-top:2px;color:\' + cStatus + \'">\' + c.status + \'</div>\';
+      h += \'</div>\';
     });
-    scenesEl.innerHTML=sbH;
-  }catch(e){
-    scenesEl.innerHTML=`<span style="font-size:10px;color:#ef4444;">加载失败: ${e.message}</span>`;
+    h += \'</div></div>\';
   }
-}
-
-// ================================================================
-// v3.6: Storyboard editing
-// ================================================================
-function editSB(epNum,seq){
-  const el=document.getElementById('edit-'+epNum+'-'+seq);
-  if(!el)return;
-  el.classList.add('show');
-}
-
-async function saveSBEdit(epNum,seq){
-  const descEl=document.getElementById('desc-'+epNum+'-'+seq);
-  const editEl=document.getElementById('edit-'+epNum+'-'+seq);
-  if(!descEl||!editEl)return;
-  const newDesc=descEl.value;
-  try{
-    const r=await fetch('/api/script/'+parseInt(epNum),{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({seq:parseInt(seq),description:newDesc})
-    });
-    if(r.ok){
-      toastMsg('分镜已更新: 第'+epNum+'集 #'+seq);
-      editEl.classList.remove('show');
-      const sbCard=editEl.closest('.sb-card');
-      if(sbCard){
-        const descDiv=sbCard.querySelector('.sb-desc');
-        if(descDiv)descDiv.textContent=newDesc;
-      }
-    }else{toastMsg('保存失败')}
-  }catch(e){toastMsg('保存失败: '+e.message)}
-}
-
-function cancelSBEdit(epNum,seq){
-  const el=document.getElementById('edit-'+epNum+'-'+seq);
-  if(el)el.classList.remove('show');
-}
-
-// ================================================================
-// v3.6: downloadScript
-// ================================================================
-function downloadScript(epNum,fmt){
-  const ep=parseInt(epNum);
-  const url='/api/download?name=ep'+String(ep).padStart(2,'0')+'.'+fmt;
-  window.open(url,'_blank');
-}
-
-// ================================================================
-// ================================================================
-// v3.6.7: renderDM1 - 角色档案系统 (Character Bible)
-// ================================================================
-async function renderDM1(detail, ms) {
-  const detailEl = document.getElementById('detail');
-  let sec = `<div class="sec" id="dm1-sec"><h3>🎭 角色档案系统 (DM-1)</h3>
-    <p style="font-size:10px;color:#555;margin-bottom:4px">点击「编辑档案」修改角色设定 · 修改后自动检测是否需重新渲染</p>
-    <div class="dm1-searchbar">
-      <input class="dm1-search-box" id="dm1-search" placeholder="搜索角色名、称号或星宿…" oninput="onDM1Search(this.value)" value="" />
-    </div>
-    <div class="dm1-filter-chips" id="dm1-chips">
-      <span class="dm1-chip active" onclick="onDM1Chip(this,'')">全部</span>
-      <span class="dm1-chip" onclick="onDM1Chip(this,'tiangang')">三十六天罡</span>
-      <span class="dm1-chip" onclick="onDM1Chip(this,'dishap')">七十二地煞</span>
-      <span class="dm1-chip" onclick="onDM1Chip(this,'core')">主要角色</span>
-    </div>
-    <div id="dm1-characters"><span class="loading">加载角色档案...</span></div>
-    <div class="dm1-showing" id="dm1-showing" style="display:none"></div>
-  </div>`;
-  detailEl.insertAdjacentHTML('beforeend', sec);
-  const container = document.getElementById('dm1-characters');
-
-  // Fetch all characters with bulk endpoint (single request)
-  let results = [];
-  try {
-    const resp = await fetch('/api/characters/all');
-    console.log('DM-1 fetch status:', resp.status);
-    if (resp.ok) {
-      const json = await resp.json();
-      console.log('DM-1 json keys:', Object.keys(json));
-      if (json && json.characters && Array.isArray(json.characters)) {
-        results = json.characters;
-        console.log('DM-1 first char:', results[0].name);
-      }
-    }
-  } catch(e) {
-    console.warn('DM-1 bulk fetch error:', e.message);
-  }
-  console.log('DM-1 results count:', results.length);
-  if (results.length === 0) {
-    container.innerHTML = '<div style="color:#f59e0b;padding:20px;text-align:center">⚠️ 角色数据加载失败。请检查服务端 /api/characters/all 端点是否正常。<br><button onclick="renderDM1(null,null)" style="margin-top:8px">🔄 重试</button></div>';
-    return;
-  }
-
-  let html = '';
-  results.forEach((data, i) => {
-    if (!data) return;
-    let name = data.name || CHAR_NAMES[i];
-    let fid = data.pinyin || CHAR_MAP[name] || name;
-    // Bulk API returns flat structure, legacy API returns nested profile
-    let profile = data.profile || data;
-    if (profile.profile && typeof profile.profile === 'object' && !Array.isArray(profile.profile)) {
-      profile = profile.profile;
-    }
-    const renders = data.renders || [];
-    const basic = profile.basic_info || {};
-    const personality = profile.personality || {};
-    const appearance = profile.appearance || {};
-    const background = profile.background || {};
-    const voice = profile.voice || {};
-    const videoPrompts = (typeof data.video_prompts === 'object' && !Array.isArray(data.video_prompts)) ? data.video_prompts : (typeof profile.video_prompts === 'object' && !Array.isArray(profile.video_prompts) ? profile.video_prompts : {});
-    const title = profile.title || data.title || CHAR_ROLES[name] || '';
-    const cp = appearance.color_palette || {};
-    const mainRender = renders.length > 0 ? renders[0] : `/api/render/${fid}/shot_01.png`;
-
-    html += `<div class="char-bible" id="charbible-${fid}">
-      <div class="char-bible-header">
-        <span class="cb-name">${name}</span>
-        <span class="cb-title">${title}</span>
-        <button class="cb-edit-btn" onclick="toggleCharBibleEdit('${fid}')">✏️ 编辑档案</button>
-      </div>
-      <div class="cb-body">
-        <div class="cb-left">
-          <img src="${mainRender}" loading="lazy" onclick="zoomImg('${mainRender}')" onerror="this.style.display='none'" />
-          <div class="cb-thumbnails" id="cbthumbs-${fid}">`;
-    renders.forEach((r, ri) => {
-      const url = typeof r === 'string' ? r : (r.url || r.src || '');
-      if (url) html += `<img class="cb-thumb${ri === 0 ? ' active' : ''}" src="${url}" loading="lazy" onclick="swapCharImg('${fid}','${url}',this)" />`;
-    });
-    // fallback thumbnails
-    if (renders.length === 0) {
-      for (let si = 1; si <= 3; si++) {
-        const shot = String(si).padStart(2, '0');
-        const url = `/api/render/${fid}/shot_${shot}.png`;
-        html += `<img class="cb-thumb" src="${url}" loading="lazy" onclick="swapCharImg('${fid}','${url}',this)" onerror="this.style.display='none'" />`;
-      }
-    }
-    html += `</div>
-        </div>
-        <div class="cb-right">
-          <!-- 基本信息 -->
-          <div class="cb-section">
-            <div class="cb-section-title"><span class="cb-icon">📏</span> 基本信息</div>
-            <div class="cb-section-content">${basic.height || ''} · ${basic.build || ''} · ${basic.face || ''} · ${basic.age || ''}</div>
-          </div>
-          <!-- 性格特征 -->
-          <div class="cb-section">
-            <div class="cb-section-title"><span class="cb-icon">🎨</span> 性格特征</div>
-            <div class="cb-section-content">
-              <div class="cb-traits">${(personality.core_traits || []).map(t => `<span class="cb-trait">${t}</span>`).join('')}</div>
-              <div style="font-size:10px;color:#888;margin-top:4px">${personality.emotional_range || ''}</div>
-              <div style="font-size:10px;color:#666">${personality.speech_style || ''}</div>
-            </div>
-          </div>
-          <!-- 口头禅 -->
-          ${(personality.catchphrases || []).length > 0 ? `<div class="cb-section">
-            <div class="cb-section-title"><span class="cb-icon">🗣️</span> 口头禅</div>
-            <div class="cb-section-content">${(personality.catchphrases || []).map(c => `<div class="cb-catchphrase">${c}</div>`).join('')}</div>
-          </div>` : ''}
-          <!-- 习性 -->
-          ${(personality.habits || []).length > 0 ? `<div class="cb-section">
-            <div class="cb-section-title"><span class="cb-icon">🍺</span> 习性</div>
-            <div class="cb-section-content">${(personality.habits || []).map(h => `<div class="cb-habits">• ${h}</div>`).join('')}</div>
-          </div>` : ''}
-          <!-- 服饰设计 -->
-          <div class="cb-section">
-            <div class="cb-section-title"><span class="cb-icon">👔</span> 服饰设计</div>
-            <div class="cb-section-content">
-              ${appearance.costume || '待补充'}
-              <div class="cb-colors">${cp.primary ? `<div class="cb-color-swatch" style="background:${cp.primary}" title="主色"></div><span class="cb-color-label">主</span>` : ''}${cp.secondary ? `<div class="cb-color-swatch" style="background:${cp.secondary}" title="辅色"></div><span class="cb-color-label">辅</span>` : ''}${cp.accent ? `<div class="cb-color-swatch" style="background:${cp.accent}" title="点缀"></div><span class="cb-color-label">点缀</span>` : ''}</div>
-              ${(appearance.accessories || []).length > 0 ? `<div style="font-size:9px;color:#666">配饰: ${(appearance.accessories || []).join(' · ')}</div>` : ''}
-            </div>
-          </div>
-          <!-- 角色背景 -->
-          <div class="cb-section">
-            <div class="cb-section-title"><span class="cb-icon">📖</span> 角色背景</div>
-            <div class="cb-section-content">
-              ${background.origin ? `<div style="font-size:10px">出身: ${background.origin}</div>` : ''}
-              ${(background.key_events || []).length > 0 ? `<div style="font-size:10px">关键事件: ${(background.key_events || []).join(' → ')}</div>` : ''}
-              ${Object.keys(background.relationships || {}).length > 0 ? `<div class="cb-relations">关系: ${Object.entries(background.relationships || {}).map(([k, v]) => `<span class="rel-name">${k}</span>: ${v}`).join(' · ')}</div>` : ''}
-            </div>
-          </div>
-          <!-- 音色 (Voice Config) -->
-          <div class="cb-section cb-voice-wrap" id="voice-section-${fid}">
-            <div class="cb-section-title"><span class="cb-icon">🎤</span> 音色</div>
-            <!-- Voice info card -->
-            <div class="cb-voice-card" id="voicecard-${fid}">
-              <div class="cb-voice-card-body">
-                <div class="cb-voice-card-row"><span class="vc-label">角色</span><span class="vc-val">${name}</span></div>
-                <div class="cb-voice-card-row"><span class="vc-label">类型</span><span class="vc-val" id="vc-type-${fid}">${(function(){const cv=CHARACTER_VOICES[fid];const hasNLS=!!voice.nls_speaker;return hasNLS?'NLS':(cv&&cv.ref?'GPT-SoVITS':'—')})()}</span></div>
-                <div class="cb-voice-card-row"><span class="vc-label">音色</span><span class="vc-val" id="vc-voice-${fid}">${(function(){const cv=CHARACTER_VOICES[fid];if(voice.nls_speaker)return voice.nls_speaker+' · '+(voice.description||'');if(cv&&cv.ref)return '有参考音频 · '+(voice.provider||'GPT-SoVITS');return '<span style=\"color:#c96d3b\">请配置参照音色</span>'})()}</span></div>
-                <div class="cb-voice-card-row"><span class="vc-label">参考</span><span class="vc-val" id="vc-ref-${fid}">${voice.sample_text || voice.reference_text || ((CHARACTER_VOICES[fid]||{}).prompt) || '—'}</span></div>
-              </div>
-              <div class="cb-voice-card-btns">
-                <button type="button" class="cb-btn cb-btn-cfg" id="cfgbtn-${fid}" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();toggleVoiceConfigForm('${fid}');return false">${(voice.nls_speaker||(CHARACTER_VOICES[fid]||{}).ref)?'⚙️ 配置':'🎤 设置音色'}</button>
-                <button type="button" class="cb-btn cb-btn-aud" id="audbtn-${fid}" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();auditionVoice('${fid}');return false" ${(voice.nls_speaker||(CHARACTER_VOICES[fid]||{}).ref)?'':'disabled'}>🔊 试听</button>
-              </div>
-            </div>
-            <!-- Inline config form -->
-            <div class="cb-voice-config-form" id="voicecfgform-${fid}" style="display:none">
-              <div class="cb-voice-config-form-row">
-                <label>提供商</label>
-                <select id="cfg-provider-${fid}">
-                  <option value="NLS" ${!voice.provider || voice.provider==='NLS' ? 'selected' : ''}>NLS（阿里云）</option>
-                  <option value="MiniMax" ${voice.provider==='MiniMax' ? 'selected' : ''}>MiniMax</option>
-                  <option value="ElevenLabs" ${voice.provider==='ElevenLabs' ? 'selected' : ''}>ElevenLabs</option>
-                </select>
-              </div>
-              <div class="cb-voice-config-form-row">
-                <label>音色名称</label>
-                <input id="cfg-voice-${fid}" value="${voice.nls_speaker || ''}" placeholder="如 zhiming" />
-              </div>
-              <div class="cb-voice-config-form-row">
-                <label>参考文本</label>
-                <input id="cfg-reftext-${fid}" value="${voice.reference_text || voice.sample_text || ''}" placeholder="试听参考文本" />
-              </div>
-              <div class="cb-voice-config-form-btns">
-                <button type="button" class="btn btn-save" onclick="saveVoiceConfig('${fid}')">💾 保存并试听</button>
-                <button type="button" class="btn btn-cancel" onclick="toggleVoiceConfigForm('${fid}')">取消</button>
-              </div>
-            </div>
-            <!-- Audio player row -->
-            <div class="cb-voice-player-row" id="voiceplayerrow-${fid}" style="display:none">
-              <div class="cb-voice-player" id="voiceplayer-${fid}">
-                <audio id="voiceaudio-${fid}" controls></audio>
-                <span class="cb-dur" id="voicedur-${fid}"></span>
-              </div>
-              <button type="button" class="cb-voice-close" id="voiceclose-${fid}" onclick="closeVoicePlayer('${fid}')" title="关闭播放">✕</button>
-            </div>
-            <!-- Custom TTS generation row -->
-            <div class="cb-voice-row">
-              <input class="cb-voice-input" id="ttstext-${fid}" placeholder="试生成文本..." value="${voice.sample_text || name + '在此！'}" style="flex:1" />
-              <button type="button" class="cb-btn cb-btn-gen" id="genbtn-${fid}" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();generateVoice('${fid}');return false">🔊 生成</button>
-              <button type="button" class="cb-btn cb-btn-gen" id="regenbtn-${fid}" style="display:none" onmousedown="event.preventDefault()" onclick="event.preventDefault();event.stopPropagation();generateVoice('${fid}');return false">🔄 重新生成</button>
-            </div>
-            <div id="voicespinner-${fid}" style="display:none;text-align:center;padding:4px">
-              <span class="cb-voice-spinner"></span> <span style="font-size:10px;color:#6b8aad">生成中...</span>
-            </div>
-          </div>
-          <!-- Video Prompts (三方案) -->
-          ${Object.keys(videoPrompts).length > 0 ? `<div class="cb-section">
-            <div class="cb-section-title"><span class="cb-icon">🎬</span> 视频提示词（三方案）</div>
-            ${Object.entries(videoPrompts).map(([key, v]) => `
-              <div class="cb-vp-card">
-                <div class="cb-vp-card-hdr" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
-                  <span class="vp-icon">📋</span> ${v.title || key}
-                  <span style="margin-left:auto;font-size:9px;color:#555">${v['参数'] || ''}</span>
-                </div>
-                <div class="cb-vp-card-body" style="display:none">
-                  <div class="cb-vp-line"><span class="vp-label">描述</span><span class="vp-val">${v.desc || v['desc'] || ''}</span></div>
-                  <div class="cb-vp-line"><span class="vp-label">提示词</span><span class="vp-val vp-prompt">${v.prompt || v['prompt'] || ''}</span></div>
-                  ${v['简练版'] ? `<div class="cb-vp-line"><span class="vp-label">简练版</span><span class="vp-val vp-prompt">${v['简练版']}</span></div>` : ''}
-                </div>
-              </div>
-            `).join('')}
-          </div>` : ''}
-          <!-- Actions -->
-          <div class="cb-actions">
-            <button class="cb-btn" id="rerender-btn-${fid}" onclick="reRenderChar('${fid}')">🔄 重新生成角色图</button>
-            <button class="cb-btn" onclick="generateAIProfile('${fid}')">✨ AI 生成档案</button>
-          </div>
-          <div class="cb-rerender-progress" id="rerender-prog-${fid}">
-            <div class="cb-prog-bar"><div class="cb-prog-fill" id="rerender-fill-${fid}"></div></div>
-            <div class="cb-prog-text" id="rerender-text-${fid}">渲染中...</div>
-          </div>
-        </div>
-      </div>
-      <!-- Edit mode (hidden by default) -->
-      <div class="cb-edit-mode" id="cbedit-${fid}">
-        <div class="cb-field"><label>📏 身高</label><input id="edit-basic_height-${fid}" type="text" value="${basic.height || ''}" /></div>
-        <div class="cb-field"><label>💪 体型</label><input id="edit-basic_build-${fid}" type="text" value="${basic.build || ''}" /></div>
-        <div class="cb-field"><label>👤 面相</label><input id="edit-basic_face-${fid}" type="text" value="${basic.face || ''}" /></div>
-        <div class="cb-field"><label>🎨 核心性格 (逗号分隔)</label><input id="edit-traits-${fid}" type="text" value="${(personality.core_traits || []).join(',')}" /></div>
-        <div class="cb-field"><label>💭 情感层次</label><textarea id="edit-emotion-${fid}">${personality.emotional_range || ''}</textarea></div>
-        <div class="cb-field"><label>🗣️ 说话风格</label><input id="edit-speech-${fid}" type="text" value="${personality.speech_style || ''}" /></div>
-        <div class="cb-field"><label>💬 口头禅 (一行一句)</label><textarea id="edit-catchphrases-${fid}">${(personality.catchphrases || []).join('\n')}</textarea></div>
-        <div class="cb-field"><label>🍺 习性 (一行一条)</label><textarea id="edit-habits-${fid}">${(personality.habits || []).join('\n')}</textarea></div>
-        <div class="cb-field"><label>👔 服饰描述</label><textarea id="edit-costume-${fid}">${appearance.costume || ''}</textarea></div>
-        <div class="cb-field"><label>🎨 配色</label>
-          <div class="cb-color-input">
-            <span class="cb-color-label">主</span><input type="color" id="edit-cp-primary-${fid}" value="${cp.primary || '#1a1a2e'}" />
-            <span class="cb-color-label">辅</span><input type="color" id="edit-cp-secondary-${fid}" value="${cp.secondary || '#8b0000'}" />
-            <span class="cb-color-label">点缀</span><input type="color" id="edit-cp-accent-${fid}" value="${cp.accent || '#d4a574'}" />
-          </div>
-        </div>
-        <div class="cb-field"><label>📖 出身</label><input id="edit-origin-${fid}" type="text" value="${background.origin || ''}" /></div>
-        <div class="cb-field"><label>🔑 关键事件 (逗号分隔)</label><input id="edit-events-${fid}" type="text" value="${(background.key_events || []).join(',')}" /></div>
-        <div class="cb-field"><label>🎤 音色 Speaker</label><input id="edit-voice-${fid}" type="text" value="${voice.nls_speaker || ''}" /></div>
-        <div class="cb-field"><label>🎤 音色描述</label><input id="edit-voice-desc-${fid}" type="text" value="${voice.description || ''}" /></div>
-        <div class="cb-field"><label>📝 参考文本</label><input id="edit-reftext-${fid}" type="text" value="${voice.reference_text || ''}" /></div>
-        <div class="cb-field"><label>📝 试生成文本</label><input id="edit-ttstext-${fid}" type="text" value="${voice.sample_text || ''}" /></div>
-        <div class="cb-edit-btns">
-          <button class="btn btn-save" onclick="saveCharBible('${fid}')">💾 保存修改</button>
-          <button class="btn btn-cancel" onclick="toggleCharBibleEdit('${fid}')">取消</button>
-          <button class="btn btn-ai" onclick="generateAIProfile('${fid}')">✨ AI 生成</button>
-        </div>
-      </div>
-    </div>`;
-  });
-  container.innerHTML = html;
-  // Populate cache for searching
-  charDataCache = results.map((data, i) => {
-    if (!data) return null;
-    const name = data.name || CHAR_NAMES[i];
-    const fid = data.pinyin || CHAR_MAP[name] || name;
-    let profile = data.profile || data;
-    if (profile.profile && typeof profile.profile === 'object' && !Array.isArray(profile.profile)) profile = profile.profile;
-    const personality = profile.personality || {};
-    const title = profile.title || CHAR_ROLES[name] || '';
-    const star = profile.star_name || '';
-    return { name, fid, title, star, isTiangang: i < TIANGANG_COUNT, index: i, el: document.getElementById('charbible-' + fid) };
-  }).filter(Boolean);
-  // Default: Top 10, show hint
-  applyDM1Filter();
-  // Restore generated audios
-  Object.keys(generatedAudios).forEach(fid => {
-    if (document.getElementById('voiceplayer-' + fid)) {
-      showVoicePlayback(fid);
-    }
-  });
-}
-
-// DM-1: Apply filter to visible cards
-function applyDM1Filter() {
-  const q = (currentDM1Filter.query || '').toLowerCase();
-  const cat = currentDM1Filter.category || '';
-  let visible = 0;
-  charDataCache.forEach(c => {
-    if (!c.el) return;
-    let show = true;
-    if (cat === 'tiangang') show = c.isTiangang;
-    else if (cat === 'dishap') show = !c.isTiangang;
-    else if (cat === 'core') show = c.index < 12;
-    if (show && q) {
-      const s = (c.name + ' ' + c.title + ' ' + c.star).toLowerCase();
-      show = s.includes(q);
-    }
-    if (show && !q && !cat) show = c.index < DM1_TOP10;
-    c.el.style.display = show ? '' : 'none';
-    if (show) visible++;
-  });
-  const hint = document.getElementById('dm1-showing');
-  if (!q && !cat) {
-    hint.style.display = 'block';
-    hint.textContent = '已展示 ' + visible + ' 位核心角色，共 ' + charDataCache.length + ' 位，请搜索查看更多';
-  } else {
-    hint.style.display = 'block';
-    hint.textContent = '筛选结果: ' + visible + ' / ' + charDataCache.length + ' 位角色';
-  }
-}
-
-let dm1Timer;
-function onDM1Search(val) {
-  clearTimeout(dm1Timer);
-  dm1Timer = setTimeout(function() {
-    currentDM1Filter.query = val;
-    if (val) { currentDM1Filter.category = ''; document.querySelectorAll('#dm1-chips .dm1-chip').forEach(function(c){c.classList.remove('active')}); }
-    applyDM1Filter();
-  }, 300);
-}
-
-function onDM1Chip(el, cat) {
-  document.querySelectorAll('#dm1-chips .dm1-chip').forEach(function(c){c.classList.remove('active')});
-  el.classList.add('active');
-  currentDM1Filter.category = cat;
-  currentDM1Filter.query = '';
-  document.getElementById('dm1-search').value = '';
-  applyDM1Filter();
-}
-
-// ================================================================
-// DM-1: Toggle edit mode for character bible
-// ================================================================
-function toggleCharBibleEdit(fid) {
+  
+  el.insertAdjacentHTML(\'beforeend\', h);
+}function toggleCharBibleEdit(fid) {
   const el = document.getElementById('cbedit-' + fid);
   if (!el) return;
   el.classList.toggle('show');
@@ -2213,7 +1788,9 @@ document.addEventListener('keydown', e => {
 
   if (e.key === 'r' || e.key === 'R') {
     e.preventDefault();
-    refresh();
+    
+  document.getElementById('tkSearchBar').style.display = (t==='tk' ? 'block' : 'none');
+refresh();
     toastMsg('🔄 刷新中...', 1500);
     return;
   }
@@ -2259,92 +1836,48 @@ function closeModal() {
 async function renderPipelineMonitor() {
   const detailEl = document.getElementById('detail');
   if (!detailEl) return;
-  let sec = `<div class="sec"><h3>🔧 管线服务状态</h3><div class="pipeline-monitor" id="svcMonitor"><span class="loading">检测中...</span></div></div>`;
+  let sec = `<div class="sec"><h3>🔧 管线服务状态</h3><div class="pipeline-monitor" id="svcMonitor"><span class="loading">SSE 连接中...</span></div></div>`;
   detailEl.insertAdjacentHTML('beforeend', sec);
-
-  const checks = [
-    { name: 'Flask 决策 API', url: '/api/status', port: 5001, detail: 'task_wizard.py' },
-    { name: 'GPT-SoVITS TTS', url: 'http://localhost:9880', port: 9880, detail: '推理服务' },
-    { name: 'ComfyUI', url: 'http://localhost:8188', port: 8188, detail: '图像渲染' },
-  ];
-
-  let rows = '';
-  for (const svc of checks) {
-    let status = 'unknown', detail = '';
-    try {
-      const r = await fetch(svc.url, { method: 'HEAD', mode: 'no-cors' });
-      status = 'online';
-      detail = `端口 ${svc.port} 可达`;
-    } catch (e) {
-      status = 'offline';
-      detail = `端口 ${svc.port} 不可达`;
-    }
-    rows += `<div class="svc-row">
-      <span class="svc-dot ${status}"></span>
-      <span class="svc-name">${svc.name}</span>
-      <span class="svc-detail">${detail} · ${svc.detail}</span>
-    </div>`;
-  }
-  // Add pipeline output check
-  try {
-    const r = await fetch('/api/dashboard');
-    const d = await r.json();
-    const ms = d.milestones || [];
-    const done = ms.filter(m => m.status === 'completed' || m.status === 'approved').length;
-    const total = ms.length;
-    const pct = total ? Math.round(done / total * 100) : 0;
-    rows += `<div class="svc-row">
-      <span class="svc-dot ${pct > 50 ? 'online' : 'unknown'}"></span>
-      <span class="svc-name">管线总进度</span>
-      <span class="svc-detail">${done}/${total} 里程碑 · ${pct}%</span>
-    </div>`;
-  } catch (e) {
-    rows += `<div class="svc-row">
-      <span class="svc-dot unknown"></span>
-      <span class="svc-name">管线总进度</span>
-      <span class="svc-detail">无法获取</span>
-    </div>`;
-  }
-  document.getElementById('svcMonitor').innerHTML = rows;
-  // Start auto-refresh
-  if (!window._svcMonitorInterval) {
-    window._svcMonitorInterval = setInterval(updatePipelineMonitor, 30000);
-  }
+  connectPipelineSSE();
 }
-
-async function updatePipelineMonitor(){
-  const checks = [
-    { name: 'Flask API', url: '/api/status', port: 5001, detail: 'task_wizard', icon: '⚙️' },
-    { name: 'GPT-SoVITS', url: 'http://localhost:9880/control', port: 9880, detail: 'TTS推理', icon: '🎤' },
-    { name: 'ComfyUI', url: 'http://localhost:8188/queue', port: 8188, detail: '图像渲染', icon: '🎨' },
-  ];
-  let rows = '';
-  for (const svc of checks) {
-    let status = 'unknown', detail = '检测中...', extra = '';
+function connectPipelineSSE(){
+  if (window._pipelineSSE) { window._pipelineSSE.close(); }
+  const es = new EventSource('/api/pipeline/stream');
+  window._pipelineSSE = es;
+  es.onmessage = function(evt){
     try {
-      const r = await fetch(svc.url, { signal: AbortSignal.timeout(3000) });
-      status = 'online';
-      if (svc.name === 'ComfyUI' && r.ok) {
-        const d = await r.json();
-        const run = (d.queue_running||[]).length;
-        const pend = (d.queue_pending||[]).length;
-        extra = ' · '+run+'运行 '+pend+'排队';
-      }
-      detail = '端口'+svc.port+'可达'+extra;
-    } catch(e) { status='offline'; detail='端口'+svc.port+'不可达'; }
-    rows += '<div class="svc-row"><span>'+svc.icon+'</span><span class="svc-dot '+status+'"></span><span class="svc-name">'+svc.name+'</span><span class="svc-detail">'+detail+'</span></div>';
-  }
-  try {
-    const r = await fetch('/api/dashboard');
-    const d = await r.json();
-    const ms = d.milestones || [];
-    const done = ms.filter(m=>m.status==='completed'||m.status==='approved').length;
-    const total = ms.length;
-    const pct = total ? Math.round(done/total*100) : 0;
-    rows += '<div class="svc-row" style="flex-wrap:wrap;padding-bottom:10px"><span>📊</span><span class="svc-name">管线总进度</span><span class="svc-detail">'+done+'/'+total+' ('+pct+'%)</span><div style="width:100%;height:4px;background:#222;border-radius:2px;margin-top:2px"><div style="width:'+pct+'%;height:100%;background:#2563eb;border-radius:2px"></div></div></div>';
-  } catch(e) {}
-  const el = document.getElementById('svcMonitor');
-  if (el) el.innerHTML = rows;
+      const d = JSON.parse(evt.data);
+      const svcs = d.services || {};
+      const pipe = d.pipeline || {};
+      const cf = svcs.comfyui || {};
+      const tt = svcs.tts || {};
+      let rows = '';
+      // Flask API — always online since we received this SSE
+      rows += '<div class="svc-row"><span>⚙️</span><span class="svc-dot online"></span><span class="svc-name">Flask API</span><span class="svc-detail">端口5001 · task_wizard</span></div>';
+      // GPT-SoVITS
+      const ttsDot = tt.online ? 'online' : 'offline';
+      const ttsDetail = tt.online ? '端口9880可达 · TTS推理' : '端口9880不可达';
+      rows += '<div class="svc-row"><span>🎤</span><span class="svc-dot '+ttsDot+'"></span><span class="svc-name">GPT-SoVITS</span><span class="svc-detail">'+ttsDetail+'</span></div>';
+      // ComfyUI
+      const cfDot = cf.online ? 'online' : 'offline';
+      const cfExtra = cf.online ? ' · '+(cf.running||0)+'运行 '+(cf.pending||0)+'排队' : '';
+      const cfDetail = cf.online ? '端口8188可达'+cfExtra+' · 图像渲染' : '端口8188不可达';
+      rows += '<div class="svc-row"><span>🎨</span><span class="svc-dot '+cfDot+'"></span><span class="svc-name">ComfyUI</span><span class="svc-detail">'+cfDetail+'</span></div>';
+      // Pipeline progress
+      const done = pipe.done || 0, total = pipe.total || 0;
+      const pct = total ? Math.round(done/total*100) : 0;
+      const pctDot = pct > 50 ? 'online' : (pct > 0 ? 'unknown' : 'offline');
+      rows += '<div class="svc-row" style="flex-wrap:wrap;padding-bottom:8px"><span>📊</span><span class="svc-dot '+pctDot+'"></span><span class="svc-name">管线总进度</span><span class="svc-detail">'+done+'/'+total+' ('+pct+'%)</span><div style="width:100%;height:4px;background:#222;border-radius:2px;margin-top:2px"><div style="width:'+pct+'%;height:100%;background:#2563eb;border-radius:2px;transition:width .5s"></div></div></div>';
+      // Timestamp
+      rows += '<div style="font-size:8px;color:#444;text-align:right;padding:2px 0">更新 '+ (d.time || '—') +' · SSE</div>';
+      const el = document.getElementById('svcMonitor');
+      if (el) el.innerHTML = rows;
+    } catch(e) {}
+  };
+  es.onerror = function(){
+    const el = document.getElementById('svcMonitor');
+    if (el) el.innerHTML = '<span class="loading" style="color:#ef4444">SSE 断线，5秒后重连...</span>';
+  };
 }
 
 // ================================================================
