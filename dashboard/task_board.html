@@ -1542,6 +1542,46 @@ function startEditSB(epNum,seq){
     </div>
   </div>`;
 }
+
+// v3.7: S2-1 Storyboard visual loader — load scenes with like/dislike + video scheme preview
+async function loadStoryboard(epNum){
+  var el = document.getElementById('sb-' + epNum);
+  if (!el) return;
+  try {
+    var r = await fetch('/api/script/' + epNum);
+    var d = await r.json();
+    var shots = d.shots || [];
+    if (!shots.length) { el.innerHTML = '<span style="color:#555;font-size:10px">无分镜</span>'; return; }
+    var h = '';
+    shots.forEach(function(s, i) {
+      var seq = s.id || s.seq || (i + 1);
+      var act = s.act || s.act_name || '';
+      var name = s.character || s.char_name || d.character || '';
+      var desc = s.narration || s.description || s.scene || '';
+      var dialogue = s.dialogue || s.line || '';
+      h += '<div class="sb-card" style="margin-bottom:8px">';
+      h += '<div class="sb-seq">' + seq + '</div>';
+      h += '<div class="sb-body" id="sb-body-' + epNum + '-' + seq + '">';
+      if (act) h += '<div class="sb-act">' + act + '</div>';
+      if (name) h += '<div class="sb-name">' + name + '</div>';
+      if (desc) h += '<div class="sb-desc">' + desc + '</div>';
+      if (dialogue) h += '<div class="sb-dialogue">' + dialogue + '</div>';
+      // Video scheme preview buttons (方案一/二/三)
+      h += '<div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">';
+      h += '<button class="mini-btn" onclick="alert(\'方案一: 静态肖像特写\')">🎬 方案一</button>';
+      h += '<button class="mini-btn" onclick="alert(\'方案二: 经典场景动态\')">🎬 方案二</button>';
+      h += '<button class="mini-btn" onclick="alert(\'方案三: 电影感运镜\')">🎬 方案三</button>';
+      h += '<button class="mini-btn" style="color:#22c55e;border-color:#22c55e" onclick="alert(\'已标记喜欢\')">👍</button>';
+      h += '<button class="mini-btn" style="color:#ef4444;border-color:#ef4444" onclick="alert(\'已标记不喜欢\')">👎</button>';
+      h += '<button class="mini-btn" id="sb-editbtn-' + epNum + '-' + seq + '" onclick="startEditSB(' + epNum + ',' + seq + ')">✏ 编辑</button>';
+      h += '</div></div></div>';
+    });
+    el.innerHTML = h;
+  } catch(e) {
+    el.innerHTML = '<span style="color:#ef4444;font-size:10px">加载失败: ' + e.message + '</span>';
+  }
+}
+
 function undoSB(epNum,seq){
   const u=_sbUndo[epNum+'-'+seq];if(!u)return;
   const bodyEl=document.getElementById('sb-body-'+epNum+'-'+seq);
@@ -2657,6 +2697,29 @@ async function loadAssetPanel(type){
   });
   body.innerHTML=count?'':'<div style="color:#555;text-align:center;padding:20px;font-size:11px">没有'+type+'类资产</div>'+h;
 }
+
+// v3.7 S2-2: Add video preview mock buttons to DM-1 character cards
+(function injectPreviewButtons() {
+  var checkExist = setInterval(function() {
+    var btns = document.querySelectorAll('[id^="rerender-btn-"]');
+    if (btns.length > 0) {
+      clearInterval(checkExist);
+      btns.forEach(function(btn) {
+        var fid = btn.id.replace('rerender-btn-', '');
+        if (document.getElementById('preview-btn-' + fid)) return;
+        var preview = document.createElement('button');
+        preview.id = 'preview-btn-' + fid;
+        preview.className = 'cb-btn';
+        preview.textContent = '🎬 预览动态';
+        preview.onclick = function() {
+          toastMsg('🎬 视频预览: Pollo AI / Kling API 未配置', 3000, 'warn');
+        };
+        btn.parentNode.insertBefore(preview, btn);
+      });
+    }
+  }, 1000);
+})();
+
 </script>
 <!-- v3.7: Asset Panel (slide-out drawer) -->
 <div class="asset-panel" id="assetPanel">
