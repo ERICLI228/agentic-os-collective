@@ -146,6 +146,38 @@ EPISODE_SFX = {
             {"scene": "水声", "start": 12, "duration": 6},
         ]
     },
+    "07": {  # 武松打虎
+        "shots": [
+            {"scene": "喧哗", "start": 0, "duration": 5},   # 酒馆
+            {"scene": "风雪", "start": 5, "duration": 8},   # 景阳冈大风
+            {"scene": "虎啸", "start": 10, "duration": 10}, # 猛虎出场+搏斗
+            {"scene": "脚步", "start": 18, "duration": 5},  # 下山
+        ]
+    },
+    "08": {  # 武松斗杀西门庆
+        "shots": [
+            {"scene": "喧哗", "start": 0, "duration": 5},   # 狮子楼喧闹
+            {"scene": "拳击", "start": 5, "duration": 6},   # 搏斗
+            {"scene": "刀剑", "start": 10, "duration": 5},  # 短刀
+            {"scene": "脚步", "start": 15, "duration": 5},  # 离去
+        ]
+    },
+    "09": {  # 林冲雪夜上梁山
+        "shots": [
+            {"scene": "风雪", "start": 0, "duration": None}, # 全程风雪
+            {"scene": "脚步", "start": 3, "duration": 8},
+            {"scene": "柴火", "start": 8, "duration": 5},    # 酒馆篝火
+            {"scene": "刀剑", "start": 14, "duration": 4},   # 火并王伦
+        ]
+    },
+    "10": {  # 花和尚大闹五台山
+        "shots": [
+            {"scene": "鸟鸣", "start": 0, "duration": 5},   # 五台山
+            {"scene": "喧哗", "start": 5, "duration": 8},   # 酒馆+醉态
+            {"scene": "拳击", "start": 10, "duration": 8},  # 拆倒金刚
+            {"scene": "木材", "start": 15, "duration": 5},  # 撞门木裂
+        ]
+    },
 }
 
 
