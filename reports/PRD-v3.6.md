@@ -49,7 +49,8 @@
 | **v3.6.21** | **2026-05-01** | **阿牛** | **v3 API新增8端点: /api/status · /api/character/{fid} · /api/render/{fid}/{filename} · /api/script · /api/script/{ep_num} · /api/detail/{ms_id} · /api/images · /api/review/{fid} — 写入 dashboard_api_v3.py (FastAPI port 5004) · 109角色数据从visual_bible.json读取 · 渲染图通过/api/render代理服务 · 35端点总计** |
 | **v3.6.22** | **2026-05-01** | **阿牛** | **voice_clone_pipeline.py 创建 + 6角色全注册: GPT-SoVITS自动化管线(register/test/batch/list) · 339行 · ~/agentic-os-collective/drama/openclaw/core/voice_clone_pipeline.py · character_voices.json 从2→6角色(武松/鲁智深/林冲/宋江/李逵/吴用) · 参考音频均测试通过(8-463KB) · 同步opencode worktree** |
 | **v3.6.23** | **2026-05-01** | **阿牛** | **add_video_prompts.py 脚本: 107角色自动生成三方案视频提示词 + 2角色保留原始(武松/鲁智深) · 写入 visual_bible.json · 基于角色外观/性格/场景数据个性化 · ~/agentic-os-collective/scripts/add_video_prompts.py** |
-| **v3.6.24** | **2026-05-01** | **阿牛** | **Task Completion Protocol 强制引入: AGENTS.md 新增后处理四步骤(更新代码→标注PRD→Git push→Obsidian sync) · 任何任务完成后自动执行** |
+| **v3.6.25** | **2026-05-01** | **阿牛** | **鲁智深 basic_info/appearance/background 补全: 从profile嵌套结构迁移到顶层字段 · height/build/face/age/costume/accessories/color_palette/origin/key_events/relationships 全量写入 visual_bible.json · 仪表盘DM-1角色卡片正常显示** |
+| **v3.6.26** | **2026-05-01** | **阿牛** | **LLM对抗审核管线验证通过: adversarial_review.py CODING模式实际运行93.8s · 真实LLM审核EP01剧本 · 评分3.0/10 ✅ reject · 4维度真实审计(编剧规则1.0/场景完整性1.0/剧情节奏3.0/逻辑一致性3.0) · pipeline_ep01.py --review coding 完整链通 · 实际堵塞点CODING免费额度已解决** |
 ---
 
 ## 📊 PHASE 1-4 完成记录 (v3.6.4 新增)
