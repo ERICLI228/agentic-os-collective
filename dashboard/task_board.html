@@ -1444,7 +1444,8 @@ function previewScriptHTML(epNum){
   var dlg=document.createElement('div');
   dlg.id='script-preview-dlg';
   dlg.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1d27;border:1px solid rgba(59,130,246,.3);border-radius:12px;padding:20px;z-index:500;max-width:800px;width:95%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.6)';
-  dlg.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-size:14px;font-weight:600">📥 EP'+String(epNum).padStart(2,'0')+' HTML预览</div><div><button class="mini-btn" onclick="window.open('/api/script/'+epNum+'/export?format=html')">⬇ 下载</button><span onclick="this.parentElement.parentElement.parentElement.remove()" style="cursor:pointer;font-size:20px;color:#555;margin-left:8px">&times;</span></div></div><div id="script-preview-body" style="font-size:11px;color:#888"><span class="loading">渲染HTML...</span></div>';
+  dlg.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-size:14px;font-weight:600">\u{1F4E5} EP'+String(epNum).padStart(2,'0')+' HTML\u{9884}\u{89C8}</div><div><button class="mini-btn" id="dl-dlbtn">\u{2B07} \u{4E0B}\u{8F7D}</button><span onclick="this.parentElement.parentElement.parentElement.remove()" style="cursor:pointer;font-size:20px;color:#555;margin-left:8px">&times;</span></div></div><div id="script-preview-body" style="font-size:11px;color:#888"><span class="loading">\u{6E32}\u{67D3}HTML...</span></div>';
+  setTimeout(function(){var b=document.getElementById('dl-dlbtn');if(b)b.onclick=function(){window.open('/api/script/'+epNum+'/export?format=html')};},0);
   document.body.appendChild(dlg);
   fetch('/api/script/'+epNum+'/export?format=html').then(function(r){return r.text();}).then(function(html){
     var body=document.getElementById('script-preview-body');
