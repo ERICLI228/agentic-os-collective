@@ -643,7 +643,7 @@ curl /api/detail/DM-0                ✓ 故事板展开 · DM-1 角色画廊
 | 指标 | 数值 |
 |------|------|
 | Git commits (5月2日) | 25+ commits (Sprint 1-4 + DM-0面板完善 + 技术检查可视化 + 按钮改造) |
-| task_board.html | **7,393行 / 386KB** |
+| task_board.html | **7,393行 / 388KB** |
 | API端点总数 | 42+ (Flask :5001 34+ · FastAPI :5004 8+) · MS-2.3处理/合规/检查端点 · MS-5日报推送/预览/历史端点 · POST /api/review/trigger/{episode} |
 | 角色定妆照 | 109角色×4张=436张 (476MB) |
 | EP01-10 final.mp4 | 全部1.8-2.1MB (Pillow+ComfyUI双模式) |
