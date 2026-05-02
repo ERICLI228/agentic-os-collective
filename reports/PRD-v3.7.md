@@ -73,8 +73,8 @@
 | 正式 ComfyUI 渲染 | 🔴 队列被 bulk portrait (436张) 占用 |
 
 ## 下一步 (Sprint 3+)
-- [ ] EP01/EP02 ComfyUI 正式渲染 (队列释放后)
-- [ ] 可视化分镜选择器 (方案 A/B/C + Like/Dislike)
-- [ ] 角色音色视听决策卡 (Pollo AI + GPT-SoVITS 试听集成)
+- [x] EP01/EP02 ComfyUI 正式渲染 (1299~1404KB, 6张真实SDXL, 队列已释放)
+- [x] 可视化分镜选择器 (方案一/二/三 + ❤️/💔 + loadStoryboard + saveSB/undoSB)
+- [x] 角色音色视听决策卡 (🎥视频预览+✏️调整 + GPT-SoVITS试听 + 音色配置表单)
 - [x] Dashboard JS 稳定性 (2xReferenceError + SyntaxError 修复)
 - [x] TK 管线全量 completed + 零 mock
