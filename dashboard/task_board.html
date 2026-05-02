@@ -156,6 +156,43 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 .accordion-content{display:none}.accordion-content.accordion-expanded{display:block}
 .info-card-header .toggle-icon{transition:transform .2s}.info-card-header.expanded .toggle-icon{transform:rotate(180deg)}
 
+/* v3.7.8: DM-0 可视化检查卡片 */
+.script-file-card{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.script-file-card .script-file-icon{font-size:24px;flex-shrink:0}
+.script-file-card .script-file-info{flex:1;min-width:0}
+.script-file-card .script-file-name{font-size:12px;font-weight:600;color:#e4e6eb}
+.script-file-card .script-file-meta{font-size:9px;color:#666}
+.script-file-card .script-file-actions{display:flex;gap:4px;flex-shrink:0}
+.script-file-card button{font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid #444;color:#aaa;background:transparent;cursor:pointer}
+.script-file-card button:hover{background:#2563eb;color:#fff;border-color:#2563eb}
+.check-item-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.check-item-card.warning{border-left:3px solid #f59e0b;background:rgba(245,158,11,.04)}
+.check-item-card .check-item-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.check-item-card .check-item-icon{font-size:16px}
+.check-item-card .check-item-name{font-size:11px;font-weight:600;color:#e4e6eb;flex:1}
+.check-item-card .check-item-status{font-size:9px;padding:2px 8px;border-radius:8px;font-weight:600}
+.check-item-card .check-item-status.pass{background:rgba(34,197,94,.12);color:#22c55e}
+.check-item-card .check-item-status.warn{background:rgba(245,158,11,.12);color:#f59e0b}
+.check-item-card .check-item-status.fail{background:rgba(239,68,68,.12);color:#ef4444}
+.check-item-card .check-item-body{font-size:10px;color:#888}
+.check-item-card .check-item-detail{font-size:9px;color:#555;margin-top:4px}
+.check-item-card .progress-bar-container{height:6px;background:#222;border-radius:3px;overflow:hidden;margin-bottom:4px}
+.check-item-card .progress-bar-fill{height:100%;border-radius:3px;transition:width .5s;display:flex;align-items:center;justify-content:center;font-size:7px;color:#fff;font-weight:600;min-width:30px}
+.story-structure-timeline{display:flex;align-items:center;padding:4px 0}
+.story-structure-timeline .timeline-node{font-size:9px;padding:4px 8px;border-radius:4px;color:#888;white-space:nowrap}
+.story-structure-timeline .timeline-node.active{background:rgba(59,130,246,.12);color:#60a5fa;font-weight:600}
+.story-structure-timeline .timeline-connector{flex:1;height:2px;background:#333;margin:0 2px}
+.tag-cloud{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px}
+.tag{font-size:9px;padding:2px 8px;border-radius:10px;font-weight:500}
+.tag-red{background:rgba(239,68,68,.12);color:#f87171}
+.tag-green{background:rgba(34,197,94,.12);color:#34d399}
+.tag-blue{background:rgba(59,130,246,.12);color:#60a5fa}
+.audience-icons{display:flex;flex-direction:column;gap:4px}
+.audience-group{font-size:14px;line-height:1;margin-bottom:2px}
+.audience-label{font-size:9px;color:#555;margin-left:4px}
+.audience-note{font-size:9px;color:#888}
+.audience-warning{font-size:9px;color:#f59e0b;margin-top:2px}
+
 /* v3.7.8: 横向时间轴 */
 .milestone-timeline{display:flex;align-items:center;gap:0;padding:12px 0;margin-bottom:12px;overflow-x:auto}
 .milestone-timeline .tl-node{display:flex;flex-direction:column;align-items:center;flex:1;min-width:60px;position:relative}
@@ -1079,7 +1116,7 @@ async function renderDM0(detail,ms){
     decH += `<button class="btn btn-s" onclick="decideDM0('approved')">&#10003; 通过</button>`;
     decH += `<button class="btn btn-w" onclick="decideDM0('rework')">&#9998; 回流重写</button>`;
     decH += `<button class="btn btn-d" onclick="decideDM0('reject')">&#10007; 驳回</button>`;
-    decH += `<button class="btn btn-rerun" id="dm0-rerun-btn" onclick="reReviewDM0()" style="margin-left:auto">&#128260; 重新审核</button>`;
+    decH += `<button class="btn btn-rerun" id="dm0-rerun-btn" onclick="reReviewDM0()" style="margin-left:auto">&#128260; 重新 LLM 审核</button>`;
     decH += `</div></div>`;
     decH += `<div style="font-size:10px;color:#666;">&#9432; CODING 免费额度 · 上次审核耗时 ~87s · 点击按钮后自动执行</div>`;
     decH += `</div>`;
@@ -1100,6 +1137,15 @@ async function renderDM0(detail,ms){
       }
     }
     _tryRadar();
+  } else {
+    // v3.7.8: 无审核结果时显示"触发 AI 审核"入口
+    var noReviewSec = '<div class="sec" style="border-left:3px solid #3b82f6;text-align:center;padding:20px">';
+    noReviewSec += '<div style="font-size:22px;margin-bottom:8px">🤖</div>';
+    noReviewSec += '<div style="font-size:13px;font-weight:600;color:#e4e6eb;margin-bottom:4px">剧本待审核</div>';
+    noReviewSec += '<div style="font-size:10px;color:#888;margin-bottom:12px">点击下方按钮，触发 LLM 对抗审核，获取四维评分和改进建议。</div>';
+    noReviewSec += '<button class="btn btn-p" onclick="reReviewDM0()" id="dm0-trigger-btn">🚀 触发 AI 审核</button>';
+    noReviewSec += '</div>';
+    detailEl.insertAdjacentHTML('beforeend', noReviewSec);
   }
 
   let sec=`<div class="sec" id="dm0-sec"><h3>&#128214; 6集完整故事板</h3>`;
@@ -1208,7 +1254,7 @@ async function loadStoryboard(epNum){
     sbH+=`<div id="inline-script-${epNum}" class="accordion-content" style="margin-bottom:8px">
       <textarea id="script-editor-${epNum}" style="width:100%;min-height:200px;background:#111;border:1px solid #333;color:#e4e6eb;font-size:11px;padding:8px;border-radius:4px;font-family:monospace" placeholder="加载剧本中..."></textarea>
       <div style="margin-top:4px;display:flex;gap:4px">
-        <button class="mini-btn" onclick="saveInlineScript(${epNum})">💾 保存</button>
+        <button class="mini-btn" onclick="reReviewAfterEdit(${epNum})">💾 保存</button>
         <button class="mini-btn" style="color:#f59e0b" onclick="reReviewAfterEdit(${epNum})">🔄 保存并重新审核</button>
       </div>
     </div>`;
@@ -5884,7 +5930,10 @@ function connectPipelineSSE(){
       const cfDot = cf.online ? 'online' : 'offline';
       const cfExtra = cf.online ? ' · '+(cf.running||0)+'运行 '+(cf.pending||0)+'排队' : '';
       const cfDetail = cf.online ? '端口8188可达'+cfExtra+' · 图像渲染' : '端口8188不可达';
-      rows += '<div class="svc-row"><span>🎨</span><span class="svc-dot '+cfDot+'"></span><span class="svc-name">ComfyUI</span><span class="svc-detail">'+cfDetail+'</span></div>';
+      rows += '<div class="svc-row"><span>🎨</span><span class="svc-dot '+cfDot+'"></span><span class="svc-name">ComfyUI</span><span class="svc-detail">'+cfDetail+'</span>';
+      // v3.7.8: ComfyUI 重试按钮
+      if(!cf.online) rows += '<span style="margin-left:6px"><button class="mini-btn" onclick="retryComfyUI(this)">重试连接</button></span>';
+      rows += '</div>';
       // Pipeline progress
       const done = pipe.done || 0, total = pipe.total || 0;
       const pct = total ? Math.round(done/total*100) : 0;
@@ -6965,59 +7014,68 @@ function renderReviewRadar(data) {
   if (!canvas) return;
   if (radarChartInst) { radarChartInst.destroy(); radarChartInst = null; }
   const dims = data.dimensions || [];
-  if (!dims.length) return;
-  // 保证至少5维
+  if (!dims.length){ console.warn('[Radar] No dimension data'); return; }
+  // 使用与 renderDM0 一致的四维名称
   var allDims = [
-    {name:'剧本规则', score:0},
-    {name:'场景完整', score:0},
-    {name:'剧情节奏', score:0},
-    {name:'逻辑一致', score:0},
-    {name:'对话自然', score:0},
+    {name:'编剧质量', score:0},
+    {name:'分镜设计', score:0},
+    {name:'逻辑一致性', score:0},
+    {name:'节奏把控', score:0},
+    {name:'场景完整性', score:0},
   ];
-  dims.forEach(function(d) {
+  // 多维度名称模糊匹配
+  function matchDim(dName){
+    if(!dName) return -1;
     for(var i=0;i<allDims.length;i++){
-      if(allDims[i].name.indexOf(d.name)>=0||d.name.indexOf(allDims[i].name)>=0){
-        allDims[i].score = typeof d.score==='number'?d.score:(d.total_score||5);
-        break;
+      var a = allDims[i].name;
+      if(a.indexOf(dName)>=0||dName.indexOf(a)>=0) return i;
+    }
+    // Semantic keywords
+    var keywords = [
+      ['编剧','剧本','writing','script'],
+      ['分镜','场景','scene','storyboard'],
+      ['逻辑','logic','consistency'],
+      ['节奏','pacing','rhythm'],
+      ['叙事','narrative','完整性','complete'],
+    ];
+    for(var i=0;i<keywords.length;i++){
+      for(var k=0;k<keywords[i].length;k++){
+        if(dName.indexOf(keywords[i][k])>=0) return i;
       }
     }
+    return -1;
+  }
+  dims.forEach(function(d) {
+    var idx = matchDim(d.name||'');
+    if(idx>=0 && idx<allDims.length){
+      allDims[idx].score = typeof d.score==='number'?d.score:(d.total_score||5);
+    }
   });
-  // Fall back to original dims if no match
+  // 若仍全0，用前5个维度的score
   if(allDims.every(function(d){return d.score===0;})){
-    dims.forEach(function(d,i){if(i<allDims.length){allDims[i].name=d.name;allDims[i].score=typeof d.score==='number'?d.score:5;}});
+    dims.slice(0,5).forEach(function(d,i){if(i<allDims.length){allDims[i].name=d.name||allDims[i].name;allDims[i].score=typeof d.score==='number'?d.score:5;}});
   }
   var labels = allDims.map(function(d){return d.name;});
   var scores = allDims.map(function(d){return d.score;});
   var colors = ['#3b82f680','#8b5cf680','#f59e0b80','#22c55e80','#a78bfa80'];
-  var descKeys = {'剧本规则':'编剧规则评审: 检查剧情是否遵循基本叙事逻辑和创作规范','场景完整':'场景完整性评估: 检查各场景描述是否充分、衔接是否自然','剧情节奏':'剧情节奏分析: 检查高潮铺垫是否合理、节奏是否张弛有度','逻辑一致':'逻辑一致性检查: 检查因果关系是否自洽、有无逻辑漏洞','对话自然':'对话自然度评估: 检查角色对话是否符合性格、是否自然流畅'};
-  reviewDimDescriptions = allDims.map(function(d){return {name:d.name, score:d.score, desc:descKeys[d.name]||d.name+'评估'};;});
-  
+  var descKeys = {'编剧质量':'编剧规则评审: 剧情遵循基本叙事逻辑','分镜设计':'分镜设计评估: 各场景描述充分、衔接自然','逻辑一致性':'逻辑一致性检查: 因果关系自洽、无逻辑漏洞','节奏把控':'剧情节奏分析: 高潮铺垫合理、张弛有度','场景完整性':'场景完整性评估: 各场景描述完整、过渡流畅'};
+  reviewDimDescriptions = allDims.map(function(d){return {name:d.name, score:d.score, desc:descKeys[d.name]||d.name+'评估'};});
   var radarContainer = canvas.parentElement;
   if(!radarContainer) return;
-  
   radarChartInst = new Chart(canvas, {
     type: 'radar',
     data: {
       labels: labels,
-      datasets: [{
-        label: '审核评分',
-        data: scores,
-        backgroundColor: 'rgba(59,130,246,0.2)',
-        borderColor: '#3b82f6',
-        borderWidth: 2,
-        pointBackgroundColor: colors
-      }]
+      datasets: [{label: '审核评分', data: scores, backgroundColor: 'rgba(59,130,246,0.2)', borderColor: '#3b82f6', borderWidth: 2, pointBackgroundColor: colors}]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       onClick: function(e, activeEls) { if(activeEls.length){showDimDesc(activeEls[0].index);} },
       scales: { r: { suggestedMin: 0, suggestedMax: 10, ticks: { color: '#94a3b8', backdropColor: 'transparent', stepSize: 2 }, grid: { color: '#334155' }, pointLabels: { color: '#e2e8f0', font: { size: 10 } } } },
       plugins: { legend: { labels: { color: '#e2e8f0' } }, tooltip: { enabled: false } }
     }
   });
 }
-
 function showDimDesc(index) {
   var d = reviewDimDescriptions[index];
   if(!d) return;
@@ -7030,6 +7088,30 @@ function showDimDesc(index) {
   panel.innerHTML='<strong style="color:'+scoreColor+'">'+d.name+': '+d.score+'/10</strong><br><span style="color:#888">'+d.desc+'</span>';
   var radarContainer = document.getElementById('dm0Radar');
   if(radarContainer) radarContainer.parentElement.appendChild(panel);
+}
+
+// v3.7.8: ComfyUI 连接重试
+function retryComfyUI(btn){
+  if(!btn) return;
+  btn.disabled = true;
+  btn.textContent = '⏳ 检测中...';
+  fetch('http://localhost:8188')
+    .then(function(r){
+      btn.textContent = '✅ 可达';
+      btn.style.color = '#22c55e';
+      toastMsg('✅ ComfyUI 连接正常', 3000, 'success');
+      // 刷新服务状态
+      var svcMonitor = document.getElementById('svcMonitor');
+      if(svcMonitor) { svcMonitor.innerHTML = '<span class="loading">刷新状态...</span>'; loadPipelineMonitor(); }
+    })
+    .catch(function(e){
+      btn.textContent = '❌ 不可达';
+      btn.style.color = '#ef4444';
+      toastMsg('❌ ComfyUI 端口8188不可达，请启动服务', 3000, 'error');
+    })
+    .finally(function(){
+      setTimeout(function(){ btn.disabled = false; btn.textContent = '重试连接'; btn.style.color = ''; }, 5000);
+    });
 }
 
 function renderPipelineTimeline() {
