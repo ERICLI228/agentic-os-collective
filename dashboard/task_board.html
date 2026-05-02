@@ -1238,17 +1238,6 @@ function onDM1Chip(el, cat) {
 // ================================================================
 // EXISTING: render
 // ================================================================
-  // Restore generated audios
-  Object.keys(generatedAudios).forEach(fid => {
-    if (document.getElementById('voiceplayer-' + fid)) {
-      showVoicePlayback(fid);
-    }
-  });
-}
-
-// ================================================================
-// EXISTING: render
-// ================================================================
 function render(){
   let f=all.filter(m=>m.pipeline===cur);
   
