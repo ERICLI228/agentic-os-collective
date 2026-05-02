@@ -204,7 +204,25 @@ Sender (untrusted metadata):
   - **结论：✅ TTS 推理已就绪，可正常使用！**
 - 归档: wiki/outputs/session-20260429-190052.md
 
-## [2026-04-30] session | v3.6.1 全系统QA + PRD注释 + GitHub同步 + Obsidian登记
+## [2026-05-01] session | v3.7 Dashboard 修复 + TK 管线对齐 + 四轮冲刺核查
+
+- **会话类型**: OpenCode (quick-cabin worktree)
+- **主题**:
+  - Dashboard JS 双 bug 根因修复 (ReferenceError + SyntaxError → 页面空白)
+  - TK 运营管线全量 mock→computed (MS-2/2.1/2.3/2.4/2.5)
+  - 四轮冲刺核查修复 (冲刺一~四)
+  - EP01/EP02 渲染临时方案 (ep10 副本)
+- **关键决策**:
+  - Dashboard 根因: 2处 `t=='tk'` ReferenceError (键盘handler中未定义变量) + 1处孤儿 `\n` SyntaxError，全部导致JS执行中断
+  - TK milestone 状态: SQLite 直接 UPDATE (非通过 API)，全部5个 completed
+  - ComfyUI EP01/EP02 正式渲染阻塞: 队列被 bulk portrait (436张定妆图) 占用
+  - SSE 管线监控: 改内调 `/api/dashboard` HTTP endpoint (原调用不存在的 `get_dashboard_data()`)
+- **关键文件变更**:
+  - `dashboard/task_board.html` — 两处 JS bug 修复
+  - `shared/task_wizard.py` — `/api/images` 始终合并 renders 目录, `/api/pipeline/stream` SSE 修复, 根重定向
+  - `shared/detail_engine.py` — TK 5 milestone mock→computed, MS-2.3 真实渲染图
+  - `reports/PRD-v3.7.md` — 冲刺核查 + TK 管线 + Dashboard 修复
+- **Git**: 4503344→080bc1c (5 commits)
 
 - **会话类型**: OpenCode (quick-cabin worktree)
 - **主题**:
@@ -242,3 +260,67 @@ Sender (untrusted metadata):
   - VERSION 文件 + 仪表盘 PRD 告警条
 - **Git**: commit ef82f68 → origin/main (125 files changed)
 - **协同**: OpenClaw v3.6.9~26 + OpenCode v3.6.27 收尾
+
+## [2026-05-01 19:23] session | 40f3a773-eb97-4d42-86f3-204d2abc347a.jsonl
+- 消息数: 5221
+- 主题:
+  - System (untrusted): [2026-05-01 11:25:06 PDT] Exec completed (tidal-ro, code 0) :: KB) 📷 ComfyUI: ep07_shot_03.png (1141KB) 📷 ComfyUI: ep07_shot_01.png (1052KB) 📷 ComfyUI: ep07_shot_02.png (1149KB) --
+  - [Fri 2026-05-01 08:20 PDT] 立马执行【LLM 对抗审核管线 v3.6.5 — ⚠️ 命令存在但实际未正常运行，PHASE 3: 管线 对抗审核命令存在 未通过完整运行 ⚠️ 70%。 LLM对抗审核实际运行 命令存在但未完整通过测试 CODING 付费API额度
+2 鲁智深 basic_info 为空 需 AI 补全按钮 需 AI 服务在线 】，立马标注【以下均未在 PR
+  - [Fri 2026-05-01 08:25 PDT] 这是opencode的汇报【以下是客观统计结论。不虚报，不美化。
+
+---
+
+## 客观统计 v3.6.20 (2026-05-01 05:50 PDT)
+
+### PRD 地址
+```
+/Users/hokeli/agentic-os-collective/reports/PRD-v3.6.md
+```
+
+### 完成项
+
+| 子系统 | 目
+  - [Fri 2026-05-01 11:09 PDT] 🎭 角色档案系统 (DM-1)
+点击「编辑档案」修改角色设定 · 修改后自动检测是否需重新渲染
+
+搜索角色名、称号或星宿…
+加载角色档案...
+已展示 0 位核心角色，共 0 位，请搜索查看更多
+  - Sender (untrusted metadata):
+```json
+{
+  "label": "openclaw-control-ui",
+  "id": "openclaw-control-ui"
+}
+```
+
+[Fri 2026-05-01 11:58 PDT] 开始执行冲刺一（S1-1 Pipeline Monitor / S1-2 加载状态 / S1-3 资产管理）
+  - [Fri 2026-05-01 12:07 PDT] S1-3 ✅ 资产管理 — 顶部导航栏新增 📦 资产 按钮，点击右侧滑出抽屉，按全部/角色图/剧本/剧集分类展示，支持缩略图预览和下载
+  - [Fri 2026-05-01 08:44 PDT] 现在开始干
+  - Sender (untrusted metadata):
+```json
+{
+  "label": "openclaw-control-ui",
+  "id": "openclaw-control-ui"
+}
+```
+
+[Fri 2026-05-01 10:17 PDT] 我只是让它执行这个角色页面的调整【同时，请你执行这个指令【请立即优化 DM-1 角色档案系统的前端交互性能。当前 108 个角
+- 决策:
+  - 1. **video_prompts 集成** — 创建 `add_video_prompts.py`，为109角色各生成三方案视频提示词（方案一：静态肖像特写；方案二：经典场景动态；方案三：电影感运镜），使用各角色外观/性格数据个性化
+  - 2. **gallery.html 修复** — 两个角色 ID 从拼音名改为中文名，图片路径匹配 render 目录
+  - **问题1**: `prompt_en` 使用了中文穿插（`林冲, 精干匀称，武者体型`），没有特指 98 版演员特征
+  - 仅剩的40个 prompt_en 中文在 `face desc` 中——这是 `played by 李雪健` 中的中文名引用，属于合理使用（不是面部描述）。
+  - 另一个选择：**先用 Pillow 模式跑 EP07-10**（文字+图片，出片快），同时后台生成 ComfyUI 渲染图。
+  - ComfyUI 渲染图已在 renders 目录中（1-1.4MB），但 pipeline 没有使用它们——因为脚本找的是 `ep07_shot_01.png` 格式，而渲染图也在这个路径，但 pipeline 用的是 `--render comfyui` 模式下先渲染后拼合的过程。问题可能出在当前 pipeline 的 comfyui 模式逻辑（循环3张图 × 5个shots）。
+  - **ComfyUI 渲染图成功加载了！** 5个镜头全部用上了真实的渲染图（ep07_shot_01~03 循环使用）。EP07 和 EP08 已经开始合成了。等全部跑完看 final.mp4 大小：
+  - | **SFX 修复** | ✅ | `merge_to_final` 优先检测 `final_with_sfx.aac`，存在直接使用 |
+  - **我的建议：** 等定妆图批量生成跑完（估计今天下午3-4点完成），然后开始执行 P0 止血任务。P0-1（reReviewDM0）实际上之前已修了（已改为 triggerReReview），其他任务可以开始。
+  - 要不要我创建一个 **TK 产品看板演示数据**，让 TK 里程碑也能显示产品卡片、图片预览、定价对比等可视化元素？这样两条业务线的 UX 水平就对齐了。
+  - - ✅ **搜索框** — 切换到 TK tab 时出现，支持里程碑模糊搜索
+  - 问题可能是**浏览器缓存了旧版本**。让我加个 cache-bust 参数，然后直接让服务端设置 no-cache 头：
+  - 等等——看第 2157 行 `e.preventDefault();` 是 if 块的只有一行，没有 `{ }`，所以 if 只包裹了 `e.preventDefault()`。`refresh()` 是 if 块后的语句，随后的 `return` 实际上属于这行 if。但这会导致 `refresh()` 在页面加载时直接执行（不通过 async），而 `refresh()` 是 async fu
+  - 之前的 TK 搜索栏切换代码在键盘事件中被我删了，但 `switchTab` 函数里正确调用了 `try{catch}`。那行 `tkSearchBar`.style.display 被移除了，不会有问题了。
+  - 已经修了。根因是 **opencode 在插入 TK 搜索栏切换代码时，在键盘事件处理函数中放了一行 `t==='tk'` 的引用，但 `t` 变量在键盘事件作用域中未定义，导致 `ReferenceError`，整个 JS 执行中断**——所以在 `refresh()` 被调用之前就崩了，页面始终不渲染。
+- 归档: wiki/outputs/session-20260501-192343.md

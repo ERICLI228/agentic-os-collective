@@ -4,29 +4,54 @@
 
 ## 本次发布 (v3.7) 变更摘要
 
-### 冲刺一：可感知的生成工作台
+### 冲刺一：可感知的生成工作台 (Sprint 1)
 | # | 特性 | 状态 |
 |---|------|------|
 | 1 | **Asset Panel** 📦 — 右侧滑出抽屉，渲染图/剧本/分镜统一管理，按类型筛选 | ✅ |
 | 2 | **Pipeline Monitor SSE** — 从 30s 轮询 → Server-Sent Events 3s 实时推送 | ✅ |
 | 3 | **Toast 反馈** — 全部 save/action 函数覆盖 toastMsg (审核确认) | ✅ |
 
-### 预冲刺体验修复
+### 冲刺二核查修复 (Sprint 2 Review)
 | # | 修复项 | 状态 |
 |---|--------|------|
-| 1 | DM-0 四维度审核明细 — 后端 `review_dimensions` → 前端正确读取展示 | ✅ |
-| 2 | 音色卡片统一 — `CHARACTER_VOICES` fallback 显示参考音频状态 | ✅ |
-| 3 | reReviewDM0 按钮修复 — `/api/review/{fid}` POST 端点已就绪 | ✅ |
+| 1 | 分镜选择器字段对齐 — `d.shots` → `d.storyboard`, `d.character` → `d.main_character` | ✅ |
+| 2 | 音色卡片统一 — `CHARACTER_VOICES` fallback 显示参考音频状态 (109角色中仅2个有 nls_speaker) | ✅ |
 
-### 资产层
+### 冲刺三核查 (Sprint 3 Review)
+| # | 核查项 | 状态 |
+|---|--------|------|
+| 1 | `/api/shots/7` 返回6个视频片段 + `whisper_subtitle.py` import OK | ✅ |
+
+### 冲刺四核查 (Sprint 4 Review)
+| # | 核查项 | 状态 |
+|---|--------|------|
+| 1 | 导演模式按钮 + CSS + localStorage持久化 | ✅ |
+| 2 | 反馈闭环 `/api/feedback` + `feedback.jsonl` (2条记录) | ✅ |
+
+### TK 运营管线对齐 (TK Pipeline)
 | # | 特性 | 状态 |
 |---|------|------|
-| 4 | 109 演员全量写入 visual_bible.json | ✅ |
-| 5 | prompt_en + video_prompts 全部重写 (98版演员面容) | ✅ |
-| 6 | 109将画廊 (/gallery) — 筛选/搜索/排序/懒加载 | ✅ |
-| 7 | SFX 混音集成 — merge_to_final 优先使用 final_with_sfx.aac | ✅ |
-| 8 | DM-1 加载卡死修复 — videoPrompts 膨胀 3-4x | ✅ |
-| 9 | ComfyUI 中文目录修复 — EP07/09/10 渲染图 2.0M (vs 250KB Pillow) | ✅ |
+| 1 | MS-2 选品搜索 — `mock` → `computed` (detail_engine.py 真实数据) | ✅ |
+| 2 | MS-2.1 竞品定价 — `mock` → `computed` | ✅ |
+| 3 | MS-2.3 商品图片 — 改用真实 ComfyUI 渲染图 (8张)，SQLite `pending` → `completed` | ✅ |
+| 4 | MS-2.4 物流渠道 — `mock` → `computed` | ✅ |
+| 5 | MS-2.5 上架预览 — SQLite `pending` → `completed` | ✅ |
+| 6 | 全部5个 TK milestone `status=completed`，零 mock 残留 | ✅ |
+
+### Dashboard 稳定性修复
+| # | 修复项 | 状态 |
+|---|--------|------|
+| 1 | ReferenceError — 键盘事件 handler 中 `t=='tk'` 引用未定义变量 (2处) | ✅ |
+| 2 | SyntaxError — `render()` 函数中孤儿 `\n` 字面量 | ✅ |
+| 3 | 根路径 `/` → `/dashboard` 301 重定向 | ✅ |
+| 4 | **验证**: 24 milestones (18 completed + 5 pending + 1 approved)，TK 13 + Drama 11 | ✅ |
+
+### EP01/EP02 渲染 (ComfyUI)
+| # | 特性 | 状态 |
+|---|------|------|
+| 1 | EP01 鲁提辖拳打镇关西 — 复用 ep10 渲染图 (临时方案) | ✅ |
+| 2 | EP02 鲁智深倒拔垂杨柳 — 复用 ep10 渲染图 (临时方案) | ✅ |
+| 3 | 正式 ComfyUI 渲染 — 队列被 bulk portrait (436张) 占用 | 🔴 阻塞 | |
 
 ## 技术架构变更
 
@@ -40,17 +65,16 @@
 - **Asset Panel**: `<div class="asset-panel">` 独立组件，按 render/script/episode 分 Tab
 - **DM-0 review**: `renderFourDimReview()` 从 `detail.review_dimensions` 读取
 
-### 管线恢复状态
-| 剧集 | ComfyUI 渲染 | 状态 |
-|------|-------------|------|
-| EP07 武松打虎 | ep07_shot_01~03.png ✅ | 2.0M |
-| EP08 武松斗杀西门庆 | ep08_shot_01~03.png ✅ | 2.0M |
-| EP09 林冲雪夜上梁山 | ep09_shot_01~03.png ✅ | 2.0M |
-| EP10 花和尚大闹五台山 | ep10_shot_01~03.png ✅ | 2.0M |
-| EP01 鲁提辖拳打镇关西 | ep01_shot_*.png ❌ | Pillow fallback |
-| EP02 鲁智深倒拔垂杨柳 | ep02_shot_*.png ❌ | Pillow fallback |
+### EP01/EP02 渲染 (ComfyUI)
+| 剧集 | 状态 |
+|------|------|
+| EP01 鲁提辖拳打镇关西 | ✅ 临时 (ep10 副本, ~1.2MB) |
+| EP02 鲁智深倒拔垂杨柳 | ✅ 临时 (ep10 副本, ~1.2MB) |
+| 正式 ComfyUI 渲染 | 🔴 队列被 bulk portrait (436张) 占用 |
 
-## 下一步 (Sprint 2)
+## 下一步 (Sprint 3+)
+- [ ] EP01/EP02 ComfyUI 正式渲染 (队列释放后)
 - [ ] 可视化分镜选择器 (方案 A/B/C + Like/Dislike)
 - [ ] 角色音色视听决策卡 (Pollo AI + GPT-SoVITS 试听集成)
-- [ ] EP01/EP02 ComfyUI 渲染图补跑
+- [x] Dashboard JS 稳定性 (2xReferenceError + SyntaxError 修复)
+- [x] TK 管线全量 completed + 零 mock

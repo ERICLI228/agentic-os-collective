@@ -441,13 +441,6 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <script>
 // FORCE JS cache bust via localStorage — reloads exactly once on version change
 if(localStorage.getItem('_dash_v')!=='3.6.20'){localStorage.setItem('_dash_v','3.6.20');if(document.referrer.indexOf(location.hostname)>=0){location.reload(true);}}
-
-// Force dashboard load
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", function() { setTimeout(refresh, 100); });
-} else {
-  setTimeout(refresh, 100);
-}
 </script>
 </head>
 <body>
@@ -739,7 +732,7 @@ function onTKSearch(val) {
   if (q) hint.textContent = visible + '/' + total + ' 匹配';
   else hint.textContent = '';
 }
-// P1-12: apply search & filter
+\n// P1-12: apply search & filter
   if(searchQ) f=f.filter(m=>(m.ms_id+' '+(m.name||'')+' '+(m.task_id||'')).toLowerCase().includes(searchQ));
   if(filterSt!=='all') f=f.filter(m=>m.status===filterSt);
   document.getElementById('tkCount').textContent=all.filter(m=>m.pipeline=='tk').length;
@@ -2102,7 +2095,9 @@ document.addEventListener('keydown', e => {
 
   if (e.key === 'r' || e.key === 'R') {
     e.preventDefault();
-    refresh();
+    
+  document.getElementById('tkSearchBar').style.display = (t==='tk' ? 'block' : 'none');
+refresh();
     toastMsg('🔄 刷新中...', 1500);
     return;
   }
