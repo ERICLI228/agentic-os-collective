@@ -502,6 +502,34 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 .shot-merge-progress{margin-top:8px;font-size:10px;color:#fbbf24}
 /* S3-1: draggable hint */
 .shot-item.dragging{opacity:.5;border:1px dashed #3b82f6}
+
+/* v3.7.3: MS-0 门禁体检报告 */
+.gate-summary-card{border-radius:8px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;transition:all .2s}
+.gate-summary-card.pass{background:linear-gradient(135deg,#0f3b2e,transparent);border-left:4px solid #22c55e}
+.gate-summary-card.warn{background:linear-gradient(135deg,#3d2e0a,transparent);border-left:4px solid #f59e0b}
+.gate-summary-card.fail{background:linear-gradient(135deg,#3b1111,transparent);border-left:4px solid #ef4444}
+.gate-summary-icon{font-size:28px;flex-shrink:0}
+.gate-summary-title{font-size:14px;font-weight:700;color:#e4e6eb;margin-bottom:2px}
+.gate-summary-meta{font-size:10px;color:#888;margin-bottom:2px}
+.gate-summary-advice{font-size:11px;color:#93c5fd}
+.gate-metrics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:12px}
+.gate-metric-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px;text-align:center;transition:all .2s}
+.gate-metric-card:hover{background:rgba(255,255,255,.05)}
+.gate-metric-card .metric-icon{font-size:20px;margin-bottom:4px}
+.gate-metric-card .metric-value{font-size:22px;font-weight:700;margin-bottom:2px}
+.gate-metric-card .metric-label{font-size:9px;color:#888;margin-bottom:2px}
+.gate-metric-card .metric-threshold{font-size:8px;color:#555;background:rgba(255,255,255,.03);border-radius:3px;padding:2px 4px}
+.gate-metric-card.alert{border-color:#ef4444}
+.gate-metric-card.alert .metric-value{color:#ef4444}
+.gate-metric-card.warn-card{border-color:#f59e0b}
+.gate-metric-card.warn-card .metric-value{color:#f59e0b}
+.gate-next-action{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid rgba(255,255,255,.06);margin-top:12px;flex-wrap:wrap}
+.gate-next-action span{font-size:11px;color:#93c5fd}
+.btn-primary{background:#2563eb;color:#fff;padding:6px 16px;border-radius:6px;border:none;cursor:pointer;font-size:11px;font-weight:600;transition:all .15s}
+.btn-primary:hover{background:#3b82f6}
+.btn-secondary{background:transparent;color:#888;padding:6px 16px;border-radius:6px;border:1px solid #444;cursor:pointer;font-size:11px;transition:all .15s}
+.btn-secondary:hover{color:#e4e6eb;border-color:#888}
+.btn-primary:disabled,.btn-secondary:disabled{opacity:.4;cursor:not-allowed}
 </style>
 <!-- P1-6: Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer id="chartjs"></script>
@@ -1294,7 +1322,7 @@ function renderDM1Assets(charResults){
     h+='<div class="dm1-asset-title">'+title+'</div>';
     h+='<div class="dm1-asset-thumbs">';
     urls.slice(0,3).forEach(function(u){
-      if(u) h+='<img class="dm1-asset-thumb" src="'+u+'" loading="lazy" onclick="zoomImg(''+u+'')" onerror="this.style.display='none'"/>';
+      if(u) h+='<img class="dm1-asset-thumb" src="'+u+'" loading="lazy" onclick="zoomImg(\''+u+'\')" onerror="this.style.display=\'none\'"/>';
     });
     h+='</div></div>';
   });
@@ -1434,6 +1462,178 @@ function render(){
 // EXISTING: select
 // ================================================================
 function select(id){sel=id;render()}
+
+// v3.7.3: switchToTab — switch to a milestone tab and scroll to it
+function switchToTab(msId){
+  if(msId.startsWith('MS-')) switchTab('tk');
+  else if(msId.startsWith('DM-')) switchTab('drama');
+  sel=msId;
+  render();
+  setTimeout(function(){
+    var el=document.querySelector('.ms-item.sel');
+    if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
+    var d=document.getElementById('detail');
+    if(d) d.scrollIntoView({behavior:'smooth',block:'start'});
+  },100);
+}
+
+// v3.7.3: triggerReReview — re-run MS-0 gate check with loading feedback
+async function triggerReReviewMS0(){
+  var btn=document.getElementById('rerun-btn-MS-0');
+  if(btn){btn.disabled=true;btn.textContent='⏳ 重新检查中...';}
+  try{
+    var r=await fetch('/api/gate/MS-0/run',{method:'POST'});
+    var d=await r.json();
+    showToast('✔ 门禁检查完成','success');
+    setTimeout(function(){select('MS-0')},800);
+  }catch(e){
+    showToast('✖ 重新检查失败: '+e.message,'error');
+    if(btn){btn.disabled=false;btn.textContent='🔄 重新执行门禁检查';}
+  }
+}
+
+// ================================================================
+// v3.7.3: renderMS0Gate — MS-0 采集门禁体检报告
+// ================================================================
+async function renderMS0Gate(detail,ms){
+  var el=document.getElementById('detail');
+  var sections=detail?detail.sections:[];
+
+  // Extract key metrics from sections/items
+  var productCount=0, shopCount=0, fieldComplete=true, invalidPrice=0, lastCheck='', gatePass=true;
+  var techItems=[];
+
+  sections.forEach(function(s){
+    (s.items||[]).forEach(function(it){
+      var label=(it.label||it.key||'').toLowerCase();
+      var val=String(it.value||'');
+      var status=it.status||'';
+
+      // Parse metrics from labels/values
+      if(label.indexOf('商品')>=0||label.indexOf('product')>=0){
+        var m=val.match(/(\d+)/);
+        if(m) productCount=parseInt(m[1]);
+      }
+      if(label.indexOf('店铺')>=0||label.indexOf('shop')>=0||label.indexOf('store')>=0){
+        var m2=val.match(/(\d+)/);
+        if(m2) shopCount=parseInt(m2[1]);
+      }
+      if(label.indexOf('完整率')>=0||label.indexOf('complete')>=0||label.indexOf('必填')>=0){
+        if(val.indexOf('0')===0||val==='0%'||status==='ng') fieldComplete=false;
+      }
+      if(label.indexOf('无效价格')>=0||label.indexOf('invalid price')>=0){
+        var m3=val.match(/(\d+)/);
+        if(m3) invalidPrice=parseInt(m3[1]);
+      }
+      if(label.indexOf('时间')>=0||label.indexOf('检查')>=0||label.indexOf('last')>=0||label.indexOf('updated')>=0){
+        lastCheck=val;
+      }
+
+      // Collect all items for tech details
+      techItems.push({section:s.title||'',label:it.label||it.key||'',value:val,status:status,note:it.note||''});
+    });
+  });
+
+  // If no explicit metrics found, infer from section/item counts
+  if(productCount===0 && sections.length>0){
+    productCount=sections.reduce(function(sum,s){return sum+(s.items||[]).length},0);
+  }
+
+  // Gate pass/fail logic
+  var blockers=[];
+  if(productCount<10){gatePass=false;blockers.push('商品数 < 10 (当前: '+productCount+')');}
+  if(shopCount<2 && shopCount>0){gatePass=false;blockers.push('店铺数 < 2 (当前: '+shopCount+')');}
+  if(!fieldComplete){gatePass=false;blockers.push('必填字段不完整');}
+  if(invalidPrice>0){gatePass=false;blockers.push('存在 '+invalidPrice+' 个无效价格');}
+  if(productCount===0){gatePass=false;blockers.push('未检测到商品数据');}
+
+  var gateClass=gatePass?'pass':(blockers.length<=2?'warn':'fail');
+  var gateIcon=gatePass?'✅':(gateClass==='warn'?'⚠️':'❌');
+  var gateTitle=gatePass?'门禁通过 (所有指标达标)':('门禁未通过 ('+blockers.length+' 项异常)');
+  var advice=gatePass?'建议：可以进入下一步 (MS-1 数据采集)':'请先解决以下阻塞项，再进入下一步';
+  if(!lastCheck) lastCheck='—';
+
+  var h='';
+
+  // === 板块一：门禁结论摘要 ===
+  h+='<div class="gate-summary-card '+gateClass+'">';
+  h+='<div class="gate-summary-icon">'+gateIcon+'</div>';
+  h+='<div class="gate-summary-content">';
+  h+='<div class="gate-summary-title">'+gateTitle+'</div>';
+  h+='<div class="gate-summary-meta">最后检查：'+lastCheck+'</div>';
+  h+='<div class="gate-summary-advice">'+advice+'</div>';
+  if(blockers.length>0){
+    h+='<div style="margin-top:6px;font-size:10px;color:#ef4444">';
+    blockers.forEach(function(b){h+='<div>⚠ '+b+'</div>';});
+    h+='</div>';
+  }
+  h+='</div></div>';
+
+  // === 板块二：核心指标仪表盘 ===
+  h+='<div class="gate-metrics-grid">';
+
+  // Metric 1: 商品数
+  var pOk=productCount>=10;
+  h+='<div class="gate-metric-card'+(pOk?'':' alert')+'">';
+  h+='<div class="metric-icon">📦</div>';
+  h+='<div class="metric-value" style="color:'+(pOk?'#22c55e':'#ef4444')+'">'+productCount+'</div>';
+  h+='<div class="metric-label">解析商品数</div>';
+  h+='<div class="metric-threshold">门槛: ≥ 10'+(pOk?'':' ← 不达标')+'</div>';
+  h+='</div>';
+
+  // Metric 2: 店铺数
+  var sOk=shopCount>=2||shopCount===0; // 0 = not detected, not necessarily fail
+  h+='<div class="gate-metric-card'+(sOk?'':' warn-card')+'">';
+  h+='<div class="metric-icon">🏪</div>';
+  h+='<div class="metric-value" style="color:'+(sOk?'#22c55e':'#f59e0b')+'">'+shopCount+'</div>';
+  h+='<div class="metric-label">覆盖店铺数</div>';
+  h+='<div class="metric-threshold">门槛: ≥ 2'+(shopCount>0&&shopCount<2?' ← 偏少':'')+'</div>';
+  h+='</div>';
+
+  // Metric 3: 完整率
+  h+='<div class="gate-metric-card'+(fieldComplete?'':' alert')+'">';
+  h+='<div class="metric-icon">📝</div>';
+  h+='<div class="metric-value" style="color:'+(fieldComplete?'#22c55e':'#ef4444')+'">'+(fieldComplete?'100%':'异常')+'</div>';
+  h+='<div class="metric-label">必填字段完整率</div>';
+  h+='<div class="metric-threshold">title+price 完整'+(fieldComplete?'':' ← 不完整')+'</div>';
+  h+='</div>';
+
+  // Metric 4: 无效价格
+  h+='<div class="gate-metric-card'+(invalidPrice===0?'':' alert')+'">';
+  h+='<div class="metric-icon">💲</div>';
+  h+='<div class="metric-value" style="color:'+(invalidPrice===0?'#22c55e':'#ef4444')+'">'+invalidPrice+'</div>';
+  h+='<div class="metric-label">无效价格</div>';
+  h+='<div class="metric-threshold">数量: 0'+(invalidPrice>0?' ← '+invalidPrice+' 个异常':'')+'</div>';
+  h+='</div>';
+
+  h+='</div>';
+
+  // === 板块三：技术检查明细（可折叠）===
+  if(techItems.length>0){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>🔍 技术检查明细 (JSON解析/字段校验)</span>';
+    h+='<span class="toggle-icon">&#9660;</span>';
+    h+='</div>';
+    h+='<div class="info-card-body" style="display:none">';
+    h+='<ul>';
+    techItems.forEach(function(ti){
+      var ic=ti.status==='ok'?'<span style="color:#22c55e">✓</span>':(ti.status==='ng'||ti.status==='critical'?'<span style="color:#ef4444">✗</span>':'<span style="color:#555">–</span>');
+      h+='<li>'+ic+' <strong>'+ti.section+'</strong> → '+ti.label+': '+ti.value+'</li>';
+    });
+    h+='</ul></div></div>';
+  }
+
+  // === 板块四：下一步行动指引 ===
+  h+='<div class="gate-next-action">';
+  h+='<span>'+gateIcon+' 门禁'+(gatePass?'通过，建议执行':'未通过')+'：</span>';
+  h+='<button class="btn-primary" onclick="switchToTab(\'MS-1\')">进入 MS-1 数据采集</button>';
+  h+='<button class="btn-secondary" id="rerun-btn-MS-0" onclick="triggerReReviewMS0()">🔄 重新执行门禁检查</button>';
+  h+='</div>';
+
+  // Replace detail content
+  document.getElementById('detail').innerHTML=h;
+}
 
 // ================================================================
 // v3.6: renderSummary — P1-12: also respects search/filter
@@ -1707,6 +1907,8 @@ async function renderDetail(){
     await renderDM0(detail,ms);
   }else if(ms.ms_id==='DM-1'){
     await renderDM1(detail,ms);
+  }else if(ms.ms_id==='MS-0'){
+    await renderMS0Gate(detail,ms);
   }else if(ms.ms_id==='MS-2.3'){
     await renderTKImageWorkbench(detail,ms);
   }else if(ms.ms_id && !ms.ms_id.startsWith('DM-') && !ms.ms_id.startsWith('daily')){
