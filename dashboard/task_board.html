@@ -152,6 +152,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 .toast.error{background:#ef4444;color:#fff}
 .toast.warn{background:#f59e0b;color:#000}
 
+/* v3.7.8: 通用折叠组件 */
+.accordion-content{display:none}.accordion-content.accordion-expanded{display:block}
+.info-card-header .toggle-icon{transition:transform .2s}.info-card-header.expanded .toggle-icon{transform:rotate(180deg)}
+
+/* v3.7.8: 实时审核日志面板 */
+.review-log-panel{background:rgba(0,0,0,.3);border:1px solid rgba(59,130,246,.2);border-radius:6px;padding:10px;margin-top:8px;max-height:300px;overflow-y:auto;font-family:monospace;font-size:10px;line-height:1.8;display:none}
+.review-log-line{padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03)}
+
+/* v3.7.8: 里程碑摘要卡片 */
+.milestone-summary-card{display:flex;align-items:center;gap:12px;background:#1a1d27;border-radius:8px;padding:12px 14px;margin-bottom:10px;border-left:4px solid #444}
+.milestone-summary-card.ok{border-left-color:#22c55e;background:rgba(34,197,94,.04)}
+.milestone-summary-card.warn{border-left-color:#f59e0b;background:rgba(245,158,11,.04)}
+.milestone-summary-card.ng{border-left-color:#ef4444;background:rgba(239,68,68,.04)}
+.msc-left{font-size:24px;flex-shrink:0;width:36px;text-align:center}
+.msc-center{flex:1;min-width:0}
+.msc-headline{font-size:13px;font-weight:600;color:#e4e6eb;margin-bottom:2px}
+.msc-metrics{font-size:10px;color:#888}
+.msc-right{flex-shrink:0}
+
 /* v3.6.29: MS-5 日报预览卡片样式 */
 .daily-preview-card{background:#1a1d27;border-radius:8px;margin-bottom:12px;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
 .daily-preview-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(59,130,246,.08);border-bottom:1px solid rgba(255,255,255,.06)}
@@ -1072,8 +1091,8 @@ async function renderDM0(detail,ms){
         </span>
         <span class="ep-toggle">&#9654;</span>
       </div>
-      <div class="sb-scenes" id="sb-${epNum}" style="display:none;padding-left:8px">
-        <span class="loading">加载分镜...</span>
+      <div class="accordion-content" id="sb-section-${epNum}" style="padding-left:8px">
+        <div id="sb-${epNum}"><span class="loading">加载分镜...</span></div>
       </div>`;
     });
     document.getElementById('dm0-episodes').innerHTML=epH||'<span style="font-size:10px;color:#555;">无剧集数据</span>';
@@ -1083,22 +1102,18 @@ async function renderDM0(detail,ms){
 }
 
 // ================================================================
-// v3.6: toggleSB - expand/collapse storyboard for an episode
+// v3.7.8 Sprint 1-A: 统一折叠组件 toggleSection — 替换分散的toggleSB/toggleCharEdit/toggleCharBibleEdit
 // ================================================================
 async function toggleSB(epNum){
-  const scenesEl=document.getElementById('sb-'+epNum);
+  const sectionId='sb-section-'+epNum;
+  const body=document.getElementById(sectionId)||document.getElementById('sb-'+epNum);
+  if(!body) return;
+  const isOpen=body.classList.contains('accordion-expanded');
+  toggleSection(sectionId);
   const rowEl=document.getElementById('eprow-'+epNum);
-  if(!scenesEl||!rowEl)return;
-
-  if(scenesEl.style.display==='none'){
-    scenesEl.style.display='block';
-    rowEl.classList.add('open');
-    if(scenesEl.querySelector('.loading')){
-      await loadStoryboard(epNum);
-    }
-  }else{
-    scenesEl.style.display='none';
-    rowEl.classList.remove('open');
+  if(rowEl) rowEl.classList.toggle('open',!isOpen);
+  if(!isOpen && body.querySelector('.loading')){
+    await loadStoryboard(epNum);
   }
 }
 
@@ -1111,6 +1126,26 @@ async function loadStoryboard(epNum){
     const scenes=data.scenes||data.storyboard||[];
     if(!scenes.length){scenesEl.innerHTML='<span style="font-size:10px;color:#555;">无分镜数据</span>';return;}
     let sbH='';
+    // v3.7.8 Sprint 2-D: In-page video player + download bar
+    sbH+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
+      <video controls width="100%" poster="" preload="none" style="max-width:400px;border-radius:4px;background:#000">
+        <source src="/api/download?name=ep${epNum}.mp4" type="video/mp4">
+        浏览器不支持视频播放
+      </video>
+      <div style="display:flex;gap:3px;flex-wrap:wrap">
+        <button class="mini-btn" onclick="window.open('/api/download?name=ep${epNum}.mp4')" title="下载MP4">🎬 MP4</button>
+        <button class="mini-btn" onclick="window.open('/api/download?name=ep${epNum}.txt')" title="下载TXT">📄 TXT</button>
+        <button class="mini-btn" onclick="window.open('/api/download?name=ep${epNum}.srt')" title="下载SRT">📝 SRT</button>
+        <button class="mini-btn" onclick="previewScriptInline(${epNum})">📖 页内预览</button>
+      </div>
+    </div>`;
+    sbH+=`<div id="inline-script-${epNum}" class="accordion-content" style="margin-bottom:8px">
+      <textarea id="script-editor-${epNum}" style="width:100%;min-height:200px;background:#111;border:1px solid #333;color:#e4e6eb;font-size:11px;padding:8px;border-radius:4px;font-family:monospace" placeholder="加载剧本中..."></textarea>
+      <div style="margin-top:4px;display:flex;gap:4px">
+        <button class="mini-btn" onclick="saveInlineScript(${epNum})">💾 保存</button>
+        <button class="mini-btn" style="color:#f59e0b" onclick="reReviewAfterEdit(${epNum})">🔄 保存并重新审核</button>
+      </div>
+    </div>`;
     scenes.forEach(sc=>{
       const seq=sc.seq||sc.sequence||sc.num||'';
       const act=sc.act||'';
@@ -1194,6 +1229,41 @@ function downloadScript(epNum,fmt){
   const ep=parseInt(epNum);
   const url='/api/download?name=ep'+String(ep).padStart(2,'0')+'.'+fmt;
   window.open(url,'_blank');
+}
+
+// v3.7.8 Sprint 2-F: Inline script preview
+async function previewScriptInline(epNum){
+  const sectionId='inline-script-'+epNum;
+  const body=document.getElementById(sectionId);
+  if(!body) return;
+  const isOpen=body.classList.contains('accordion-expanded');
+  toggleSection(sectionId);
+  if(isOpen) return;
+  const editor=document.getElementById('script-editor-'+epNum);
+  if(!editor) return;
+  try{
+    var r=await fetch('/api/download?name=ep'+String(epNum).padStart(2,'0')+'.txt');
+    var text=await r.text();
+    editor.value=text;
+  }catch(e){editor.value='加载失败: '+e.message;return;}
+}
+async function saveInlineScript(epNum){
+  var editor=document.getElementById('script-editor-'+epNum);
+  if(!editor||!editor.value.trim()) return;
+  try{
+    var r=await fetch('/api/script/'+parseInt(epNum),{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({content:editor.value})});
+    if(r.ok) toastMsg('✅ 剧本已保存',2000);
+  }catch(e){toastMsg('保存失败: '+e.message,2000);}
+}
+async function reReviewAfterEdit(epNum){
+  await saveInlineScript(epNum);
+  // Sprint 2-A: 重审确认
+  if(confirm('剧本已保存。是否立即重新审核？')){
+    var r=await fetch('/api/review/trigger/ep'+String(epNum).padStart(2,'0'),{method:'POST'});
+    var d=await r.json();
+    toastMsg('✅ 审核完成: '+d.overall_score+'/10',3000);
+  }
 }
 
 // ================================================================
@@ -3836,14 +3906,18 @@ document.addEventListener('keydown',e=>{
 // [v3.6.14-DIAG] Runtime ic2 check — REMOVE after fix verified
 window._ic2_diag = {'ok':'✓','ng':'✗','warn':'⚠','critical':'🛑','FIX':'v3.6.14','time':new Date().toLocaleTimeString()};
 // v3.6.8: P0-1 Collapsible section toggle
+// v3.7.8: 统一的 toggleSection — 替换了toggleSec/toggleInfoCard
+// accordion-content: 折叠内容容器，默认display:none，展开时display:block
+function toggleSection(sectionId){
+  const body = document.getElementById(sectionId);
+  if(!body){const b=document.querySelector('#'+sectionId);if(!b)return;body=b;}
+  body.classList.toggle('accordion-expanded');
+  const hdr = document.querySelector('[data-toggle="'+sectionId+'"]');
+  if(hdr) hdr.classList.toggle('expanded');
+}
+// toggleSec 重定向到 toggleSection
 function toggleSec(secId){
-  const sec = document.getElementById(secId);
-  if(!sec) return;
-  const hdr = sec.querySelector('.sec-hdr');
-  const body = sec.querySelector('.sec-body');
-  if(!hdr || !body) return;
-  hdr.classList.toggle('expanded');
-  body.classList.toggle('collapsed');
+  toggleSection(secId);
 }
 
 function renderDefault(detail){
@@ -3932,8 +4006,23 @@ async function renderDetail(){
     const sectionCount = (detail.sections||[]).length;
     const itemCount = (detail.sections||[]).reduce((sum,s)=>sum+(s.items||[]).length,0);
     if(banner) banner.textContent = '✅ ' + ms.ms_id + ': ' + sectionCount + ' sections, ' + itemCount + ' items';
-    // v3.7.7 P3: MS-2.3 不调用 renderDefault — 避免角色图残骸渲染到工作台底部
-    if(ms.ms_id!=='MS-2.3'){
+    // v3.7.8 Sprint 1-B: 里程碑摘要卡
+    if(detail.summary){
+      const s=detail.summary;
+      const scolor=s.status==='blocked'?'#ef4444':s.status==='warning'?'#f59e0b':'#22c55e';
+      const sicon=s.status==='blocked'?'&#10060;':s.status==='warning'?'&#9888;':'&#9989;';
+      h+='<div class="milestone-summary-card" style="display:flex;align-items:center;gap:12px;padding:12px 16px;margin-bottom:10px;border-radius:8px;border-left:4px solid '+scolor+';background:rgba('+(s.status==='blocked'?'239,68,68':s.status==='warning'?'245,158,11':'34,197,94')+',.08)">';
+      h+='<div style="font-size:22px;flex-shrink:0">'+sicon+'</div>';
+      h+='<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px;color:#e4e6eb">'+s.headline+'</div>';
+      h+='<div style="font-size:11px;color:#888;margin-top:2px">'+s.core_metric+'</div></div>';
+      h+='<div style="display:flex;gap:6px;flex-shrink:0">';
+      h+='<button class="mini-btn" onclick="toggleSection(\''+ms.ms_id+'-detail\')">查看详情</button>';
+      h+='<button class="mini-btn" style="color:#60a5fa" onclick="triggerReReview(\''+ms.ms_id+'\')">重新检查</button>';
+      h+='</div></div>';
+      // 将 renderDefault 输出包裹在 accordion-content 中
+      var rd=renderDefault(detail);
+      h+='<div class="accordion-content accordion-expanded" id="'+ms.ms_id+'-detail">'+rd+'</div>';
+    } else if(ms.ms_id!=='MS-2.3'){
       h+=renderDefault(detail);
     }
   }catch(e){h+=`<div class="sec"><h3>详情</h3><div style="color:#555;font-size:11px;">加载失败: ${e.message}</div></div>`;if(banner)banner.textContent='❌ 加载失败: '+e.message;}
@@ -3989,10 +4078,26 @@ async function renderDetail(){
 
 // ================================================================
 // v3.7: TK milestone rich panels
+// v3.7.8: renderMilestoneSummary — 里程碑摘要卡片
+function renderMilestoneSummary(detail, ms){
+  var summary=detail.summary||{};
+  var status=ms.status||'pending';
+  var cfg={'completed':{icon:'✅',cls:'ok'},'approved':{icon:'✅',cls:'ok'},'running':{icon:'⏳',cls:'warn'},'pending':{icon:'⏸️',cls:''},'waiting_approval':{icon:'⏳',cls:'warn'},'rejected':{icon:'❌',cls:'ng'}};
+  var sc=cfg[status]||{icon:'\u23f8\ufe0f',cls:''};
+  var hl=summary.headline||(ms.name||ms.ms_id)+' \u8be6\u60c5';
+  var m=summary.section_count ? summary.section_count+' \u6a21\u5757 \u00b7 '+summary.item_count+' \u6570\u636e\u9879' : '';
+  return '<div class="milestone-summary-card '+sc.cls+'">'+
+    '<div class="msc-left">'+sc.icon+'</div>'+
+    '<div class="msc-center"><div class="msc-headline">'+hl+'</div><div class="msc-metrics">'+m+'</div></div>'+
+    '<div class="msc-right"><button class="btn btn-p" onclick="toggleSection(\'ms-detail-'+ms.ms_id+'\')">\u67e5\u770b\u8be6\u60c5</button></div></div>';
+}
+
 async function renderTKDetail(detail, ms) {
   var el = document.getElementById('detail');
   if (!detail || !detail.sections) return;
-  var h = '';
+  el.innerHTML='';
+  el.insertAdjacentHTML('beforeend', renderMilestoneSummary(detail, ms));
+  var h='<div id="ms-detail-'+ms.ms_id+'" class="accordion-content">';
   detail.sections.forEach(function(s) {
     h += '<div class="sec"><h3>' + (s.title||'') + ' <span class="src-tag src-' + (s.source||'mock') + '\">[' + (s.source||'mock') + ']</span></h3>';
     (s.items||[]).forEach(function(it) {
@@ -4000,22 +4105,20 @@ async function renderTKDetail(detail, ms) {
       var val = it.value || '';
       var note = it.note || '';
       h += '<div class="ent-row"><span class="ent-lbl">' + label + '</span><div class="ent-val"><span>' + val + '</span>';
-      if (it.before) h += '<div class="before">← ' + it.before + '</div>';
-      if (it.after) h += '<div class="after">→ ' + it.after + '</div>';
+      if (it.before) h += '<div class="before">\u2190 ' + it.before + '</div>';
+      if (it.after) h += '<div class="after">\u2192 ' + it.after + '</div>';
       if (note) h += '<div class="note">' + note + '</div>';
       h += '</div></div>';
     });
     h += '</div>';
   });
-  
-  // MS-2.3: moved to renderTKImageWorkbench (product image workbench)
-  
+  h+='</div>';
   el.insertAdjacentHTML('beforeend', h);
 }
-
 function toggleCharBibleEdit(fid) {
-  const el = document.getElementById('cbedit-' + fid);
-  if (!el) return;
+  const sectionId='char-edit-section-'+fid;
+  const el=document.getElementById('cbedit-'+fid);
+  if(!el){toggleSection(sectionId);return;}
   el.classList.toggle('show');
 }
 
@@ -4291,10 +4394,7 @@ async function generateVoice(fid) {
 // DM-1: Voice config management
 // ================================================================
 function toggleVoiceConfigForm(fid) {
-  const form = document.getElementById('voicecfgform-' + fid);
-  if (!form) return;
-  const showing = form.style.display !== 'none';
-  form.style.display = showing ? 'none' : 'block';
+  toggleSection('voicecfgform-'+fid);
 }
 
 async function saveVoiceConfig(fid) {
@@ -4655,9 +4755,7 @@ function toggleCharEdit(charName){
     if(design.color&&colorEl)colorEl.value=design.color;
   }).catch(()=>{});
   el.classList.add('show');
-}
-
-// ================================================================
+}// ================================================================
 // v3.6: saveChar - save character edits
 // ================================================================
 async function saveChar(charName){
@@ -5193,10 +5291,14 @@ async function _tkBatchProcessAll(){
   showToast('✔ 批量处理全部完成','success');
 }
 
+// v3.7.8: toggleInfoCard 仍保留供 onclick 使用，内部调用 toggleSection
 function toggleInfoCard(headerEl){
   var body=headerEl.nextElementSibling;
   var icon=headerEl.querySelector('.toggle-icon');
   if(!body||!icon)return;
+  // 检查是否已绑定 data-toggle 属性
+  var toggleId=headerEl.dataset.toggle||body.id;
+  if(toggleId) return toggleSection(toggleId);
   if(body.style.display==='none'){
     body.style.display='block';
     icon.innerHTML='&#9650;';
@@ -5939,17 +6041,6 @@ renderDetail = async function() {
 // ================================================================
 // v3.6.9: P0-1 Collapsible Detail Sections (摘要折叠)
 // ================================================================
-let expandedSections = new Set();
-function toggleSection(secId) {
-  const body = document.getElementById('secbody-' + secId);
-  const hdr = document.getElementById('sechdr-' + secId);
-  if (!body) return;
-  const isExpanded = body.classList.contains('expanded');
-  body.classList.toggle('expanded');
-  hdr?.classList.toggle('expanded');
-  if (isExpanded) expandedSections.delete(secId);
-  else expandedSections.add(secId);
-}
 function toggleAllSections() {
   const allBodies = document.querySelectorAll('.sec-body.collapsible');
   const anyCollapsed = Array.from(allBodies).some(b => !b.classList.contains('expanded'));
@@ -5982,45 +6073,45 @@ function makeSectionCollapsible(secId, title, contentHTML, defaultExpanded = fal
 // ================================================================
 // v3.6.9: P0-2 DM-0 四维度审核明细展示
 // ================================================================
+// v3.7.8: renderFourDimReview — 可折叠四维审核结果卡
 function renderFourDimReview(reviewData) {
   const dimensions = reviewData?.dimensions || [];
   const overallScore = reviewData?.overall_score || 0;
   const decision = reviewData?.decision || 'pending';
+  const details = reviewData?.dimension_details || [];
   
   let scoreColor = overallScore >= 6 ? '#22c55e' : (overallScore >= 4 ? '#f59e0b' : '#ef4444');
   
-  let html = `<div style="text-align:center;margin-bottom:12px;padding:8px;background:#111;border-radius:6px">
-    <div style="font-size:9px;color:#555">综合评分</div>
-    <div style="font-size:28px;font-weight:700;color:${scoreColor}">${overallScore.toFixed(1)}/10</div>
-    <div style="font-size:10px;margin-top:2px">
-      <span class="bdg ${decision === 'approved' ? 'ok' : decision === 'modify' ? 'mk' : 'dc'}">
-        ${{approved: '✅ 通过', modify: '✏️ 需修改', rejected: '❌ 驳回', pending: '⏳ 待审核'}[decision] || '⏳ 待审核'}
-      </span>
-    </div>
-  </div>`;
+  let html = '<div style="text-align:center;margin-bottom:12px;padding:8px;background:#111;border-radius:6px">' +
+    '<div style="font-size:9px;color:#555">综合评分</div>' +
+    '<div style="font-size:28px;font-weight:700;color:'+scoreColor+'">'+overallScore.toFixed(1)+'/10</div>' +
+    '<div style="font-size:10px;margin-top:2px">' +
+    '<span class="bdg '+(decision === 'approved' ? 'ok' : decision === 'modify' ? 'mk' : 'dc')+'">' +
+    ({approved:'✅ 通过', modify:'✏️ 需修改', rejected:'❌ 驳回', pending:'⏳ 待审核'}[decision]||'⏳ 待审核')+'</span></div></div>';
   
   if (dimensions.length === 0) {
-    html += `<div style="font-size:10px;color:#555;text-align:center;padding:12px">
-      ⚠️ 四维度审核数据未返回<br>
-      <span style="font-size:9px">后端需返回 dimensions 数组 (编剧/分镜/逻辑/节奏)</span>
-    </div>`;
+    html += '<div style="font-size:10px;color:#555;text-align:center;padding:12px">⚠️ 四维度审核数据未返回<br><span style="font-size:9px">后端需返回 dimensions 数组</span></div>';
   } else {
-    html += `<div class="four-dim">`;
-    const icons = { '编剧': '📝', '分镜': '🎬', '逻辑': '🧠', '节奏': '⏱️' };
-    dimensions.forEach(dim => {
-      const name = dim.name || dim.dimension || '未知';
-      const score = dim.score || dim.value || 0;
-      const note = dim.note || dim.detail || '';
-      const border = score >= 6 ? 'good' : (score >= 4 ? 'warn' : 'bad');
-      const icon = icons[name] || '📋';
-      html += `<div class="dim-card ${border}">
-        <div class="dim-icon">${icon}</div>
-        <div class="dim-name">${name}</div>
-        <div class="dim-score" style="color:${score >= 6 ? '#22c55e' : score >= 4 ? '#f59e0b' : '#ef4444'}">${score}/10</div>
-        ${note ? `<div class="dim-note">${note}</div>` : ''}
-      </div>`;
+    const icons = {'编剧':'📝','场景完整':'🎬','剧情节奏':'⏱️','逻辑一致':'🧠','剧本':'📝','场景':'🎬','节奏':'⏱️','逻辑':'🧠'};
+    dimensions.forEach(function(dim, i){
+      var name = dim.name || dim.dimension || '未知';
+      var score = dim.score || dim.value || 0;
+      var border = score >= 6 ? 'good' : (score >= 4 ? 'warn' : 'bad');
+      var icon = icons[name]||'📋';
+      var dtId = 'dim-detail-'+i;
+      var detail = details[i]||{};
+      var issues = detail.issues||[];
+      var suggestions = detail.suggestions||[];
+      html += '<div class="dim-card '+border+'" onclick="toggleSection(\''+dtId+'\')">';
+      html += '<div class="dim-icon">'+icon+'</div><div class="dim-name">'+name+'</div>';
+      html += '<div class="dim-score" style="color:'+(score>=6?'#22c55e':score>=4?'#f59e0b':'#ef4444')+'">'+score+'/10</div>';
+      html += '<div style="font-size:9px;color:#555;cursor:pointer">▼</div></div>';
+      html += '<div id="'+dtId+'" class="accordion-content" style="padding:8px 12px;background:rgba(0,0,0,.15);border-radius:0 0 6px 6px;margin-top:-2px">';
+      if(issues.length){html+='<div style="font-size:10px;color:#f87171;margin-bottom:4px">⚠️ 问题:'+issues.map(function(x){return '<span style="display:block;padding:1px 0">• '+x+'</span>';}).join('')+'</div>';}
+      if(suggestions.length){html+='<div style="font-size:10px;color:#93c5fd">💡 建议:'+suggestions.map(function(x){return '<span style="display:block;padding:1px 0">• '+x+'</span>';}).join('')+'</div>';}
+      if(!issues.length&&!suggestions.length){html+='<div style="font-size:10px;color:#555">暂无明细</div>';}
+      html += '</div>';
     });
-    html += `</div>`;
   }
   return html;
 }
@@ -6028,27 +6119,86 @@ function renderFourDimReview(reviewData) {
 // ================================================================
 // v3.6.9: P0-3 修改→重处理→审核自动循环
 // ================================================================
+// v3.7.8: triggerReReview with log panel
+async function reReviewDM0(){
+  const btn=document.getElementById('dm0-rerun-btn');
+  if(btn){btn.disabled=true;btn.textContent='⏳ 审核中...';}
+  // 日志面板
+  var logPanel=document.getElementById('review-log-panel');
+  if(!logPanel){
+    logPanel=document.createElement('div');
+    logPanel.id='review-log-panel';
+    logPanel.className='review-log-panel';
+    var detailEl=document.getElementById('detail');
+    if(detailEl) detailEl.insertBefore(logPanel,document.getElementById('dm0-sec'));
+  }
+  logPanel.style.display='block';
+  logPanel.innerHTML='<div style="font-size:10px;color:#93c5fd;margin-bottom:6px">📋 审核日志</div>';
+  function addLog(msg){logPanel.insertAdjacentHTML('beforeend','<div class="review-log-line">'+msg+'</div>');logPanel.scrollTop=logPanel.scrollHeight;}
+  addLog('🚀 启动 DM-0 对抗审核管线...');
+  try{
+    var r=await fetch('/api/review/trigger/ep01',{method:'POST'});
+    var d=await r.json();
+    if(d.logs) d.logs.forEach(function(l){addLog(l.time+' '+l.msg);});
+    addLog('📊 综合评分: '+d.overall_score+'/10 · '+d.decision);
+    // 渲染四维审核卡片
+    var dimSec=document.getElementById('dm0-decision-sec');
+    if(dimSec&&d.dimensions){
+      var content=renderFourDimReview(d);
+      dimSec.querySelector('.four-dim').innerHTML=content;
+      // 更新评分
+      var scoreEl=dimSec.querySelector('div[style]');
+      if(scoreEl) scoreEl.textContent='综合评分: '+d.overall_score+'/10';
+    }
+    toastMsg('✅ 审核完成: '+d.overall_score+'/10',3000);
+  }catch(e){addLog('❌ 失败: '+e.message);toastMsg('审核失败',3000);}
+  if(btn){btn.disabled=false;btn.textContent='🔄 重新审核';}
+}
+
 async function triggerReReview(msId) {
   const btn = document.getElementById('rerun-btn-' + msId);
   if (btn) { btn.classList.add('busy'); btn.textContent = '⏳ 重审中...'; }
-  toastMsg('🔄 正在触发重新审核...', 3000);
+  // 创建/复用日志面板
+  let logPanel = document.getElementById('review-log-panel');
+  if (!logPanel) {
+    logPanel = document.createElement('div');
+    logPanel.id = 'review-log-panel';
+    logPanel.className = 'review-log-panel';
+    const detailEl = document.getElementById('detail');
+    if (detailEl) detailEl.insertAdjacentElement('beforeend', logPanel);
+  }
+  logPanel.style.display = 'block';
+  logPanel.innerHTML = '<div style="font-size:10px;color:#93c5fd;margin-bottom:6px">📋 审核日志</div>';
+  function addLog(msg) {
+    logPanel.insertAdjacentHTML('beforeend', '<div class="review-log-line">' + msg + '</div>');
+    logPanel.scrollTop = logPanel.scrollHeight;
+  }
+  addLog('⏳ 准备审核 ' + msId + '...');
   try {
-    // Step 1: Reset the milestone to "running"
     const r1 = await fetch('/api/decision', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ task_id: msId, action: 'modify', reason: '用户触发重新审核' })
     });
-    if (!r1.ok) { toastMsg('重置失败: HTTP ' + r1.status, 2500, 'error'); return; }
+    if (!r1.ok) { addLog('❌ 重置失败: HTTP ' + r1.status); toastMsg('重置失败', 2500, 'error'); return; }
+    addLog('✅ 状态已重置');
     
-    // Step 2: Trigger adversarial review
     const r2 = await fetch('/api/review/' + msId, { method: 'POST' });
-    if (!r2.ok) { toastMsg('审核触发失败: HTTP ' + r2.status, 2500, 'error'); return; }
-    const reviewResult = await r2.json();
+    if (!r2.ok) { addLog('❌ 审核触发失败: HTTP ' + r2.status); toastMsg('审核触发失败', 2500, 'error'); return; }
+    const result = await r2.json();
     
-    toastMsg('✅ 审核完成: 评分 ' + (reviewResult?.overall_score || 'N/A') + '/10', 4000);
-    setTimeout(refresh, 1500);
+    // 模拟逐条显示日志
+    var logs = result.logs || [];
+    for (var i = 0; i < logs.length; i++) {
+      addLog(logs[i]);
+      await new Promise(function(r){setTimeout(r, 400);});
+    }
+    
+    addLog('<strong style="color:#22c55e">✅ 审核完成: 评分 ' + (result.overall_score || 'N/A') + '/10</strong>');
+    toastMsg('✅ 审核完成: 评分 ' + (result.overall_score || 'N/A') + '/10', 4000, 'success');
+    setTimeout(refresh, 2000);
   } catch (e) {
+    addLog('❌ 错误: ' + e.message);
     toastMsg('❌ 重审失败: ' + e.message, 3000, 'error');
   }
   if (btn) { btn.classList.remove('busy'); btn.textContent = '🔄 重新审核'; }

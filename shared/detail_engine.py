@@ -853,8 +853,37 @@ def get_all_details(ms_id: str) -> dict:
         sections = [DetailSection(title="基本信息",source="real",
             items=[EntityItem("st","当前状态",ms_id,"real")],
             summary="暂无详情，请配置该里程碑的数据采集器")]
-    return {"ms_id":ms_id,"sections":[asdict(s) for s in sections],
-            "generated_at":datetime.now().isoformat()}
+    result = {"ms_id":ms_id,"sections":[asdict(s) for s in sections],
+               "generated_at":datetime.now().isoformat()}
+    # v3.7.8 Sprint 1-B: 构建摘要卡片数据
+    sec_summaries = [s.summary for s in sections if s.summary]
+    item_statuses = [it.status for s in sections for it in (s.items or []) if it.status]
+    ng_count =  sum(1 for st in item_statuses if st == 'ng')
+    warn_count = sum(1 for st in item_statuses if st == 'warn')
+    total_items = sum(len(s.items) for s in sections if s.items)
+    first_sec = sections[0] if sections else None
+    first_title = first_sec.title if first_sec else ms_id
+
+    if ng_count > 0:
+        overall_status = "blocked"
+    elif warn_count > 0:
+        overall_status = "warning"
+    else:
+        overall_status = "pass"
+
+    status_label = {"pass": "通过", "warning": "需注意", "blocked": "阻塞"}.get(overall_status, "")
+
+    result["summary"] = {
+        "headline": f"{status_label}" if status_label else sec_summaries[0] if sec_summaries else f"{ms_id} 已加载",
+        "core_metric": f"{total_items}项 | {len(sections)}组" if total_items else f"{len(sections)}个数据组",
+        "status": overall_status,
+        "section_count": len(sections),
+        "item_count": total_items,
+        "ok_count": total_items - ng_count - warn_count,
+        "ng_count": ng_count,
+        "warn_count": warn_count
+    }
+    return result
 
 
 def main():
