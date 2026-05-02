@@ -1065,7 +1065,13 @@ async function renderDM0(detail,ms){
     decH += `</div></div>`;
     decH += `<div style="font-size:10px;color:#666;">&#9432; CODING 免费额度 · 上次审核耗时 ~87s · 点击按钮后自动执行</div>`;
     decH += `</div>`;
+    // Sprint 3: 审核雷达图
+    decH += `<div class="accordion-section"><div class="accordion-header" onclick="toggleSection('dm0-radar-sec')"><span>&#128202; 审核维度雷达图</span></div>`;
+    decH += `<div class="accordion-content" id="dm0-radar-sec"><div style="height:280px;padding:8px 0"><canvas id="dm0Radar"></canvas></div></div></div>`;
+    decH += `</div>`;
     detailEl.insertAdjacentHTML('beforeend', decH);
+    // Render radar immediately
+    renderReviewRadar({dimensions: dimensions, overall_score: score});
   }
 
   let sec=`<div class="sec" id="dm0-sec"><h3>&#128214; 6集完整故事板</h3>`;
@@ -5913,6 +5919,7 @@ function renderChartPanel() {
         <span class="chart-tab active" onclick="switchChart('status',this)">状态分布</span>
         <span class="chart-tab" onclick="switchChart('source',this)">数据源</span>
         <span class="chart-tab" onclick="switchChart('pipeline',this)">管线对比</span>
+        <span class="chart-tab" onclick="switchChart('timeline',this)">里程碑时间轴</span>
       </div>
     </div>
     <canvas id="mainChart"></canvas>
@@ -5970,10 +5977,24 @@ function updateChart(mode) {
     // Ensure we have valid values to prevent undefined in tooltips
     data = data.map(value => (typeof value !== 'undefined' && value !== null) ? value : 0);
     colors = ['#3b82f6', '#8b5cf6'];
+  } else if (mode === 'timeline') {
+    labels = ms.map(function(m){return m.fid||m.id});
+    data = ms.map(function(m){
+      return (m.status==='completed'||m.status==='approved')?100:
+             (m.status==='running')?60:
+             (m.status==='waiting_approval')?40:
+             (m.status==='rejected')?20:10;
+    });
+    colors = ms.map(function(m){
+      if(m.status==='completed'||m.status==='approved') return '#22c55e';
+      if(m.status==='running') return '#3b82f6';
+      if(m.status==='waiting_approval') return '#f59e0b';
+      return '#64748b';
+    });
   }
 
   chartInstance = new Chart(ctx, {
-    type: mode === 'pipeline' ? 'bar' : 'doughnut',
+    type: (mode === 'pipeline' || mode === 'timeline') ? 'bar' : 'doughnut',
     data: {
       labels: labels,
       datasets: [{
@@ -6019,7 +6040,8 @@ function updateChart(mode) {
           }
         }
       },
-      ...(mode === 'pipeline' ? {
+      ...((mode === 'pipeline' || mode === 'timeline') ? {
+        indexAxis: mode === 'timeline' ? 'y' : 'x',
         scales: {
           x: { ticks: { color: '#888', font: { size: 10 } }, grid: { color: '#222' } },
           y: { beginAtZero: true, ticks: { stepSize: 1, color: '#888' }, grid: { color: '#222' } }
@@ -6629,6 +6651,126 @@ function toggleDirectorMode() {
     document.querySelectorAll('.stats').forEach(function(e) { e.style.display = ''; });
   }
   localStorage.setItem('director_mode', isActive ? '1' : '0');
+}
+
+// ================================================================
+// Sprint 3: 里程碑内嵌图表 (利润瀑布图 / 审核雷达图 / 管线时间轴)
+// ================================================================
+let radarChartInst = null;
+let timelineChartInst = null;
+let profitChartInst = null;
+
+function renderReviewRadar(data) {
+  const canvas = document.getElementById('dm0Radar');
+  if (!canvas) return;
+  if (radarChartInst) { radarChartInst.destroy(); radarChartInst = null; }
+  const dims = data.dimensions || [];
+  if (!dims.length) return;
+  var scores = [];
+  var labels = [];
+  var colors = ['#3b82f680','#8b5cf680','#f59e0b80','#22c55e80'];
+  dims.forEach(function(d,i) {
+    labels.push(d.name||('维度'+(i+1)));
+    scores.push(typeof d.score==='number'?d.score:(d.total_score||5));
+  });
+  radarChartInst = new Chart(canvas, {
+    type: 'radar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '审核评分',
+        data: scores,
+        backgroundColor: 'rgba(59,130,246,0.2)',
+        borderColor: '#3b82f6',
+        borderWidth: 2,
+        pointBackgroundColor: colors
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: { r: { suggestedMin: 0, suggestedMax: 10, ticks: { color: '#94a3b8', backdropColor: 'transparent' }, grid: { color: '#334155' }, pointLabels: { color: '#e2e8f0', font: { size: 10 } } } },
+      plugins: { legend: { labels: { color: '#e2e8f0' } } }
+    }
+  });
+}
+
+function renderPipelineTimeline() {
+  const canvas = document.getElementById('timelineChart');
+  if (!canvas) return;
+  if (timelineChartInst) { timelineChartInst.destroy(); timelineChartInst = null; }
+  var ms = lastData.milestones || [];
+  if (!ms.length) return;
+  var labels = ms.map(function(m){return m.fid||m.id});
+  var data = ms.map(function(m){
+    var score = (m.status === 'completed' || m.status === 'approved') ? 100 :
+                (m.status === 'running') ? 60 :
+                (m.status === 'waiting_approval') ? 40 :
+                (m.status === 'rejected') ? 20 : 10;
+    return score;
+  });
+  var bgColors = ms.map(function(m) {
+    if (m.status === 'completed'||m.status==='approved') return '#22c55e';
+    if (m.status === 'running') return '#3b82f6';
+    if (m.status === 'waiting_approval') return '#f59e0b';
+    return '#64748b';
+  });
+  timelineChartInst = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{ label: '进度%', data: data, backgroundColor: bgColors, borderRadius: 4, barThickness: 14 }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: { x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' }, max: 100 }, y: { ticks: { color: '#e2e8f0', font: { size: 9 } } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function renderProfitChart(msData) {
+  const canvas = document.getElementById('profitChart');
+  if (!canvas) return;
+  if (profitChartInst) { profitChartInst.destroy(); profitChartInst = null; }
+  var labels = ['订单数','销售额','毛利','净利'];
+  var data = [
+    msData.orders || msData.total_orders || 0,
+    msData.revenue || msData.total_revenue || 0,
+    msData.gross_margin || msData.profit || 0,
+    msData.net || msData.net_profit || 0
+  ];
+  profitChartInst = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '金额(¥)',
+        data: data,
+        backgroundColor: ['#3b82f6','#8b5cf6','#f59e0b','#22c55e'],
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: { y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' }, beginAtZero: true }, x: { ticks: { color: '#e2e8f0' } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+// v3.7.8: Auto-render charts when milestone detail opens
+function renderMilestoneCharts(fid) {
+  if (fid === 'DM-0') {
+    var d = lastData.decisions ? lastData.decisions['DM-0'] : null;
+    if (d) renderReviewRadar(d);
+  } else if (fid === 'MS-1' || fid === 'MS-2') {
+    var ms = findMilestone(fid);
+    if (ms && ms.meta) renderProfitChart(ms.meta);
+  }
 }
 
 </script>
