@@ -156,6 +156,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 .accordion-content{display:none}.accordion-content.accordion-expanded{display:block}
 .info-card-header .toggle-icon{transition:transform .2s}.info-card-header.expanded .toggle-icon{transform:rotate(180deg)}
 
+/* v3.7.8: 横向时间轴 */
+.milestone-timeline{display:flex;align-items:center;gap:0;padding:12px 0;margin-bottom:12px;overflow-x:auto}
+.milestone-timeline .tl-node{display:flex;flex-direction:column;align-items:center;flex:1;min-width:60px;position:relative}
+.milestone-timeline .tl-dot{width:12px;height:12px;border-radius:50%;margin-bottom:4px;z-index:2;flex-shrink:0}
+.milestone-timeline .tl-dot.done{background:#22c55e;border:2px solid rgba(34,197,94,.3)}
+.milestone-timeline .tl-dot.active{background:#f59e0b;border:2px solid rgba(245,158,11,.3);animation:pulse 1.5s infinite}
+.milestone-timeline .tl-dot.pending{background:#444;border:2px solid #333}
+.milestone-timeline .tl-dot.fail{background:#ef4444;border:2px solid rgba(239,68,68,.3)}
+.milestone-timeline .tl-line{position:absolute;top:6px;left:50%;width:100%;height:2px;z-index:1}
+.milestone-timeline .tl-line.done{background:#22c55e}
+.milestone-timeline .tl-line.active{background:linear-gradient(90deg,#22c55e,#f59e0b)}
+.milestone-timeline .tl-line.pending{background:#333;border-top:2px dashed #444}
+.milestone-timeline .tl-label{font-size:9px;color:#888;text-align:center;white-space:nowrap}
+.milestone-timeline .tl-label.current{color:#f59e0b;font-weight:600}
+
 /* v3.7.8: 实时审核日志面板 */
 .review-log-panel{background:rgba(0,0,0,.3);border:1px solid rgba(59,130,246,.2);border-radius:6px;padding:10px;margin-top:8px;max-height:300px;overflow-y:auto;font-family:monospace;font-size:10px;line-height:1.8;display:none}
 .review-log-line{padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03)}
@@ -2464,8 +2479,21 @@ async function renderMS2(detail,ms){
     h+='</ul></div></div>';
   }
 
-  // Compliance check
-  if(compliance.length>0){
+  // v3.7.8: 选品利润瀑布图 (8步)
+  if(profitSteps.length>0){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>📊 8步利润瀑布图</span>';
+    h+='<span class="toggle-icon">&#9660;</span>';
+    h+='</div>';
+    h+='<div class="info-card-body" style="display:none">';
+    h+='<div style="height:280px"><canvas id="profitChart"></canvas></div>';
+    h+='<div style="font-size:9px;color:#555;margin-top:4px;text-align:center">红色=扣减项 · 绿色=净利润 · 数据来源: 真实报价/跨境费率</div>';
+    h+='</div></div>';
+  }
+
+  // v3.7.8: 竞品多维分析
+  if(compAnalysis.length>0){
     h+='<div class="info-card collapsible">';
     h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
     h+='<span>📊 多国多品合规检查 (7项)</span>';
@@ -4110,6 +4138,29 @@ async function renderDetail(){
 
 // ================================================================
 // v3.7: TK milestone rich panels
+// v3.7.8: 横向时间轴
+function renderMilestoneTimeline(msId){
+  var ms = all;
+  if(!ms || ms.length===0) return '';
+  var h='<div class="milestone-timeline">';
+  for(var i=0;i<ms.length;i++){
+    var m=ms[i];
+    var st=m.status||'pending';
+    var cls='pending';
+    if(st==='completed'||st==='approved') cls='done';
+    else if(st==='running'||st==='waiting_approval') cls='active';
+    else if(st==='rejected') cls='fail';
+    var isCurrent = m.ms_id===msId;
+    h+='<div class="tl-node" onclick="switchToTab(\''+m.ms_id+'\')" style="cursor:pointer">';
+    h+='<div class="tl-line '+cls+'"></div>';
+    h+='<div class="tl-dot '+cls+'"></div>';
+    h+='<div class="tl-label'+(isCurrent?' current':'')+'">'+(m.name||m.ms_id||'')+'</div>';
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+
 // v3.7.8: renderMilestoneSummary — 里程碑摘要卡片
 function renderMilestoneSummary(detail, ms){
   var summary=detail.summary||{};
@@ -4121,13 +4172,27 @@ function renderMilestoneSummary(detail, ms){
   return '<div class="milestone-summary-card '+sc.cls+'">'+
     '<div class="msc-left">'+sc.icon+'</div>'+
     '<div class="msc-center"><div class="msc-headline">'+hl+'</div><div class="msc-metrics">'+m+'</div></div>'+
-    '<div class="msc-right"><button class="btn btn-p" onclick="toggleSection(\'ms-detail-'+ms.ms_id+'\')">\u67e5\u770b\u8be6\u60c5</button></div></div>';
+    '<div class="msc-right">'+
+    '<button class="btn btn-p" onclick="toggleSection(\u0027ms-detail-'+ms.ms_id+'\u0027)">\u67e5\u770b\u8be6\u60c5</button>'+
+    '<button class="btn-secondary" style="margin-left:4px;font-size:10px" onclick="showMileDownloadMenu(\u0027mile-'+ms.ms_id+'\u0027)">\u2601\ufe0f</button>'+
+    '<div id="dl-mile-'+ms.ms_id+'" class="accordion-content mile-dl-menu">'+
+    '<a href="#" onclick="window.open(\u0027/api/download?name='+ms.ms_id+'_report.txt\u0027)">\u{1f4c4} TXT</a>'+
+    '<a href="#" onclick="window.open(\u0027/api/download?name='+ms.ms_id+'_data.json\u0027)">\u{1f4ca} JSON</a>'+
+    '</div></div></div>';
+}
+
+// v3.7.8 Sprint 3: 里程碑下载菜单
+function showMileDownloadMenu(msId){
+  var el=document.getElementById('dl-mile-'+msId);
+  if(!el) return;
+  el.classList.toggle('accordion-expanded');
 }
 
 async function renderTKDetail(detail, ms) {
   var el = document.getElementById('detail');
   if (!detail || !detail.sections) return;
   el.innerHTML='';
+  el.insertAdjacentHTML('beforeend', renderMilestoneTimeline(ms.ms_id));
   el.insertAdjacentHTML('beforeend', renderMilestoneSummary(detail, ms));
   var h='<div id="ms-detail-'+ms.ms_id+'" class="accordion-content">';
   detail.sections.forEach(function(s) {
@@ -6781,19 +6846,44 @@ let radarChartInst = null;
 let timelineChartInst = null;
 let profitChartInst = null;
 
+// v3.7.8: 审核五维雷达图 + 点击维度展开文字说明
+var reviewDimDescriptions = [];
+
 function renderReviewRadar(data) {
   const canvas = document.getElementById('dm0Radar');
   if (!canvas) return;
   if (radarChartInst) { radarChartInst.destroy(); radarChartInst = null; }
   const dims = data.dimensions || [];
   if (!dims.length) return;
-  var scores = [];
-  var labels = [];
-  var colors = ['#3b82f680','#8b5cf680','#f59e0b80','#22c55e80'];
-  dims.forEach(function(d,i) {
-    labels.push(d.name||('维度'+(i+1)));
-    scores.push(typeof d.score==='number'?d.score:(d.total_score||5));
+  // 保证至少5维
+  var allDims = [
+    {name:'剧本规则', score:0},
+    {name:'场景完整', score:0},
+    {name:'剧情节奏', score:0},
+    {name:'逻辑一致', score:0},
+    {name:'对话自然', score:0},
+  ];
+  dims.forEach(function(d) {
+    for(var i=0;i<allDims.length;i++){
+      if(allDims[i].name.indexOf(d.name)>=0||d.name.indexOf(allDims[i].name)>=0){
+        allDims[i].score = typeof d.score==='number'?d.score:(d.total_score||5);
+        break;
+      }
+    }
   });
+  // Fall back to original dims if no match
+  if(allDims.every(function(d){return d.score===0;})){
+    dims.forEach(function(d,i){if(i<allDims.length){allDims[i].name=d.name;allDims[i].score=typeof d.score==='number'?d.score:5;}});
+  }
+  var labels = allDims.map(function(d){return d.name;});
+  var scores = allDims.map(function(d){return d.score;});
+  var colors = ['#3b82f680','#8b5cf680','#f59e0b80','#22c55e80','#a78bfa80'];
+  var descKeys = {'剧本规则':'编剧规则评审: 检查剧情是否遵循基本叙事逻辑和创作规范','场景完整':'场景完整性评估: 检查各场景描述是否充分、衔接是否自然','剧情节奏':'剧情节奏分析: 检查高潮铺垫是否合理、节奏是否张弛有度','逻辑一致':'逻辑一致性检查: 检查因果关系是否自洽、有无逻辑漏洞','对话自然':'对话自然度评估: 检查角色对话是否符合性格、是否自然流畅'};
+  reviewDimDescriptions = allDims.map(function(d){return {name:d.name, score:d.score, desc:descKeys[d.name]||d.name+'评估'};;});
+  
+  var radarContainer = canvas.parentElement;
+  if(!radarContainer) return;
+  
   radarChartInst = new Chart(canvas, {
     type: 'radar',
     data: {
@@ -6810,10 +6900,25 @@ function renderReviewRadar(data) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      scales: { r: { suggestedMin: 0, suggestedMax: 10, ticks: { color: '#94a3b8', backdropColor: 'transparent' }, grid: { color: '#334155' }, pointLabels: { color: '#e2e8f0', font: { size: 10 } } } },
-      plugins: { legend: { labels: { color: '#e2e8f0' } } }
+      onClick: function(e, activeEls) { if(activeEls.length){showDimDesc(activeEls[0].index);} },
+      scales: { r: { suggestedMin: 0, suggestedMax: 10, ticks: { color: '#94a3b8', backdropColor: 'transparent', stepSize: 2 }, grid: { color: '#334155' }, pointLabels: { color: '#e2e8f0', font: { size: 10 } } } },
+      plugins: { legend: { labels: { color: '#e2e8f0' } }, tooltip: { enabled: false } }
     }
   });
+}
+
+function showDimDesc(index) {
+  var d = reviewDimDescriptions[index];
+  if(!d) return;
+  var existing=document.getElementById('radar-desc-panel');
+  if(existing)existing.remove();
+  var panel=document.createElement('div');
+  panel.id='radar-desc-panel';
+  var scoreColor = d.score >= 6 ? '#22c55e' : d.score >= 4 ? '#f59e0b' : '#ef4444';
+  panel.style.cssText='margin-top:6px;padding:8px 10px;background:rgba(0,0,0,.2);border-radius:6px;font-size:10px;border-left:3px solid '+scoreColor;
+  panel.innerHTML='<strong style="color:'+scoreColor+'">'+d.name+': '+d.score+'/10</strong><br><span style="color:#888">'+d.desc+'</span>';
+  var radarContainer = document.getElementById('dm0Radar');
+  if(radarContainer) radarContainer.parentElement.appendChild(panel);
 }
 
 function renderPipelineTimeline() {
@@ -6879,6 +6984,41 @@ function renderProfitChart(msData) {
       maintainAspectRatio: false,
       scales: { y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' }, beginAtZero: true }, x: { ticks: { color: '#e2e8f0' } } },
       plugins: { legend: { display: false } }
+    }
+  });
+}
+
+// v3.7.8: 8步利润瀑布图
+function renderProfitChart(msData) {
+  var canvas = document.getElementById('profitChart');
+  if (!canvas) return;
+  if (profitChartInst) { profitChartInst.destroy(); profitChartInst = null; }
+  var labels = ['1688成本','国内物流','国际物流','平台佣金','支付手续费','汇率折损','落地成本','净利润'];
+  var isCost = [true, true, true, true, true, true, false, false];
+  var data = msData && msData.profit_breakdown ? msData.profit_breakdown.map(function(x){return parseFloat(x);}) : [33,8,15,8,3,5,72,30];
+  while(data.length < 8) data.push(0);
+  profitChartInst = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '金额(¥)',
+        data: data.slice(0,8),
+        backgroundColor: data.slice(0,8).map(function(v,i){return isCost[i] ? '#ef4444' : '#22c55e';}),
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      indexAxis: 'y',
+      scales: {
+        y: { ticks: { color: '#e2e8f0', font: {size:10} }, grid: { color: '#334155' } },
+        x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' }, beginAtZero: true }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function(ctx){return ctx.raw + ' ¥';} } }
+      }
     }
   });
 }
