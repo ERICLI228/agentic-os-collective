@@ -7064,8 +7064,19 @@ renderDetail = async function() {
   };
 })();
 
-refresh();
-setInterval(refresh, 30000);
+// v3.7.8: Guarantee init runs even if DOM/scripts load out of order
+(function initDashboard(){
+  console.log('[INIT] Dashboard starting, DOM readyState='+document.readyState);
+  try {
+    refresh();
+    setInterval(refresh, 30000);
+    console.log('[INIT] refresh() called, 30s polling started');
+  } catch(e) {
+    console.error('[INIT] FAILED:', e.message);
+    var el = document.getElementById('lastRefresh');
+    if (el) { el.textContent = 'INIT ERROR: ' + e.message; el.style.color = '#ef4444'; }
+  }
+})();
 
 function toggleAssetPanel(){
   console.log("assetToggle clicked");
