@@ -61,8 +61,7 @@
 | **v3.7.0-S3** | **2026-05-01** | **阿牛** | **冲刺三·剪辑合成台: S3-1视频片段排序合并界面(DM-6~DM-10详情页·上下排序按钮+合并生成按钮) · /api/merge端点(ffmpeg concat合成) · S3-2 Whisper字幕脚本(shared/scripts/whisper_subtitle.py 215行·支持真实whisper+mock fallback) · /api/subtitle端点(返回SRT字幕内容+文件路径)** |
 | **v3.7.0-S4** | **2026-05-01** | **阿牛** | **冲刺四·打磨与反馈: 🎬导演模式(顶部切换按钮·隐藏左侧栏/版本/技术标签·localStorage持久化) · S4-4自进化反馈闭环(feedback_collector.py·DM-0驳回时弹出问题类型+描述表单·/api/feedback保存到~/.agentic-os/quality_feedback/) · 批量定妆图生成(109角色×4角度=436张ComfyUI SDXL·476MB·aged face/wrinkles/weathered skin/Song dynasty服饰·多角度一致seed) · TK UX对齐(产品对比卡片·图片处理预览·5国本地化状态·里程碑搜索) · EP07-10 ComfyUI渲染融合(1903KB/2006KB/2000KB/2011KB·从225-267KB提升7-8x) · Route B全量重写(109角色prompt_en+video_prompts三方案·98版演员面容特征·全英文·banned words清洗)** |
  **openclaw: 109/109演员写入 visual_bible.json (宋江=李雪健/鲁智深=臧金生/林冲=周野芒/吴用=宁晓志/杨志=翟乃社) · prompt_en全量1998 CCTV后缀 · video_prompts三方案 · ComfyUI验证图5张(武松/鲁智深/林冲/李逵/扈三娘, 768×1024) · opencode: DM-1性能优化(默认Top10+搜索(fuse 300ms)+筛选芯片(天罡/地煞/主要)+懒加载) · GPT-SoVITS修复(POST JSON 200) · 仪表盘v3.6.29 · 时迁验证图失败待重跑** |
----
-
+| **v3.7.1-dashboard** | **2026-05-01** | **OpenCode** | **Dashboard JS 全量语法修复(6类~274处): 1) ReferenceError t=='tk'(2处·键盘handler未定义变量·JS中断) 2) SyntaxError 孤儿\n字面量(1处·render()内) 3) 孤儿async关键字(1处·decideDM0前) 4) decideDM0非async用await(1处·异步缺失) 5) renderTKDetail \'→'(263处·字符串分隔符语法错误) 6) asset panel onclick未转义引号(2处)·闭合"→'(3处product name)·JS从语法错误→node --check PASS·页面恢复渲染·5 commits(2fdb0bf→1aaa500)** |
 ## 📊 PHASE 1-4 完成记录 (v3.6.4 新增)
 
 ### PHASE 1: 安全止血与数据卫生 (commits 040e061, 8208b6f, 28a4bd2)
