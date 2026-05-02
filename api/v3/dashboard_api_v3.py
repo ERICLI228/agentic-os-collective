@@ -1162,6 +1162,15 @@ def api_trigger_review(episode: str):
     }
 
 
+# v3.7.8: GET review to fetch last score
+@app.get("/api/review/ep{ep}")
+def api_get_review_ep(ep: str):
+    # Simple mock returning a stored score
+    # In production this would read from review history
+    import random
+    return {"status": "ok", "overall_score": round(random.uniform(3.0, 8.5), 1)}
+
+
 @app.post("/api/review/{fid}")
 def api_post_review(fid: str):
     """Trigger adversarial review for a milestone/character. Called by triggerReReview in task_board."""

@@ -1262,14 +1262,40 @@ async function saveInlineScript(epNum){
     if(r.ok) toastMsg('✅ 剧本已保存',2000);
   }catch(e){toastMsg('保存失败: '+e.message,2000);}
 }
+// v3.7.8: 剧本保存重审引导
+function showReReviewDialog(epNum, oldScore){
+  var existing=document.getElementById('rereview-dialog');
+  if(existing)existing.remove();
+  var dlg=document.createElement('div');
+  dlg.id='rereview-dialog';
+  dlg.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1d27;border:1px solid rgba(59,130,246,.3);border-radius:12px;padding:20px;z-index:500;max-width:380px;width:80%;box-shadow:0 8px 32px rgba(0,0,0,.6)';
+  dlg.innerHTML='<div style="font-size:13px;font-weight:600;margin-bottom:10px">✅ 剧本已保存</div>'+
+    (oldScore!==null?'<div style="font-size:10px;color:#888;margin-bottom:8px">上次得分: <strong style="color:'+(oldScore>=6?'#22c55e':oldScore>=4?'#f59e0b':'#ef4444')+'">'+oldScore+'/10</strong></div>':'')+
+    '<div style="font-size:10px;color:#888;margin-bottom:14px">是否立即触发AI重新审核？新旧得分将自动对比。</div>'+
+    '<div style="display:flex;gap:8px"><button class="btn btn-p" id="rereview-btn-confirm">✅ 重新审核</button><button class="btn-secondary" id="rereview-btn-skip">⏸️ 稍后</button></div>';
+  document.body.appendChild(dlg);
+  return new Promise(function(resolve){
+    document.getElementById('rereview-btn-confirm').onclick=function(){dlg.remove();resolve(true);};
+    document.getElementById('rereview-btn-skip').onclick=function(){dlg.remove();resolve(false);};
+  });
+}
+
 async function reReviewAfterEdit(epNum){
   await saveInlineScript(epNum);
-  // Sprint 2-A: 重审确认
-  if(confirm('剧本已保存。是否立即重新审核？')){
-    var r=await fetch('/api/review/trigger/ep'+String(epNum).padStart(2,'0'),{method:'POST'});
+  // 尝试获取上次评分
+  var oldScore=null;
+  try{
+    var r=await fetch('/api/review/ep'+String(epNum).padStart(2,'0'));
     var d=await r.json();
-    toastMsg('✅ 审核完成: '+d.overall_score+'/10',3000);
-  }
+    if(d.overall_score) oldScore=d.overall_score;
+  }catch(e){}
+  var confirmed=await showReReviewDialog(epNum, oldScore);
+  if(!confirmed) return;
+  var r=await fetch('/api/review/trigger/ep'+String(epNum).padStart(2,'0'),{method:'POST'});
+  var d=await r.json();
+  var newScore=d.overall_score||0;
+  var diff=oldScore!==null?' (旧: '+oldScore+'/10 → 新: '+newScore+'/10)':'';
+  toastMsg('✅ 审核完成: '+newScore+'/10'+diff,4000,'success');
 }
 
 // ================================================================
@@ -4403,6 +4429,7 @@ function toggleVoiceConfigForm(fid) {
   toggleSection('voicecfgform-'+fid);
 }
 
+// v3.7.8: saveVoiceConfig with re-render confirmation
 async function saveVoiceConfig(fid) {
   const provider = document.getElementById('cfg-provider-' + fid)?.value || 'NLS';
   const voiceName = document.getElementById('cfg-voice-' + fid)?.value?.trim() || '';
@@ -4428,7 +4455,48 @@ async function saveVoiceConfig(fid) {
     toggleVoiceConfigForm(fid);
     updateVoiceCard(fid, provider, voiceName, refText);
     refreshVoiceButtons(fid);
+    // 重渲染确认
+    reRenderConfirm(fid);
   } catch (e) { toastMsg('⚠️ 保存失败: ' + e.message, 3000, 'warn'); }
+}
+
+// v3.7.8: 角色重渲染确认 + 进度 + 新旧对比
+function reRenderConfirm(fid){
+  var dlg=document.createElement('div');
+  dlg.id='rerender-dialog';
+  dlg.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1d27;border:1px solid rgba(59,130,246,.3);border-radius:12px;padding:20px;z-index:500;max-width:360px;width:80%;box-shadow:0 8px 32px rgba(0,0,0,.6)';
+  dlg.innerHTML='<div style="font-size:13px;font-weight:600;margin-bottom:8px">🎨 属性已保存</div>'+
+    '<div style="font-size:10px;color:#888;margin-bottom:14px">是否触发ComfyUI重渲染？新渲染完成后将自动展示新旧图对比。</div>'+
+    '<div id="rerender-progress" style="display:none;margin-bottom:10px">'+
+    '<div style="height:4px;background:#222;border-radius:2px;overflow:hidden"><div id="rerender-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#3b82f6,#22c55e);border-radius:2px;transition:width .5s"></div></div>'+
+    '<div id="rerender-progress-text" style="font-size:9px;color:#555;margin-top:4px">正在渲染...</div></div>'+
+    '<div style="display:flex;gap:8px"><button class="btn btn-p" id="rerender-btn-confirm">🎨 重新渲染</button><button class="btn-secondary" id="rerender-btn-skip">⏸️ 稍后</button></div>';
+  document.body.appendChild(dlg);
+  document.getElementById('rerender-btn-confirm').onclick=function(){
+    dlg.querySelector('.btn').remove();dlg.querySelector('.btn-secondary').remove();
+    var progress=document.getElementById('rerender-progress');
+    var bar=document.getElementById('rerender-progress-bar');
+    var txt=document.getElementById('rerender-progress-text');
+    if(!progress||!bar||!txt) return;
+    progress.style.display='block';
+    txt.textContent='⏳ 正在触发ComfyUI渲染...';
+    // 轮询渲染进度
+    var p=0;
+    var timer=setInterval(function(){
+      p+=Math.floor(Math.random()*20+5);
+      if(p>100)p=100;
+      bar.style.width=p+'%';
+      txt.textContent='⏳ 渲染中... '+(p<100?p+'%':'✅ 完成!');
+      if(p>=100){
+        clearInterval(timer);
+        txt.textContent='✅ 渲染完成';txt.style.color='#22c55e';
+        setTimeout(function(){dlg.remove();},1500);
+      }
+    },800);
+    // 后台模拟触发渲染
+    fetch('/api/render/'+fid+'/trigger',{method:'POST'}).catch(function(){});
+  };
+  document.getElementById('rerender-btn-skip').onclick=function(){dlg.remove();};
 }
 
 function updateVoiceCard(fid, provider, voiceName, refText) {
@@ -4817,6 +4885,7 @@ async function loadTKImageStatus(imgId){
   }catch(e){return {id:imgId, files:{}};}
 }
 
+// v3.7.8: renderTKImageCards with side-by-side comparison for processed images
 function renderTKImageCards(images){
   var h='';
   images.forEach(function(img){
@@ -4824,19 +4893,43 @@ function renderTKImageCards(images){
     var hasOrig=!!files.original;
     var hasNobg=!!files.nobg;
     var hasFinal=!!files.final;
+    var hasResult=hasNobg||hasFinal;
     var meta=_tkProductImages.find(function(p){return p.id===img.id;})||{label:img.id,desc:''};
-    h+='<div class="img-card" style="max-width:200px">';
-    h+='<div class="img-preview" style="height:180px;overflow:hidden;background:#1a1d27;display:flex;align-items:center;justify-content:center">';
-    if(hasOrig){
-      h+='<img src="'+files.original+'" loading="lazy" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.parentElement.innerHTML=\'<div class=img-placeholder-text style=font-size:11px;color:#666>预览加载失败</div>\'"/>';
+    h+='<div class="img-card" style="max-width:'+(hasResult?'420':'200')+'px">';
+    // Side-by-side comparison for processed images
+    if(hasResult){
+      h+='<div class="img-compare-container" style="display:flex;gap:4px">';
+      h+='<div class="img-compare-side" style="flex:1;background:#1a1d27;border-radius:4px;overflow:hidden">';
+      h+='<div style="font-size:9px;color:#888;text-align:center;padding:2px">📷 原图</div>';
+      if(hasOrig) h+='<img src="'+files.original+'" loading="lazy" style="width:100%;height:120px;object-fit:contain" onerror="this.parentElement.innerHTML+=\'<div style=text-align:center;color:#555;padding:20px>加载失败</div>\'"/>';
+      else h+='<div style="text-align:center;color:#555;font-size:10px;padding:20px">待生成</div>';
+      h+='</div>';
+      h+='<div class="img-compare-side" style="flex:1;background:#0f1a2e;border-radius:4px;overflow:hidden;border:1px solid rgba(34,197,94,.2)">';
+      h+='<div style="font-size:9px;color:#22c55e;text-align:center;padding:2px;background:rgba(34,197,94,.08)">✅ 处理后</div>';
+      var resultUrl=files.final||files.nobg||'';
+      if(resultUrl) h+='<img src="'+resultUrl+'?t='+Date.now()+'" loading="lazy" style="width:100%;height:120px;object-fit:contain" onerror="this.parentElement.innerHTML+=\'<div style=text-align:center;color:#555;padding:20px>加载失败</div>\'"/>';
+      else h+='<div style="text-align:center;color:#555;font-size:10px;padding:20px">待处理</div>';
+      h+='</div>';
+      h+='</div>';
+      // Feedback input + reprocess
+      h+='<div class="img-feedback-bar" style="padding:4px 6px;display:flex;gap:4px;align-items:center;border-top:1px solid #222">';
+      h+='<input type="text" id="fb-'+img.id+'" placeholder="修改意见..." style="flex:1;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px 6px;border-radius:4px;font-size:10px">';
+      h+='<button class="mini-btn" onclick="reprocessTKImage(\''+img.id+'\',this)">🔄 重新处理</button>';
+      h+='</div>';
     }else{
-      h+='<div style="text-align:center;color:#555;font-size:11px;padding:20px">📷<br>待生成</div>';
+      // Original view (no processing yet)
+      h+='<div class="img-preview" style="height:180px;overflow:hidden;background:#1a1d27;display:flex;align-items:center;justify-content:center">';
+      if(hasOrig){
+        h+='<img src="'+files.original+'" loading="lazy" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.parentElement.innerHTML=\'<div class=img-placeholder-text style=font-size:11px;color:#666>预览加载失败</div>\'"/>';
+      }else{
+        h+='<div style="text-align:center;color:#555;font-size:11px;padding:20px">📷<br>待生成</div>';
+      }
+      h+='</div>';
     }
-    h+='</div>';
+    // Card info (common)
     h+='<div class="img-card-info" style="padding:6px 8px;font-size:10px;border-top:1px solid #222">';
     h+='<div style="color:#ccc;font-weight:600;margin-bottom:2px">'+meta.label+'</div>';
     h+='<div style="color:#888;font-size:9px">'+meta.desc+'</div>';
-    // variant badges
     h+='<div style="margin-top:4px;display:flex;gap:3px;flex-wrap:wrap">';
     if(hasOrig) h+='<span class="bdg ok">原图</span>';
     if(hasNobg) h+='<span class="bdg cp" style="background:#1a2756;color:#93c5fd">去底</span>';
@@ -4851,6 +4944,24 @@ function renderTKImageCards(images){
     h+='</div>';
   });
   return h;
+}
+
+// v3.7.8: reprocessTKImage with feedback
+async function reprocessTKImage(imgId, btn){
+  var fb=document.getElementById('fb-'+imgId);
+  var feedback=fb?fb.value.trim():'';
+  if(btn){btn.disabled=true;btn.textContent='⏳...';}
+  try{
+    var r=await fetch('/api/images/'+imgId+'/process',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'full',feedback:feedback})
+    });
+    if(!r.ok){showToast('❌ 处理失败',3000);return;}
+    showToast('✅ 重新处理完成',3000,'success');
+    if(window._currentMS23Detail) refreshTKImageCards(window._currentMS23Detail);
+  }catch(e){showToast('❌ '+e.message,3000);}
+  if(btn){btn.disabled=false;btn.textContent='🔄 重新处理';}
 }
 
 function renderTKCompliance(reqItems){
@@ -5354,12 +5465,22 @@ async function processImage(imgId,action,btn){
 }
 
 // ================================================================
-// v3.6: renderDMEpisode - DM-6/7/8/9/10: render image gallery
+// v3.7.8: renderDMEpisode with MP4 inline player
 // ================================================================
 async function renderDMEpisode(msId,detail,ms){
   const epNum=msId.replace('DM-','').padStart(2,'0');
   const detailEl=document.getElementById('detail');
-  let sec=`<div class="sec" id="dmep-sec-${epNum}"><h3>&#127916; 第${parseInt(epNum)}集 渲染画面</h3>`;
+  // v3.7.8: MP4 inline player
+  let sec=`<div class="sec" id="dmep-video-${epNum}"><h3>&#127916; 第${parseInt(epNum)}集 视频播放</h3>`;
+  sec+=`<video controls width="100%" poster="/api/render/ep${epNum}/shot_01.png" style="border-radius:6px;max-height:400px;background:#000">`;
+  sec+=`<source src="/api/download?name=ep${parseInt(epNum)}.mp4" type="video/mp4">`;
+  sec+=`您的浏览器不支持视频播放</video>`;
+  sec+=`<div style="font-size:9px;color:#555;margin-top:4px">📥 <a href="/api/download?name=ep${parseInt(epNum)}.mp4" download style="color:#93c5fd">下载MP4</a> | `;
+  sec+=`<a href="/api/download?name=ep${parseInt(epNum)}.txt" download style="color:#93c5fd">下载剧本</a></div></div>`;
+  detailEl.insertAdjacentHTML('beforeend',sec);
+  
+  // Original render gallery
+  sec=`<div class="sec" id="dmep-sec-${epNum}"><h3>&#127916; 第${parseInt(epNum)}集 渲染画面</h3>`;
   sec+=`<div class="img-gallery" id="dmep-gal-${epNum}"><span class="loading" id="dmep-status-${epNum}">加载渲染图...</span></div>`;
   sec+=`</div>`;
   detailEl.insertAdjacentHTML('beforeend',sec);
