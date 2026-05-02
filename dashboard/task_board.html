@@ -1445,13 +1445,13 @@ function previewScriptHTML(epNum){
   var dlg=document.createElement("div");
   dlg.id="script-preview-dlg";
   dlg.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:1000;display:flex;flex-direction:column";
-  dlg.innerHTML=["<div style=\x22flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#1a1d27;border-bottom:1px solid rgba(59,130,246,.3)\x22>",
-    "\x3Cdiv style=\x22font-size:14px;font-weight:600;color:#e4e6eb\x22\x3E\xF0\x9F\x93\xA5 EP"+epId+" HTML\xE9\xA2\x84\xE8\xA7\x88\x3C/div\x3E",
-    "\x3Cdiv\x3E",
-    "\x3Cbutton class=\x22mini-btn\x22 id=\x22dl-dlbtn\x22\x3E\xE2\xAC\x87 \xE4\xB8\x8B\xE8\xBD\xBD\x3C/button\x3E",
-    "\x3Cspan onclick=\x22this.closest('#script-preview-dlg').remove()\x22 style=\x22cursor:pointer;font-size:20px;color:#555;margin-left:8px\x22\x3E\x26times;\x3C/span\x3E",
-    "\x3C/div\x3E\x3C/div\x3E",
-    "\x3Cdiv id=\x22script-preview-body\x22 style=\x22flex:1;overflow:hidden;background:#fff\x22\x3E\x3Cspan class=\x22loading\x22\x3E\xE6\xB8\xB2\xE6\x9F\x93HTML...\x3C/span\x3E\x3C/div\x3E"].join("");
+  dlg.innerHTML=["<div style=\"flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#1a1d27;border-bottom:1px solid rgba(59,130,246,.3)\">",
+    "<div style=\"font-size:14px;font-weight:600;color:#e4e6eb\">📥 EP"+epId+" HTML预览</div>",
+    "<div>",
+    "<button class=\"mini-btn\" id=\"dl-dlbtn\">⬇ 下载</button>",
+    "<span onclick=\"this.closest('#script-preview-dlg').remove()\" style=\"cursor:pointer;font-size:20px;color:#555;margin-left:8px\">&times;</span>",
+    "</div></div>",
+    "<div id=\"script-preview-body\" style=\"flex:1;overflow:hidden;background:#fff\"><span class=\"loading\">渲染HTML...</span></div>"].join("");
   document.body.appendChild(dlg);
   setTimeout(function(){var b=document.getElementById("dl-dlbtn");if(b)b.onclick=function(){window.open("/api/script/"+epId+"/export?format=html")};},0);
   fetch("/api/script/"+epId+"/export?format=html").then(function(r){return r.text();}).then(function(html){
@@ -1472,11 +1472,11 @@ function previewScriptHTML(epNum){
       var score=data.score||"";
       var tags=(data.tags||[]).join(", ")||"";
       var ch=data.main_character||"";
-      var h=["\x3Cdiv style=\x22font-family:PingFang SC,serif;padding:24px;color:#1a1a2e;max-width:800px;margin:0 auto\x22\x3E",
-        "\x3Ch1 style=\x22text-align:center;color:#e94560;border-bottom:2px solid #e94560;padding-bottom:10px;margin-bottom:8px\x22\x3E"+title+"\x3C/h1\x3E",
-        "\x3Cdiv style=\x22text-align:center;color:#888;font-size:12px;margin-bottom:20px\x22\x3E"+ch+(score?" \u00B7 "+score+"\u5206":"")+(tags?" \u00B7 "+tags:"")+"\x3C/div\x3E"];
+      var h=["<div style=\"font-family:PingFang SC,serif;padding:24px;color:#1a1a2e;max-width:800px;margin:0 auto\">",
+        "<h1 style=\"text-align:center;color:#e94560;border-bottom:2px solid #e94560;padding-bottom:10px;margin-bottom:8px\">"+title+"</h1>",
+        "<div style=\"text-align:center;color:#888;font-size:12px;margin-bottom:20px\">"+ch+(score?" \u00B7 "+score+"\u5206":"")+(tags?" \u00B7 "+tags:"")+"</div>"];
       if(sb.length){
-        h.push("\x3Ch3 style=\x22color:#e94560;border-left:3px solid #e94560;padding-left:10px\x22\x3E\xE5\x88\x86\xE9\x95\x9C\xE8\x84\x9A\xE6\x9C\xAC\x3C/h3\x3E");
+        h.push("<h3 style=\"color:#e94560;border-left:3px solid #e94560;padding-left:10px\">分镜脚本</h3>");
         sb.forEach(function(sc,i){
           var tone=sc.emotion||"";
           var toneColor="#16213e";var accentColor="#00d2ff";
@@ -1486,24 +1486,24 @@ function previewScriptHTML(epNum){
           else if(/恐|惊|怕|慌|逃|急/.test(tone)){toneColor="#2d1b1e";accentColor="#fbbf24";}
           else if(/静|冷|孤|沉|思|默/.test(tone)){toneColor="#1a1e2d";accentColor="#94a3b8";}
           else if(/疑|问|谜/.test(tone)){toneColor="#1e1e2d";accentColor="#a78bfa";}
-          h.push("\x3Cdiv style=\x22background:"+toneColor+"!important;border-radius:8px;padding:12px;margin-bottom:8px;border-left:4px solid "+accentColor+"\x22\x3E");
-          h.push("\x3Cdiv style=\x22display:flex;gap:8px;margin-bottom:4px\x22\x3E\x3Cspan style=\x22font-size:10px;color:"+accentColor+";font-weight:700\x22\x3E\xE9\x95\x9C"+(i+1)+"\x3C/span\x3E\x3Cspan style=\x22font-size:10px;color:#fbbf24\x22\x3E"+(sc.act||"")+"\x3C/span\x3E\x3Cspan style=\x22font-size:9px;color:#888\x22\x3E"+(sc.duration||"")+"\x3C/span\x3E\x3C/div\x3E");
-          h.push("\x3Cdiv style=\x22font-size:13px;color:#e0e0e0;line-height:1.7\x22\x3E"+(sc.description||"")+"\x3C/div\x3E");
-          if(tone)h.push("\x3Cdiv style=\x22font-size:10px;color:"+accentColor+";margin-top:4px\x22\x3E"+(sc.emotion||"")+"\x3C/div\x3E");
-          if(sc.dialogue)h.push("\x3Cdiv style=\x22font-size:12px;color:#aaa;font-style:italic;margin-top:4px;padding-left:8px\x22\x3E\xE2\x80\x9C"+sc.dialogue+"\xE2\x80\x9D\x3C/div\x3E");
-          h.push("\x3C/div\x3E");
+          h.push("<div style=\"background:"+toneColor+"!important;border-radius:8px;padding:12px;margin-bottom:8px;border-left:4px solid "+accentColor+"\">");
+          h.push("<div style=\"display:flex;gap:8px;margin-bottom:4px\"><span style=\"font-size:10px;color:"+accentColor+";font-weight:700\">镜"+(i+1)+"</span><span style=\"font-size:10px;color:#fbbf24\">"+(sc.act||"")+"</span><span style=\"font-size:9px;color:#888\">"+(sc.duration||"")+"</span></div>");
+          h.push("<div style=\"font-size:13px;color:#e0e0e0;line-height:1.7\">"+(sc.description||"")+"</div>");
+          if(tone)h.push("<div style=\"font-size:10px;color:"+accentColor+";margin-top:4px\">"+(sc.emotion||"")+"</div>");
+          if(sc.dialogue)h.push("<div style=\"font-size:12px;color:#aaa;font-style:italic;margin-top:4px;padding-left:8px\">\u201C"+sc.dialogue+"\u201D</div>");
+          h.push("</div>");
         });
       }
-      h.push("\x3Cdiv style=\x22text-align:center;padding:20px;color:#888;font-size:10px\x22\x3EAgentic OS v3.7 \u00B7 \xE6\xB0\xB4\xE6\xB5\x92\xE4\xBC\xA0AI\xE7\x9F\xAD\xE5\x89\xA7\x3C/div\x3E");
-      h.push("\x3C/div\x3E");
+      h.push("<div style=\"text-align:center;padding:20px;color:#888;font-size:10px\">Agentic OS v3.7 \u00B7 水浒传AI短剧</div>");
+      h.push("</div>");
       body.innerHTML=h.join("");
       var downloadBtn=document.getElementById("dl-dlbtn");
       if(downloadBtn)downloadBtn.onclick=function(){
-        var blob=new Blob(["\x3Chtml\x3E\x3Chead\x3E\x3Cmeta charset=utf-8\x3E\x3Ctitle\x3E"+title+"\x3C/title\x3E\x3C/head\x3E\x3Cbody\x3E"+h.join("")+"\x3C/body\x3E\x3C/html\x3E"],{type:"text/html"});
+        var blob=new Blob(["<html><head><meta charset=utf-8><title>"+title+"</title></head><body>"+h.join("")+"</body></html>"],{type:"text/html"});
         var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ep"+epId+"-preview.html";a.click();
       };
     }).catch(function(e2){
-      if(body)body.innerHTML=["\x3Cdiv style=\x22color:#ef4444;text-align:center;padding:40px\x22\x3E","\xE9\xA2\x84\xE8\xA7\x88\xE5\xA4\xB1\xE8\xB4\xA5","\x3C/div\x3E"].join("");
+      if(body)body.innerHTML=["<div style=\"color:#ef4444;text-align:center;padding:40px\">","预览失败","</div>"].join("");
     });
   });
 }
