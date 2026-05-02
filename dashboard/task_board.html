@@ -732,7 +732,7 @@ function onTKSearch(val) {
   if (q) hint.textContent = visible + '/' + total + ' 匹配';
   else hint.textContent = '';
 }
-\n// P1-12: apply search & filter
+// P1-12: apply search & filter
   if(searchQ) f=f.filter(m=>(m.ms_id+' '+(m.name||'')+' '+(m.task_id||'')).toLowerCase().includes(searchQ));
   if(filterSt!=='all') f=f.filter(m=>m.status===filterSt);
   document.getElementById('tkCount').textContent=all.filter(m=>m.pipeline=='tk').length;
@@ -834,7 +834,6 @@ async function decide(msId,action){
 // ================================================================
 // v3.6.5: decideDM0 — DM-0 审核决策按钮
 // ================================================================
-async 
 // S4-4: Submit structured feedback
 async function submitFeedback() {
   var typeEl = document.getElementById('fb-type');
@@ -849,7 +848,7 @@ async function submitFeedback() {
   } catch(e) {}
 }
 
-function decideDM0(action){
+async function decideDM0(action){
   const labels = {approved:'批准',rework:'回流重写',reject:'驳回'};
   // S4-4: Show feedback form on reject/rework
   if (action === 'reject' || action === 'rework') {
@@ -1069,96 +1068,96 @@ async function renderDetail(){
 // ================================================================
 // v3.7: TK milestone rich panels
 async function renderTKDetail(detail, ms) {
-  var el = document.getElementById(\'detail\');
+  var el = document.getElementById('detail');
   if (!detail || !detail.sections) return;
-  var h = \'\';
+  var h = '';
   detail.sections.forEach(function(s) {
-    h += \'<div class="sec"><h3>\' + (s.title||\'\') + \' <span class="src-tag src-\' + (s.source||\'mock\') + \'\">[\' + (s.source||\'mock\') + \']</span></h3>\';
+    h += '<div class="sec"><h3>' + (s.title||'') + ' <span class="src-tag src-' + (s.source||'mock') + '\">[' + (s.source||'mock') + ']</span></h3>';
     (s.items||[]).forEach(function(it) {
-      var label = it.label || it.key || \'\';
-      var val = it.value || \'\';
-      var note = it.note || \'\';
-      h += \'<div class="ent-row"><span class="ent-lbl">\' + label + \'</span><div class="ent-val"><span>\' + val + \'</span>\';
-      if (it.before) h += \'<div class="before">← \' + it.before + \'</div>\';
-      if (it.after) h += \'<div class="after">→ \' + it.after + \'</div>\';
-      if (note) h += \'<div class="note">\' + note + \'</div>\';
-      h += \'</div></div>\';
+      var label = it.label || it.key || '';
+      var val = it.value || '';
+      var note = it.note || '';
+      h += '<div class="ent-row"><span class="ent-lbl">' + label + '</span><div class="ent-val"><span>' + val + '</span>';
+      if (it.before) h += '<div class="before">← ' + it.before + '</div>';
+      if (it.after) h += '<div class="after">→ ' + it.after + '</div>';
+      if (note) h += '<div class="note">' + note + '</div>';
+      h += '</div></div>';
     });
-    h += \'</div>\';
+    h += '</div>';
   });
   
   // MS-2: Add product comparison cards
-  if (ms.ms_id === \'MS-2\') {
+  if (ms.ms_id === 'MS-2') {
     var prods = [
-      { name: \'防水手机壳 X Pro\', price: \'¥102\', cost: \'¥11.30\', margin: \'40%\', score: \'8.42\', rank: \'TOP1\', img: \'phone_case\' },
-      { name: \'无线充电器 15W\', price: \'¥158\', cost: \'¥53.50\', margin: \'41%\', score: \'8.30\', rank: \'TOP2\', img: \'charger\' },
-      { name: \'磁吸手机支架\', price: \'¥38\', cost: \'¥9.80\', margin: \'55%\', score: \'8.24\', rank: \'TOP3\', img: \'stand\' }
+      { name: '防水手机壳 X Pro', price: '¥102', cost: '¥11.30', margin: '40%', score: '8.42', rank: 'TOP1', img: 'phone_case' },
+      { name: '无线充电器 15W', price: '¥158', cost: '¥53.50', margin: '41%', score: '8.30', rank: 'TOP2', img: 'charger' },
+      { name: '磁吸手机支架', price: '¥38', cost: '¥9.80', margin: '55%', score: '8.24', rank: 'TOP3', img: 'stand' }
     ];
-    h += \'<div class="sec"><h3>📦 选品对比</h3><div style="display:flex;gap:10px;flex-wrap:wrap">\';
+    h += '<div class="sec"><h3>📦 选品对比</h3><div style="display:flex;gap:10px;flex-wrap:wrap">';
     prods.forEach(function(p) {
       var barW = parseInt(p.margin) + 20;
-      h += \'<div style="flex:1;min-width:180px;background:rgba(255,255,255,.03);border-radius:8px;padding:12px;border:1px solid rgba(74,158,255,.1)">\';
-      h += \'<div style="font-size:10px;color:#4a9eff;font-weight:700;margin-bottom:4px">\' + p.rank + \'</div>\';
-      h += \'<div style="font-size:12px;font-weight:700;margin-bottom:6px">\' + p.name + \'</div>\';
-      h += \'<div style="display:flex;justify-content:space-between;font-size:10px;color:#888;margin:2px 0">\';
-      h += \'<span>售价</span><span style="color:#4ade80;font-weight:600">\' + p.price + \'</span></div>\';
-      h += \'<div style="display:flex;justify-content:space-between;font-size:10px;color:#888;margin:2px 0">\';
-      h += \'<span>成本</span><span style="color:#f59e0b">\' + p.cost + \'</span></div>\';
-      h += \'<div style="margin-top:8px;height:18px;background:#222;border-radius:9px;overflow:hidden;position:relative">\';
-      h += \'<div style="width:\' + barW + \'%;height:100%;background:linear-gradient(90deg,#22c55e,#4ade80);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#000;font-weight:600">\' + p.margin + \'</div></div>\';
-      h += \'<div style="margin-top:4px;font-size:9px;color:#666;text-align:center">毛利率</div>\';
-      h += \'<div style="margin-top:6px;display:flex;gap:2px">\';
+      h += '<div style="flex:1;min-width:180px;background:rgba(255,255,255,.03);border-radius:8px;padding:12px;border:1px solid rgba(74,158,255,.1)">';
+      h += '<div style="font-size:10px;color:#4a9eff;font-weight:700;margin-bottom:4px">' + p.rank + '</div>';
+      h += '<div style="font-size:12px;font-weight:700;margin-bottom:6px">' + p.name + '</div>';
+      h += '<div style="display:flex;justify-content:space-between;font-size:10px;color:#888;margin:2px 0">';
+      h += '<span>售价</span><span style="color:#4ade80;font-weight:600">' + p.price + '</span></div>';
+      h += '<div style="display:flex;justify-content:space-between;font-size:10px;color:#888;margin:2px 0">';
+      h += '<span>成本</span><span style="color:#f59e0b">' + p.cost + '</span></div>';
+      h += '<div style="margin-top:8px;height:18px;background:#222;border-radius:9px;overflow:hidden;position:relative">';
+      h += '<div style="width:' + barW + '%;height:100%;background:linear-gradient(90deg,#22c55e,#4ade80);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#000;font-weight:600">' + p.margin + '</div></div>';
+      h += '<div style="margin-top:4px;font-size:9px;color:#666;text-align:center">毛利率</div>';
+      h += '<div style="margin-top:6px;display:flex;gap:2px">';
       for (var i=0;i<5;i++) {
         var filled = i < Math.round(parseFloat(p.score)-3);
-        h += \'<span style="font-size:12px">\' + (filled ? \'⭐\' : \'☆\') + \'</span>\';
+        h += '<span style="font-size:12px">' + (filled ? '⭐' : '☆') + '</span>';
       }
-      h += \' <span style="font-size:9px;color:#888">\' + p.score + \'/10</span>\';
-      h += \'</div></div>\';
+      h += ' <span style="font-size:9px;color:#888">' + p.score + '/10</span>';
+      h += '</div></div>';
     });
-    h += \'</div></div>\';
+    h += '</div></div>';
   }
   
   // MS-2.3: image gallery and processing controls
-  if (ms.ms_id === \'MS-2.3\') {
-    h += \'<div class="sec"><h3>📷 图片处理</h3><div style="display:flex;gap:10px;flex-wrap:wrap">\';
+  if (ms.ms_id === 'MS-2.3') {
+    h += '<div class="sec"><h3>📷 图片处理</h3><div style="display:flex;gap:10px;flex-wrap:wrap">';
     var demoImages = [
-      { name: \'主图 (白底)\", file: \'phone_case_main\', status: \'待处理\' },
-      { name: \'佩戴图\", file: \'phone_case_worn\', status: \'待处理\' },
-      { name: \'细节特写\", file: \'phone_case_detail\', status: \'待处理\' }
+      { name: '主图 (白底)', file: 'phone_case_main', status: '待处理' },
+      { name: '佩戴图', file: 'phone_case_worn', status: '待处理' },
+      { name: '细节特写', file: 'phone_case_detail', status: '待处理' }
     ];
     demoImages.forEach(function(img) {
-      h += \'<div style="width:150px;background:rgba(255,255,255,.03);border-radius:6px;padding:8px;text-align:center;border:1px solid #222">\';
-      h += \'<div style="width:100%;height:120px;background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:6px">📱</div>\';
-      h += \'<div style="font-size:10px;color:#c4d4e8;font-weight:600">\' + img.name + \'</div>\';
-      h += \'<div style="font-size:9px;color:#f59e0b;margin:2px 0">\' + img.status + \'</div>\';
-      h += \'<button class="mini-btn" style="margin-top:4px">去背景</button>\';
-      h += \'</div>\';
+      h += '<div style="width:150px;background:rgba(255,255,255,.03);border-radius:6px;padding:8px;text-align:center;border:1px solid #222">';
+      h += '<div style="width:100%;height:120px;background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:6px">📱</div>';
+      h += '<div style="font-size:10px;color:#c4d4e8;font-weight:600">' + img.name + '</div>';
+      h += '<div style="font-size:9px;color:#f59e0b;margin:2px 0">' + img.status + '</div>';
+      h += '<button class="mini-btn" style="margin-top:4px">去背景</button>';
+      h += '</div>';
     });
-    h += \'</div></div>\';
+    h += '</div></div>';
   }
   
   // MS-2.1: localization reviews
-  if (ms.ms_id === \'MS-2.1\') {
-    h += \'<div class="sec"><h3>🌏 5国本地化状态</h3><div style="display:flex;gap:8px;flex-wrap:wrap">\';
+  if (ms.ms_id === 'MS-2.1') {
+    h += '<div class="sec"><h3>🌏 5国本地化状态</h3><div style="display:flex;gap:8px;flex-wrap:wrap">';
     var countries = [
-      { code: \'PH\', name: \'菲律宾\', status: \'待翻译\' },
-      { code: \'TH\', name: \'泰国\', status: \'已完成\' },
-      { code: \'VN\', name: \'越南\', status: \'待翻译\' },
-      { code: \'MY\', name: \'马来西亚\', status: \'已完成\' },
-      { code: \'SG\', name: \'新加坡\', status: \'进行中\' }
+      { code: 'PH', name: '菲律宾', status: '待翻译' },
+      { code: 'TH', name: '泰国', status: '已完成' },
+      { code: 'VN', name: '越南', status: '待翻译' },
+      { code: 'MY', name: '马来西亚', status: '已完成' },
+      { code: 'SG', name: '新加坡', status: '进行中' }
     ];
     countries.forEach(function(c) {
-      var cStatus = c.status === \'已完成\' ? \'#22c55e\' : c.status === \'进行中\' ? \'#f59e0b\' : \'#555\';
-      h += \'<div style="flex:1;min-width:100px;background:rgba(255,255,255,.03);border-radius:6px;padding:10px;text-align:center;border:1px solid #222">\';
-      h += \'<div style="font-size:20px;margin-bottom:4px">\' + (c.code === \'PH\' ? \'🇵🇭\' : c.code === \'TH\' ? \'🇹🇭\' : c.code === \'VN\' ? \'🇻🇳\' : c.code === \'MY\' ? \'🇲🇾\' : \'🇸🇬\') + \'</div>\';
-      h += \'<div style="font-size:11px;color:#c4d4e8;font-weight:600">\' + c.name + \'</div>\';
-      h += \'<div style="font-size:9px;margin-top:2px;color:\' + cStatus + \'">\' + c.status + \'</div>\';
-      h += \'</div>\';
+      var cStatus = c.status === '已完成' ? '#22c55e' : c.status === '进行中' ? '#f59e0b' : '#555';
+      h += '<div style="flex:1;min-width:100px;background:rgba(255,255,255,.03);border-radius:6px;padding:10px;text-align:center;border:1px solid #222">';
+      h += '<div style="font-size:20px;margin-bottom:4px">' + (c.code === 'PH' ? '🇵🇭' : c.code === 'TH' ? '🇹🇭' : c.code === 'VN' ? '🇻🇳' : c.code === 'MY' ? '🇲🇾' : '🇸🇬') + '</div>';
+      h += '<div style="font-size:11px;color:#c4d4e8;font-weight:600">' + c.name + '</div>';
+      h += '<div style="font-size:9px;margin-top:2px;color:' + cStatus + '">' + c.status + '</div>';
+      h += '</div>';
     });
-    h += \'</div></div>\';
+    h += '</div></div>';
   }
   
-  el.insertAdjacentHTML(\'beforeend\', h);
+  el.insertAdjacentHTML('beforeend', h);
 }function toggleCharBibleEdit(fid) {
   const el = document.getElementById('cbedit-' + fid);
   if (!el) return;
@@ -2958,8 +2957,8 @@ async function loadAssetPanel(type){
   items.forEach(it=>{
     if(type&&type!=='all'&&it.type!==type)return;
     count++;
-    if(it.type==='render')h+='<div class="asset-item"><img class="thumb" src="'+it.url+'" loading="lazy" onerror="this.style.display='none'"/><div class="info"><div class="name">'+it.character+' · '+it.name+'</div><div class="meta">'+(it.size/1024).toFixed(0)+'KB</div></div><button class="dl-btn" onclick="window.open(''+it.url+'')">📥</button></div>';
-    else if(it.type==='script')h+='<div class="asset-item"><div class="info"><div class="name">📄 '+it.name+'</div><div class="meta">剧本</div></div><button class="dl-btn" onclick="window.open('/api/script/'+it.episode+'')">📥</button></div>';
+    if(it.type==='render')h+='<div class="asset-item"><img class="thumb" src="'+it.url+'" loading="lazy" onerror="this.style.display=\'none\'"/><div class="info"><div class="name">'+it.character+' · '+it.name+'</div><div class="meta">'+(it.size/1024).toFixed(0)+'KB</div></div><button class="dl-btn" onclick="window.open(\''+it.url+'\')">📥</button></div>';
+    else if(it.type==='script')h+='<div class="asset-item"><div class="info"><div class="name">📄 '+it.name+'</div><div class="meta">剧本</div></div><button class="dl-btn" onclick="window.open(&quot;/api/script/&quot;+it.episode+&quot;)">📥</button></div>';
     else h+='<div class="asset-item"><div class="info"><div class="name">🎬 '+it.name+'</div><div class="meta">'+it.shots+'个分镜</div></div></div>';
   });
   body.innerHTML=count?'':'<div style="color:#555;text-align:center;padding:20px;font-size:11px">没有'+type+'类资产</div>'+h;
