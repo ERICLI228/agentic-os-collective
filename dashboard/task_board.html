@@ -3778,7 +3778,10 @@ async function renderDetail(){
     const sectionCount = (detail.sections||[]).length;
     const itemCount = (detail.sections||[]).reduce((sum,s)=>sum+(s.items||[]).length,0);
     if(banner) banner.textContent = '✅ ' + ms.ms_id + ': ' + sectionCount + ' sections, ' + itemCount + ' items';
-    h+=renderDefault(detail);
+    // v3.7.7 P3: MS-2.3 不调用 renderDefault — 避免角色图残骸渲染到工作台底部
+    if(ms.ms_id!=='MS-2.3'){
+      h+=renderDefault(detail);
+    }
   }catch(e){h+=`<div class="sec"><h3>详情</h3><div style="color:#555;font-size:11px;">加载失败: ${e.message}</div></div>`;if(banner)banner.textContent='❌ 加载失败: '+e.message;}
 
   // Decision actions
@@ -4546,44 +4549,72 @@ async function renderTKImageWorkbench(detail,ms){
   h+='</div>';
   detailEl.insertAdjacentHTML('beforeend',h);
 
-  try{
-    const r=await fetch('/api/images');
-    const data=await r.json();
-    const raw=Array.isArray(data)?data:(data.images||data.products||[]);
-    if(!raw.length){
-      document.getElementById('ms23-workbench').innerHTML='<div style="text-align:center;padding:20px;color:#555;font-size:12px">暂无商品图片数据</div>';
-      return;
-    }
-    // v3.7.6 P1: Filter only product images — exclude portrait/profile/API-path noise
-    const productKeywords=['phone_case_main','phone_case_worn','phone_case_detail','phone_case_side','phone_case_packaging','product_main','product_detail','product_worn'];
-    const excludeKeywords=['portrait','profile','app_card','api_path','character','avatar','role','scene','background_test','thumbnail_list'];
-    const images=raw.filter(function(item){
-      const id=(item.id||item.name||item.sku||item.path||'').toLowerCase();
-      const isProduct=productKeywords.some(function(k){return id.indexOf(k)>=0;});
-      const isExclude=excludeKeywords.some(function(k){return id.indexOf(k)>=0;});
-      return isProduct&&!isExclude;
-    });
-    // Fallback: if zero matches after filter, keep items that have an 'original' or 'orig' path
-    // (they're likely product images with unconventional naming)
-    if(!images.length){
-      const fallback=raw.filter(function(item){
-        const id=(item.id||item.name||item.sku||item.path||'').toLowerCase();
-        const hasOrig=!!(item.original||item.orig);
-        const isExclude=excludeKeywords.some(function(k){return id.indexOf(k)>=0;});
-        return hasOrig&&!isExclude;
+  // v3.7.7: 【强制数据适配】从 detail.sections[].items[] 提取真正的产品图
+  // 不再依赖 /api/images（该接口返回 461 条混杂数据导致过滤失败）
+  var productImages=[];
+  var sections=(detail&&detail.sections)?detail.sections:[];
+  if(sections.length){
+    sections.forEach(function(section){
+      if(!section||!Array.isArray(section.items)) return;
+      section.items.forEach(function(item){
+        if(!item||typeof item!=='object') return;
+        var id=String(item.id||item.key||item.label||item.name||'');
+        var idLower=id.toLowerCase();
+        // 只保留包含 phone_case / product_ 关键词的 item（商品图）
+        var isProductImage=(idLower.indexOf('phone_case')>=0||idLower.indexOf('product_')>=0||idLower.indexOf('charger_')>=0);
+        // 排除角色图、API路径等干扰项
+        var isNoise=(idLower.indexOf('portrait')>=0||idLower.indexOf('profile')>=0||idLower.indexOf('api')>=0||idLower.indexOf('character')>=0||idLower.indexOf('avatar')>=0||idLower.indexOf('role')>=0||idLower.indexOf('scene')>=0||idLower.indexOf('render')>=0);
+        if(isProductImage&&!isNoise){
+          productImages.push({
+            id:id,
+            name:item.label||item.title||id,
+            original:'/api/images/file/'+encodeURIComponent(id)+'.jpg',
+            nobg:item.nobg||item.no_bg||'',
+            final:item.final||item.final_path||'',
+            status:item.processed?'done':(item.processing?'processing':'pending')
+          });
+        }
       });
-      images.push.apply(images,fallback);
-    }
-    if(!images.length){
-      document.getElementById('ms23-workbench').innerHTML='<div style="text-align:center;padding:20px;color:#888;font-size:12px">⚠️ API 返回 '+raw.length+' 条数据，但无匹配的商品图（已排除角色图/API路径等干扰项）</div>';
-      return;
-    }
-    _tkImageData=images;
-    _tkImageFilter='all';
-    _renderTKCards();
-  }catch(e){
-    document.getElementById('ms23-workbench').innerHTML=`<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px">加载失败: ${e.message}</div>`;
+    });
   }
+
+  // 兜底：如果 detail 中没有产品图，尝试从 /api/images 获取
+  if(!productImages.length){
+    try{
+      var r=await fetch('/api/images');
+      var apiData=await r.json();
+      var raw=Array.isArray(apiData)?apiData:(apiData.images||apiData.products||[]);
+      if(raw.length){
+        raw.forEach(function(item){
+          if(!item||typeof item!=='object') return;
+          var id=String(item.id||item.name||item.sku||item.path||'');
+          var idLower=id.toLowerCase();
+          var isProductImage=(idLower.indexOf('phone_case')>=0||idLower.indexOf('product_')>=0||idLower.indexOf('charger_')>=0);
+          var isNoise=(idLower.indexOf('portrait')>=0||idLower.indexOf('profile')>=0||idLower.indexOf('api')>=0||idLower.indexOf('character')>=0||idLower.indexOf('avatar')>=0||idLower.indexOf('role')>=0||idLower.indexOf('scene')>=0||idLower.indexOf('render')>=0);
+          if(isProductImage&&!isNoise){
+            productImages.push({
+              id:id,
+              name:item.label||item.title||id,
+              original:item.original||item.orig||'/api/images/file/'+encodeURIComponent(id)+'.jpg',
+              nobg:item.nobg||item.no_bg||'',
+              final:item.final||item.final_path||'',
+              status:item.status||'pending'
+            });
+          }
+        });
+      }
+    }catch(e){/* fetch 失败，继续用空数组 */}
+  }
+
+  var wb=document.getElementById('ms23-workbench');
+  if(!productImages.length){
+    wb.innerHTML='<div style="text-align:center;padding:20px;color:#888;font-size:12px">⚠️ 未找到商品图数据（检查后端 detail.sections 是否包含 phone_case/product_ 等商品图 item）</div>';
+    return;
+  }
+
+  _tkImageData=productImages;
+  _tkImageFilter='all';
+  _renderTKCards();
 }
 
 // TK Image Workbench state
