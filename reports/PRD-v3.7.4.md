@@ -6,27 +6,31 @@
 > **产品名称**: Agentic OS v3.7 用户体验升级版
 > **产品愿景**: 一个指令启动 → 全程自动执行 → **关键节点等你决策** → 输出可发布成果
 > **目标用户**: TK 跨境电商运营人员、AI短剧创作者、技术开发团队
-> **文档状态**: ✅ v3.7.4 — MS-2.3工具箱重构 + MS-5日报预览卡片 + 面板全量测试
+> **文档状态**: ✅ v3.7.5 — 诚实标注清零(pipeline_runs/shop_health/Vite/git token) · worktree全量同步
 > **前置版本**: v3.6 细节展开系统 (2026-04-30)
 
 ---
 
-## ✅ 当前可用（2026-05-01 23:22 实锤）
+## ✅ 当前可用（2026-05-02 09:00 实锤）
 
 | 能力 | 状态 | 验证 |
 |------|------|------|
-| Flask Dashboard :5001 | ✅ 运行中 | task_board.html 6498行/332KB · 15功能模块+2工具面板 · JS括号稳定 · v3.7.4实时更新 |
-| API 端点 | ✅ 38+ | Flask :5001 (30+) + FastAPI :5004 (8+) · 80/80 QA PASS |
+| Flask Dashboard :5001 | ✅ 运行中 | task_board.html 6,243行 · 15功能模块+2工具面板 · JS语法零缺陷 |
+| API 端点 | ✅ 42+ | Flask :5001 (34+) + FastAPI :5004 (8+) · 80/80 QA PASS |
 | TK 运营（13里程碑）| ✅ 全端点200 | 选品对比/图片处理/5国合规/采集门禁 |
 | ├ MS-0 采集门禁 | 🆕 体检报告 | 运营健康仪表盘 + 门禁指标 + 路由检测 |
-| ├ MS-2.3 商品图处理 | 🆕 处理工作台 | 筛选栏 + 去背景/一键处理 + 批量串行 |
-| AI 短剧 | ✅ 10集管线 | EP01-EP10 final.mp4 (1.8-2.1MB) · ComfyUI SDXL · NLS配音 |
+| ├ MS-2.3 商品图处理 | 🆕 处理工作台 | 4张真实商品图卡片 + 去背景/一键处理 + 批量串行 |
+| ├ MS-5 日报推送 | 🆕 3按钮全通 | 手动推送(8群/7ok) + 预览弹窗 + 推送历史 |
+| AI 短剧 | ✅ 10集管线 | EP01-EP10 final.mp4 · ComfyUI SDXL · NLS配音 |
 | 角色系统 | ✅ 109角色 | visual_bible.json · 436张定妆照 · 108音色 · video_prompts三方案 |
 | 决策节点 | ✅ 3个 | 市场判断/选品审核/发布审批 · 人工闸门生效 |
 | 全球摘要 | ✅ 123条 | 10订阅源 · /info 页面 |
+| SQLite 数据库 | ✅ 7表 | pipeline_runs(5) · shop_health(5) · orders(4) · products(100) · milestones(24) |
+| Vite 子页面 | ✅ :5173 | Vue3 + Chart.js · npm run dev 运行中 |
+| Git 安全 | ✅ 已净化 | ghp_ token 替换为 gh CLI 认证 · 远程 URL clean |
 
 ### 运行服务
-- Flask :5001 · FastAPI :5004 · GPT-SoVITS :9880 · ComfyUI :8188
+- Flask :5001 · FastAPI :5004 · GPT-SoVITS :9880 · ComfyUI :8188 · Vite :5173 · easyclaw :8080
 
 ---
 
@@ -40,8 +44,11 @@
 | **v3.5** | **04-29** | **阿牛 + OpenClaw** | **Sprint 1.5完成: NLS/3-Agent/SQLite/6角色圣经/10模块覆盖 · 交互驾驶舱v2 · 决策节点** |
 | **v3.6** | **04-30** | **阿牛 + OpenClaw + OpenCode** | **细节展开系统: 实体数据(非状态标签) · QA 80/80 · 脚本/角色/商品API · 6集管线全通 · 27→30端点** |
 | **v3.7.0** | **05-01** | **阿牛 + OpenClaw + OpenCode** | **四大WBS冲刺: 管线监控/资产面板/分镜/剪辑合成/导演模式/反馈闭环/436定妆照** |
-| v3.7.1~v3.7.3 | 05-01 | OpenCode + 阿牛 | Dashboard JS语法修复 · DM-1面板恢复 · 跨业务线路由修复 · MS-0门禁报告 · MS-2.3商品图工作台 |
-| **v3.7.4** | **05-02** | **阿牛** | **MS-2.3工具箱重构(可视化功能卡片) · MS-5日报预览卡片(有内容预览取代占位符) · 面板全量测试+重复id修复** |
+| v3.7.1 | 05-01 | OpenCode + 阿牛 | Dashboard JS全量语法修复(~274处) + 2xReferenceError+SyntaxError |
+| v3.7.2 | 05-01 | OpenCode + 阿牛 | DM-1角色档案面板恢复(268行) + 缺失函数还原(applyDM1Filter等) |
+| v3.7.3 | 05-01 | OpenCode + 阿牛 | MS-0门禁JS语法修复 + 跨业务线路由修复 + MS-2.3商品图工作台初版 |
+| v3.7.4 | 05-02 | OpenCode + 阿牛 | MS-2.3工具箱重构(4张真实商品图卡片) · MS-5日报3按钮全通 + /api/publish · /api/l10n/retranslate/ · 面板15/15全量测试 · 重复id清零 |
+| v3.7.5 | 05-02 | OpenCode + 阿牛 | pipeline_runs/shop_health表填充 · Vite :5173启动 · git remote token净化 · VERSION同步 · worktree同步 |
 
 > 完整子版本详见表后附录（PHASE 1-5、QA报告、GAP清单）
 
@@ -52,7 +59,14 @@
 | v3.6.2 | P0清零: DM-1角色卡·EPISODE_MAP·generate_script动态化·MS-0/1/3/5 stub补实·sfx全配 |
 | v3.6.3~v3.6.5 | PHASE1-3: 假成功清洗·API对接·管线修复·LLM对抗审核CODING路线 |
 | v3.6.6~v3.6.8 | UX审计(CEO): 11项UX全覆盖·Chart.js·5格式导出 |
-| v3.6.9~v3.6.29 | 109角色全量: gallery·音色克隆·CSS修复·视频提示词三方案·API 35端点·EP07-10剧本 |
+| v3.6.9 | 109角色画廊页面 + SFX混音集成修复 |
+| v3.6.10 | Dashboard UI: 科技清新风 + undefined filter + no-cache headers |
+| v3.6.20 | PRD全量修订 (v3.6.9~v3.6.20 12个里程碑) + CLAUDE.md版本同步 |
+| v3.6.24 | 补标注8端点/voice_clone/6角色/add_video_prompts脚本 · Task Completion Protocol强制引入 |
+| v3.6.26 | 鲁智深basic_info补全 + LLM对抗审核管线验证 (CODING 93.8s 3.0/10) |
+| v3.6.27 | 诚实收尾: visual_bible修复 + reReviewDM0 + 铁则强化 + 全量推送 |
+| v3.6.28 | 剧本EP07-10 (武松打虎/西门庆/林冲雪夜/大闹五台山) + triggerReReview端点 + 定妆照替换 |
+| v3.6.29 | DM-1性能优化(Top10+搜索+筛选+懒加载) + openclaw演员109/109完成 + GPT-SoVITS修复 |
 
 ### v3.7 子版本汇总
 | 版本 | 核心成果 |
@@ -60,8 +74,11 @@
 | v3.7.0-P0~S4 | 预冲刺止血·资产面板·分镜选择器·剪辑合成·导演模式+反馈闭环 |
 | v3.7.1 | Dashboard JS全量语法修复(~274处) |
 | v3.7.2 | DM-1角色档案面板恢复 |
-| v3.7.3 | 跨业务线路由修复 · MS-0门禁报告 · MS-2.3商品图工作台 |
-| **v3.7.4** | **MS-2.3工具箱重构(进度条+3张功能卡片) · MS-5日报预览卡片(4项KPI+7模块摘要) · 面板全量测试 · 重复id修复** |
+| v3.7.3 | 跨业务线路由修复 · MS-0门禁报告 · MS-2.3商品图工作台初版 |
+| v3.7.4 | MS-2.3工具箱重构 · MS-5日报预览/推送/历史 · 15面板全量测试 · /api/publish · /api/l10n/retranslate/ |
+| v3.7.5 | SQLite pipeline_runs(5)/shop_health(5)填充 · Vite :5173启动 · git token净化 · VERSION同步 |
+| v3.7.6 | MS-2.3 数据过滤/状态映射/图片路径修复 |
+| v3.7.7 | MS-2.3 强制数据适配+角色残骸清理+兜底占位图 · detailEl typo修复 · JS语法修复(img onerror) |
 ## 📊 PHASE 1-4 完成记录 (v3.6.4 新增)
 
 ### PHASE 1: 安全止血与数据卫生 (commits 040e061, 8208b6f, 28a4bd2)
