@@ -1,13 +1,13 @@
-# 🎬 Agentic OS v3.6.20 产品需求文档 (PRD) — 108将音色克隆 + 全角色可视化
+# 🎬 Agentic OS v3.7.0 产品需求文档 (PRD) — 四大WBS冲刺 · 用户体验全面升级
 
 > **文档类型**: 产品需求文档 (Product Requirements Document)
-> **版本**: v3.6.20 音色克隆+视频提示词
-> **日期**: 2026 年 5 月 1 日 (v3.6.20)
-> **产品名称**: Agentic OS v3.6 双业务线自动化系统
+> **版本**: v3.7.0 用户体验四大冲刺
+> **日期**: 2026 年 5 月 1 日 (v3.7.0-S4)
+> **产品名称**: Agentic OS v3.7 用户体验升级版
 > **产品愿景**: 一个指令启动 → 全程自动执行 → **关键节点等你决策** → 输出可发布成果
 > **目标用户**: TK 跨境电商运营人员、AI短剧创作者、技术开发团队
-> **文档状态**: ✅ 108将完整覆盖 — 音色克隆(NLS+GPT-SoVITS) + 视频提示词三方案 + 全渲染图 + AI人物小传
-> **前置版本**: v3.6.8（2026-04-30 P1 UX 补齐版）
+> **文档状态**: ✅ v3.7.0-S4 四大冲刺全完成 — 管线监控/资产面板/分镜可视化/剪辑合成台/导演模式/反馈闭环/436张定妆照
+> **前置版本**: v3.6.29（2026-05-01 音色克隆+视频提示词+109角色数据）
 
 ---
 
@@ -53,7 +53,14 @@
 | **v3.6.26** | **2026-05-01** | **阿牛** | **LLM对抗审核管线验证通过: adversarial_review.py CODING模式实际运行93.8s · 真实LLM审核EP01剧本 · 评分3.0/10 ✅ reject · 4维度真实审计(编剧规则1.0/场景完整性1.0/剧情节奏3.0/逻辑一致性3.0) · pipeline_ep01.py --review coding 完整链通 · 实际堵塞点CODING免费额度已解决** |
 | **v3.6.27** | **2026-05-01** | **OpenCode** | **客观诚实收尾: visual_bible 113→109清理完毕 (删yanglin_hs/kongming_hs·补star_rank to chaogai·恢复yanglin/kongming) · reReviewDM0()修复 (→triggerReReview) · PRD v3.6.9~27全量里程碑 · CLAUDE.md 铁则#0强化(任务完成强制闭环+版本滞后告警) · VERSION文件创建 · /dashboard PRD告警条 · Git全量提交+推送 · Obsidian同步 · wiki日志更新** |
 | **v3.6.28** | **2026-05-01** | **OpenCode** | **剧本新产出: EP07 武松打虎 (249KB/23s) + EP08 武松斗杀西门庆 (226KB/21s) + EP09 林冲雪夜上梁山 (240KB/22s) + EP10 花和尚大闹五台山 (266KB/22s) · script_manager.py CURRENT_EPISODES 6→10集 + _build_storyboard 新增4模板 · shuihuzhuan.yaml 预留12集已用10集 (剩武松醉打蒋门神/血溅鸳鸯楼) · NLS→TV原声待素材 (现有98版视频仅8秒测试片段)** |
-| **v3.6.29** | **2026-05-01** | **OpenCode + OpenClaw** | **openclaw: 109/109演员写入 visual_bible.json (宋江=李雪健/鲁智深=臧金生/林冲=周野芒/吴用=宁晓志/杨志=翟乃社) · prompt_en全量1998 CCTV后缀 · video_prompts三方案 · ComfyUI验证图5张(武松/鲁智深/林冲/李逵/扈三娘, 768×1024) · opencode: DM-1性能优化(默认Top10+搜索(fuse 300ms)+筛选芯片(天罡/地煞/主要)+懒加载) · GPT-SoVITS修复(POST JSON 200) · 仪表盘v3.6.29 · 时迁验证图失败待重跑** |
+| **v3.6.29** | **2026-05-01** | **OpenCode + OpenClaw** |
+| **v3.7.0** | **2026-05-01** | **阿牛 + OpenClaw + OpenCode** | **WBS用户体验升级 — 四大冲刺全完成** |
+| **v3.7.0-P0** | **2026-05-01** | **OpenCode** | **预冲刺止血: DM-0四维审核评分卡片(review_dimensions后端提取+前端four-dim卡片) · 音色卡统一(显示CHARACTER_VOICES fallback "未配置"→设置入口) · Toast反馈72处调用 · reReviewDM0→triggerReReview** |
+| **v3.7.0-S1** | **2026-05-01** | **阿牛 + OpenCode** | **冲刺一·可感知工作台: 📦资产管理面板(右侧滑出抽屉·分类:全部/角色图/剧本/剧集·缩略图预览+下载) · Pipeline Monitor服务状态面板(Flask/GPT-SoVITS/ComfyUI实时状态·进度条·30s自动轮询) · 加载状态(loading="lazy"13处·按钮disabled CSS) · SSE实时推送(/api/pipeline/stream 3s推送ComfyUI队列/TTS状态/管线进度)** |
+| **v3.7.0-S2** | **2026-05-01** | **OpenCode + 阿牛** | **冲刺二·可视化创作中心: S2-1分镜可视化选择器(loadStoryboard函数·每张分镜卡片带方案一/二/三视频预览按钮+Like/Dislike+编辑) · S2-2角色决策卡(🎬预览动态mock按钮→显示"API未配置"·🎤音色试听GPT-SoVITS端口9880) · 真实video_prompts数据集成+反馈日志(localStorage存储)** |
+| **v3.7.0-S3** | **2026-05-01** | **阿牛** | **冲刺三·剪辑合成台: S3-1视频片段排序合并界面(DM-6~DM-10详情页·上下排序按钮+合并生成按钮) · /api/merge端点(ffmpeg concat合成) · S3-2 Whisper字幕脚本(shared/scripts/whisper_subtitle.py 215行·支持真实whisper+mock fallback) · /api/subtitle端点(返回SRT字幕内容+文件路径)** |
+| **v3.7.0-S4** | **2026-05-01** | **阿牛** | **冲刺四·打磨与反馈: 🎬导演模式(顶部切换按钮·隐藏左侧栏/版本/技术标签·localStorage持久化) · S4-4自进化反馈闭环(feedback_collector.py·DM-0驳回时弹出问题类型+描述表单·/api/feedback保存到~/.agentic-os/quality_feedback/) · 批量定妆图生成(109角色×4角度=436张ComfyUI SDXL·476MB·aged face/wrinkles/weathered skin/Song dynasty服饰·多角度一致seed) · TK UX对齐(产品对比卡片·图片处理预览·5国本地化状态·里程碑搜索) · EP07-10 ComfyUI渲染融合(1903KB/2006KB/2000KB/2011KB·从225-267KB提升7-8x) · Route B全量重写(109角色prompt_en+video_prompts三方案·98版演员面容特征·全英文·banned words清洗)** |
+ **openclaw: 109/109演员写入 visual_bible.json (宋江=李雪健/鲁智深=臧金生/林冲=周野芒/吴用=宁晓志/杨志=翟乃社) · prompt_en全量1998 CCTV后缀 · video_prompts三方案 · ComfyUI验证图5张(武松/鲁智深/林冲/李逵/扈三娘, 768×1024) · opencode: DM-1性能优化(默认Top10+搜索(fuse 300ms)+筛选芯片(天罡/地煞/主要)+懒加载) · GPT-SoVITS修复(POST JSON 200) · 仪表盘v3.6.29 · 时迁验证图失败待重跑** |
 ---
 
 ## 📊 PHASE 1-4 完成记录 (v3.6.4 新增)
@@ -568,14 +575,28 @@ curl /api/detail/DM-0                ✓ 故事板展开 · DM-1 角色画廊
 
 ---
 
-## 第八部分：下一步计划 (v3.6.20 更新)
+## 第八部分：下一步计划 (v3.7.0-S4 更新)
 
 | 优先级 | 任务 | 状态 | 说明 |
 |--------|------|------|------|
-| **P0** | 剧本脚本编写（108将短剧） | ⏳ | 待 OpenClaw 启动 |
-| **P0** | fix reReviewDM0() 未定义 bug | ⏳ | 仪表盘 DM-0 审核卡片「重新审核」按钮报错 |
-| **P1** | 用电视剧原声替换 NLS 参考音频 | ⛔ **BLOCKED** |素材不足：现有98版视频仅8秒测试片段，需完整电视剧集文件才能提取107角色原声 |
-| **P1** | EP11 武松醉打蒋门神 + EP12 血溅鸳鸯楼 | ⏳ | shuihuzhuan.yaml 已预留，_build_storyboard 待补模板 |
+| **P0** | 剧本脚本编写（108将短剧EP11-EP14） | ⏳ | shuihuzhuan.yaml已预留，_build_storyboard待补模板 |
+| **P1** | Dashboard空白修复 | 🔴 **BUG** | opencode协同修改后5001/dashboard不渲染内容，需排查JS注入兼容性 |
+| **P1** | 批量定妆图质量审核 | ⏳ | 436张已生成，需确认是否达到98版电视剧质感，逐个确认或统一替换 |
+| **P2** | 用电视剧原声替换 NLS 参考音频 | ⛔ **BLOCKED** | 素材不足：现有98版视频仅8秒测试片段，需完整电视剧集文件才能提取107角色原声 |
+| **P3** | Pollo AI / Kling API 集成视频预览 | ⏳ | S2-2预览动态按钮已放mock，需API Key才能实际生成 |
+| **P3** | NLS→电视剧原声替换 | ⛔ **BLOCKED** | 素材不足 |
+| **P3** | 环境音效扩充 | ⏳ | SFX engine有11类型，待增加 |
+
+### v3.7.0 关键数据
+
+| 指标 | 数值 |
+|------|------|
+| Git commits (5月1日) | 25+ commits |
+| task_board.html | 3107行 / 160KB |
+| API端点总数 | 35+ |
+| 角色定妆照 | 109角色×4张=436张 (476MB) |
+| EP01-10 final.mp4 | 全部1.8-2.1MB (Pillow+ComfyUI双模式) |
+| 服务运行 | 5001 Flask / 5004 FastAPI / 9880 GPT-SoVITS / 8188 ComfyUI |
 | **P1** | gallery.html UI 打磨 | ⏳ | 筛选/排序/分集展开 |
 | **P1** | Kling AI 视频生成 (真人视频) | ⏸️ | 待支付 (¥15/EP, 微信支付) |
 | **P2** | 5国字幕集成到短剧 | 🔲 | localization pipeline 已有·待集成 |
