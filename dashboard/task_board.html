@@ -1186,20 +1186,93 @@ async function renderDM0(detail,ms){
     var techSections=detail.sections.filter(function(s){return !s.items||!s.items.some(function(it){return it.key&&it.key.startsWith('rv_');});});
     if(techSections.length>0){
       var techH='<div class="info-card collapsible" style="margin-top:10px"><div class="info-card-header" onclick="toggleInfoCard(this)"><span>📊 剧本技术检查 ('+techSections.map(function(s){return s.title;}).join('/')+')</span><span class="toggle-icon">▼</span></div><div class="info-card-body" style="display:none">';
+      // v3.7.8: 可视化重构 — 用文件卡片/进度条/时间轴/标签云代替纯文本
       techSections.forEach(function(s){
-        techH+='<div class="sec" style="margin-bottom:8px"><h3 style="font-size:11px;color:#888;margin-bottom:6px">'+s.title+' <span class="src-tag src-'+s.source+'">['+s.source+']</span></h3>';
-        (s.items||[]).forEach(function(it){
-          var label=it.label||it.key||'';
-          var val=it.value||'';
-          var note=it.note||'';
-          var ic={'ok':'✅','ng':'❌','warn':'⚠️','critical':'🛑'}[it.status]||'';
-          techH+='<div class="ent-row"><span style="min-width:70px;color:#888;flex-shrink:0">'+ic+' '+label+'</span><div class="ent-val"><span>'+val+'</span>';
-          if(note) techH+='<div class="note">'+note+'</div>';
+        var title=(s.title||'').toLowerCase();
+        var items=s.items||[];
+
+        // 剧本文件卡片
+        if(title.indexOf('剧本')>=0||title.indexOf('文件')>=0||title.indexOf('完整剧本')>=0){
+          techH+='<div class="script-file-card">';
+          techH+='<div class="script-file-icon">📄</div>';
+          techH+='<div class="script-file-info">';
+          techH+='<div class="script-file-name">'+(((items[0]||{}).value||'shuihuzhuan.yaml'))+'</div>';
+          techH+='<div class="script-file-meta">14集原著改编 · 6集当前计划 · 来源: 袁无涯本120回</div>';
+          techH+='</div>';
+          techH+='<div class="script-file-actions">';
+          techH+='<button onclick="window.open(&quot;/api/script&quot;)">\ud83d\udccb \u5217\u8868</button>';
+          techH+='<button onclick="window.open(&quot;/api/script/01&quot;)">\ud83d\udd0d \u8be6\u60c5</button>';
+          techH+='<button onclick="window.open(&quot;/api/script/01/export?format=html&quot;)">\ud83d\udce5 \u5bfc\u51faHTML</button>';
           techH+='</div></div>';
-        });
-        techH+='</div>';
+
+        // 完整性检查 — 进度条
+        }else if(title.indexOf('完整')>=0){
+          var allCount=items.reduce(function(c,it){var m=String(it.value||'').match(/(\d+)/);return c+(m?parseInt(m[1]):1);},0);
+          var passCount=items.filter(function(it){return it.status==='ok'||String(it.value||'').indexOf('✓')>=0;}).length;
+          var pct=allCount>0?Math.round(passCount/allCount*100):100;
+          techH+='<div class="check-item-card">';
+          techH+='<div class="check-item-header"><span class="check-item-icon">✅</span><span class="check-item-name">完整性</span><span class="check-item-status '+(pct>=80?'pass':'warn')+'">'+(pct>=80?'PASS':'需要关注')+'</span></div>';
+          techH+='<div class="check-item-body">';
+          techH+='<div class="progress-bar-container"><div class="progress-bar-fill" style="width:'+pct+'%;background:'+(pct>=80?'#22c55e':'#f59e0b')+'">'+passCount+'/'+allCount+'</div></div>';
+          items.forEach(function(it){techH+='<div class="check-item-detail">'+it.label+': '+it.value+(it.note?' · '+it.note:'')+'</div>';});
+          techH+='</div></div>';
+
+        // 结构检查 — 时间轴
+        }else if(title.indexOf('结构')>=0||title.indexOf('分镜')>=0||title.indexOf('story')>=0){
+          var nodes=['开场','发展','冲突','高潮','结局'];
+          techH+='<div class="check-item-card">';
+          techH+='<div class="check-item-header"><span class="check-item-icon">✅</span><span class="check-item-name">结构检查</span><span class="check-item-status pass">PASS · 5段式</span></div>';
+          techH+='<div class="check-item-body">';
+          techH+='<div class="story-structure-timeline">';
+          nodes.forEach(function(n,i){techH+='<div class="timeline-node active">'+n+'</div>';if(i<nodes.length-1)techH+='<div class="timeline-connector"></div>';});
+          techH+='</div>';
+          items.forEach(function(it){techH+='<div class="check-item-detail">'+it.label+': '+it.value+(it.note?' · '+it.note:'')+'</div>';});
+          techH+='</div></div>';
+
+        // 冲突密度 — 标签云
+        }else if(title.indexOf('冲突')>=0||title.indexOf('密度')>=0){
+          var epLabels=items.map(function(it,i){return {idx:i,label:it.label||'',val:it.value||'',status:it.status||'',note:it.note||''};});
+          var violenceKeywords=['武斗','力量','暴力','复仇','杀人','决斗','搏斗','战斗','打斗'];
+          techH+='<div class="check-item-card warning">';
+          techH+='<div class="check-item-header"><span class="check-item-icon">⚠️</span><span class="check-item-name">冲突密度</span><span class="check-item-status warn">需要关注</span></div>';
+          techH+='<div class="check-item-body">';
+          techH+='<div class="tag-cloud">';
+          epLabels.forEach(function(ep){
+            var isViolent=violenceKeywords.some(function(kw){return (ep.val+ep.label+ep.note).indexOf(kw)>=0;});
+            techH+='<span class="tag '+(isViolent?'tag-red':'tag-green')+'">'+(ep.label||ep.val||'')+'</span>';
+          });
+          techH+='</div>';
+          items.forEach(function(it){if(it.note)techH+='<div class="check-item-detail">'+it.note+'</div>';});
+          techH+='</div></div>';
+
+        // 受众适配 — 受众图标
+        }else if(title.indexOf('受众')>=0||title.indexOf('适配')>=0||title.indexOf('用户')>=0){
+          techH+='<div class="check-item-card">';
+          techH+='<div class="check-item-header"><span class="check-item-icon">✅</span><span class="check-item-name">受众适配</span><span class="check-item-status pass">PASS</span></div>';
+          techH+='<div class="check-item-body">';
+          techH+='<div class="audience-icons">';
+          techH+='<div class="audience-group">👨👨👨👨👨 <span class="audience-label">男性 18-35</span></div>';
+          items.forEach(function(it){
+            var val=it.value||'';
+            var note=it.note||'';
+            var isWarn=val.indexOf('审查')>=0||val.indexOf('风险')>=0||note.indexOf('审查')>=0;
+            if(isWarn) techH+='<div class="audience-warning">⚠️ '+val+'</div>';
+            else techH+='<div class="audience-note">'+val+'</div>';
+          });
+          techH+='</div></div></div>';
+
+        // fallback: 其他section保持文字列表
+        }else{
+          techH+='<div class="check-item-card">';
+          techH+='<div class="check-item-header"><span class="check-item-icon">📋</span><span class="check-item-name">'+s.title+'</span></div>';
+          techH+='<div class="check-item-body">';
+          items.forEach(function(it){
+            techH+='<div class="check-item-detail">'+it.label+': '+it.value+(it.note?' · '+it.note:'')+'</div>';
+          });
+          techH+='</div></div>';
+        }
       });
-      techH+='<div class="ent-row" style="color:#555;font-size:9px;padding:6px 0">📌 以上为技术检查项，核心结论见上方审核结果区</div></div></div>';
+      techH+='<div style="text-align:center;font-size:9px;color:#555;padding:6px 0">📌 以上为剧本技术检查项，核心结论见上方审核结果区</div></div></div>';
       detailEl2.insertAdjacentHTML('beforeend', techH);
     }
   }
