@@ -1191,8 +1191,8 @@ async function renderDM0(detail,ms){
         var title=(s.title||'').toLowerCase();
         var items=s.items||[];
 
-        // 剧本文件卡片
-        if(title.indexOf('剧本')>=0||title.indexOf('文件')>=0||title.indexOf('完整剧本')>=0){
+                // 剧本文件卡片 — 仅匹配"剧本来源"类标题，不匹配"完整剧本"
+        if(title.indexOf('剧本来源')>=0||title.indexOf('文件信息')>=0||(title.indexOf('剧本')>=0&&title.indexOf('完整')<0)){
           techH+='<div class="script-file-card">';
           techH+='<div class="script-file-icon">📄</div>';
           techH+='<div class="script-file-info">';
@@ -1200,9 +1200,9 @@ async function renderDM0(detail,ms){
           techH+='<div class="script-file-meta">14集原著改编 · 6集当前计划 · 来源: 袁无涯本120回</div>';
           techH+='</div>';
           techH+='<div class="script-file-actions">';
-          techH+='<button onclick="window.open(&quot;/api/script&quot;)">\ud83d\udccb \u5217\u8868</button>';
-          techH+='<button onclick="window.open(&quot;/api/script/01&quot;)">\ud83d\udd0d \u8be6\u60c5</button>';
-          techH+='<button onclick="window.open(&quot;/api/script/01/export?format=html&quot;)">\ud83d\udce5 \u5bfc\u51faHTML</button>';
+          techH+='<button onclick="showScriptSummary()">\ud83d\udccb \u6458\u8981</button>';
+          techH+='<button onclick="showScriptDetail(1)">\ud83d\udd0d \u8be6\u60c5</button>';
+          techH+='<button onclick="previewScriptHTML(1)">\ud83d\udce5 \u9884\u89c8</button>';
           techH+='</div></div>';
 
         // 完整性检查 — 进度条
@@ -1369,6 +1369,113 @@ async function loadStoryboard(epNum){
   }catch(e){
     scenesEl.innerHTML=`<span style="font-size:10px;color:#ef4444;">加载失败: ${e.message}</span>`;
   }
+}
+
+// v3.7.8: 剧本摘要列表、详情、预览函数
+function showScriptSummary(){
+  var existing=document.getElementById('script-summary-dlg');
+  if(existing)existing.remove();
+  var dlg=document.createElement('div');
+  dlg.id='script-summary-dlg';
+  dlg.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1d27;border:1px solid rgba(59,130,246,.3);border-radius:12px;padding:20px;z-index:500;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.6)';
+  dlg.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-size:14px;font-weight:600">📋 剧本摘要</div><span onclick="this.parentElement.parentElement.remove()" style="cursor:pointer;font-size:20px;color:#555">&times;</span></div><div id="script-summary-body" style="font-size:11px;color:#888"><span class="loading">加载中...</span></div>';
+  document.body.appendChild(dlg);
+  fetch('/api/script').then(function(r){return r.json();}).then(function(d){
+    var eps = d.episodes || d || [];
+    if(!Array.isArray(eps)) eps = Object.values(eps)||[];
+    var body = document.getElementById('script-summary-body');
+    if(!body) return;
+    var html = '';
+    eps.forEach(function(ep,i){
+      var title = ep.title||ep.name||'第'+(i+1)+'集';
+      var score = ep.score||'—';
+      var scenes = ep.scene_count||ep.scenes||0;
+      var tags = (ep.tags||[]).join(' · ')||'';
+      html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #222">';
+      html += '<span style="min-width:40px;color:#60a5fa;font-weight:600">EP'+(i+1+'').padStart(2,'0')+'</span>';
+      html += '<span style="flex:1;color:#e4e6eb">'+title+'</span>';
+      html += '<span style="font-size:9px;color:#888">'+scenes+'场景 · 评分'+score+'</span>';
+      html += '<span style="font-size:9px;color:#555">'+tags+'</span>';
+      html += '<span style="font-size:9px;cursor:pointer;color:#60a5fa" onclick="showScriptDetail('+(i+1)+');this.closest('#script-summary-dlg').remove()">🔍</span>';
+      html += '</div>';
+    });
+    body.innerHTML = html || '<div style="text-align:center;padding:20px">暂无剧本数据</div>';
+  }).catch(function(e){
+    var body = document.getElementById('script-summary-body');
+    if(body) body.innerHTML = '<div style="color:#ef4444">加载失败: '+e.message+'</div>';
+  });
+}
+
+function showScriptDetail(epNum){
+  var existing=document.getElementById('script-detail-dlg');
+  if(existing)existing.remove();
+  var dlg=document.createElement('div');
+  dlg.id='script-detail-dlg';
+  dlg.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1d27;border:1px solid rgba(59,130,246,.3);border-radius:12px;padding:20px;z-index:500;max-width:700px;width:90%;max-height:85vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.6)';
+  dlg.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-size:14px;font-weight:600">🔍 EP'+String(epNum).padStart(2,'0')+' 剧本详情</div><span onclick="this.parentElement.parentElement.remove()" style="cursor:pointer;font-size:20px;color:#555">&times;</span></div><div id="script-detail-body"><span class="loading">加载中...</span></div>';
+  document.body.appendChild(dlg);
+  fetch('/api/script/'+epNum).then(function(r){return r.json();}).then(function(data){
+    var body=document.getElementById('script-detail-body');
+    if(!body) return;
+    var html='';
+    html+='<div style="margin-bottom:10px"><span style="font-size:12px;font-weight:600;color:#e4e6eb">'+(data.title||'')+'</span>';
+    if(data.score) html+=' · <span style="font-size:10px;color:#22c55e">评分 '+data.score+'/10</span>';
+    html+='</div>';
+    var sb=data.storyboard||data.scenes||[];
+    if(!Array.isArray(sb)) sb=Object.values(sb)||[];
+    sb.forEach(function(sc){
+      html+='<div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:6px;padding:8px 10px;margin-bottom:6px">';
+      html+='<div style="display:flex;gap:6px;margin-bottom:4px"><span style="font-size:9px;color:#60a5fa;font-weight:600;min-width:30px">#'+(sc.seq||'—')+'</span><span style="font-size:10px;color:#fbbf24;font-weight:600">'+(sc.act||'')+'</span><span style="font-size:9px;color:#555">'+(sc.duration||'')+'</span></div>';
+      html+='<div style="font-size:10px;color:#ccc;margin-bottom:2px">'+(sc.description||'')+'</div>';
+      if(sc.emotion) html+='<div style="font-size:9px;color:#888">情感: '+sc.emotion+'</div>';
+      if(sc.dialogue) html+='<div style="font-size:9px;color:#aaa;font-style:italic">对白: '+sc.dialogue+'</div>';
+      html+='</div>';
+    });
+    body.innerHTML=html||'<div style="text-align:center;padding:20px;color:#555">无分镜数据</div>';
+  }).catch(function(e){
+    var body=document.getElementById('script-detail-body');
+    if(body) body.innerHTML='<div style="color:#ef4444">加载失败: '+e.message+'</div>';
+  });
+}
+
+function previewScriptHTML(epNum){
+  var existing=document.getElementById('script-preview-dlg');
+  if(existing)existing.remove();
+  var dlg=document.createElement('div');
+  dlg.id='script-preview-dlg';
+  dlg.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1d27;border:1px solid rgba(59,130,246,.3);border-radius:12px;padding:20px;z-index:500;max-width:800px;width:95%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.6)';
+  dlg.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-size:14px;font-weight:600">📥 EP'+String(epNum).padStart(2,'0')+' HTML预览</div><div><button class="mini-btn" onclick="window.open('/api/script/'+epNum+'/export?format=html')">⬇ 下载</button><span onclick="this.parentElement.parentElement.parentElement.remove()" style="cursor:pointer;font-size:20px;color:#555;margin-left:8px">&times;</span></div></div><div id="script-preview-body" style="font-size:11px;color:#888"><span class="loading">渲染HTML...</span></div>';
+  document.body.appendChild(dlg);
+  fetch('/api/script/'+epNum+'/export?format=html').then(function(r){return r.text();}).then(function(html){
+    var body=document.getElementById('script-preview-body');
+    if(!body) return;
+    body.innerHTML=html;
+  }).catch(function(e){
+    // fallback: 用JSON转成简单HTML预览
+    fetch('/api/script/'+epNum).then(function(r){return r.json();}).then(function(data){
+      var body=document.getElementById('script-preview-body');
+      if(!body) return;
+      var h='<div style="background:#fff;color:#333;padding:16px;border-radius:4px;font-family:serif">';
+      h+='<h2 style="text-align:center;margin-bottom:16px;color:#111">'+(data.title||'EP'+String(epNum).padStart(2,'0'))+'</h2>';
+      (data.storyboard||data.scenes||[]).forEach(function(sc){
+        h+='<div style="margin-bottom:12px;padding:8px;border-left:3px solid #3b82f6;background:#f8fafc">';
+        h+='<div style="font-size:10px;color:#666;margin-bottom:4px">场景'+(sc.seq||'')+' · '+(sc.act||'')+' · '+(sc.duration||'')+' · 情感: '+(sc.emotion||'')+'</div>';
+        h+='<div style="font-size:13px;color:#333;line-height:1.6">'+(sc.description||'')+'</div>';
+        if(sc.dialogue) h+='<div style="font-size:12px;color:#555;font-style:italic;margin-top:4px">"'+sc.dialogue+'"</div>';
+        h+='</div>';
+      });
+      h+='</div>';
+      body.innerHTML=h;
+      // Add download for this preview
+      var downloadBtn=document.getElementById('script-preview-dlg').querySelector('.mini-btn');
+      if(downloadBtn) downloadBtn.onclick=function(){
+        var blob=new Blob(['<html><head><meta charset=utf-8><title>'+data.title+'</title></head><body>'+h+'</body></html>'],{type:'text/html'});
+        var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ep'+String(epNum).padStart(2,'0')+'-preview.html';a.click();
+      };
+    }).catch(function(e2){
+      if(body) body.innerHTML='<div style="color:#ef4444">预览失败</div>';
+    });
+  });
 }
 
 // ================================================================
