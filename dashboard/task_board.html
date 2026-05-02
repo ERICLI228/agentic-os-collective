@@ -217,6 +217,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 .cb-vp-line .vp-label{color:#5a7a9a;min-width:36px;flex-shrink:0}
 .cb-vp-line .vp-val{color:#7a8ea8;word-break:break-word}
 .cb-vp-line .vp-prompt{font-family:monospace;font-size:8px;line-height:1.5}
+.vp-btn{font-size:12px;padding:1px 5px;border-radius:3px;border:1px solid #333;background:transparent;color:#666;cursor:pointer;line-height:1;flex-shrink:0}
+.vp-btn:hover{color:#4a9eff;border-color:#4a9eff}
+.vp-preview-btn{font-size:14px}
+.cb-vp-edit{padding:4px 8px 8px 8px;border-top:1px solid #222;background:rgba(0,0,0,.08)}
+.cb-vp-edit-row{margin:4px 0}
+.cb-vp-edit-row label{display:block;font-size:9px;color:#5a7a9a;margin-bottom:2px}
+.cb-vp-edit-row textarea{width:100%;background:#0a0a12;border:1px solid #2a3052;color:#c4d4e8;font-size:9px;font-family:monospace;padding:4px;border-radius:3px;min-height:36px;resize:vertical}
+.cb-vp-edit-btns{display:flex;gap:4px;margin-top:6px}
+.cb-vp-edit-btns .btn{font-size:9px;padding:3px 8px;border-radius:3px;border:1px solid #333;cursor:pointer}
+.cb-vp-edit-btns .btn-save{background:#1a3a5c;color:#93c5fd;border-color:#2a4a7c}
+.cb-vp-edit-btns .btn-cancel{background:transparent;color:#666;border-color:#333}
+.cb-vp-edit-btns .btn-save:hover{background:#2a4a7c}
+.cb-vp-edit-btns .btn-cancel:hover{color:#aaa;border-color:#555}
 .cb-voice-row{display:flex;align-items:center;gap:6px;margin:4px 0}
 .cb-voice-input{width:100%;padding:3px 6px;border-radius:4px;border:1px solid rgba(74,158,255,.15);background:rgba(0,0,0,.3);color:#c4d4e8;font-size:10px;margin:3px 0}
 .cb-voice-input::placeholder{color:#5a7a9a;font-size:10px}
@@ -1115,12 +1128,24 @@ async function renderDM1(detail, ms) {
               <div class="cb-vp-card">
                 <div class="cb-vp-card-hdr" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
                   <span class="vp-icon">📋</span> ${v.title || key}
-                  <span style="margin-left:auto;font-size:9px;color:#555">${v['参数'] || ''}</span>
+                  <span style="font-size:9px;color:#555">${v['参数'] || ''}</span>
+                  <span style="margin-left:auto;display:flex;gap:3px">
+                    <button class="vp-btn vp-preview-btn" onclick="event.stopPropagation();previewVideoPrompt('${fid}','${key}')" title="视频预览">🎥</button>
+                    <button class="vp-btn" onclick="event.stopPropagation();editVideoPrompt('${fid}','${key}')" title="调整提示词">✏️</button>
+                  </span>
                 </div>
                 <div class="cb-vp-card-body" style="display:none">
                   <div class="cb-vp-line"><span class="vp-label">描述</span><span class="vp-val">${v.desc || v['desc'] || ''}</span></div>
                   <div class="cb-vp-line"><span class="vp-label">提示词</span><span class="vp-val vp-prompt">${v.prompt || v['prompt'] || ''}</span></div>
                   ${v['简练版'] ? `<div class="cb-vp-line"><span class="vp-label">简练版</span><span class="vp-val vp-prompt">${v['简练版']}</span></div>` : ''}
+                </div>
+                <div class="cb-vp-edit" id="vpedit-${fid}-${key}" style="display:none">
+                  <div class="cb-vp-edit-row"><label>描述</label><textarea id="vpedit-desc-${fid}-${key}">${(v.desc || v['desc'] || '')}</textarea></div>
+                  <div class="cb-vp-edit-row"><label>提示词</label><textarea id="vpedit-prompt-${fid}-${key}">${(v.prompt || v['prompt'] || '')}</textarea></div>
+                  <div class="cb-vp-edit-btns">
+                    <button class="btn btn-save" onclick="saveVideoPrompt('${fid}','${key}')">💾 保存</button>
+                    <button class="btn btn-cancel" onclick="editVideoPrompt('${fid}','${key}')">取消</button>
+                  </div>
                 </div>
               </div>
             `).join('')}
@@ -1699,6 +1724,43 @@ function toggleCharBibleEdit(fid) {
   const el = document.getElementById('cbedit-' + fid);
   if (!el) return;
   el.classList.toggle('show');
+}
+
+// ================================================================
+// v3.7.2: Video prompt preview + edit
+// ================================================================
+function previewVideoPrompt(fid, key) {
+  const el = document.getElementById('vpedit-' + fid + '-' + key);
+  if (!el) {
+    toastMsg('视频生成 API 接入中 · Pollo AI / Kling / Seedance · 提示词已就绪', 3500, 'warn');
+    return;
+  }
+  // Toggle preview: close edit form first
+  if (el.style.display === 'block') {
+    el.style.display = 'none';
+  }
+  toastMsg('🎬 视频预览: 将在后期通过 Pollo AI / Kling API 生成 · 当前提示词已缓存', 3000);
+}
+
+function editVideoPrompt(fid, key) {
+  const el = document.getElementById('vpedit-' + fid + '-' + key);
+  if (!el) return;
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function saveVideoPrompt(fid, key) {
+  const descEl = document.getElementById('vpedit-desc-' + fid + '-' + key);
+  const promptEl = document.getElementById('vpedit-prompt-' + fid + '-' + key);
+  if (!descEl || !promptEl) return;
+  const patch = { descriptor: descEl.value, prompt: promptEl.value };
+  // Stage 1: save to localStorage (immediate)
+  const cacheKey = 'vp_' + fid + '_' + key;
+  localStorage.setItem(cacheKey, JSON.stringify(patch));
+  // Stage 2: API call (placeholder — will POST to /api/character/{fid}/video-prompt later)
+  toastMsg('💾 提示词已保存 (localStorage) · API 同步待后期接入', 2500);
+  // Close edit form
+  const el = document.getElementById('vpedit-' + fid + '-' + key);
+  if (el) el.style.display = 'none';
 }
 
 // ================================================================
