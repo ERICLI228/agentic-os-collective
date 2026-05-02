@@ -1396,7 +1396,7 @@ function showScriptSummary(){
       html += '<span style="flex:1;color:#e4e6eb">'+title+'</span>';
       html += '<span style="font-size:9px;color:#888">'+scenes+'场景 · 评分'+score+'</span>';
       html += '<span style="font-size:9px;color:#555">'+tags+'</span>';
-      html += '<span style="font-size:9px;cursor:pointer;color:#60a5fa" onclick="showScriptDetail('+(i+1)+');this.closest('#script-summary-dlg').remove()">🔍</span>';
+      html += '<span style="font-size:9px;cursor:pointer;color:#60a5fa" onclick="showScriptDetail('+(i+1)+');this.closest(&quot;#script-summary-dlg&quot;).remove()">\ud83d\udd0d</span>';
       html += '</div>';
     });
     body.innerHTML = html || '<div style="text-align:center;padding:20px">暂无剧本数据</div>';
