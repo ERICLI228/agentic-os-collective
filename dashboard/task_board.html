@@ -4289,85 +4289,96 @@ function renderDefault(detail){
     detail.sections.forEach(s=>{
       const st=s.source||'mock';
       var sTitle=s.title||'';
-      // v3.7.8g: DM-1 角色卡片网格 — 视觉设计 section
-      if(sTitle.indexOf('视觉设计')>=0||sTitle.indexOf('角色设计')>=0){
+      // v3.7.8g: DM-1 一致性检查仪表盘 (must check before 角色设计 to avoid false match)
+      if(sTitle.indexOf('一致性检查')>=0||sTitle.indexOf('一致性')>=0){
         h+='<div class="sec"><h3>'+sTitle+' <span class="src-tag src-'+st+'">['+st+']</span></h3>';
-        h+='<div class="dm-char-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin:8px 0">';
-        (s.items||[]).forEach(function(it){
-          var name=it.label||'';
-          var val=it.value||'';
-          var fid=(CHAR_MAP[name]||name||'').toLowerCase();
-          // Try to find character traits from backend data
-          var height='', build='', face='';
-          var parts=val.split('·');
-          if(parts.length>=3){height=parts[0].trim();build=parts[1].trim();face=parts[2].replace(/\.+$/,'').trim();}
-          var voiceInfo=CHARACTER_VOICES[fid]||{};
-          var refText=voiceInfo.prompt||'';
-          var colors=['#4a3728','#1a1a2e','#8b0000','#0a0a0a','#2d5016','#1e3a5f','#5c4033','#3d2b1f'];
-          var colorIdx=Math.abs((name.charCodeAt(0)||0))%colors.length;
-          h+='<div class="dm-char-card" style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;overflow:hidden;transition:all .15s">';
-          h+='<div style="position:relative;width:100%;height:200px;background:#111;overflow:hidden">';
-          var q=String.fromCharCode(39);
-          h+='<img src="/api/render/'+fid+'/portrait_0.png" loading="lazy" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='+q+'none'+q+'" />';
-          h+='<div class="char-fallback" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;text-align:center;color:#555;padding:60px 0;font-size:30px">\u{1F464}</div>';
-          h+='<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:8px 10px">';
-          h+='<div style="font-size:13px;font-weight:700;color:#fff">'+name+'</div>';
-          h+='<div style="font-size:9px;color:#aaa">'+CHAR_ROLES[name]||''+'</div>';
-          h+='</div></div>';
-          h+='<div style="padding:8px 10px">';
-          // 属性标签行
-          h+='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">';
-          if(height)h+='<span style="font-size:8px;padding:2px 6px;border-radius:8px;background:rgba(59,130,246,.12);color:#60a5fa">'+height+'</span>';
-          if(build)h+='<span style="font-size:8px;padding:2px 6px;border-radius:8px;background:rgba(34,197,94,.12);color:#34d399">'+build+'</span>';
-          if(face)h+='<span style="font-size:8px;padding:2px 6px;border-radius:8px;background:rgba(245,158,11,.12);color:#fbbf24">'+face.substring(0,8)+'</span>';
-          h+='</div>';
-          // 音色+配色
-          h+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:9px;color:#888">';
-          h+='<span>\u{1F3A4} '+(voiceInfo.ref?'已配置':'未配置')+'</span>';
-          h+='<span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:'+colors[colorIdx]+';border:1px solid rgba(255,255,255,.1)"></span>';
-          h+='</div>';
-          // 操作按钮
-          h+='<div style="display:flex;gap:4px">';
-          h+='<button class="mini-btn" onclick="toggleCharBibleEdit(\''+fid+'\')">\u{1F4DD} 编辑属性</button>';
-          h+='<button class="mini-btn" id="audition-btn-'+fid+'" onclick="auditionVoice(\''+fid+'\',this)">\u{1F50A} 试听</button>';
-          h+='<button class="mini-btn" onclick="reRenderConfirm(\''+fid+'\')">\u{1F3A8} 重渲染</button>';
-          h+='</div></div></div>';
-        });
-        h+='</div></div>';
-        return;
-      }
-      // v3.7.8g: DM-1 一致性检查仪表盘
-      if(sTitle.indexOf('一致性')>=0||sTitle.indexOf('一致性检查')>=0){
-        h+='<div class="sec"><h3>'+sTitle+' <span class="src-tag src-'+st+'">['+st+']</span></h3>';
-        h+='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:8px 0">';
+        h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin:8px 0">';
         (s.items||[]).forEach(function(it){
           var label=it.label||'';
           var val=it.value||'';
           var note=it.note||'';
           var isPass=val.indexOf('✅')>=0||val.indexOf('通过')>=0||val.indexOf('统一')>=0;
           var isWarn=val.indexOf('⚠️')>=0||val.indexOf('冲突')>=0||val.indexOf('复用')>=0;
-          var icon=isPass?'✅':isWarn?'⚠️':'\u{1F4CB}';
-          var statusText=isPass?'通过':isWarn?'需关注':'';
-          var statusCls=isPass?'pass':'warn';
-          // 配色冲突 — special handling with color blocks
+          var icon=isPass?'\u2705':isWarn?'\u26A0\uFE0F':'\u{1F4CB}';
+          var statusText=isPass?'\u901A\u8FC7':isWarn?'\u9700\u5173\u6CE8':'';
+          // Strip emoji/icon prefixes for clean description
+          var cleanVal=val.replace(/[\u2705\u26A0\uFE0F\u{26A0}]\s*/gu,'').trim();
+          // Color conflict blocks
           var extraHTML='';
           if(label.indexOf('配色')>=0||label.indexOf('颜色')>=0){
-            extraHTML='<div style="display:flex;gap:4px;margin-top:4px"><span style="display:inline-block;width:24px;height:24px;border-radius:4px;background:#8b0000;border:1px solid #555" title="林冲"></span><span style="display:inline-block;width:24px;height:24px;border-radius:4px;background:#1a1a2e;border:1px solid #555" title="武松"></span><span style="display:inline-block;width:24px;height:24px;border-radius:4px;background:#0a0a0a;border:1px solid #555" title="李逵"></span></div>';
+            var colors=['#8b0000','#1a1a2e','#0a0a0a'];
+            var names=['林冲','武松','李逵'];
+            extraHTML='<div style="display:flex;gap:6px;align-items:center;margin-top:6px">';
+            colors.forEach(function(c,i){
+              extraHTML+='<div style="display:flex;align-items:center;gap:3px"><span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:'+c+';border:2px solid rgba(255,255,255,.15)"></span><span style="font-size:8px;color:#888">'+names[i]+'</span></div>';
+            });
+            extraHTML+='</div>';
           }
-          // 音色分配 — special table
           if(label.indexOf('音色')>=0||label.indexOf('配音')>=0){
-            extraHTML='<div style="display:flex;gap:8px;margin-top:4px;font-size:9px"><div style="background:rgba(59,130,246,.1);border-radius:4px;padding:4px 8px"><span style="color:#60a5fa">zhiming</span>: 武松/鲁智深</div><div style="background:rgba(34,197,94,.1);border-radius:4px;padding:4px 8px"><span style="color:#34d399">zhilun</span>: 林冲/宋江/吴用</div></div>';
+            extraHTML='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;font-size:9px"><span style="background:rgba(59,130,246,.12);color:#60a5fa;border-radius:4px;padding:3px 8px">zhiming \u2192 \u6B66\u677E/\u9C81\u667A\u6DF1</span><span style="background:rgba(34,197,94,.12);color:#34d399;border-radius:4px;padding:3px 8px">zhilun \u2192 \u6797\u51B2/\u5B8B\u6C5F/\u5434\u7528</span></div>';
           }
-          h+='<div class="check-item-card'+(isWarn?' warning':'')+'" style="margin-bottom:0">';
-          h+='<div class="check-item-header"><span class="check-item-icon">'+icon+'</span><span class="check-item-name">'+label+'</span><span class="check-item-status '+statusCls+'">'+statusText+'</span></div>';
+          h+='<div class="check-item-card'+(isWarn?' warning':'')+'" style="margin-bottom:0;border-left:3px solid '+(isWarn?'#f59e0b':'#22c55e')+'">';
+          h+='<div class="check-item-header"><span class="check-item-icon">'+icon+'</span><span class="check-item-name">'+label+'</span><span class="check-item-status '+(isPass?'pass':'warn')+'">'+(isPass?'\u2714 \u901A\u8FC7':isWarn?'\u26A0 \u9700\u5173\u6CE8':'')+'</span></div>';
           h+='<div class="check-item-body">';
-          h+='<div style="font-size:10px;color:#888">'+val.replace(/✅|⚠️/g,'').trim()+'</div>';
+          if(cleanVal)h+='<div style="font-size:10px;color:#888;margin-bottom:4px">'+cleanVal+'</div>';
           if(extraHTML)h+=extraHTML;
-          if(note)h+='<div style="font-size:9px;color:#555;margin-top:2px">'+note+'</div>';
+          if(note)h+='<div style="font-size:9px;color:#555;margin-top:2px">\u{1F4AC} '+note+'</div>';
           h+='</div></div>';
         });
         h+='</div></div>';
         return;
+      }
+      // v3.7.8g: DM-1 角色卡片网格 — only for specific section titles
+      var isCharSection=sTitle.indexOf('视觉设计')>=0||(sTitle.indexOf('角色')>=0&&sTitle.indexOf('一致性')<0);
+      if((s.items||[]).length>0&&isCharSection){
+        // Detect if items are character names (have traits data in value) or generic entries
+        var hasCharData=(s.items||[]).some(function(it){var v=it.value||'';return v.indexOf('\u00B7')>=0||v.indexOf('cm')>=0;});
+        if(hasCharData){
+        h+='<div class="sec"><h3>'+sTitle+' <span class="src-tag src-'+st+'">['+st+']</span></h3>';
+        h+='<div class="dm-char-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin:8px 0">';
+        (s.items||[]).forEach(function(it){
+          var name=it.label||'';
+          var val=it.value||'';
+          var fid=(CHAR_MAP[name]||name||'').toLowerCase();
+          // Parse traits from value
+          var parts=val.split('\u00B7');
+          var traitItems=parts.map(function(p){return p.trim();}).filter(function(p){return p.length>0;});
+          var voiceInfo=CHARACTER_VOICES[fid]||{};
+          var colors=['#4a3728','#1a1a2e','#8b0000','#0a0a0a','#2d5016','#1e3a5f','#5c4033','#3d2b1f'];
+          var colorIdx=Math.abs((name.charCodeAt(0)||0))%colors.length;
+          h+='<div class="dm-char-card" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;overflow:hidden;transition:all .2s">';
+          // Portrait area
+          h+='<div style="position:relative;width:100%;height:180px;background:#0f1018;overflow:hidden">';
+          var q=String.fromCharCode(39);
+          h+='<img src="/api/render/'+fid+'/portrait_0.png" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='+q+'none'+q+';this.nextElementSibling.style.display='+q+'flex'+q+'" />';
+          h+='<div class="char-fallback" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;flex-direction:column;align-items:center;justify-content:center;background:#0f1018;color:#555;font-size:40px">\u{1F3AD}</div>';
+          // Name overlay
+          h+='<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.85));padding:20px 10px 8px">';
+          h+='<div style="font-size:14px;font-weight:700;color:#fff;letter-spacing:1px">'+name+'</div>';
+          h+='<div style="font-size:9px;color:#aaa;margin-top:1px">\u2728 '+(CHAR_ROLES[name]||'')+'</div>';
+          h+='</div></div>';
+          // Trait tags
+          h+='<div style="padding:8px 10px 4px">';
+          h+='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">';
+          traitItems.forEach(function(t){
+            var isNum=/\d/.test(t);
+            h+='<span style="font-size:8px;padding:2px 7px;border-radius:10px;background:rgba(59,130,246,.1);color:#60a5fa">'+t.substring(0,15)+'</span>';
+          });
+          h+='</div>';
+          // Voice info + color dot
+          h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:9px;color:#888">';
+          h+='<span>\u{1F3A4} '+(voiceInfo.ref?'\u5DF2\u914D\u7F6E':'\u672A\u914D\u7F6E')+'</span>';
+          h+='<span title="色标" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:'+colors[colorIdx]+';border:2px solid rgba(255,255,255,.12)"></span>';
+          h+='</div>';
+          // Actions
+          h+='<div style="display:flex;gap:4px;padding-bottom:8px">';
+          h+='<button class="mini-btn" onclick="toggleCharBibleEdit(\''+fid+'\')" style="font-size:9px">\u{1F4DD} \u7F16\u8F91</button>';
+          h+='<button class="mini-btn" onclick="auditionVoice(\''+fid+'\',this)" style="font-size:9px">\u{1F50A} \u8BD5\u542C</button>';
+          h+='</div></div></div>';
+        });
+        h+='</div></div>';
+        return;
+        } // hasCharData
       }
       const secId = 'sec-'+s.title.replace(/[^a-zA-Z0-9一-鿿]/g,'');
       // P0-1: Summary line always visible, body collapsible
