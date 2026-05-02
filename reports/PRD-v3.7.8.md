@@ -16,7 +16,7 @@
 | 能力 | 状态 | 验证 |
 |------|------|------|
 | Flask Dashboard :5001 | ✅ 运行中 | task_board.html **7,024行** · 15功能模块+2工具面板 · UX WBS Sprint 1-4完成 · JS语法零缺陷 |
-| API 端点 | ✅ 42+ | Flask :5001 (34+) + FastAPI :5004 (8+) · 80/80 QA PASS |
+| API 端点 | ✅ 42+ | Flask :5001 (34+) + FastAPI :5004 (8+) · 42 curl PASS · 10 pytest PASS · SSE流式审核 |
 | TK 运营（13里程碑）| ✅ 全端点200 | 选品对比/图片处理/5国合规/采集门禁 |
 | ├ MS-0 采集门禁 | 🆕 体检报告 | 运营健康仪表盘 + 门禁指标 + 路由检测 |
 | ├ MS-2.3 商品图处理 | 🆕 处理工作台 | 4张真实商品图卡片 + 去背景/一键处理 + 批量串行 |
@@ -104,7 +104,7 @@
 | `pillow_storyboard.py` | 同上 | 同上 | d6f71c0 |
 | `role_designer.py` | core/ 和 skills/ 双副本(内容不同) | 删除 core/ 过期副本(318行) | 67b01ba |
 
-**端到端验证**: 38/38 API 端点 200 ✅（v3.6.1 80/80 QA PASS + v3.7 新增 8 端点）
+**端到端验证**: 38/38 API 端点 200 ✅（42 curl + 10 pytest PASS + v3.7 新增 SSE流式审核）
 
 ### PHASE 3: 管线修复 (commit 197591a)
 

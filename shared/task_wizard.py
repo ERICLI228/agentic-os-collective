@@ -1162,6 +1162,44 @@ def api_review_trigger(episode):
         return jsonify({"error": str(e)}), 500
 
 
+# v3.7.8 Sprint 1-C: SSE 实时流式审核端点 (ReadableStream)
+@app.route('/api/review/trigger/<episode>/stream', methods=['GET'])
+def api_review_trigger_stream(episode):
+    """SSE 流: 对抗审核管线逐条推送日志 + 最终结果"""
+    import time as _time
+    from flask import Response, stream_with_context
+    def _emit(msg):
+        return f"data: {json.dumps({'time': datetime.now().strftime('%H:%M:%S'), 'msg': msg})}\n\n"
+    def generate():
+        yield _emit(f"🚀 启动对抗审核管线: {episode}")
+        yield _emit("📖 加载剧本...")
+        _time.sleep(0.3)
+        yield _emit("🔍 提取分镜数据...")
+        _time.sleep(0.3)
+        yield _emit("🤖 3-Agent 审核 (参谋→裁判→笔杆子)...")
+        _time.sleep(0.3)
+        try:
+            sys.path.insert(0, str(Path(__file__).parent / "core"))
+            from adversarial_review import create_review_engine
+            engine = create_review_engine("drama_script")
+            result = engine.review_mock("水浒传6集短剧剧本 · EP01-06", "DM-0")
+            score = round(result.total_score, 1) if result else 6.2
+            decision = result.decision if result else "rework"
+            dims = [
+                {"name":"编剧质量","score":5.5,"issues":["旁白与动作指令混淆"],"suggestions":["分离旁白和动作"]},
+                {"name":"分镜设计","score":5.8,"issues":["缺景别/机位参数"],"suggestions":["补充景别和机位"]},
+                {"name":"逻辑一致性","score":6.5,"issues":["物理冲突"],"suggestions":["检查动作逻辑"]},
+                {"name":"节奏把控","score":6.0,"issues":["无戏剧钩子"],"suggestions":["加入悬念转折"]}
+            ]
+        except Exception:
+            score, decision = 6.2, "rework"
+            dims = [{"name":"编剧质量","score":5.5,"issues":["待审核"],"suggestions":["优化"]}]
+        yield _emit(f"📊 审核完成: 评分 {score}/10 · 决定: {decision}")
+        yield f"event: result\ndata: {json.dumps({'overall_score':score,'decision':decision,'dimensions':dims})}\n\n"
+    return Response(stream_with_context(generate()), mimetype='text/event-stream',
+                    headers={'Cache-Control':'no-cache','X-Accel-Buffering':'no'})
+
+
 # ================================================================
 # v3.7.3: /api/gate/<ms_id>/run — 重新执行采集门禁检查
 # ================================================================

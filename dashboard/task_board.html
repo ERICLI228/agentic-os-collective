@@ -6329,11 +6329,10 @@ function renderFourDimReview(reviewData) {
 // ================================================================
 // v3.6.9: P0-3 修改→重处理→审核自动循环
 // ================================================================
-// v3.7.8: triggerReReview with log panel
+// v3.7.8: triggerReReview with SSE ReadableStream real-time logs
 async function reReviewDM0(){
   const btn=document.getElementById('dm0-rerun-btn');
   if(btn){btn.disabled=true;btn.textContent='⏳ 审核中...';}
-  // 日志面板
   var logPanel=document.getElementById('review-log-panel');
   if(!logPanel){
     logPanel=document.createElement('div');
@@ -6343,26 +6342,68 @@ async function reReviewDM0(){
     if(detailEl) detailEl.insertBefore(logPanel,document.getElementById('dm0-sec'));
   }
   logPanel.style.display='block';
-  logPanel.innerHTML='<div style="font-size:10px;color:#93c5fd;margin-bottom:6px">📋 审核日志</div>';
+  logPanel.innerHTML='<div style="font-size:10px;color:#93c5fd;margin-bottom:6px">📋 审核日志 (SSE实时流)</div>';
   function addLog(msg){logPanel.insertAdjacentHTML('beforeend','<div class="review-log-line">'+msg+'</div>');logPanel.scrollTop=logPanel.scrollHeight;}
-  addLog('🚀 启动 DM-0 对抗审核管线...');
   try{
-    var r=await fetch('/api/review/trigger/ep01',{method:'POST'});
-    var d=await r.json();
-    if(d.logs) d.logs.forEach(function(l){addLog(l.time+' '+l.msg);});
-    addLog('📊 综合评分: '+d.overall_score+'/10 · '+d.decision);
-    // 渲染四维审核卡片
-    var dimSec=document.getElementById('dm0-decision-sec');
-    if(dimSec&&d.dimensions){
-      var content=renderFourDimReview(d);
-      dimSec.querySelector('.four-dim').innerHTML=content;
-      // 更新评分
-      var scoreEl=dimSec.querySelector('div[style]');
-      if(scoreEl) scoreEl.textContent='综合评分: '+d.overall_score+'/10';
+    // v3.7.8: Use SSE ReadableStream for real-time logs
+    var r=await fetch('/api/review/trigger/ep01/stream');
+    var reader=r.body.getReader();
+    var decoder=new TextDecoder();
+    var buffer='';
+    var resultData=null;
+    // 读取流
+    while(true){
+      var {done,value}=await reader.read();
+      if(done) break;
+      buffer+=decoder.decode(value,{stream:true});
+      // Process SSE lines
+      var lines=buffer.split('\n');
+      buffer=lines.pop()||'';
+      var eventType='message';
+      for(var i=0;i<lines.length;i++){
+        var line=lines[i];
+        if(line.startsWith('data: ')){
+          var data=line.slice(6);
+          try{
+            var parsed=JSON.parse(data);
+            if(eventType==='result'){
+              resultData=parsed;
+            }else{
+              addLog(parsed.time+' '+parsed.msg);
+            }
+          }catch(e){/*ignore malformed*/}
+        }else if(line.startsWith('event: ')){
+          eventType=line.slice(7);
+        }
+      }
     }
-    toastMsg('✅ 审核完成: '+d.overall_score+'/10',3000);
-    // v3.7.8: 三步反馈第三步 - 页面刷新以同步最新审核结果
-    if(typeof refresh==='function'){refresh();render();}
+    // Stream finished — render result
+    if(resultData){
+      addLog('📊 综合评分: '+resultData.overall_score+'/10 · '+resultData.decision);
+      var dimSec=document.getElementById('dm0-decision-sec');
+      if(dimSec&&resultData.dimensions){
+        var content=renderFourDimReview(resultData);
+        dimSec.querySelector('.four-dim').innerHTML=content;
+        var scoreEl=dimSec.querySelector('div[style]');
+        if(scoreEl) scoreEl.textContent='综合评分: '+resultData.overall_score+'/10';
+        // Also re-render radar
+        renderReviewRadar({dimensions:resultData.dimensions,overall_score:resultData.overall_score});
+      }
+      toastMsg('✅ 审核完成: '+resultData.overall_score+'/10',3000);
+      if(typeof refresh==='function'){refresh();render();}
+    }else{
+      // Fallback: use traditional POST endpoint
+      var fr=await fetch('/api/review/trigger/ep01',{method:'POST'});
+      var d=await fr.json();
+      addLog('📊 综合评分: '+d.overall_score+'/10 · '+d.decision);
+      var dimSec2=document.getElementById('dm0-decision-sec');
+      if(dimSec2&&d.dimensions){
+        var content2=renderFourDimReview(d);
+        dimSec2.querySelector('.four-dim').innerHTML=content2;
+      }
+      toastMsg('✅ 审核完成: '+d.overall_score+'/10',3000);
+      if(typeof refresh==='function'){refresh();render();}
+    }
   }catch(e){addLog('❌ 失败: '+e.message);toastMsg('审核失败',3000);}
   if(btn){btn.disabled=false;btn.textContent='🔄 重新审核';}
 }
