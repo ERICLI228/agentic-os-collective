@@ -34,6 +34,11 @@ app = Flask(__name__)
 CORS(app)
 
 
+@app.route('/')
+def serve_root():
+    """根路径重定向到仪表盘"""
+    return '<meta http-equiv="refresh" content="0;url=/dashboard">'
+
 @app.route('/gallery')
 def serve_gallery():
     """109将画廊 HTML"""
