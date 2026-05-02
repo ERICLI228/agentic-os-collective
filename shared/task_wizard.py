@@ -31,6 +31,7 @@ def _find_binary(name):
     return name  # fallback: let subprocess try and fail
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False  # v3.7.8: 返回中文原字符，非 \uXXXX 转义
 CORS(app)
 
 
