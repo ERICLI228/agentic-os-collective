@@ -691,25 +691,7 @@ async function refresh(){
   hideLoading();
 }
 
-function onSearch(v){ searchQ=v.toLowerCase(); render(); }
-function onFilter(v){ filterSt=v; render(); }
 
-// ================================================================
-// EXISTING: switchTab
-// ================================================================
-function switchTab(t){
-  cur=t; sel=null;
-  document.getElementById('tabTK').className='tab'+(t=='tk'?' active':'');
-  document.getElementById('tabDM').className='tab'+(t=='drama'?' active':'');
-  render();
-}
-
-// ================================================================
-// EXISTING: render
-// ================================================================
-function render(){
-  let f=all.filter(m=>m.pipeline===cur);
-  
 // v3.7: TK milestone search filter
 function onTKSearch(val) {
   var q = val.toLowerCase();
@@ -732,7 +714,27 @@ function onTKSearch(val) {
   if (q) hint.textContent = visible + '/' + total + ' 匹配';
   else hint.textContent = '';
 }
-\n// P1-12: apply search & filter
+\n
+
+function onSearch(v){ searchQ=v.toLowerCase(); render(); }
+function onFilter(v){ filterSt=v; render(); }
+
+// ================================================================
+// EXISTING: switchTab
+// ================================================================
+function switchTab(t){
+  cur=t; sel=null;
+  document.getElementById('tabTK').className='tab'+(t=='tk'?' active':'');
+  document.getElementById('tabDM').className='tab'+(t=='drama'?' active':'');
+  render();
+}
+
+// ================================================================
+// EXISTING: render
+// ================================================================
+function render(){
+  let f=all.filter(m=>m.pipeline===cur);
+  // P1-12: apply search & filter
   if(searchQ) f=f.filter(m=>(m.ms_id+' '+(m.name||'')+' '+(m.task_id||'')).toLowerCase().includes(searchQ));
   if(filterSt!=='all') f=f.filter(m=>m.status===filterSt);
   document.getElementById('tkCount').textContent=all.filter(m=>m.pipeline=='tk').length;

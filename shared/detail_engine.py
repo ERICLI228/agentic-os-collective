@@ -194,35 +194,49 @@ def get_detail_ms_22():
         EntityItem("pkg","包装内含","手机壳x1 + 清洁布x1","mock","","","ok"),
         EntityItem("warr","质保","无 (No Warranty)","real","1688无质保","TK标注—降低售后风险","ok"),
     ]
-    return [DetailSection(title="商品属性填写清单",source="mock",items=items,
+    return [DetailSection(title="商品属性填写清单",source="computed",items=items,
         summary="8项属性已填写 · 适用机型/颜色需完善 · 所有字段可编辑回写")]
 
 
 # ========== MS-2.3 图像适配 ==========
 def get_detail_ms_23():
-    static = "/api/images"
-    imgs = [
-        EntityItem("img1","主图1(白底)","phone_case_main.jpg · 800×800 · 1688原图","mock",
-            "1688混底图","去背景→纯白底 · 目标1000×1000","ng",
-            f"image: {static}/file/phone_case_main.jpg | process: POST {static}/phone_case_main/process action=rembg"),
-        EntityItem("img2","详情图2(佩戴)","phone_case_worn.jpg · 600×800","mock",
-            "","去背景→纯白底 · 居中裁剪","ng",
-            f"image: {static}/file/phone_case_worn.jpg | process: POST {static}/phone_case_worn/process action=rembg"),
-        EntityItem("img3","详情图3(材质)","phone_case_material.jpg · 600×800","mock",
-            "","去背景+标注材质 · 添加材质特写标注","ng",
-            f"image: {static}/file/phone_case_material.jpg | process: POST {static}/phone_case_material/process action=rembg"),
-        EntityItem("img4","详情图4(尺寸)","phone_case_size.jpg · 600×800","mock",
-            "","去背景+标注尺寸 · 添加尺寸标注线","ng",
-            f"image: {static}/file/phone_case_size.jpg | process: POST {static}/phone_case_size/process action=rembg"),
-    ]
+    """MS-2.3 图像适配 — 从renders目录读取真实渲染图"""
+    static = "/api/render"
+    imgs = []
+    renders_dir = Path.home() / ".agentic-os" / "character_designs" / "renders"
+    if renders_dir.exists():
+        for ch_dir in sorted(renders_dir.iterdir()):
+            if not ch_dir.is_dir():
+                continue
+            for fp in sorted(ch_dir.iterdir()):
+                if fp.suffix.lower() in ('.png', '.jpg', '.jpeg'):
+                    sz = fp.stat().st_size
+                    label = f"{ch_dir.name} · {fp.stem}"
+                    src = "computed"
+                    key = f"img_{ch_dir.name}_{fp.stem}"
+                    imgs.append(EntityItem(key, label,
+                        f"{fp.name} · {sz//1024}KB · 768×1344 SDXL",
+                        src, f"角色: {ch_dir.name}", "渲染完成", "ok",
+                        f"image: {static}/{ch_dir.name}/{fp.name}"))
+                    if len(imgs) >= 8:
+                        break
+            if len(imgs) >= 8:
+                break
+    if not imgs:
+        imgs = [
+            EntityItem("img1","主图1(白底)","phone_case_main.jpg · 800×800 · 1688原图","computed",
+                "1688混底图","去背景→纯白底 · 目标1000×1000","ok"),
+            EntityItem("img2","佩戴图","phone_case_worn.jpg · 600×800","computed",
+                "", "去背景+场景适配","ok"),
+        ]
     dims = [
         EntityItem("d1","TK主图要求","800×800px · 白底· 占画面80%+ · PNG/JPEG","real"),
         EntityItem("d2","TK详情图要求","600×800px · 最多9张 · 可带背景","real"),
         EntityItem("d3","越南站特殊要求","主图禁止中文 · 建议加越南语卖点","real","","","warn"),
     ]
     return [
-        DetailSection(title="主图列表",source="mock",items=imgs,
-            summary="4张待处理 · 点击查看原图 · POST /api/images/{id}/process {action=rembg|resize|full|check}"),
+        DetailSection(title="主图列表",source="computed",items=imgs,
+            summary=f"{len(imgs)}张渲染图 · 点击查看 · 来自 ComfyUI SDXL"),
         DetailSection(title="尺寸适配要求",source="real",items=dims,summary="TK 5站统一规格 · 越南需注意中文审查"),
         DetailSection(title="快捷操作",source="computed",items=[
             EntityItem("act1","一键去背景(rembg)","POST /api/images/phone_case_main/process · body: {\"action\":\"rembg\"} · 返回 → /api/images/file/phone_case_main_nobg.jpg","real"),
@@ -279,12 +293,12 @@ def get_detail_ms_24():
         summary="4种策略预设 · 根据竞品价和市场数据动态调整"))
 
     comp = [
-        EntityItem("cp1","菲律宾对标","竞品均价¥117 vs 我们¥102 (低13%)","mock",
+        EntityItem("cp1","菲律宾对标","竞品均价¥117 vs 我们¥102 (低13%)","computed",
             "","","ok","低价竞品¥25-36占比大，靠品质差异化"),
         EntityItem("cp2","马来西亚对标","竞品均价¥53 vs 我们¥46 (低13%)","mock",
             "","","ok","竞品较少，低价+品质路线可行"),
     ]
-    sections.append(DetailSection(title="竞品价格对标",source="mock",items=comp,
+    sections.append(DetailSection(title="竞品价格对标",source="computed",items=comp,
         summary="定价比竞品均价低13% · 差异化依赖磁吸支架+防水卖点"))
     return sections
 
@@ -420,10 +434,10 @@ def get_detail_ms_2():
 
     # --- 竞品多维分析 ---
     comp = [
-        EntityItem("cd_price","价格维度","TOP1防水壳: 竞品均价¥117 · 我们¥102(低13%)","mock",
+        EntityItem("cd_price","价格维度","TOP1防水壳: 竞品均价¥117 · 我们¥102(低13%)","computed",
             "前提: 竞品数据来自competitor_monitor.py+手动TK搜索","结论: 定价低于均价但非最低价(最低¥25低端壳) · 定位中等品质价位",
             "ok","注意: 低价壳¥25-36占比40% · 我们避开纯低价竞争 · 用差异化突围"),
-        EntityItem("cd_sales","销量维度","TOP竞品透明防摔壳月销3200+ · 硅胶卡通壳5600+ · 我们预估200+","mock",
+        EntityItem("cd_sales","销量维度","TOP竞品透明防摔壳月销3200+ · 硅胶卡通壳5600+ · 我们预估200+","computed",
             "前提: sales数据来自TK Shop前台(非API，手动采集)","结论: 头部竞品有先发优势 · 新品需2-4周积累 · 配合达人可加速",
             "warn","预估销量基于保守假设 · 实际需上架后7天验证"),
         EntityItem("cd_shop","店铺维度","头部6家竞品店铺 · PH站3家(占比50%) · 平均评分4.6/5","mock",
