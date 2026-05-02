@@ -152,6 +152,60 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 .toast.error{background:#ef4444;color:#fff}
 .toast.warn{background:#f59e0b;color:#000}
 
+/* v3.7.3: MS-2.3 TK商品图处理工作台 */
+#toast-container{position:fixed;top:8px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.toast-item{padding:8px 16px;border-radius:6px;font-size:11px;font-weight:600;color:#fff;opacity:1;transition:opacity .3s;pointer-events:auto;max-width:320px;box-shadow:0 2px 12px rgba(0,0,0,.4)}
+.toast-item.success{background:#22c55e;color:#000}
+.toast-item.error{background:#ef4444;color:#fff}
+.toast-item.warn{background:#f59e0b;color:#000}
+.toast-item.info{background:#3b82f6;color:#fff}
+.toast-item.fade-out{opacity:0}
+.img-filter-bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px;padding:8px 10px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid rgba(255,255,255,.05)}
+.img-filter-btn{font-size:10px;padding:4px 12px;border-radius:16px;border:1px solid #333;color:#888;background:transparent;cursor:pointer;transition:all .15s}
+.img-filter-btn:hover{color:#e4e6eb;border-color:#555}
+.img-filter-btn.active{background:#2563eb;border-color:#2563eb;color:#fff}
+.img-batch-btn{font-size:10px;padding:4px 12px;border-radius:16px;border:1px solid #f59e0b;color:#f59e0b;background:rgba(245,158,11,.08);cursor:pointer;transition:all .15s;margin-left:auto}
+.img-batch-btn:hover{background:#f59e0b;color:#000}
+.img-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin:10px 0}
+.img-card{background:#111;border-radius:8px;padding:6px;border:1px solid #222;transition:all .15s;overflow:hidden}
+.img-card:hover{border-color:#333;box-shadow:0 0 8px rgba(59,130,246,.2)}
+.img-card[data-status="processing"]{border-color:#f59e0b;opacity:.7}
+.img-card[data-status="done"]{border-color:#22c55e}
+.img-preview{position:relative;margin-bottom:6px}
+.img-preview img{width:100%;height:140px;object-fit:cover;border-radius:4px;display:block;background:#0a0a0a}
+.img-status-tag{position:absolute;top:4px;right:4px;font-size:9px;padding:1px 6px;border-radius:8px;font-weight:600}
+.img-status-tag.yellow{background:#f59e0b;color:#000}
+.img-status-tag.green{background:#22c55e;color:#000}
+.img-status-tag.red{background:#ef4444;color:#fff}
+.img-actions{display:flex;gap:4px;margin-top:4px}
+.btn-rembg,.btn-full{flex:1;font-size:9px;padding:4px 6px;border-radius:4px;border:none;cursor:pointer;font-weight:600;transition:all .15s}
+.btn-rembg{background:#1e2a3a;color:#4a9eff}
+.btn-rembg:hover{background:#2563eb;color:#fff}
+.btn-rembg:disabled{opacity:.5;pointer-events:none}
+.btn-full{background:#0f3b2e;color:#34d399}
+.btn-full:hover{background:#22c55e;color:#000}
+.btn-full:disabled{opacity:.5;pointer-events:none}
+.img-compare-area{margin-top:4px;padding-top:4px;border-top:1px solid #1a1a1a}
+.img-compare-area img{width:100%;height:100px;object-fit:cover;border-radius:4px;margin-top:2px;background:#0a0a0a}
+.info-card.collapsible{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;margin:8px 0;overflow:hidden}
+.info-card-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;cursor:pointer;font-size:11px;color:#93c5fd;transition:background .15s}
+.info-card-header:hover{background:rgba(255,255,255,.04)}
+.info-card-header .toggle-icon{transition:transform .2s}
+.info-card-body{padding:4px 12px 10px 12px;font-size:10px;color:#888;line-height:1.7}
+.info-card-body ul{margin:0;padding-left:16px}
+.info-card-body li{margin:2px 0}
+.info-card-body li strong{color:#c4d4e8}
+
+/* v3.7.3: DM-1 asset grid */
+.dm1-asset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:10px 0}
+.dm1-asset-item{background:rgba(74,158,255,.03);border:1px solid rgba(74,158,255,.08);border-radius:8px;padding:8px;text-align:center;transition:all .15s}
+.dm1-asset-item:hover{background:rgba(74,158,255,.06);border-color:rgba(74,158,255,.2)}
+.dm1-asset-name{font-size:11px;font-weight:700;color:#e8f0fe;margin-bottom:2px}
+.dm1-asset-title{font-size:9px;color:#6b8aad;margin-bottom:6px}
+.dm1-asset-thumbs{display:flex;gap:4px;justify-content:center}
+.dm1-asset-thumb{width:44px;height:60px;object-fit:cover;border-radius:4px;cursor:pointer;border:1px solid rgba(74,158,255,.1);transition:border-color .15s}
+.dm1-asset-thumb:hover{border-color:#4a9eff}
+
 /* DM-1: Character Bible Panel v3.6.7 — 科技清新风 */
 .char-bible{background:linear-gradient(135deg,#0c1222 0%,#0f1a2e 100%);border:1px solid rgba(74,158,255,.15);border-radius:8px;padding:14px;margin:8px 0;position:relative;transition:all .2s;box-shadow:0 2px 12px rgba(0,0,0,.3)}
 .char-bible:hover{background:linear-gradient(135deg,#0f1628 0%,#12203a 100%);border-color:rgba(74,158,255,.3);box-shadow:0 4px 20px rgba(74,158,255,.08)}
@@ -457,6 +511,7 @@ if(localStorage.getItem('_dash_v')!=='3.6.20'){localStorage.setItem('_dash_v','3
 </script>
 </head>
 <body>
+<div id="toast-container"></div>
 <div id="version-check" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#10b981;color:#fff;text-align:center;padding:6px 12px;font-size:13px;font-family:monospace;letter-spacing:0.5px;cursor:pointer" onclick="this.remove()">✅ P3-FILTER-ACTIVE — 服务器版本已更新 (21:12:37) — 点击关闭</div>
 
 <div class="topbar">
@@ -1208,6 +1263,43 @@ async function renderDM1(detail, ms) {
   }).filter(Boolean);
   // Default: Top 10, show hint
   applyDM1Filter();
+
+  // v3.7.3: 角色资产缩略图网格 (仅主要角色)
+  renderDM1Assets(results);
+}
+
+// v3.7.3: renderDM1Assets -- 角色资产缩略图网格 (DM-1 底部)
+function renderDM1Assets(charResults){
+  if(!charResults||!charResults.length)return;
+  const topChars=charResults.slice(0,8);
+  const detailEl=document.getElementById('detail');
+  if(!detailEl)return;
+
+  let h='<div class="sec" id="dm1-assets-sec"><h3>&#127912; 角色资产预览</h3>';
+  h+='<p style="font-size:9px;color:#555;margin-bottom:8px">主要角色定妆照缩略图 · 点击放大</p>';
+  h+='<div class="dm1-asset-grid">';
+  topChars.forEach(function(c){
+    const fid=c.fid;
+    const name=c.name||'';
+    const title=c.title||'';
+    let urls=[];
+    if(c.renders&&c.renders.length){
+      urls=c.renders.map(function(r){return typeof r==='string'?r:(r.url||r.src||'');}).filter(Boolean);
+    }
+    if(!urls.length){
+      urls=['/api/render/'+fid+'/shot_01.png', '/api/render/'+fid+'/shot_02.png'];
+    }
+    h+='<div class="dm1-asset-item">';
+    h+='<div class="dm1-asset-name">'+name+'</div>';
+    h+='<div class="dm1-asset-title">'+title+'</div>';
+    h+='<div class="dm1-asset-thumbs">';
+    urls.slice(0,3).forEach(function(u){
+      if(u) h+='<img class="dm1-asset-thumb" src="'+u+'" loading="lazy" onclick="zoomImg(''+u+'')" onerror="this.style.display='none'"/>';
+    });
+    h+='</div></div>';
+  });
+  h+='</div></div>';
+  detailEl.insertAdjacentHTML('beforeend',h);
 }
 
 // ================================================================
@@ -1615,11 +1707,10 @@ async function renderDetail(){
     await renderDM0(detail,ms);
   }else if(ms.ms_id==='DM-1'){
     await renderDM1(detail,ms);
+  }else if(ms.ms_id==='MS-2.3'){
+    await renderTKImageWorkbench(detail,ms);
   }else if(ms.ms_id && !ms.ms_id.startsWith('DM-') && !ms.ms_id.startsWith('daily')){
     await renderTKDetail(detail,ms);
-    await renderDM1(detail,ms);
-  }else if(ms.ms_id==='MS-2.3'){
-    await renderMS23(detail,ms);
   }else if(ms.ms_id&&/^DM-(6|7|8|9|10)$/.test(ms.ms_id)){
     await renderDMEpisode(ms.ms_id,detail,ms);
   }
@@ -1677,24 +1768,7 @@ async function renderTKDetail(detail, ms) {
     h += '</div></div>';
   }
   
-  // MS-2.3: image gallery and processing controls
-  if (ms.ms_id === 'MS-2.3') {
-    h += '<div class="sec"><h3>📷 图片处理</h3><div style="display:flex;gap:10px;flex-wrap:wrap">';
-    var demoImages = [
-      { name: '主图 (白底)', file: 'phone_case_main', status: '待处理' },
-      { name: '佩戴图', file: 'phone_case_worn', status: '待处理' },
-      { name: '细节特写', file: 'phone_case_detail', status: '待处理' }
-    ];
-    demoImages.forEach(function(img) {
-      h += '<div style="width:150px;background:rgba(255,255,255,.03);border-radius:6px;padding:8px;text-align:center;border:1px solid #222">';
-      h += '<div style="width:100%;height:120px;background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:6px">📱</div>';
-      h += '<div style="font-size:10px;color:#c4d4e8;font-weight:600">' + img.name + '</div>';
-      h += '<div style="font-size:9px;color:#f59e0b;margin:2px 0">' + img.status + '</div>';
-      h += '<button class="mini-btn" style="margin-top:4px">去背景</button>';
-      h += '</div>';
-    });
-    h += '</div></div>';
-  }
+  // MS-2.3: moved to renderTKImageWorkbench (product image workbench)
   
   // MS-2.1: localization reviews
   if (ms.ms_id === 'MS-2.1') {
@@ -2401,49 +2475,199 @@ async function reRender(charName){
 }
 
 // ================================================================
-// v3.6: renderMS23 - MS-2.3: 产品图片
+// v3.7.3: renderTKImageWorkbench — MS-2.3 TK商品图处理工作台
 // ================================================================
-async function renderMS23(detail,ms){
+async function renderTKImageWorkbench(detail,ms){
   const detailEl=document.getElementById('detail');
-  let sec=`<div class="sec" id="ms23-sec"><h3>&#128230; 产品图片</h3>`;
-  sec+=`<div id="ms23-products"><span class="loading">加载产品图片...</span></div>`;
-  sec+=`</div>`;
-  detailEl.insertAdjacentHTML('beforeend',sec);
+  let h='<div class="sec" id="ms23-sec"><h3>&#128230; TK商品图处理工作台</h3>';
+  h+='<div id="ms23-workbench"><span class="loading">加载商品图片...</span></div>';
+  h+='</div>';
+  detailEl.insertAdjacentHTML('beforeend',h);
 
   try{
     const r=await fetch('/api/images');
-    const products=await r.json();
-    const prodList=Array.isArray(products)?products:(products.images||products.products||[]);
-    if(!prodList.length){document.getElementById('ms23-products').innerHTML='<span style="font-size:10px;color:#555;">无产品数据</span>';return;}
-
-    let pH='';
-    prodList.forEach(p=>{
-      const pid=p.id||p.name||p.sku||'';
-      const pname=p.name||p.title||pid;
-      const orig=p.original||p.orig||'';
-      const nobg=p.nobg||p.no_bg||'';
-      const fin=p.final||p.fin||'';
-      pH+=`<div class="prod-row" id="prod-${pid}">
-        <div class="prod-name">${pname}</div>
-        <div class="img-gallery" id="prod-gallery-${pid}">`;
-      if(orig)pH+=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${orig}')"><img src="${orig}" loading="lazy" onerror="this.style.display='none'"/><span class="img-label">原始</span></div>`;
-      if(nobg)pH+=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${nobg}')"><img src="${nobg}" loading="lazy" onerror="this.style.display='none'"/><span class="img-label">去背景</span></div>`;
-      if(fin)pH+=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${fin}')"><img src="${fin}" loading="lazy" onerror="this.style.display='none'"/><span class="img-label">最终</span></div>`;
-      pH+=`<span class="img-label" id="prod-after-${pid}" style="display:none">处理后</span>`;
-      pH+=`</div>
-        <textarea id="note-${pid}" placeholder="修改意见（可选）..." rows="2" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px;border-radius:4px;font-size:10px;margin:4px 0"></textarea>
-        <div class="img-actions">
-          <button class="mini-btn" onclick="processImage('${pid}','rembg',this)">去背景</button>
-          <button class="mini-btn" onclick="processImage('${pid}','full',this)">完整处理</button>
-          <button class="mini-btn" onclick="processImage('${pid}','check',this)">合规检查</button>
-          <button class="mini-btn" onclick="processImage('${pid}','push_erp',this)">推妙手草稿</button>
-        </div>
-      </div>`;
-    });
-    document.getElementById('ms23-products').innerHTML=pH;
+    const data=await r.json();
+    const images=Array.isArray(data)?data:(data.images||data.products||[]);
+    if(!images.length){
+      document.getElementById('ms23-workbench').innerHTML='<div style="text-align:center;padding:20px;color:#555;font-size:12px">暂无商品图片数据</div>';
+      return;
+    }
+    _tkImageData=images;
+    _tkImageFilter='all';
+    _renderTKCards();
   }catch(e){
-    document.getElementById('ms23-products').innerHTML=`<span style="font-size:10px;color:#ef4444;">加载失败: ${e.message}</span>`;
+    document.getElementById('ms23-workbench').innerHTML=`<div style="text-align:center;padding:20px;color:#ef4444;font-size:12px">加载失败: ${e.message}</div>`;
   }
+}
+
+// TK Image Workbench state
+var _tkImageData=[];
+var _tkImageFilter='all';
+
+function _renderTKCards(){
+  const container=document.getElementById('ms23-workbench');
+  if(!container)return;
+  const imgs=_tkImageData;
+  // Count by status
+  let nAll=imgs.length, nPending=0, nDone=0;
+  imgs.forEach(function(img){
+    if(img.status==='done'||img.status==='approved') nDone++;
+    else nPending++;
+  });
+
+  let h='';
+  // Filter bar
+  h+='<div class="img-filter-bar">';
+  h+='<button class="img-filter-btn'+(_tkImageFilter==='all'?' active':'')+'" data-filter="all" onclick="_tkImageFilter=\'all\';_renderTKCards()">全部 ('+nAll+')</button>';
+  h+='<button class="img-filter-btn'+(_tkImageFilter==='pending'?' active':'')+'" data-filter="pending" onclick="_tkImageFilter=\'pending\';_renderTKCards()">待处理 ('+nPending+')</button>';
+  h+='<button class="img-filter-btn'+(_tkImageFilter==='done'?' active':'')+'" data-filter="done" onclick="_tkImageFilter=\'done\';_renderTKCards()">已完成 ('+nDone+')</button>';
+  h+='<button class="img-batch-btn" onclick="_tkBatchProcessAll()">&#9889; 一键批量处理全部</button>';
+  h+='</div>';
+
+  // Info card
+  h+='<div class="info-card collapsible">';
+  h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+  h+='<span>&#128203; TK商品图合规标准</span>';
+  h+='<span class="toggle-icon">&#9660;</span>';
+  h+='</div>';
+  h+='<div class="info-card-body" style="display:none">';
+  h+='<ul>';
+  h+='<li><strong>主图：</strong>800×800px，白底，占画面80%</li>';
+  h+='<li><strong>详情图：</strong>600×800px，最多9张</li>';
+  h+='<li><strong>&#127483;&#127455; 越南站：</strong>主图禁止中文，建议加越南语卖点</li>';
+  h+='</ul>';
+  h+='</div></div>';
+
+  // Card grid
+  h+='<div class="img-card-grid">';
+  imgs.forEach(function(img,idx){
+    const pid=img.id||img.name||img.sku||('img-'+idx);
+    const pname=img.name||img.title||pid;
+    const orig=img.original||img.orig||'';
+    const nobg=img.nobg||img.no_bg||'';
+    const fin=img.final||img.fin||'';
+    const isDone=(img.status==='done'||img.status==='approved');
+    const show=(_tkImageFilter==='all'||(_tkImageFilter==='done'&&isDone)||(_tkImageFilter==='pending'&&!isDone));
+    if(!show)return;
+
+    const statusTag=isDone?'<span class="img-status-tag green">已完成</span>':'<span class="img-status-tag yellow">待处理</span>';
+    const displayStyle=(!show)?'display:none':'';
+
+    h+='<div class="img-card" data-status="'+(isDone?'done':'pending')+'" data-idx="'+idx+'" style="'+displayStyle+'">';
+    h+='<div class="img-preview">';
+    if(orig) h+='<img src="'+orig+'" loading="lazy" onerror="this.parentElement.innerHTML=\'&lt;div class=\"img-placeholder-text\"&gt;图片加载失败&lt;/div&gt;\'"/>';
+    else h+='<div class="img-placeholder-text">无预览图</div>';
+    h+=statusTag;
+    h+='</div>';
+
+    if(isDone){
+      h+='<div class="img-compare-area">';
+      h+='<span style="font-size:9px;color:#888">处理后</span>';
+      const showImg=fin||nobg||orig;
+      if(showImg) h+='<img src="'+showImg+'" loading="lazy" onclick="zoomImg(\''+showImg+'\')" onerror="this.style.display=\'none\'"/>';
+      else h+='<div style="font-size:9px;color:#555">无处理后图片</div>';
+      h+='</div>';
+    }else{
+      h+='<div class="img-actions">';
+      h+='<button class="btn-rembg" data-img="'+pid+'" data-idx="'+idx+'" onclick="event.stopPropagation();_tkProcessImage(\''+pid+'\','+idx+',\'rembg\',this)">去背景</button>';
+      h+='<button class="btn-full" data-img="'+pid+'" data-idx="'+idx+'" onclick="event.stopPropagation();_tkProcessImage(\''+pid+'\','+idx+',\'full\',this)">一键处理</button>';
+      h+='</div>';
+    }
+    h+='</div>';
+  });
+  h+='</div>';
+  container.innerHTML=h;
+}
+
+function _tkProcessImage(pid,idx,action,btn){
+  if(!btn)return;
+  btn.disabled=true;
+  btn.textContent='处理中...';
+  const card=btn.closest('.img-card');
+  if(card) card.setAttribute('data-status','processing');
+
+  fetch('/api/images/'+encodeURIComponent(pid)+'/process',{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({action:action,note:''})})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(d.error){
+      showToast('✖ 处理失败: '+d.error,'error');
+      if(btn){btn.disabled=false;btn.textContent=action==='rembg'?'去背景':'一键处理';}
+      if(card) card.setAttribute('data-status','pending');
+    }else{
+      // Update image data
+      if(_tkImageData[idx]){
+        _tkImageData[idx].status='done';
+        if(d.final_path) _tkImageData[idx].final=d.final_path+'?t='+Date.now();
+        if(d.nobg_path) _tkImageData[idx].nobg=d.nobg_path+'?t='+Date.now();
+      }
+      showToast('✔ 图片处理成功','success');
+      _renderTKCards();
+    }
+  })
+  .catch(function(e){
+    showToast('✖ 处理失败: '+e.message,'error');
+    if(btn){btn.disabled=false;btn.textContent=action==='rembg'?'去背景':'一键处理';}
+    if(card) card.setAttribute('data-status','pending');
+  });
+}
+
+async function _tkBatchProcessAll(){
+  const pending=[];
+  _tkImageData.forEach(function(img,idx){
+    if(img.status!=='done'&&img.status!=='approved') pending.push({img:img,idx:idx});
+  });
+  if(!pending.length){showToast('⚠ 没有待处理的图片','warn');return;}
+  showToast('⚡ 开始批量处理 '+pending.length+' 张图片...','info');
+  for(var i=0;i<pending.length;i++){
+    var item=pending[i];
+    var pid=item.img.id||item.img.name||item.img.sku||('img-'+item.idx);
+    await new Promise(function(resolve){
+      fetch('/api/images/'+encodeURIComponent(pid)+'/process',{method:'POST',
+        headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'full',note:''})})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        if(!d.error){
+          if(_tkImageData[item.idx]) _tkImageData[item.idx].status='done';
+          showToast('✔ '+(i+1)+'/'+pending.length+' 处理完成','success');
+        }else{
+          showToast('✖ '+(i+1)+'/'+pending.length+' 失败: '+d.error,'error');
+        }
+        _renderTKCards();
+      })
+      .catch(function(e){
+        showToast('✖ '+(i+1)+'/'+pending.length+' 异常: '+e.message,'error');
+      })
+      .finally(function(){resolve();});
+    });
+  }
+  showToast('✔ 批量处理全部完成','success');
+}
+
+function toggleInfoCard(headerEl){
+  var body=headerEl.nextElementSibling;
+  var icon=headerEl.querySelector('.toggle-icon');
+  if(!body||!icon)return;
+  if(body.style.display==='none'){
+    body.style.display='block';
+    icon.innerHTML='&#9650;';
+  }else{
+    body.style.display='none';
+    icon.innerHTML='&#9660;';
+  }
+}
+
+function showToast(msg,type){
+  var container=document.getElementById('toast-container');
+  if(!container)return;
+  var t=document.createElement('div');
+  t.className='toast-item toast-'+(type||'info');
+  t.textContent=msg;
+  container.appendChild(t);
+  setTimeout(function(){
+    t.classList.add('fade-out');
+    setTimeout(function(){if(t.parentNode)t.parentNode.removeChild(t);},300);
+  },3000);
 }
 
 // ================================================================
