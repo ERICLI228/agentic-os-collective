@@ -38,6 +38,8 @@ total_pages: 17
 - `wiki/syntheses/` — (待填充)
 
 ## 最近新增
+1. [2026-05-01] v3.7.2 DM-1角色面板恢复+视频预览 — renderDM1从git历史完整恢复(268行)+🎥✏️视频提示词交互 (commit c3f3be7)
+
 1. [2026-05-01] v3.7 Dashboard修复 + TK管线对齐 — 2xReferenceError + SyntaxError修复, 5个TK milestone completed零mock (commit 080bc1c)
 
 1. [2026-05-01] v3.6.27 诚实收尾 — visual_bible修复+reReviewDM0+铁则强化+全量推送 (commit ef82f68)

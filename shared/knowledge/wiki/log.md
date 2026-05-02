@@ -204,7 +204,22 @@ Sender (untrusted metadata):
   - **结论：✅ TTS 推理已就绪，可正常使用！**
 - 归档: wiki/outputs/session-20260429-190052.md
 
-## [2026-05-01] session | v3.7 Dashboard 修复 + TK 管线对齐 + 四轮冲刺核查
+## [2026-05-01] session | v3.7.2 DM-1角色档案面板恢复 + 视频提示词互动按钮
+
+- **会话类型**: OpenCode (quick-cabin worktree)
+- **主题**:
+  - DM-1 renderDM1函数从 b56be8e git历史完整恢复 (268行/18KB)
+  - 4个依赖函数恢复 (applyDM1Filter/onDM1Search/onDM1Chip/toggleCharBibleEdit)
+  - updatePipelineMonitor 恢复
+  - 孤儿代码泄漏修复 (renderDM1尾段污染全局作用域 → SyntaxError)
+  - 视频提示词三方案新增🎥预览+✏️调整按钮 (inline编辑表单+localStorage暂存+Pollo/Kling/Seedance API占位)
+- **关键决策**:
+  - renderDM1 在 9caf21d (导演模式+反馈闭环)中被误删 → 从 git 恢复
+  - 视频预览: 先做UI占位 (toast提示API接入中), localStorage暂存编辑内容, 后期接正式视频API
+- **关键文件变更**:
+  - `dashboard/task_board.html` — renderDM1恢复 + 视频提示词交互 + CSS
+  - `reports/PRD-v3.6.md` — v3.7.2-recovery 条目
+- **Git**: 53f65dd→c3f3be7 (5 commits)
 
 - **会话类型**: OpenCode (quick-cabin worktree)
 - **主题**:
@@ -324,3 +339,66 @@ Sender (untrusted metadata):
   - 之前的 TK 搜索栏切换代码在键盘事件中被我删了，但 `switchTab` 函数里正确调用了 `try{catch}`。那行 `tkSearchBar`.style.display 被移除了，不会有问题了。
   - 已经修了。根因是 **opencode 在插入 TK 搜索栏切换代码时，在键盘事件处理函数中放了一行 `t==='tk'` 的引用，但 `t` 变量在键盘事件作用域中未定义，导致 `ReferenceError`，整个 JS 执行中断**——所以在 `refresh()` 被调用之前就崩了，页面始终不渲染。
 - 归档: wiki/outputs/session-20260501-192343.md
+
+## [2026-05-01 20:42] session | 57fb397c-37b0-4e2f-9f88-c9f2415bd14d.jsonl
+- 消息数: 650
+- 主题:
+  - Sender (untrusted metadata):
+```json
+{
+  "label": "openclaw-control-ui",
+  "id": "openclaw-control-ui"
+}
+```
+
+[Fri 2026-05-01 20:35 PDT] 请你处理这些任务。请记住一个原则：每一次任务我们都是在原来的基础上进一步提升（除非重构），所以你不要擅自删除我的东西。
+[me
+  - System: [2026-05-01 19:56:22 PDT] Gateway restart restart ok (gateway.restart)
+System: 🐂 压缩参数已升级并重启：reserveTokensFloor 30000→50000, mode→safeguard, keepRecentTokens 12000→20000, maxHistoryShare 0.6→0.
+  - An async command completion event was triggered, but user delivery is disabled for this run. Handle the result internally and reply HEARTBEAT_OK only. Do not mention, summarize, or reuse command outpu
+  - [Fri 2026-05-01 19:54 PDT] 调大这个参数
+  - Sender (untrusted metadata):
+```json
+{
+  "label": "openclaw-control-ui",
+  "id": "openclaw-control-ui"
+}
+```
+
+[Fri 2026-05-01 19:56 PDT] 这些内容都哪去了？【每个角色的【宋江
+及时雨·呼保义
+✏️ 编辑档案
+
+
+📏
+基本信息
+175cm · 矮小瘦弱，文官体型 ·
+  - [Fri 2026-05-01 19:52 PDT] 为什么这些都不见了？
+[media attached: media://inbound/image---14f86442-f23f-4cba-9c30-93a5419848ab.png]
+  - [Fri 2026-05-01 19:56 PDT] 这些内容都哪去了？【每个角色的【宋江
+及时雨·呼保义
+✏️ 编辑档案
+
+
+📏
+基本信息
+175cm · 矮小瘦弱，文官体型 · 面色黝黑，细眉沉目，神情温和中暗藏锋芒 · 四十岁
+🎨
+性格特征
+仗义疏财
+深谋远虑
+重视兄弟情义
+被逼时可下狠手
+表面温厚仁和，内心城府极深，被逼到绝境时会突然致命
+谦和有礼，措辞谨慎，说话时善于观察对方反应
+🗣️
+
+  - [Fri 2026-05-01 20:07 PDT] 这只是新增的一个目录呀 file:///Users/hokeli/.agentic-os/character_designs/gallery.html 我的角色板什么都能做的呀
+- 决策:
+  - - ✅ `gallery.html` 存在（987行，5月1日 04:26 创建）
+  - - ✅ `gallery.html` 存在（987行，5月1日 04:26 创建）
+  - - `toggleCharBibleEdit` — 编辑档案切换
+  - - `toggleCharBibleEdit` — 编辑切换（存在但格式坏了，`}\nfunction` 变成了 `}function`）
+  - - `toggleCharBibleEdit` — 编辑档案切换
+  - - `toggleCharBibleEdit` — 编辑切换（存在但格式坏了，`}\nfunction` 变成了 `}function`）
+- 归档: wiki/outputs/session-20260501-204200.md
