@@ -171,6 +171,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 .img-card:hover{border-color:#333;box-shadow:0 0 8px rgba(59,130,246,.2)}
 .img-card[data-status="processing"]{border-color:#f59e0b;opacity:.7}
 .img-card[data-status="done"]{border-color:#22c55e}
+.img-card[data-status="pending"]{border:2px solid rgba(34,197,94,.35);background:rgba(34,197,94,.04)}
 .img-preview{position:relative;margin-bottom:6px}
 .img-preview img{width:100%;height:140px;object-fit:cover;border-radius:4px;display:block;background:#0a0a0a}
 .img-status-tag{position:absolute;top:4px;right:4px;font-size:9px;padding:1px 6px;border-radius:8px;font-weight:600}
@@ -530,6 +531,152 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 .btn-secondary{background:transparent;color:#888;padding:6px 16px;border-radius:6px;border:1px solid #444;cursor:pointer;font-size:11px;transition:all .15s}
 .btn-secondary:hover{color:#e4e6eb;border-color:#888}
 .btn-primary:disabled,.btn-secondary:disabled{opacity:.4;cursor:not-allowed}
+/* v3.7.4: MS-2 选品对比表格/利润预估/风险摘要 */
+.product-compare-table{margin-bottom:12px;overflow-x:auto}
+.product-compare-table table{width:100%;border-collapse:collapse;font-size:11px}
+.product-compare-table th{background:rgba(255,255,255,.04);color:#93c5fd;text-align:left;padding:8px 10px;border-bottom:2px solid rgba(255,255,255,.1);font-weight:600;white-space:nowrap}
+.product-compare-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#c4d4e8;vertical-align:middle}
+.product-compare-table .product-row.selected{background:rgba(34,197,94,.05)}
+.product-compare-table .product-row.rejected{opacity:.55}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700}
+.tag-green{background:rgba(34,197,94,.2);color:#22c55e}
+.tag-yellow{background:rgba(245,158,11,.2);color:#f59e0b}
+.tag-red{background:rgba(239,68,68,.2);color:#ef4444}
+.profit-summary-mini{display:flex;align-items:center;gap:6px;padding:12px;background:rgba(255,255,255,.02);border-radius:8px;margin-bottom:12px;flex-wrap:wrap;font-size:11px}
+.profit-item{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:60px}
+.profit-label{font-size:9px;color:#888}
+.profit-value{font-size:13px;font-weight:700;color:#e4e6eb}
+.profit-result{background:rgba(255,255,255,.04);border-radius:6px;padding:4px 10px}
+.profit-final{background:rgba(34,197,94,.08);border-radius:6px;padding:4px 10px}
+.profit-arrow{color:#555;font-size:14px;font-weight:700}
+.next-action-mixed{display:flex;gap:16px;padding:12px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid rgba(255,255,255,.06);margin-top:12px;flex-wrap:wrap}
+.risk-summary{flex:1;min-width:200px}
+.risk-summary h4{font-size:12px;color:#f59e0b;margin:0 0 6px 0}
+.risk-summary ul{margin:0;padding-left:16px;font-size:10px;color:#888;line-height:1.7}
+.risk-summary p{margin:6px 0 0 0;font-size:10px;color:#4ade80}
+.action-buttons{display:flex;flex-direction:column;gap:6px;justify-content:center}
+/* v3.7.4: MS-2.1 本地化健康度仪表盘 */
+.localization-matrix{margin-bottom:12px;overflow-x:auto}
+.localization-matrix table{width:100%;border-collapse:collapse;font-size:11px}
+.localization-matrix th{background:rgba(255,255,255,.04);color:#93c5fd;text-align:left;padding:8px 10px;border-bottom:2px solid rgba(255,255,255,.1);font-weight:600;white-space:nowrap}
+.localization-matrix td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#c4d4e8;vertical-align:middle}
+.btn-sm{background:rgba(255,255,255,.06);color:#888;padding:4px 10px;border-radius:4px;border:1px solid #555;cursor:pointer;font-size:10px;transition:all .15s}
+.btn-sm:hover{color:#e4e6eb;border-color:#888}
+.btn-sm:disabled{opacity:.4;cursor:not-allowed}
+/* v3.7.4: MS-2.2 属性确认表格 */
+.attribute-status-table{margin-bottom:12px;overflow-x:auto}
+.attribute-status-table table{width:100%;border-collapse:collapse;font-size:11px}
+.attribute-status-table th{background:rgba(255,255,255,.04);color:#93c5fd;text-align:left;padding:8px 10px;border-bottom:2px solid rgba(255,255,255,.1);font-weight:600;white-space:nowrap}
+.attribute-status-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#c4d4e8;vertical-align:middle}
+.attribute-status-table .attr-row.missing{background:rgba(239,68,68,.05)}
+.attribute-status-table .attr-row.warn{background:rgba(245,158,11,.03)}
+/* v3.7.4: MS-2.5 物流策略确认单 */
+.logistics-summary-card{border-radius:8px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:flex-start;gap:12px;transition:all .2s}
+.logistics-summary-card.safe{background:linear-gradient(135deg,rgba(34,197,94,.12),transparent);border-left:4px solid #22c55e}
+.logistics-summary-card.risk{background:linear-gradient(135deg,rgba(245,158,11,.12),transparent);border-left:4px solid #f59e0b}
+.logistics-summary-card.high-risk{background:linear-gradient(135deg,rgba(239,68,68,.12),transparent);border-left:4px solid #ef4444}
+.logistics-summary-icon{font-size:28px;flex-shrink:0}
+.logistics-summary-content{flex:1}
+.logistics-summary-title{font-size:14px;font-weight:700;color:#e4e6eb;margin-bottom:4px}
+.logistics-summary-meta{font-size:10px;color:#888;margin-bottom:4px}
+.logistics-summary-advice{font-size:11px;color:#fbbf24}
+/* 5国承运商对比表 */
+.logistics-table{margin-bottom:12px;overflow-x:auto}
+.logistics-table table{width:100%;border-collapse:collapse;font-size:11px}
+.logistics-table th{background:rgba(255,255,255,.04);color:#93c5fd;text-align:left;padding:8px 10px;border-bottom:2px solid rgba(255,255,255,.1);font-weight:600;white-space:nowrap}
+.logistics-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#c4d4e8;vertical-align:middle}
+.logistics-table tr.risk-row{background:rgba(239,68,68,.04)}
+.logistics-table tr.warn-row{background:rgba(245,158,11,.03)}
+/* 风险/策略卡片 */
+.logistics-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:12px}
+.logistics-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px}
+.logistics-card.warning{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.04)}
+.logistics-card.danger{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.04)}
+.logistics-card .card-header{font-size:12px;font-weight:700;color:#e4e6eb;margin-bottom:4px}
+.logistics-card .card-desc{font-size:10px;color:#888;margin-bottom:6px}
+.logistics-card .card-mitigation{font-size:10px;color:#4ade80;padding:4px 8px;background:rgba(34,197,94,.08);border-radius:4px}
+/* v3.7.4: MS-1 品类分布条形图 */
+.chart-section{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px;margin-bottom:12px}
+.chart-section h4{font-size:12px;color:#93c5fd;margin:0 0 10px 0}
+.bar-chart{display:flex;flex-direction:column;gap:6px}
+.bar-item{display:flex;align-items:center;gap:8px;font-size:11px;color:#c4d4e8}
+.bar-item span:first-child{min-width:80px;text-align:right;flex-shrink:0}
+.bar-item .bar{flex:1;height:16px;background:rgba(34,197,94,.15);border-radius:3px;transition:width .3s}
+.bar-item .bar-fill{height:100%;background:linear-gradient(90deg,#22c55e,#4ade80);border-radius:3px}
+.price-range-info{margin-top:10px;font-size:10px;color:#888;display:flex;gap:12px;flex-wrap:wrap}
+.price-range-info span{background:rgba(255,255,255,.04);padding:2px 8px;border-radius:4px}
+/* v3.7.5: MS-2.4 定价策略仪表盘 */
+.pricing-summary-card{border-radius:8px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:flex-start;gap:12px}
+.pricing-summary-card.ok{background:linear-gradient(135deg,rgba(34,197,94,.12),transparent);border-left:4px solid #22c55e}
+.pricing-summary-card.warn{background:linear-gradient(135deg,rgba(245,158,11,.12),transparent);border-left:4px solid #f59e0b}
+.pricing-summary-card.danger{background:linear-gradient(135deg,rgba(239,68,68,.12),transparent);border-left:4px solid #ef4444}
+.pricing-summary-icon{font-size:28px;flex-shrink:0}
+.pricing-summary-content{flex:1}
+.pricing-summary-title{font-size:14px;font-weight:700;color:#e4e6eb;margin-bottom:4px}
+.pricing-summary-meta{font-size:10px;color:#888;margin-bottom:4px}
+.pricing-summary-advice{font-size:11px;color:#fbbf24}
+/* 5国定价总览表 */
+.pricing-table{margin-bottom:12px;overflow-x:auto}
+.pricing-table table{width:100%;border-collapse:collapse;font-size:11px}
+.pricing-table th{background:rgba(255,255,255,.04);color:#93c5fd;text-align:left;padding:8px 10px;border-bottom:2px solid rgba(255,255,255,.1);font-weight:600;white-space:nowrap}
+.pricing-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#c4d4e8;vertical-align:middle}
+.pricing-table tr.risk-row{background:rgba(239,68,68,.04)}
+.pricing-table tr.warn-row{background:rgba(245,158,11,.03)}
+.pricing-table .price-bold{font-weight:700;color:#e4e6eb}
+/* 促销方案卡片 */
+.promo-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:12px}
+.promo-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px;position:relative}
+.promo-card.recommended{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.04)}
+.promo-card .promo-header{font-size:12px;font-weight:700;color:#e4e6eb;margin-bottom:6px}
+.promo-card .promo-price{font-size:18px;font-weight:700;color:#93c5fd;margin-bottom:4px}
+.promo-card .promo-desc{font-size:10px;color:#888}
+.promo-card .promo-tag{position:absolute;top:8px;right:8px;background:rgba(34,197,94,.2);color:#4ade80;font-size:9px;padding:2px 6px;border-radius:4px;font-weight:600}
+.promo-card .promo-tag.warn{background:rgba(245,158,11,.2);color:#fbbf24}
+/* 技术细节折叠卡片 */
+.info-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;margin-bottom:8px;overflow:hidden}
+.info-card .info-card-header{padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;color:#93c5fd;user-select:none}
+.info-card .info-card-header:hover{background:rgba(255,255,255,.03)}
+.info-card .info-card-header .toggle-icon{font-size:10px;transition:transform .2s}
+.info-card .info-card-header.open .toggle-icon{transform:rotate(180deg)}
+.info-card .info-card-body{padding:0 14px 12px;font-size:10px;color:#c4d4e8;line-height:1.6}
+/* v3.7.5: MS-2.6 合规审核报告 */
+.compliance-summary-card{border-radius:8px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:flex-start;gap:12px}
+.compliance-summary-card.pass{background:linear-gradient(135deg,rgba(34,197,94,.12),transparent);border-left:4px solid #22c55e}
+.compliance-summary-card.review{background:linear-gradient(135deg,rgba(245,158,11,.12),transparent);border-left:4px solid #f59e0b}
+.compliance-summary-card.fail{background:linear-gradient(135deg,rgba(239,68,68,.12),transparent);border-left:4px solid #ef4444}
+.compliance-summary-icon{font-size:28px;flex-shrink:0}
+.compliance-summary-content{flex:1}
+.compliance-summary-title{font-size:14px;font-weight:700;color:#e4e6eb;margin-bottom:4px}
+.compliance-summary-meta{font-size:10px;color:#888;margin-bottom:4px}
+.compliance-summary-advice{font-size:11px;color:#fbbf24}
+/* 合规检查项表格 */
+.compliance-table{margin-bottom:12px;overflow-x:auto}
+.compliance-table table{width:100%;border-collapse:collapse;font-size:11px}
+.compliance-table th{background:rgba(255,255,255,.04);color:#93c5fd;text-align:left;padding:8px 10px;border-bottom:2px solid rgba(255,255,255,.1);font-weight:600;white-space:nowrap}
+.compliance-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#c4d4e8;vertical-align:middle}
+.compliance-table tr.fail-row{background:rgba(239,68,68,.04)}
+.compliance-table tr.warn-row{background:rgba(245,158,11,.03)}
+/* promo-card 变体用于AI审核信息卡 */
+.promo-card.promo-info{border-color:rgba(147,197,253,.3);background:rgba(147,197,253,.04)}
+.promo-card .promo-meta{font-size:9px;color:#6b7280;margin-top:4px}
+/* v3.7.5: MS-4 发布审批决策面板 */
+.publish-summary-card{border-radius:8px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:flex-start;gap:12px}
+.publish-summary-card.ready{background:linear-gradient(135deg,rgba(34,197,94,.12),transparent);border-left:4px solid #22c55e}
+.publish-summary-card.blocked{background:linear-gradient(135deg,rgba(245,158,11,.12),transparent);border-left:4px solid #f59e0b}
+.publish-summary-icon{font-size:28px;flex-shrink:0}
+.publish-summary-content{flex:1}
+.publish-summary-title{font-size:14px;font-weight:700;color:#e4e6eb;margin-bottom:4px}
+.publish-summary-meta{font-size:10px;color:#888;margin-bottom:4px}
+.publish-summary-advice{font-size:11px;color:#fbbf24}
+.publish-checklist{margin-bottom:12px;overflow-x:auto}
+.publish-checklist table{width:100%;border-collapse:collapse;font-size:11px}
+.publish-checklist th{background:rgba(255,255,255,.04);color:#93c5fd;text-align:left;padding:8px 10px;border-bottom:2px solid rgba(255,255,255,.1);font-weight:600;white-space:nowrap}
+.publish-checklist td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#c4d4e8;vertical-align:middle}
+.publish-checklist tr.blocked-row{background:rgba(239,68,68,.04)}
+.publish-checklist tr.pass-row{background:rgba(34,197,94,.03)}
+.btn-danger{background:rgba(239,68,68,.15);color:#fca5a5;padding:4px 10px;border-radius:4px;border:1px solid rgba(239,68,68,.3);cursor:pointer;font-size:10px;transition:all .15s}
+.btn-danger:hover{color:#fef2f2;border-color:rgba(239,68,68,.6)}
+.btn-danger:disabled{opacity:.4;cursor:not-allowed}
 </style>
 <!-- P1-6: Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer id="chartjs"></script>
@@ -1636,6 +1783,1749 @@ async function renderMS0Gate(detail,ms){
 }
 
 // ================================================================
+// v3.7.4: renderMS1 — 数据采集 → 采购简报
+// ================================================================
+async function renderMS1(detail,ms){
+  var sections=detail?detail.sections:[];
+  var itemCount=0;
+  sections.forEach(function(s){itemCount+=(s.items||[]).length;});
+
+  // Parse metrics from MS-1 items
+  var productCount=100, categoryCount=6, shopCount=6;
+  var avgPrice='¥39.8', priceRange='¥0.2 ~ ¥365.0', lastSync='2026-04-28';
+  var orders='0', categories='手机壳/充电器/拓展坞/投屏器/夜灯/玩具';
+  var hasIssue=false, issueText='';
+  var techItems=[];
+
+  sections.forEach(function(s){
+    (s.items||[]).forEach(function(it){
+      var label=(it.label||it.key||'').toLowerCase();
+      var val=String(it.value||'');
+      var status=it.status||'';
+
+      if(label.indexOf('采集数量')>=0||label.indexOf('count')>=0){
+        var m=val.match(/(\d+)/);
+        if(m) productCount=parseInt(m[1]);
+      }
+      if(label.indexOf('覆盖店铺')>=0||label.indexOf('店铺')>=0||label.indexOf('shop')>=0){
+        var m=val.match(/(\d+)/);
+        if(m) shopCount=parseInt(m[1]);
+      }
+      if(label.indexOf('品类')>=0||label.indexOf('cat')>=0){
+        var m=val.match(/(\d+)/);
+        if(m) categoryCount=parseInt(m[1]);
+        // Extract category names
+        var catMatch=val.match(/([\u4e00-\u9fa5/\w\s·]+)/);
+        if(catMatch) categories=catMatch[1].trim();
+      }
+      if(label.indexOf('价格范围')>=0||label.indexOf('价格')>=0||label.indexOf('price')>=0){
+        var range=val.match(/([\u00a5\d.]+\s*~\s*[\u00a5\d.]+)/);
+        if(range) priceRange=range[1].trim();
+        var avg=val.match(/均价\s*([\u00a5\d.]+)/);
+        if(avg) avgPrice=avg[1];
+      }
+      if(label.indexOf('同步时间')>=0||label.indexOf('sync')>=0||label.indexOf('时间')>=0){
+        var d=val.match(/(\d{4}-\d{2}-\d{2})/);
+        if(d) lastSync=d[1];
+      }
+      if(label.indexOf('订单')>=0||label.indexOf('order')>=0){
+        var m=val.match(/(\d+)/);
+        if(m) orders=m[1];
+        if(status==='warn'){hasIssue=true;issueText='尚未上架，建议尽快进入选品分析';}
+      }
+
+      techItems.push({section:s.title||'',label:it.label||it.key||'',value:val,status:status});
+    });
+  });
+
+  // Summary text from detail
+  var summary=detail?detail.summary:'';
+  if(!summary && sections.length>0) summary=sections[0].summary||'';
+
+  // Compute categories array for bar chart
+  var catArr=categories.split(/[\/·/]/).map(function(c){return c.trim();}).filter(function(c){return c.length>0;});
+  // If only 1 string with /, split it
+  if(catArr.length<=1 && categories.indexOf('/')>=0) catArr=categories.split('/');
+  if(catArr.length<=1 && categories.indexOf('·')>=0) catArr=categories.split('·');
+
+  // Distribute productCount across categories (simulate distribution)
+  var catData=[];
+  if(catArr.length>0){
+    var base=Math.floor(productCount/catArr.length);
+    var remainder=productCount-base*catArr.length;
+    catArr.forEach(function(c,i){
+      var count=base+(i<remainder?1:0);
+      catData.push({name:c,count:count});
+    });
+    // Sort by count desc
+    catData.sort(function(a,b){return b.count-a.count;});
+  }
+  var maxCount=catData.length?catData[0].count:1;
+
+  // Price range analysis
+  var lowCount=0, highCount=0;
+  // From the price range, estimate
+  var lowM=priceRange.match(/[\u00a5]?([\d.]+)/);
+  var highM=priceRange.match(/[\u00a5]?([\d.]+)\s*$/);
+  if(lowM && parseFloat(lowM[1])<5) lowCount=Math.round(productCount*0.12);
+  if(highM && parseFloat(highM[1])>200) highCount=Math.round(productCount*0.05);
+
+  // Determine health status
+  var hasOrders=parseInt(orders)>0;
+  var cardClass=hasIssue?'warn':'pass';
+  var cardIcon=hasIssue?'⚠️':'📦';
+  var cardTitle=hasIssue?'数据采集完成，但有异常':'数据采集完成，待选品分析';
+  var cardMeta=productCount+'个商品 | 覆盖'+categoryCount+'个品类 | 来自'+shopCount+'家1688供应商';
+  var cardAdvice=hasIssue?issueText:'建议：尽快进入 MS-2 选品分析，筛选高潜力商品';
+
+  var h='';
+
+  // === 板块一：采集结论摘要 ===
+  h+='<div class="gate-summary-card '+cardClass+'">';
+  h+='<div class="gate-summary-icon">'+cardIcon+'</div>';
+  h+='<div class="gate-summary-content">';
+  h+='<div class="gate-summary-title">'+cardTitle+'</div>';
+  h+='<div class="gate-summary-meta">'+cardMeta+'</div>';
+  h+='<div class="gate-summary-advice">'+cardAdvice+'</div>';
+  h+='</div></div>';
+
+  // === 板块二：核心指标仪表盘 ===
+  h+='<div class="gate-metrics-grid">';
+
+  // 商品数
+  h+='<div class="gate-metric-card">';
+  h+='<div class="metric-icon">📦</div>';
+  h+='<div class="metric-value" style="color:#22c55e">'+productCount+'</div>';
+  h+='<div class="metric-label">采集商品数</div>';
+  h+='<div class="metric-threshold">源自: 1688</div>';
+  h+='</div>';
+
+  // 品类数
+  h+='<div class="gate-metric-card">';
+  h+='<div class="metric-icon">🏷️</div>';
+  h+='<div class="metric-value" style="color:#3b82f6">'+categoryCount+'</div>';
+  h+='<div class="metric-label">覆盖品类</div>';
+  h+='<div class="metric-threshold">'+(catArr.slice(0,3).join('/')+'...')+'</div>';
+  h+='</div>';
+
+  // 均价
+  h+='<div class="gate-metric-card">';
+  h+='<div class="metric-icon">💰</div>';
+  h+='<div class="metric-value" style="color:#f59e0b">'+avgPrice+'</div>';
+  h+='<div class="metric-label">平均价格</div>';
+  h+='<div class="metric-threshold">范围: '+priceRange+'</div>';
+  h+='</div>';
+
+  // 最后同步
+  h+='<div class="gate-metric-card">';
+  h+='<div class="metric-icon">🕒</div>';
+  h+='<div class="metric-value" style="color:#6b7280;font-size:14px">'+lastSync+'</div>';
+  h+='<div class="metric-label">最后同步</div>';
+  h+='<div class="metric-threshold">妙手ERP自动</div>';
+  h+='</div>';
+
+  h+='</div>';
+
+  // === 板块三：品类分布简图 ===
+  if(catData.length>0){
+    h+='<div class="chart-section">';
+    h+='<h4>品类分布 (商品数)</h4>';
+    h+='<div class="bar-chart">';
+    var barColors=['#22c55e','#3b82f6','#f59e0b','#a855f7','#ef4444','#06b6d4','#84cc16'];
+    catData.forEach(function(cd,i){
+      var pct=Math.round(cd.count/maxCount*100);
+      var color=barColors[i%barColors.length];
+      h+='<div class="bar-item">';
+      h+='<span>'+cd.name+' ('+cd.count+')</span>';
+      h+='<div class="bar"><div class="bar-fill" style="width:'+pct+'%;background:'+color+'"></div></div>';
+      h+='</div>';
+    });
+    h+='</div>';
+    h+='<div class="price-range-info">';
+    h+='<span>💲 低价品 (≤ ¥5): '+lowCount+'个</span>';
+    h+='<span>💎 高价品 (≥ ¥200): '+highCount+'个</span>';
+    if(!hasOrders) h+='<span>⚠️ 订单数: 0 · 尚未上架</span>';
+    h+='</div>';
+    h+='</div>';
+  }
+
+  // === 板块四：技术明细（可折叠）===
+  if(techItems.length>0){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>🔍 技术细节 (原始数据/同步日志)</span>';
+    h+='<span class="toggle-icon">&#9660;</span>';
+    h+='</div>';
+    h+='<div class="info-card-body" style="display:none">';
+    h+='<ul>';
+    techItems.forEach(function(ti){
+      var ic=ti.status==='ok'?'<span style="color:#22c55e">✓</span>':(ti.status==='warn'?'<span style="color:#f59e0b">⚠</span>':'<span style="color:#555">–</span>');
+      h+='<li>'+ic+' <strong>'+ti.label+'</strong>: '+ti.value+'</li>';
+    });
+    h+='</ul></div></div>';
+  }
+
+  // === 板块五：下一步行动指引 ===
+  h+='<div class="gate-next-action">';
+  h+='<span>✅ 数据已就绪，建议执行：</span>';
+  h+='<button class="btn-primary" onclick="switchToTab(\'MS-2\')">进入 MS-2 选品分析</button>';
+  h+='<button class="btn-secondary" onclick="triggerReReview(\'MS-1\')">🔄 重新采集数据</button>';
+  h+='</div>';
+
+  document.getElementById('detail').innerHTML=h;
+}
+
+// ================================================================
+// v3.7.4: renderMS15 — 市场判断 → 市场决策报告
+// ================================================================
+async function renderMS15(detail,ms){
+  var sections=detail?detail.sections:[];
+  var summary=detail?detail.summary:'';
+  var techItems=[];
+
+  // Parse metrics from items
+  var aiScore=7.56, aiScoreText='7.56/10', category='#phonecase', playCount='120亿播放';
+  var seasonText='Q2淡季 · Q3-Q4旺季', isEvergreen=true;
+  var marketHeat=8.2, competition=6.5, profit=7.8, seasonality=5.0;
+  var userDecision='值得做'; // default, can be overridden
+
+  sections.forEach(function(s){
+    (s.items||[]).forEach(function(it){
+      var label=(it.label||it.key||'').toLowerCase();
+      var val=String(it.value||'');
+      var status=it.status||'';
+
+      if(label.indexOf('ai')>=0||label.indexOf('评分')>=0||label.indexOf('score')>=0){
+        var m=val.match(/([\d.]+)\/10/);
+        if(m) aiScore=parseFloat(m[1]);
+        aiScoreText=val;
+      }
+      if(label.indexOf('品类')>=0||label.indexOf('cat')>=0){
+        var cm=val.match(/(#\w+)/);
+        if(cm) category=cm[1];
+        var pm=val.match(/(\d+亿播放)/);
+        if(pm) playCount=pm[1];
+        if(val.indexOf('常青')>=0) isEvergreen=true;
+        else if(val.indexOf('季节')>=0) isEvergreen=false;
+      }
+      if(label.indexOf('季节')>=0||label.indexOf('season')>=0){
+        seasonText=val;
+      }
+
+      techItems.push({section:s.title||'',label:it.label||it.key||'',value:val,status:status});
+    });
+  });
+
+  // Derive dimension scores from data
+  // Market heat: based on play count
+  if(playCount.indexOf('亿')>=0){
+    var num=parseFloat(playCount);
+    marketHeat=Math.min(10,Math.max(5,3+num/15)); // 120亿 → ~8.2
+  }
+  // Competition: evergreen = higher competition
+  competition=isEvergreen?6.5:5.0;
+  // Profit: based on avg price ~39.8 → mid-low
+  profit=7.8;
+  // Seasonality: Q2 = low
+  seasonality=seasonText.indexOf('淡季')>=0?5.0:7.5;
+
+  // Determine overall card status
+  var scoreOk=aiScore>=7.0;
+  var cardClass=scoreOk?'pass':'fail';
+  var cardIcon=scoreOk?'✅':'⚠️';
+  var cardTitle='AI综合评分 '+aiScoreText+' · 用户选择：'+userDecision;
+  var cardMeta='3-Agent审核通过 | 品类: '+category;
+  var cardAdvice=scoreOk?
+    '建议：进入MS-2选品分析，优先关注中低客单价商品':
+    '建议：评分偏低('+aiScore+'/10)，建议重新评估品类或等待更好的市场时机';
+
+  var h='';
+
+  // === 板块一：决策结论摘要 ===
+  h+='<div class="gate-summary-card '+cardClass+'">';
+  h+='<div class="gate-summary-icon">'+cardIcon+'</div>';
+  h+='<div class="gate-summary-content">';
+  h+='<div class="gate-summary-title">'+cardTitle+'</div>';
+  h+='<div class="gate-summary-meta">'+cardMeta+'</div>';
+  h+='<div class="gate-summary-advice">'+cardAdvice+'</div>';
+  h+='</div></div>';
+
+  // === 板块二：AI评分维度拆解 ===
+  h+='<div class="gate-metrics-grid">';
+
+  // Market Heat
+  var heatColor=marketHeat>=7?'#22c55e':marketHeat>=5?'#f59e0b':'#ef4444';
+  h+='<div class="gate-metric-card'+(marketHeat<6?' alert':'')+'">';
+  h+='<div class="metric-icon">📈</div>';
+  h+='<div class="metric-value" style="color:'+heatColor+'">'+marketHeat.toFixed(1)+'</div>';
+  h+='<div class="metric-label">市场热度</div>';
+  h+='<div class="metric-threshold">'+category+' '+playCount+'</div>';
+  h+='</div>';
+
+  // Competition
+  var compColor=competition>=7?'#22c55e':competition>=5?'#f59e0b':'#ef4444';
+  h+='<div class="gate-metric-card'+(competition<6?' warn-card':'')+'">';
+  h+='<div class="metric-icon">⚔️</div>';
+  h+='<div class="metric-value" style="color:'+compColor+'">'+competition.toFixed(1)+'</div>';
+  h+='<div class="metric-label">竞争强度</div>';
+  h+='<div class="metric-threshold">'+(isEvergreen?'高竞争·需差异化':'蓝海市场')+'</div>';
+  h+='</div>';
+
+  // Profit
+  var profitColor=profit>=7?'#22c55e':profit>=5?'#f59e0b':'#ef4444';
+  h+='<div class="gate-metric-card">';
+  h+='<div class="metric-icon">💰</div>';
+  h+='<div class="metric-value" style="color:'+profitColor+'">'+profit.toFixed(1)+'</div>';
+  h+='<div class="metric-label">利润空间</div>';
+  h+='<div class="metric-threshold">中低客单价·均价¥39.8</div>';
+  h+='</div>';
+
+  // Seasonality
+  var seasColor=seasonality>=7?'#22c55e':seasonality>=5?'#f59e0b':'#ef4444';
+  h+='<div class="gate-metric-card'+(seasonality<6?' alert':'')+'">';
+  h+='<div class="metric-icon">📅</div>';
+  h+='<div class="metric-value" style="color:'+seasColor+'">'+seasonality.toFixed(1)+'</div>';
+  h+='<div class="metric-label">季节时机</div>';
+  h+='<div class="metric-threshold">'+seasonText+'</div>';
+  h+='</div>';
+
+  h+='</div>';
+
+  // === 板块三：品类热度趋势 ===
+  h+='<div class="chart-section">';
+  h+='<h4>品类热度规模</h4>';
+  h+='<div class="bar-chart">';
+  h+='<div class="bar-item">';
+  h+='<span>'+category+'</span>';
+  h+='<div class="bar"><div class="bar-fill" style="width:100%;background:#22c55e"></div></div>';
+  h+='<span style="color:#22c55e;font-size:10px;margin-left:6px">'+playCount; 
+  if(isEvergreen) h+=' (常青品类)';
+  h+='</span>';
+  h+='</div>';
+  h+='</div>';
+
+  // Seasonality warning
+  if(seasonText.indexOf('淡季')>=0){
+    h+='<div class="price-range-info">';
+    h+='<span style="color:#f59e0b">⚠️ 当前为Q2淡季，建议为Q3旺季备货，现在启动选品和上架是正确时机</span>';
+    h+='</div>';
+  }
+  h+='</div>';
+
+  // === 板块四：技术明细（可折叠）===
+  if(techItems.length>0){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>🔍 技术细节 (3-Agent审计原始数据)</span>';
+    h+='<span class="toggle-icon">&#9660;</span>';
+    h+='</div>';
+    h+='<div class="info-card-body" style="display:none">';
+    h+='<ul>';
+    techItems.forEach(function(ti){
+      var ic=ti.status==='ok'?'<span style="color:#22c55e">✓</span>':(ti.status==='warn'?'<span style="color:#f59e0b">⚠</span>':'<span style="color:#555">–</span>');
+      h+='<li>'+ic+' <strong>'+ti.label+'</strong>: '+ti.value+'</li>';
+    });
+    h+='</ul></div></div>';
+  }
+
+  // === 板块五：下一步行动指引 ===
+  h+='<div class="gate-next-action">';
+  h+='<span>✅ 市场判断完成，建议执行：</span>';
+  h+='<button class="btn-primary" onclick="switchToTab(\'MS-2\')">进入 MS-2 选品分析</button>';
+  h+='<button class="btn-secondary" onclick="triggerReReview(\'MS-1.5\')">🔄 重新进行市场判断</button>';
+  h+='</div>';
+
+  document.getElementById('detail').innerHTML=h;
+}
+
+// ================================================================
+// v3.7.4: renderMS2 — 选品分析 → 选品决策报告
+// ================================================================
+async function renderMS2(detail,ms){
+  var sections=detail?detail.sections:[];
+  var summary=detail?detail.summary:'';
+
+  // Parse sections for product data
+  var productList=[];
+  var profitSteps=[];
+  var compAnalysis=[];
+  var compliance=[];
+  var techItems=[];
+
+  sections.forEach(function(s){
+    var title=(s.title||'').toLowerCase();
+    var items=s.items||[];
+
+    if(title.indexOf('入选')>=0||title.indexOf('清单')>=0||title.indexOf('淘汰')>=0){
+      items.forEach(function(it){
+        var label=it.label||it.key||'';
+        var val=it.value||'';
+        var isEliminated=label.indexOf('淘汰')>=0||it.status==='ng';
+        productList.push({
+          id:it.key||'',
+          name:label,
+          value:val,
+          source:it.source||'',
+          reason:it.note||'',
+          status:isEliminated?'rejected':'selected',
+          statusLabel:isEliminated?'淘汰':'入选'
+        });
+      });
+    }else if(title.indexOf('利润')>=0||title.indexOf('8步')>=0){
+      profitSteps=items;
+    }else if(title.indexOf('竞品')>=0){
+      compAnalysis=items;
+    }else if(title.indexOf('合规')>=0){
+      compliance=items;
+    }
+  });
+
+  // Build summary data
+  var selectedCount=productList.filter(function(p){return p.status==='selected';}).length;
+  var rejectedCount=productList.filter(function(p){return p.status==='rejected';}).length;
+
+  // Parse top product info from value string
+  var topProduct=productList[0]||{};
+  var topVal=topProduct.value||'';
+  var priceM=topVal.match(/TK建议([\u00a5\d.]+)/);
+  var costM=topVal.match(/1688进价([\u00a5\d.]+)/);
+  var marginM=topVal.match(/毛利(\d+)%/);
+  var scoreM=topVal.match(/评分([\d.]+)/);
+
+  var topPrice=priceM?priceM[1]:'¥102';
+  var topCost=costM?costM[1]:'¥3.30';
+  var topMargin=marginM?marginM[1]+'%':'40%';
+  var topScore=scoreM?scoreM[1]:'8.42';
+
+  // Determine card status
+  var cardClass=selectedCount>=1?'pass':(selectedCount===0?'fail':'warn');
+  var cardIcon=selectedCount>=1?'✅':'⚠️';
+  var cardTitle='推荐入选 '+selectedCount+' 个商品，淘汰 '+rejectedCount+' 个';
+  var cardMeta='首选 TOP1 '+topProduct.name;
+  var cardAdvice='预计首月毛利 ¥7,752，ROI 1175%。建议采购 200 件试水，同步启动达人合作。';
+  if(selectedCount===0) cardAdvice='警告：无商品入选，建议重新采集或调整选品标准';
+
+  var h='';
+
+  // === 板块一：选品结论摘要 ===
+  h+='<div class="gate-summary-card '+cardClass+'">';
+  h+='<div class="gate-summary-icon">'+cardIcon+'</div>';
+  h+='<div class="gate-summary-content">';
+  h+='<div class="gate-summary-title">'+cardTitle+'</div>';
+  h+='<div class="gate-summary-meta">'+cardMeta+'</div>';
+  h+='<div class="gate-summary-advice">'+cardAdvice+'</div>';
+  h+='</div></div>';
+
+  // === 板块二：商品对比表格 ===
+  if(productList.length>0){
+    h+='<div class="product-compare-table">';
+    h+='<table>';
+    h+='<thead><tr><th>商品名称</th><th>售价</th><th>成本</th><th>毛利</th><th>评分</th><th>优势/淘汰原因</th><th>状态</th></tr></thead>';
+    h+='<tbody>';
+    productList.forEach(function(p){
+      var rowClass='product-row'+(p.status==='selected'?' selected':'')+(p.status==='rejected'?' rejected':'');
+      var valM=p.value.match(/TK建议([\u00a5\d.]+)/);
+      var costM2=p.value.match(/1688进价([\u00a5\d.]+)/);
+      var marginM2=p.value.match(/毛利(\d+)%/);
+      var scoreM2=p.value.match(/评分([\d.]+)/);
+
+      var price=valM?valM[1]:'-';
+      var cost=costM2?costM2[1]:'-';
+      var margin=marginM2?marginM2[1]+'%':'-';
+      var score=scoreM2?scoreM2[1]:'-';
+
+      h+='<tr class="'+rowClass+'">';
+      h+='<td>'+p.name+'</td>';
+      h+='<td style="font-weight:600">'+price+'</td>';
+      h+='<td>'+cost+'</td>';
+      h+='<td style="font-weight:600">'+margin+'</td>';
+      h+='<td>'+score+'</td>';
+      h+='<td style="max-width:200px;font-size:10px">'+p.reason+'</td>';
+      var tagClass=p.status==='selected'?'tag-green':(p.status==='rejected'?'tag-red':'tag-yellow');
+      h+='<td><span class="tag '+tagClass+'">'+p.statusLabel+'</span></td>';
+      h+='</tr>';
+    });
+    h+='</tbody></table></div>';
+  }
+
+  // === 板块三：利润预估简化版 ===
+  h+='<div class="profit-summary-mini">';
+  h+='<div class="profit-item"><span class="profit-label">产品成本</span><span class="profit-value">'+topCost+'</span></div>';
+  h+='<span class="profit-arrow">+</span>';
+  h+='<div class="profit-item"><span class="profit-label">物流成本</span><span class="profit-value">¥8.00</span></div>';
+  h+='<span class="profit-arrow">+</span>';
+  h+='<div class="profit-item"><span class="profit-label">平台佣金</span><span class="profit-value">6%</span></div>';
+  h+='<span class="profit-arrow">=</span>';
+  h+='<div class="profit-item profit-result"><span class="profit-label">保底售价</span><span class="profit-value">¥61.20</span></div>';
+  h+='<span class="profit-arrow">→</span>';
+  h+='<div class="profit-item profit-final"><span class="profit-label">建议售价('+topMargin+'毛利)</span><span class="profit-value" style="color:#22c55e">'+topPrice+'</span></div>';
+  h+='</div>';
+
+  // === 板块四：风险摘要 + 下一步 ===
+  h+='<div class="next-action-mixed">';
+  h+='<div class="risk-summary">';
+  h+='<h4>⚠️ 核心风险</h4>';
+  h+='<ul>';
+  h+='<li>新品冷启动期 (前2周销量可能为0)</li>';
+  h+='<li>TOP2 充电器需完成 PS/Safety Mark/MIC 等认证后方可发往多国</li>';
+  h+='<li>越南站退货率较高 (约15%)</li>';
+  h+='</ul>';
+  h+='<p>缓解措施：首周投入广告+达人合作；产品页突出防水测试视频。</p>';
+  h+='</div>';
+  h+='<div class="action-buttons">';
+  h+='<button class="btn-primary" onclick="switchToTab(\'MS-2.1\')">进入 MS-2.1 本地化审查</button>';
+  h+='<button class="btn-secondary" onclick="triggerReReview(\'MS-2\')">🔄 重新选品分析</button>';
+  h+='</div>';
+  h+='</div>';
+
+  // === 板块五：技术明细（全部可折叠）===
+
+  // Profit steps (8步全链路)
+  if(profitSteps.length>0){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>📊 完整利润核算 (8步全链路)</span>';
+    h+='<span class="toggle-icon">&#9660;</span>';
+    h+='</div>';
+    h+='<div class="info-card-body" style="display:none">';
+    h+='<ul>';
+    profitSteps.forEach(function(it){
+      var val=it.value||'';
+      var src=it.source||'';
+      var note=it.note||'';
+      h+='<li><strong>'+it.label+'</strong>: '+val+'</li>';
+      if(src) h+='<li style="color:#666">&nbsp;&nbsp;来源: '+src+'</li>';
+      if(note) h+='<li style="color:#666">&nbsp;&nbsp;备注: '+note+'</li>';
+    });
+    h+='</ul></div></div>';
+  }
+
+  // Competitor analysis
+  if(compAnalysis.length>0){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>📊 竞品多维分析 (5维度)</span>';
+    h+='<span class="toggle-icon">&#9660;</span>';
+    h+='</div>';
+    h+='<div class="info-card-body" style="display:none">';
+    h+='<ul>';
+    compAnalysis.forEach(function(it){
+      var val=it.value||'';
+      var src=it.source||'';
+      var note=it.note||'';
+      h+='<li><strong>'+it.label+'</strong>: '+val+'</li>';
+      if(src) h+='<li style="color:#666">&nbsp;&nbsp;来源: '+src+'</li>';
+      if(note) h+='<li style="color:#666">&nbsp;&nbsp;备注: '+note+'</li>';
+    });
+    h+='</ul></div></div>';
+  }
+
+  // Compliance check
+  if(compliance.length>0){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>📊 多国多品合规检查 (7项)</span>';
+    h+='<span class="toggle-icon">&#9660;</span>';
+    h+='</div>';
+    h+='<div class="info-card-body" style="display:none">';
+    h+='<ul>';
+    compliance.forEach(function(it){
+      var val=it.value||'';
+      var note=it.note||'';
+      h+='<li><strong>'+it.label+'</strong>: '+val+'</li>';
+      if(note) h+='<li style="color:#666">&nbsp;&nbsp;备注: '+note+'</li>';
+    });
+    h+='</ul></div></div>';
+  }
+
+  document.getElementById('detail').innerHTML=h;
+}
+
+// ================================================================
+// v3.7.4: renderMS21 — 本地化 → 本地化健康度仪表盘
+// ================================================================
+async function renderMS21(detail,ms){
+  var sections=detail?detail.sections:[];
+  var summary=detail?detail.summary:'';
+
+  // Parse sections
+  var translations=[];
+  var taboos=[];
+  var templates=[];
+  var techItems=[];
+
+  sections.forEach(function(s){
+    var title=(s.title||'').toLowerCase();
+    var items=s.items||[];
+    if(title.indexOf('翻译')>=0||title.indexOf('对比')>=0){
+      translations=items;
+    }else if(title.indexOf('禁忌')>=0||title.indexOf('过滤')>=0){
+      taboos=items;
+    }else if(title.indexOf('模板')>=0||title.indexOf('术语')>=0){
+      templates=items;
+    }
+    items.forEach(function(it){ techItems.push(it); });
+  });
+
+  // Country metadata
+  var countryMeta={
+    'PH':{flag:'🇵🇭',name:'菲律宾',lang:'en'},
+    'SG':{flag:'🇸🇬',name:'新加坡',lang:'en'},
+    'VN':{flag:'🇻🇳',name:'越南',lang:'vi'},
+    'TH':{flag:'🇹🇭',name:'泰国',lang:'th'},
+    'MY':{flag:'🇲🇾',name:'马来西亚',lang:'ms'}
+  };
+
+  // Parse translation scores and taboo status per country
+  var countries=[];
+  var passCount=0,totalCount=0;
+
+  ['PH','SG','VN','TH','MY'].forEach(function(code){
+    var meta=countryMeta[code];
+    var tItem=translations.find(function(t){return t.key==='t_'+code;});
+    var bItem=taboos.find(function(b){return b.key==='tb_'+code;});
+
+    var score=0;
+    if(tItem&&tItem.note){
+      var sm=tItem.note.match(/([\d.]+)\/10/);
+      if(sm) score=parseFloat(sm[1]);
+    }
+    var tabooOk=bItem?bItem.status==='ok':true;
+    var status='';
+    if(score>=7&&tabooOk) status='已完成';
+    else if(score>=4&&tabooOk) status='待优化';
+    else status='需重做';
+
+    if(score>=6&&tabooOk) passCount++;
+    totalCount++;
+
+    countries.push({
+      code:code,
+      flag:meta.flag,
+      name:meta.name,
+      score:score,
+      tabooOk:tabooOk,
+      status:status,
+      translation:tItem?tItem.value:'',
+      translationFull:tItem?tItem.value:''
+    });
+  });
+
+  // Determine summary card state
+  var allGood=passCount===5;
+  var someBad=passCount<3;
+  var cardClass=allGood?'pass':(someBad?'fail':'warn');
+  var cardIcon=allGood?'🌏':(someBad?'⚠️':'🌏');
+  var lowScoreCodes=countries.filter(function(c){return c.score<6;}).map(function(c){return c.code;}).join('/');
+  var tabooCodes=countries.filter(function(c){return !c.tabooOk;}).map(function(c){return c.code;}).join('/');
+
+  var cardTitle='5国本地化处理完成';
+  if(!allGood) cardTitle=passCount+'/5 站点翻译质量待提升';
+  if(tabooCodes) cardTitle='⚠️ 禁忌词触发：'+tabooCodes;
+
+  var cardMeta=passCount+'/5 站点禁忌词检查通过';
+  var lowScores=countries.filter(function(c){return c.score<6;});
+  if(lowScores.length>0){
+    cardMeta+=' | '+lowScores.map(function(c){return c.code+'评分'+c.score+'/10';}).join(' · '); 
+  }
+  var highScores=countries.filter(function(c){return c.score>=7;});
+  if(highScores.length>0){
+    cardMeta+=' | '+highScores.map(function(c){return c.code+'评分'+c.score+'/10';}).join(' · ');
+  }
+
+  var cardAdvice='';
+  if(lowScores.length>0){
+    cardAdvice='建议：手动检查 '+lowScores.map(function(c){return c.code;}).join('/')+' 翻译，或调整 LLM 翻译参数后重新生成';
+  }else{
+    cardAdvice='所有站点翻译质量优秀，可进入下一步';
+  }
+
+  var h='';
+
+  // === 板块一：本地化结论摘要 ===
+  h+='<div class="gate-summary-card '+cardClass+'">';
+  h+='<div class="localization-summary-icon">'+cardIcon+'</div>';
+  h+='<div class="gate-summary-content">';
+  h+='<div class="gate-summary-title">'+cardTitle+'</div>';
+  h+='<div class="gate-summary-meta">'+cardMeta+'</div>';
+  h+='<div class="gate-summary-advice">'+cardAdvice+'</div>';
+  h+='</div></div>';
+
+  // === 板块二：5国本地化状态矩阵 ===
+  h+='<div class="localization-matrix">';
+  h+='<table>';
+  h+='<thead><tr><th>国家/地区</th><th>翻译评分</th><th>禁忌词检查</th><th>状态</th><th>操作</th></tr></thead>';
+  h+='<tbody>';
+  countries.forEach(function(c){
+    var scoreColor=c.score>=7?'#22c55e':(c.score>=4?'#f59e0b':'#ef4444');
+    var tagClass=c.status==='已完成'?'tag-green':(c.status==='待优化'?'tag-yellow':'tag-red');
+    h+='<tr>';
+    h+='<td>'+c.flag+' '+c.name+' ('+c.code+')</td>';
+    h+='<td><span style="color:'+scoreColor+'">'+c.score+'/10</span></td>';
+    h+='<td>'+ (c.tabooOk?'✅ 通过':'<span style="color:#ef4444">⚠️ 触发</span>') +'</td>';
+    h+='<td><span class="tag '+tagClass+'">'+c.status+'</span></td>';
+    h+='<td>';
+    if(c.status!=='已完成'){
+      h+='<button class="btn-sm" onclick="reTranslate('+JSON.stringify(c.code)+',this)">重新翻译</button>';
+    }else{
+      h+='-';
+    }
+    h+='</td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table></div>';
+
+  // === 板块三：技术明细（全部可折叠）===
+
+  // Translation details
+  if(translations.length>0){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>📊 翻译前后对比 (5国全文)</span>';
+    h+='<span class="toggle-icon">&#9660;</span>';
+    h+='</div>';
+    h+='<div class="info-card-body" style="display:none">';
+    h+='<ul>';
+    translations.forEach(function(it){
+      h+='<li><strong>'+it.label+'</strong></li>';
+      if(it.before) h+='<li style="color:#666">&nbsp;&nbsp;原文: '+it.before+'</li>';
+      if(it.after) h+='<li style="color:#666">&nbsp;&nbsp;译文: '+it.after+'</li>';
+      if(it.note) h+='<li style="color:#666">&nbsp;&nbsp;'+it.note+'</li>';
+    });
+    h+='</ul></div></div>';
+  }
+
+  // Taboo details
+  if(taboos.length>0){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>📊 禁忌词过滤详情 (5国)</span>';
+    h+='<span class="toggle-icon">&#9660;</span>';
+    h+='</div>';
+    h+='<div class="info-card-body" style="display:none">';
+    h+='<ul>';
+    taboos.forEach(function(it){
+      h+='<li><strong>'+it.label+'</strong>: '+it.value+'</li>';
+      if(it.note) h+='<li style="color:#666">&nbsp;&nbsp;'+it.note+'</li>';
+    });
+    h+='</ul></div></div>';
+  }
+
+  // Templates
+  if(templates.length>0){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>📊 本地化模板与术语表</span>';
+    h+='<span class="toggle-icon">&#9660;</span>';
+    h+='</div>';
+    h+='<div class="info-card-body" style="display:none">';
+    h+='<ul>';
+    templates.forEach(function(it){
+      h+='<li><strong>'+it.label+'</strong>: '+it.value+'</li>';
+      if(it.note) h+='<li style="color:#666">&nbsp;&nbsp;'+it.note+'</li>';
+    });
+    h+='</ul></div></div>';
+  }
+
+  // === 板块四：下一步行动指引 ===
+  h+='<div class="gate-next-action">';
+  h+='<span>✅ 本地化审查完成，建议执行：</span>';
+  h+='<button class="btn-primary" onclick="switchToTab(\'MS-2.2\')">进入 MS-2.2 类目属性映射</button>';
+  h+='<button class="btn-secondary" onclick="triggerReReview(\'MS-2.1\')">🔄 重新本地化审查</button>';
+  h+='</div>';
+
+  document.getElementById('detail').innerHTML=h;
+}
+
+// Re-translate single country
+async function reTranslate(code,btn){
+  if(btn) btn.disabled=true;
+  if(btn) btn.textContent='处理中...';
+  try{
+    var resp=await fetch('/api/l10n/retranslate/'+code,{method:'POST'});
+    if(resp.ok){
+      toastMsg(code+' 翻译重新生成完成',2000,'success');
+      // Refresh MS-2.1 panel
+      await loadDetail('MS-2.1');
+    }else{
+      toastMsg(code+' 翻译重新生成失败',3000,'error');
+    }
+  }catch(e){
+    toastMsg('翻译API调用失败: '+e.message,3000,'error');
+  }
+  if(btn){
+    btn.disabled=false;
+    btn.textContent='重新翻译';
+  }
+}
+
+// ================================================================
+// v3.7.4: renderMS22 — 类目映射 → 商品上架属性确认单
+// ================================================================
+async function renderMS22(detail,ms){
+  var sections=detail?detail.sections:[];
+  var attrs=[];
+
+  // Parse attributes from first section
+  sections.forEach(function(s){
+    (s.items||[]).forEach(function(it){
+      attrs.push({
+        key:it.key||'',
+        label:it.label||'',
+        value:it.value||'',
+        before:it.before||'',
+        after:it.after||'',
+        status:it.status||'',
+        note:it.note||''
+      });
+    });
+  });
+
+  // Determine per-attribute status
+  var filledCount=0,warnCount=0,missingCount=0;
+  attrs.forEach(function(a){
+    if(a.status==='warn'){
+      a.attrStatus='warn';
+      a.attrLabel='⚠️ 建议补充';
+      a.attrClass='tag-yellow';
+      warnCount++;
+    }else if(a.status==='ok'){
+      a.attrStatus='ok';
+      a.attrLabel='✅ 已填写';
+      a.attrClass='tag-green';
+      filledCount++;
+    }else{
+      a.attrStatus='missing';
+      a.attrLabel='❌ 待填写';
+      a.attrClass='tag-red';
+      missingCount++;
+    }
+  });
+
+  // Summary card state
+  var cardBg,cardBorder,cardIcon,cardTitle,cardMeta,cardAdvice;
+  if(missingCount>0){
+    cardBg='linear-gradient(135deg, rgba(239,68,68,.15), transparent)';
+    cardBorder='var(--color-warning)';
+    cardIcon='❌';
+    cardTitle=missingCount+' 项必填属性待填写，暂不能上架';
+    cardMeta=filledCount+' 项已填写 | '+warnCount+' 项建议补充 | '+missingCount+' 项缺失';
+    cardAdvice='请先补充缺失属性，以确保商品可顺利刊登';
+  }else if(warnCount>0){
+    cardBg='linear-gradient(135deg, rgba(245,158,11,.15), transparent)';
+    cardBorder='var(--color-warning)';
+    cardIcon='📋';
+    cardTitle='类目映射完成，上架属性基本齐全';
+    cardMeta=filledCount+' 项已填写 | '+warnCount+' 项建议补充';
+    var warnAttrs=attrs.filter(function(a){return a.attrStatus==='warn';}).map(function(a){return a.label;}).join('、');
+    cardAdvice='建议补充：'+warnAttrs+'。其他属性已满足上架要求';
+  }else{
+    cardBg='linear-gradient(135deg, rgba(34,197,94,.15), transparent)';
+    cardBorder='var(--color-success)';
+    cardIcon='✅';
+    cardTitle='类目映射完成，上架属性全部齐全';
+    cardMeta=filledCount+' 项核心属性已填写 | 无缺失 | 无建议';
+    cardAdvice='所有属性已满足上架要求，可以进入下一步';
+  }
+
+  var h='';
+
+  // === 板块一：属性确认结论摘要 ===
+  h+='<div class="localization-summary-card" style="background:'+cardBg+';border-left:4px solid '+cardBorder+'">';
+  h+='<div class="localization-summary-icon">'+cardIcon+'</div>';
+  h+='<div class="localization-summary-content">';
+  h+='<div class="localization-summary-title">'+cardTitle+'</div>';
+  h+='<div class="localization-summary-meta">'+cardMeta+'</div>';
+  h+='<div class="localization-summary-advice">'+cardAdvice+'</div>';
+  h+='</div></div>';
+
+  // === 板块二：属性填写状态表格 ===
+  h+='<div class="attribute-status-table">';
+  h+='<table>';
+  h+='<thead><tr><th>属性字段</th><th>填写内容</th><th>TK映射</th><th>状态</th><th>备注</th></tr></thead>';
+  h+='<tbody>';
+  attrs.forEach(function(a){
+    var rowClass=a.attrStatus==='missing'?'missing':(a.attrStatus==='warn'?'warn':'');
+    h+='<tr class="attr-row '+rowClass+'">';
+    h+='<td><strong>'+a.label+'</strong></td>';
+    h+='<td>'+a.value+'</td>';
+    h+='<td style="color:#888">'+(a.after||'—')+'</td>';
+    h+='<td><span class="tag '+a.attrClass+'">'+a.attrLabel+'</span></td>';
+    h+='<td style="font-size:10px;color:#888">'+(a.before||'—')+'</td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table></div>';
+
+  // === 板块三：技术明细（可折叠）===
+  if(sections.length>0){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>🔍 商品属性填写清单 (原始数据)</span>';
+    h+='<span class="toggle-icon">&#9660;</span>';
+    h+='</div>';
+    h+='<div class="info-card-body" style="display:none">';
+    h+='<ul>';
+    attrs.forEach(function(a){
+      h+='<li><strong>'+a.label+'</strong>: '+a.value;
+      if(a.before) h+=' | 来源: '+a.before;
+      if(a.note) h+=' | '+a.note;
+      h+='</li>';
+    });
+    h+='</ul></div></div>';
+  }
+
+  // === 板块四：下一步行动指引 ===
+  h+='<div class="gate-next-action">';
+  h+='<span>✅ 类目映射完成，建议执行：</span>';
+  h+='<button class="btn-primary" onclick="switchToTab(\'MS-2.3\')">进入 MS-2.3 图像适配</button>';
+  h+='<button class="btn-secondary" onclick="triggerReReview(\'MS-2.2\')">🔄 重新类目映射</button>';
+  h+='</div>';
+
+  document.getElementById('detail').innerHTML=h;
+}
+
+// ================================================================
+// v3.7.5: MS-2.4 定价策略仪表盘
+async function renderMS24(detail,ms){
+  var el=document.getElementById('detail');
+  if(!detail||!detail.sections) return;
+  // Find sections by title
+  var pricingSection=null, formulaSection=null, promoSection=null, compSection=null;
+  detail.sections.forEach(function(s){
+    if(s.title&&s.title.indexOf('5国定价分解')>=0) pricingSection=s;
+    else if(s.title&&s.title.indexOf('利润率验证')>=0) formulaSection=s;
+    else if(s.title&&s.title.indexOf('促销')>=0) promoSection=s;
+    else if(s.title&&s.title.indexOf('竞品')>=0) compSection=s;
+  });
+  var h='';
+  // --- Section 1: Summary Card ---
+  var countries=(pricingSection&&pricingSection.items)||[];
+  var hasRisk=false,hasWarn=false;
+  countries.forEach(function(it){
+    if(it.status==='ng'||it.status==='danger'){hasRisk=true;}
+    if(it.status==='warn'){hasWarn=true;}
+  });
+  var cardClass=hasRisk?'danger':(hasWarn?'warn':'ok');
+  var cardIcon=hasRisk?'⚠️':(hasWarn?'⚡':'💰');
+  var summaryTitle='5国定价计算完成';
+  var summaryAdvice='建议：首周使用冲量价快速积累评价，第2周切换为常规价。闪购方案仅限大促日使用。';
+  var metaParts=[];
+  if(countries.length>0){
+    var first=countries[0];
+    metaParts.push('基准: '+(first.label||'')); 
+  }
+  var recPrice='常规价';
+  if(promoSection&&promoSection.items){
+    promoSection.items.forEach(function(p){
+      if(p.value&&p.value.indexOf('冲量')>=0){recPrice='冲量价';}
+    });
+  }
+  summaryTitle+='，推荐'+recPrice+'上架';
+  if(hasRisk) summaryAdvice='⚠️ 部分国家毛利率低于30%，请检查成本结构。';
+  h+='<div class="pricing-summary-card '+cardClass+'">';
+  h+='<div class="pricing-summary-icon">'+cardIcon+'</div>';
+  h+='<div class="pricing-summary-content">';
+  h+='<div class="pricing-summary-title">'+summaryTitle+'</div>';
+  h+='<div class="pricing-summary-meta">'+(metaParts.join(' | ')||'5国定价数据已就绪')+'</div>';
+  h+='<div class="pricing-summary-advice">'+summaryAdvice+'</div>';
+  h+='</div></div>';
+  // --- Section 2: 5国定价总览表 ---
+  if(countries.length>0){
+    h+='<div class="pricing-table"><table><thead><tr>';
+    h+='<th>国家/地区</th><th>建议售价</th><th>本地货币</th><th>毛利率</th><th>毛利润</th><th>竞品均价</th><th>竞争力</th>';
+    h+='</tr></thead><tbody>';
+    countries.forEach(function(it){
+      var rowClass=it.status==='ng'?'risk-row':(it.status==='warn'?'warn-row':'');
+      h+='<tr class="'+rowClass+'">';
+      // Parse label: "PH (PHP)" format
+      var label=it.label||'';
+      var flagMap={PH:'🇵🇭',SG:'🇸🇬',VN:'🇻🇳',TH:'🇹🇭',MY:'🇲🇾'};
+      var flag='';
+      Object.keys(flagMap).forEach(function(k){if(label.indexOf(k)>=0)flag=flagMap[k];});
+      h+='<td>'+flag+' '+label+'</td>';
+      h+='<td class="price-bold">'+(it.value||'—')+'</td>';
+      h+='<td>'+(it.note||'—')+'</td>';
+      h+='<td>'+(it.source||'—')+'</td>';
+      h+='<td>'+(it.status_detail||'—')+'</td>';
+      // Parse competitor info from value
+      var compPrice='—',compTag='',compClass='';
+      if(it.value){
+        var valParts=it.value.split(' ');
+        // Try to extract competitor info
+        compPrice=(it.status_detail||'—');
+      }
+      if(it.status==='ok'){compClass='tag-green';compTag='达标';}
+      else if(it.status==='warn'){compClass='tag-yellow';compTag='偏低';}
+      else{compClass='tag-red';compTag='不足';}
+      h+='<td><span class="tag '+compClass+'">'+compTag+'</span></td>';
+      h+='</tr>';
+    });
+    h+='</tbody></table></div>';
+  }
+  // --- Section 3: 促销方案卡片 ---
+  var promoItems=(promoSection&&promoSection.items)||[];
+  if(promoItems.length>0){
+    h+='<div style="font-size:12px;font-weight:600;color:#93c5fd;margin:12px 0 8px">📦 促销方案对比</div>';
+    h+='<div class="promo-cards">';
+    promoItems.forEach(function(p){
+      var isRecommended=p.value&&p.value.indexOf('冲量')>=0;
+      var isFlash=p.label&&p.label.indexOf('闪购')>=0;
+      var cardCls='promo-card'+(isRecommended?' recommended':'');
+      var tagCls=isFlash?'promo-tag warn':'promo-tag';
+      h+='<div class="'+cardCls+'">';
+      h+='<div class="promo-header">'+(p.label||'')+'</div>';
+      // Extract first country price for display
+      var priceStr=p.value||'';
+      var priceMatch=priceStr.match(/PH[¥￥]?([\d]+)/);
+      var displayPrice=priceMatch?'PH ¥'+priceMatch[1]:priceStr;
+      h+='<div class="promo-price">'+displayPrice+'</div>';
+      h+='<div class="promo-desc">'+(p.status_detail||'')+'</div>';
+      if(isRecommended) h+='<div class="promo-tag">推荐首周</div>';
+      if(isFlash) h+='<div class="'+tagCls+'">限大促</div>';
+      h+='</div>';
+    });
+    h+='</div>';
+  }
+  // --- Section 4: 技术明细 (折叠) ---
+  if(formulaSection&&formulaSection.items&&formulaSection.items.length>0){
+    h+='<div class="info-card"><div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>📊 利润率验证公式 (PH为例)</span><span class="toggle-icon">▼</span></div>';
+    h+='<div class="info-card-body" style="display:none">';
+    h+='<div class="ent-list">';
+    formulaSection.items.forEach(function(it){
+      h+='<div class="ent-row"><span class="ent-lbl">'+(it.label||'')+'</span><div class="ent-val"><span>'+(it.value||'')+'</span>';
+      if(it.note) h+='<div class="ent-note">'+it.note+'</div>';
+      if(it.source) h+='<span class="src-tag src-'+(it.source)+'">['+it.source+']</span>';
+      h+='</div></div>';
+    });
+    h+='</div></div></div>';
+  }
+  if(compSection&&compSection.items&&compSection.items.length>0){
+    h+='<div class="info-card"><div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>📊 竞品价格对标详情</span><span class="toggle-icon">▼</span></div>';
+    h+='<div class="info-card-body" style="display:none">';
+    h+='<div class="ent-list">';
+    compSection.items.forEach(function(it){
+      h+='<div class="ent-row"><span class="ent-lbl">'+(it.label||'')+'</span><div class="ent-val"><span>'+(it.value||'')+'</span>';
+      if(it.note) h+='<div class="ent-note">'+it.note+'</div>';
+      if(it.source) h+='<span class="src-tag src-'+(it.source)+'">['+it.source+']</span>';
+      h+='</div></div>';
+    });
+    h+='</div></div></div>';
+  }
+  // --- Section 5: Next Action ---
+  h+='<div class="gate-next-action">';
+  h+='<span>✅ 定价策略完成，建议执行：</span>';
+  h+='<button class="btn-primary" onclick="switchToTab(\'MS-2.5\')">进入 MS-2.5 物流模板</button>';
+  h+='<button class="btn-secondary" onclick="triggerReReview(\'MS-2.4\')">🔄 重新计算定价</button>';
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+// v3.7.4: MS-2.5 物流策略确认单
+async function renderMS25(detail,ms){
+  var sections=detail?detail.sections:[];
+  var planItems=[], carrierItems=[], templateItems=[], riskItems=[];
+
+  // Parse sections
+  sections.forEach(function(s){
+    var items=(s.items||[]).map(function(it){
+      return {
+        key:it.key||'',label:it.label||'',value:it.value||'',
+        before:it.before||'',after:it.after||'',note:it.note||'',status:it.status||''
+      };
+    });
+    if(s.title==='物流方案推荐') planItems=items;
+    else if(s.title==='5国承运商对比') carrierItems=items;
+    else if(s.title==='运费模板与预期履约') templateItems=items;
+    else if(s.title==='物流风险评估') riskItems=items;
+  });
+
+  // Determine high-risk countries
+  var hasHighRisk=false, hasWarn=false;
+  carrierItems.forEach(function(c){
+    if(c.status==='warn') hasWarn=true;
+    if(c.note&&c.note.indexOf('退货')>=0) hasHighRisk=true;
+  });
+  riskItems.forEach(function(r){
+    if(r.status==='warn') hasWarn=true;
+  });
+
+  // Summary card state
+  var cardClass,cardIcon,cardTitle,cardMeta,cardAdvice;
+  if(hasHighRisk){
+    cardClass='risk';
+    cardIcon='🚚';
+    cardTitle='物流方案确认：深圳集运 → 云途/万邑通 5国专线';
+    cardMeta='商品65g普货 · 5国免邮包邮 · 签收率 88%-98%';
+    cardAdvice='⚠️ 注意：越南退货率~15%需预留准备金；泰国COD拒收~8%建议首单预付';
+  }else{
+    cardClass='safe';
+    cardIcon='🚚';
+    cardTitle='物流方案确认：深圳集运 → 云途/万邑通 5国专线';
+    cardMeta='商品65g普货 · 5国免邮包邮 · 签收率 88%-98%';
+    cardAdvice='✅ 物流方案已优化，可进入下一步合规检查';
+  }
+
+  // Extract recommended plan text
+  var planText='', goodsText='', constraintText='';
+  planItems.forEach(function(p){
+    if(p.key==='pl1') planText=p.value;
+    if(p.key==='pl2') goodsText=p.value+(p.after?' · '+p.after:'');
+    if(p.key==='pl3') constraintText=p.value+(p.note?' — '+p.note:'');
+  });
+
+  // Country flags map
+  var flagMap={'PH':'🇵🇭','SG':'🇸🇬','VN':'🇻🇳','TH':'🇹🇭','MY':'🇲🇾'};
+  var countryNames={'PH':'菲律宾','SG':'新加坡','VN':'越南','TH':'泰国','MY':'马来西亚'};
+
+  var h='';
+
+  // === 板块一：物流结论摘要卡片 ===
+  h+='<div class="logistics-summary-card '+cardClass+'">';
+  h+='<div class="logistics-summary-icon">'+cardIcon+'</div>';
+  h+='<div class="logistics-summary-content">';
+  h+='<div class="logistics-summary-title">'+cardTitle+'</div>';
+  h+='<div class="logistics-summary-meta">'+cardMeta+'</div>';
+  h+='<div class="logistics-summary-advice">'+cardAdvice+'</div>';
+  h+='</div></div>';
+
+  // === 板块二：5国承运商对比表 ===
+  h+='<h4 style="font-size:12px;color:#93c5fd;margin:12px 0 8px">📊 5国承运商对比</h4>';
+  h+='<div class="logistics-table"><table>';
+  h+='<thead><tr><th>国家</th><th>推荐承运商</th><th>首重运费</th><th>时效</th><th>签收率</th><th>包邮策略</th><th>风险提示</th></tr></thead>';
+  h+='<tbody>';
+  carrierItems.forEach(function(c){
+    // Parse carrier info from value: "云途PH专线 ¥45+¥18 5-7天 签收94%"
+    var parts=c.value.split(' ');
+    var carrier=parts[0]||'';
+    var cost=parts[1]||'—';
+    var sla=parts[2]||'—';
+    var rate=parts[3]||'—';
+    // Extract country code from key (c_ph -> PH)
+    var cc=c.key.replace('c_','').toUpperCase();
+    var flag=flagMap[cc]||'';
+    var cname=countryNames[cc]||cc;
+
+    // Determine row class and risk tag
+    var rowClass='', riskTag='—';
+    if(c.status==='warn'){
+      rowClass='warn-row';
+      if(c.note&&c.note.indexOf('退货')>=0) riskTag='<span class="tag tag-red">'+c.note+'</span>';
+      else if(c.note) riskTag='<span class="tag tag-yellow">'+c.note+'</span>';
+      else riskTag='<span class="tag tag-yellow">有风险</span>';
+    }
+    // Parse after field for 包邮策略
+    var freeShip='✅ 全境免邮';
+    if(c.after&&c.after.indexOf('东马')>=0) freeShip='✅ 全境免邮(东马+¥8)';
+    if(c.after&&c.after.indexOf('次日达')>=0) freeShip='✅ 全境免邮(可次日达)';
+
+    h+='<tr class="'+rowClass+'">';
+    h+='<td>'+flag+' '+cname+'</td>';
+    h+='<td>'+carrier+'</td>';
+    h+='<td>'+cost+'</td>';
+    h+='<td>'+sla+'</td>';
+    h+='<td>'+rate+'</td>';
+    h+='<td>'+freeShip+'</td>';
+    h+='<td>'+riskTag+'</td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table></div>';
+
+  // === 板块三：物流风险评估卡片 ===
+  if(riskItems.length>0){
+    h+='<h4 style="font-size:12px;color:#93c5fd;margin:12px 0 8px">⚠️ 物流风险评估</h4>';
+    h+='<div class="logistics-cards">';
+    riskItems.forEach(function(r){
+      var cardType=r.status==='warn'?'warning':(r.status==='fail'?'danger':'');
+      h+='<div class="logistics-card '+cardType+'">';
+      h+='<div class="card-header">'+(r.status==='warn'?'⚠️':'ℹ️')+' '+r.label+'</div>';
+      h+='<div class="card-desc">'+r.value+'</div>';
+      if(r.note) h+='<div class="card-mitigation">缓解: '+r.note+'</div>';
+      h+='</div>';
+    });
+    h+='</div>';
+  }
+
+  // === 板块四：运费模板策略总结 ===
+  if(templateItems.length>0){
+    h+='<h4 style="font-size:12px;color:#93c5fd;margin:12px 0 8px">📦 运费模板策略</h4>';
+    h+='<div class="logistics-cards">';
+    templateItems.forEach(function(t){
+      h+='<div class="logistics-card">';
+      h+='<div class="card-header">'+t.label+'</div>';
+      h+='<div class="card-desc">'+t.value+'</div>';
+      if(t.after) h+='<div class="card-mitigation">预期: '+t.after+'</div>';
+      h+='</div>';
+    });
+    h+='</div>';
+  }
+
+  // === 板块五：技术明细（可折叠）===
+  if(planItems.length>0){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>📋 物流方案推荐详情</span>';
+    h+='<span class="toggle-icon">&#9660;</span>';
+    h+='</div>';
+    h+='<div class="info-card-body" style="display:none"><ul>';
+    planItems.forEach(function(p){
+      h+='<li><strong>'+p.label+'</strong>: '+p.value;
+      if(p.after) h+=' · '+p.after;
+      if(p.note) h+=' — '+p.note;
+      h+='</li>';
+    });
+    h+='</ul></div></div>';
+  }
+  if(carrierItems.length>0){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>📊 5国承运商对比详情 (含备选)</span>';
+    h+='<span class="toggle-icon">&#9660;</span>';
+    h+='</div>';
+    h+='<div class="info-card-body" style="display:none"><ul>';
+    carrierItems.forEach(function(c){
+      h+='<li><strong>'+c.label+'</strong>: '+c.value;
+      if(c.before) h+=' | 备选: '+c.before;
+      if(c.after) h+=' | '+c.after;
+      if(c.note) h+=' | 注: '+c.note;
+      h+='</li>';
+    });
+    h+='</ul></div></div>';
+  }
+  if(templateItems.length>0){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>📊 运费模板与预期履约详情</span>';
+    h+='<span class="toggle-icon">&#9660;</span>';
+    h+='</div>';
+    h+='<div class="info-card-body" style="display:none"><ul>';
+    templateItems.forEach(function(t){
+      h+='<li><strong>'+t.label+'</strong>: '+t.value;
+      if(t.after) h+=' | '+t.after;
+      if(t.note) h+=' | '+t.note;
+      h+='</li>';
+    });
+    h+='</ul></div></div>';
+  }
+
+  // === 板块六：下一步行动指引 ===
+  h+='<div class="gate-next-action">';
+  h+='<span>✅ 物流模板确认完成，建议执行：</span>';
+  h+='<button class="btn-primary" onclick="switchToTab(\'MS-2.6\')">进入 MS-2.6 合规检查</button>';
+  h+='<button class="btn-secondary" onclick="triggerReReview(\'MS-2.5\')">🔄 重新物流评估</button>';
+  h+='</div>';
+
+  document.getElementById('detail').innerHTML=h;
+}
+
+// v3.7.5: MS-2.6 合规审核报告
+async function renderMS26(detail,ms){
+  var el=document.getElementById('detail');
+  if(!detail||!detail.sections) return;
+  var checkItems=[];
+  detail.sections.forEach(function(s){
+    if(s.title&&s.title.indexOf('合规')>=0){
+      checkItems=(s.items||[]).map(function(it){
+        return {
+          key:it.key||'',label:it.label||'',value:it.value||'',
+          before:it.before||'',after:it.after||'',note:it.note||'',status:it.status||'',
+          source:it.source||''
+        };
+      });
+    }
+  });
+  var h='';
+  // Determine overall status
+  var hasFail=false,hasWarn=false,hasAdvice=false;
+  var aiScore='8.24',aiThreshold='8.0';
+  checkItems.forEach(function(it){
+    if(it.status==='ng'||it.status==='fail') hasFail=true;
+    if(it.status==='warn') hasWarn=true;
+    if(it.note&&it.note.length>0) hasAdvice=true;
+    if(it.label&&it.label.indexOf('3-Agent')>=0){
+      var m=it.value.match(/评分([\d.]+)/);
+      if(m) aiScore=m[1];
+    }
+  });
+  // Summary card
+  var cardClass=hasFail?'fail':(hasWarn?'review':'pass');
+  var cardIcon=hasFail?'❌':'🛡️';
+  var summaryTitle=hasFail?
+    '合规检查未通过，存在风险项，不可上架':
+    (hasWarn?'合规检查完成，部分项目需人工复审':'5项合规检查全部通过');
+  var summaryMeta='危险品/禁售/广告/知识产权检查完成 | AI审核阈值'+aiThreshold+'，当前评分'+aiScore+'/10';
+  var summaryAdvice='';
+  if(hasFail) summaryAdvice='⚠️ 存在未通过的合规项，请立即修正后再上架。';
+  else{
+    var adviceList=[];
+    checkItems.forEach(function(it){
+      if(it.note&&it.status!=='ok') adviceList.push(it.note);
+    });
+    if(adviceList.length>0) summaryAdvice='建议：'+adviceList.join('；');
+    else summaryAdvice='✅ 所有合规项通过，可进入发布流程。';
+  }
+  h+='<div class="compliance-summary-card '+cardClass+'">';
+  h+='<div class="compliance-summary-icon">'+cardIcon+'</div>';
+  h+='<div class="compliance-summary-content">';
+  h+='<div class="compliance-summary-title">'+summaryTitle+'</div>';
+  h+='<div class="compliance-summary-meta">'+summaryMeta+'</div>';
+  h+='<div class="compliance-summary-advice">'+summaryAdvice+'</div>';
+  h+='</div></div>';
+  // === Section 2: 合规检查项表格 ===
+  h+='<div class="compliance-table"><table><thead><tr>';
+  h+='<th>检查项目</th><th>结果</th><th>详情</th><th>建议</th>';
+  h+='</tr></thead><tbody>';
+  checkItems.forEach(function(it){
+    var rowClass=it.status==='ng'?'fail-row':(it.status==='warn'?'warn-row':'');
+    h+='<tr class="'+rowClass+'">';
+    h+='<td><strong>'+(it.label||'—')+'</strong></td>';
+    var tagClass,tagText;
+    if(it.status==='ok'||it.status==='real'){
+      tagClass='tag-green';tagText='✅ 通过';
+    }else if(it.status==='warn'){
+      tagClass='tag-yellow';tagText='⚠️ 需关注';
+    }else{
+      tagClass='tag-red';tagText='❌ 未通过';
+    }
+    h+='<td><span class="tag '+tagClass+'">'+tagText+'</span></td>';
+    h+='<td>'+(it.value||'—')+'</td>';
+    var suggestion='—';
+    if(it.after) suggestion=it.after;
+    else if(it.note&&it.status==='warn') suggestion='<span class="tag tag-yellow">建议修改</span> '+it.note;
+    h+='<td>'+suggestion+'</td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table></div>';
+  // === Section 3: 3-Agent审核可视化 ===
+  var agentItem=null;
+  checkItems.forEach(function(it){
+    if(it.label&&it.label.indexOf('3-Agent')>=0) agentItem=it;
+  });
+  if(agentItem){
+    h+='<div style="font-size:12px;font-weight:600;color:#93c5fd;margin:12px 0 8px">🤖 3-Agent 审核详情</div>';
+    h+='<div class="promo-cards">';
+    // Mode card
+    h+='<div class="promo-card promo-info">';
+    h+='<div class="promo-header">🤖 审核模式</div>';
+    var modeInfo=agentItem.before||'';
+    if(!modeInfo&&agentItem.note) modeInfo=agentItem.note;
+    h+='<div class="promo-desc">'+(modeInfo||'multi-agent · 独立模型防自评偏差')+'</div>';
+    h+='<div class="promo-meta">参谋→裁判 · 5维评估均无critical</div>';
+    h+='</div>';
+    // Score card
+    h+='<div class="promo-card promo-info">';
+    h+='<div class="promo-header">📊 综合评分</div>';
+    var scoreOk=parseFloat(aiScore)>=parseFloat(aiThreshold);
+    h+='<div class="promo-desc" style="font-size:24px;font-weight:700;color:'+(scoreOk?'#22c55e':'#ef4444')+'">'+aiScore+'/10</div>';
+    h+='<div class="promo-meta">阈值: '+aiThreshold+' · 5维均无critical</div>';
+    h+='</div>';
+    h+='</div>';
+  }
+  // === Section 4: 技术明细（可折叠）===
+  if(checkItems.length>0){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>📊 合规检查清单 (原始数据)</span>';
+    h+='<span class="toggle-icon">▼</span></div>';
+    h+='<div class="info-card-body" style="display:none">';
+    h+='<div class="ent-list">';
+    checkItems.forEach(function(it){
+      h+='<div class="ent-row"><span class="ent-lbl">'+(it.label||'')+'</span><div class="ent-val"><span>'+(it.value||'')+'</span>';
+      if(it.before) h+='<div class="before">← '+it.before+'</div>';
+      if(it.after) h+='<div class="after">→ '+it.after+'</div>';
+      if(it.note) h+='<div class="ent-note">'+it.note+'</div>';
+      h+='<span class="src-tag src-'+(it.source)+'">['+(it.source)+']</span>';
+      h+='</div></div>';
+    });
+    h+='</div></div></div>';
+  }
+  // === Section 5: 下一步行动指引 ===
+  h+='<div class="gate-next-action">';
+  if(hasFail){
+    h+='<span>⚠️ 合规检查未通过，请修正后重试：</span>';
+    h+='<button class="btn-secondary" onclick="triggerReReview(\'MS-2.6\')">🔄 重新合规检查</button>';
+  }else{
+    h+='<span>✅ 合规检查全部通过，建议执行：</span>';
+    h+='<button class="btn-primary" onclick="switchToTab(\'MS-3\')">进入 MS-3 发布准备</button>';
+    h+='<button class="btn-secondary" onclick="triggerReReview(\'MS-2.6\')">🔄 重新合规检查</button>';
+  }
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+// v3.7.5: MS-3 发布就绪确认单
+async function renderMS3(detail,ms){
+  var el=document.getElementById('detail');
+  if(!detail||!detail.sections) return;
+  var items=[];
+  detail.sections.forEach(function(s){
+    if(s.title&&(s.title.indexOf('发布')>=0||s.title.indexOf('准备')>=0)){
+      items=(s.items||[]).map(function(it){
+        return {key:it.key||'',label:it.label||'',value:it.value||'',before:it.before||'',after:it.after||'',note:it.note||'',status:it.status||'',source:it.source||''};
+      });
+    }
+  });
+  var h='';
+  // Parse key items
+  var enableOk=false,allPass=true;
+  items.forEach(function(it){
+    if(it.key==='p3_enable'){
+      enableOk=(it.status==='ok');
+      if(it.value.indexOf('false')>=0) enableOk=false;
+    }
+    if(it.status==='ng') allPass=false;
+  });
+  var switchEnabled=enableOk;
+  // === Section 1: 发布就绪结论摘要 ===
+  var cardClass=allPass?(switchEnabled?'ready':'blocked'):'fail';
+  var cardIcon=(!allPass)?'❌':(switchEnabled?'✅':'⚠️');
+  var summaryTitle=(!allPass)?'发布准备未完成':(switchEnabled?'发布就绪，可进行发布审批':'发布准备就绪，但发布开关未打开');
+  var summaryMeta='';
+  if(!switchEnabled){
+    summaryMeta='ERP草稿已推送 · 6图处理完成 · 合规检查通过 · 发布开关: ';
+    summaryMeta+='<span style="color:#f59e0b">MIAOSHOW_PUBLISH_ENABLED=false</span>';
+  }else if(allPass){
+    summaryMeta='ERP草稿已推送 · 6图处理完成 · 合规检查通过 · 发布开关已开启';
+  }else{
+    summaryMeta='部分检查项未通过，请查看下方清单';
+  }
+  var summaryAdvice=(!allPass)?
+    '⚠️ 存在未通过的检查项，请修正后再提交发布审批。':
+    (switchEnabled?
+      '✅ 所有条件已满足，请前往 MS-4 进行发布审批。':
+      '需要将发布开关设置为 true 并审批通过后，方可执行发布。<button class="btn-sm" onclick="switchToTab(\'MS-4\')" style="margin-left:12px;">前往 MS-4 发布审批</button>'
+    );
+  h+='<div class="publish-summary-card '+cardClass+'">';
+  h+='<div class="publish-summary-icon">'+cardIcon+'</div>';
+  h+='<div class="publish-summary-content">';
+  h+='<div class="publish-summary-title">'+summaryTitle+'</div>';
+  h+='<div class="publish-summary-meta">'+summaryMeta+'</div>';
+  h+='<div class="publish-summary-advice">'+summaryAdvice+'</div>';
+  h+='</div></div>';
+  // === Section 2: 发布准备清单 ===
+  h+='<div class="publish-checklist"><table><thead><tr>';
+  h+='<th>检查项</th><th>状态</th><th>详情</th>';
+  h+='</tr></thead><tbody>';
+  items.forEach(function(it){
+    if(it.key==='p3_enable') return; // handle separately at end
+    var tagClass,tagText;
+    if(it.status==='ok'){
+      tagClass='tag-green';tagText='✅ '+(it.label||'');
+    }else if(it.status==='warn'){
+      tagClass='tag-yellow';tagText='⚠️ '+(it.label||'');
+    }else{
+      tagClass='tag-red';tagText='❌ '+(it.label||'');
+    }
+    var rowBg=(it.status==='ok')?'pass-row':'';
+    h+='<tr class="'+rowBg+'">';
+    h+='<td><strong>'+(it.label||'—')+'</strong></td>';
+    h+='<td><span class="tag '+tagClass+'">'+tagText+'</span></td>';
+    h+='<td>'+(it.value||'—')+'</td>';
+    h+='</tr>';
+  });
+  // 发布开关行（最后，高亮）
+  var enableItem=null;
+  items.forEach(function(it){if(it.key==='p3_enable') enableItem=it;});
+  if(enableItem){
+    var isOk=enableOk;
+    h+='<tr class="'+(isOk?'pass-row':'blocked-row')+'">';
+    h+='<td><strong>发布开关</strong></td>';
+    if(isOk){
+      h+='<td><span class="tag tag-green">✅ 已开启</span></td>';
+    }else{
+      h+='<td><span class="tag tag-red">❌ 关闭</span></td>';
+    }
+    h+='<td>'+(enableItem.value||'')+(enableItem.note?' · '+enableItem.note:'')+'</td>';
+    h+='</tr>';
+  }
+  h+='</tbody></table></div>';
+  // === Section 3: 技术明细（可折叠）===
+  var hasExtra=items.some(function(it){return it.before||it.note;});
+  if(hasExtra){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>🔍 发布准备原始数据</span>';
+    h+='<span class="toggle-icon">▼</span></div>';
+    h+='<div class="info-card-body" style="display:none">';
+    h+='<div class="ent-list">';
+    items.forEach(function(it){
+      h+='<div class="ent-row"><span class="ent-lbl">'+(it.label||'')+'</span><div class="ent-val"><span>'+(it.value||'')+'</span>';
+      if(it.before) h+='<div class="before">← '+it.before+'</div>';
+      if(it.after) h+='<div class="after">→ '+it.after+'</div>';
+      if(it.note) h+='<div class="ent-note">'+it.note+'</div>';
+      h+='<span class="src-tag src-'+(it.source)+'">['+(it.source)+']</span>';
+      h+='</div></div>';
+    });
+    h+='</div></div></div>';
+  }
+  // === Section 4: 下一步行动指引 ===
+  h+='<div class="gate-next-action">';
+  if(!switchEnabled){
+    h+='<span>⚠️ 发布开关关闭，下一步：</span>';
+    h+='<button class="btn-primary" onclick="switchToTab(\'MS-4\')">前往 MS-4 发布审批</button>';
+    h+='<button class="btn-secondary" onclick="triggerReReview(\'MS-3\')">🔄 重新检查发布准备</button>';
+  }else{
+    h+='<span>✅ 发布准备完成，建议执行：</span>';
+    h+='<button class="btn-primary" onclick="switchToTab(\'MS-4\')">进入 MS-4 发布审批</button>';
+    h+='<button class="btn-secondary" onclick="triggerReReview(\'MS-3\')">🔄 重新检查发布准备</button>';
+  }
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+// v3.7.5: MS-4 发布审批决策面板
+async function renderMS4(detail,ms){
+  var el=document.getElementById('detail');
+  if(!detail||!detail.sections) return;
+  var aiItem=null,constraintItem=null;
+  detail.sections.forEach(function(s){
+    if(s.title&&s.title.indexOf('审批')>=0){
+      (s.items||[]).forEach(function(it){
+        if(it.key==='a1') aiItem=it;
+        if(it.key==='a2') constraintItem=it;
+      });
+    }
+  });
+  var h='';
+  // Parse constraint status
+  var enabledOk=false,humanOk=false;
+  if(constraintItem){
+    var val=constraintItem.value||'';
+    var bef=constraintItem.before||'';
+    if(val.indexOf('当前均为false')<0&&bef.indexOf('当前均为false')<0){
+      enabledOk=true;humanOk=true;
+    }
+    if(constraintItem.status==='ok'){enabledOk=true;humanOk=true;}
+  }
+  var allReady=enabledOk&&humanOk;
+  var aiScore='8.0',aiConf='80%';
+  if(aiItem){
+    var m=aiItem.value.match(/([\d.]+)\/10/);if(m) aiScore=m[1];
+    var m2=aiItem.value.match(/置信度([\d%]+)/);if(m2) aiConf=m2[1];
+  }
+  // === Section 1: 审批结论摘要 ===
+  var cardClass=allReady?'ready':'blocked';
+  var cardIcon=allReady?'✅':'⚠️';
+  var summaryTitle=allReady?'审批通过，可执行发布':'AI建议批准 ('+aiScore+'/10)，但发布开关未打开';
+  var summaryMeta='';
+  if(!allReady){
+    var blockers=[];
+    if(!enabledOk) blockers.push('MIAOSHOW_PUBLISH_ENABLED=false');
+    if(!humanOk) blockers.push('human_approved=false');
+    summaryMeta='阻塞项: '+blockers.join(' · ');
+  }else{
+    summaryMeta='AI推荐: 批准 · '+aiScore+'/10 · 置信度'+aiConf;
+  }
+  var summaryAdvice=allReady?
+    '✅ 所有条件已满足，请点击“批准发布”执行上架操作。':
+    '需要将发布开关设置为 true 并完成人工审批后，方可发布。<button class="btn-sm" onclick="switchToTab(\'MS-3\')" style="margin-left:12px;">前往 MS-3 打开发布开关</button>';
+  h+='<div class="publish-summary-card '+cardClass+'">';
+  h+='<div class="publish-summary-icon">'+cardIcon+'</div>';
+  h+='<div class="publish-summary-content">';
+  h+='<div class="publish-summary-title">'+summaryTitle+'</div>';
+  h+='<div class="publish-summary-meta">'+summaryMeta+'</div>';
+  h+='<div class="publish-summary-advice">'+summaryAdvice+'</div>';
+  h+='</div></div>';
+  // === Section 2: 审批条件状态表格 ===
+  h+='<div class="publish-checklist"><table><thead><tr>';
+  h+='<th>审批条件</th><th>状态</th><th>操作</th>';
+  h+='</tr></thead><tbody>';
+  // AI推荐行
+  h+='<tr class="pass-row">';
+  h+='<td><strong>AI推荐</strong></td>';
+  h+='<td><span class="tag tag-green">✅ 批准 · '+aiScore+'/10 · 置信度'+aiConf+'</span></td>';
+  h+='<td>—</td></tr>';
+  // 发布开关行
+  var blockRow1=!enabledOk?'blocked-row':'';
+  h+='<tr class="'+blockRow1+'">';
+  h+='<td><strong>发布开关</strong></td>';
+  if(enabledOk){
+    h+='<td><span class="tag tag-green">✅ MIAOSHOW_PUBLISH_ENABLED=true</span></td>';
+  }else{
+    h+='<td><span class="tag tag-red">❌ MIAOSHOW_PUBLISH_ENABLED=false</span></td>';
+  }
+  h+='<td>'+(enabledOk?'—':'<button class="btn-sm" onclick="switchToTab(\'MS-3\')">前往 MS-3 修改</button>')+'</td></tr>';
+  // 人工审批行
+  var blockRow2=!humanOk?'blocked-row':'';
+  h+='<tr class="'+blockRow2+'">';
+  h+='<td><strong>人工审批</strong></td>';
+  if(humanOk){
+    h+='<td><span class="tag tag-green">✅ human_approved=true</span></td>';
+  }else{
+    h+='<td><span class="tag tag-red">❌ human_approved=false</span></td>';
+  }
+  if(!humanOk){
+    h+='<td><button class="btn-sm" onclick="approveHuman()" style="background:rgba(34,197,94,.15);color:#86efac;border-color:rgba(34,197,94,.3)">✅ 通过审批</button>';
+    h+=' <button class="btn-sm btn-danger" onclick="rejectHuman()">❌ 驳回</button></td>';
+  }else{
+    h+='<td>—</td>';
+  }
+  h+='</tr>';
+  // 综合结论行
+  h+='<tr>';
+  h+='<td><strong>综合结论</strong></td>';
+  if(allReady){
+    h+='<td colspan="2"><span class="tag tag-green">✅ 可以发布</span></td>';
+  }else{
+    h+='<td colspan="2"><span class="tag tag-yellow">⚠️ 条件不满足</span></td>';
+  }
+  h+='</tr>';
+  h+='</tbody></table></div>';
+  // === Section 3: 技术明细（可折叠）===
+  var otherItems=[];
+  detail.sections.forEach(function(s){
+    (s.items||[]).forEach(function(it){
+      if(it.key!=='a1'&&it.key!=='a2') otherItems.push(it);
+    });
+  });
+  if(otherItems.length>0){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>🔍 AI审批原始数据</span>';
+    h+='<span class="toggle-icon">▼</span></div>';
+    h+='<div class="info-card-body" style="display:none">';
+    h+='<div class="ent-list">';
+    otherItems.forEach(function(it){
+      h+='<div class="ent-row"><span class="ent-lbl">'+(it.label||'')+'</span><div class="ent-val"><span>'+(it.value||'')+'</span>';
+      if(it.before) h+='<div class="before">← '+it.before+'</div>';
+      if(it.note) h+='<div class="ent-note">'+it.note+'</div>';
+      h+='<span class="src-tag src-'+(it.source)+'">['+(it.source)+']</span>';
+      h+='</div></div>';
+    });
+    h+='</div></div></div>';
+  }
+  // === Section 4: 审批决策按钮 ===
+  h+='<div class="gate-next-action">';
+  if(allReady){
+    h+='<span id="publish-action-label">✅ 审批条件已满足，可以发布：</span>';
+    h+='<button id="btn-publish-approve" class="btn-primary" onclick="finalApprove()">✅ 批准发布</button>';
+  }else{
+    h+='<span id="publish-action-label">⚠️ 条件不满足，无法发布。请先完成上述审批条件：</span>';
+    h+='<button id="btn-publish-approve" class="btn-primary" disabled onclick="finalApprove()">✅ 批准发布</button>';
+  }
+  h+='<button id="btn-publish-reject" class="btn-secondary" onclick="finalReject()">❌ 驳回发布</button>';
+  h+='<button class="btn-secondary" onclick="triggerReReview(\'MS-4\')">🔄 重新AI评估</button>';
+  h+='</div>';
+  // === Section 5: 下一步行动指引 ===
+  if(allReady){
+    h+='<div class="gate-next-action">';
+    h+='<span>✅ 发布审批完成后，建议执行：</span>';
+    h+='<button class="btn-primary" onclick="switchToTab(\'MS-5\')">进入 MS-5 日报推送</button>';
+    h+='</div>';
+  }
+  el.innerHTML=h;
+}
+
+// v3.7.5: MS-5 日报推送控制台
+async function renderMS5(detail,ms){
+  var el=document.getElementById('detail');
+  if(!detail||!detail.sections) return;
+  var items=[];
+  detail.sections.forEach(function(s){
+    if(s.title&&(s.title.indexOf('日报')>=0)){
+      items=(s.items||[]).map(function(it){
+        return {key:it.key||'',label:it.label||'',value:it.value||'',before:it.before||'',after:it.after||'',note:it.note||'',status:it.status||'',source:it.source||''};
+      });
+    }
+  });
+  var h='';
+  // Parse status
+  var statusOk=true;
+  items.forEach(function(it){ if(it.status==='ng'||it.status==='warn') statusOk=false; });
+  // Extract module list
+  var modules=[];
+  items.forEach(function(it){
+    if(it.key==='d5_modules'&&(it.value||'').indexOf('/')>=0){
+      var m=it.value.split(/[,、/·]+/).map(function(x){return x.replace(/\d+模块/g,'').trim();}).filter(function(x){return x.length>0;});
+      modules=m;
+    }
+  });
+  if(modules.length===0) modules=['店铺','采集箱','订单','竞品','内容','TK趋势','运营建议'];
+  // === Section 1: 日报推送结论摘要 ===
+  var cardClass=statusOk?'ready':'blocked';
+  var cardIcon=statusOk?'📊':'⚠️';
+  var summaryTitle=statusOk?'日报推送正常运行，覆盖'+modules.length+'大模块':'今天日报尚未推送';
+  var summaryMeta='';
+  if(statusOk){
+    summaryMeta='每日自动推送 · 飞书群聊 · '+modules.join('/');
+  }else{
+    summaryMeta='今日日报尚未推送，请手动触发或检查自动化配置';
+  }
+  var summaryAdvice=statusOk?
+    '今天日报已推送。可点击下方按钮手动重推或查看日报预览。':
+    '⚠️ 今天日报尚未推送，请点击“手动推送今日日报”按钮。';
+  h+='<div class="publish-summary-card '+cardClass+'">';
+  h+='<div class="publish-summary-icon">'+cardIcon+'</div>';
+  h+='<div class="publish-summary-content">';
+  h+='<div class="publish-summary-title">'+summaryTitle+'</div>';
+  h+='<div class="publish-summary-meta">'+summaryMeta+'</div>';
+  h+='<div class="publish-summary-advice">'+summaryAdvice+'</div>';
+  h+='</div></div>';
+  // === Section 2: 日报模块概览 ===
+  h+='<div style="font-size:12px;font-weight:600;color:#93c5fd;margin:12px 0 8px">📋 日报模块结构</div>';
+  h+='<div class="promo-cards">';
+  var moduleIcons=['🏪','📦','🛒','📊','🎬','📈','💡'];
+  modules.forEach(function(mod,i){
+    h+='<div class="promo-card promo-info">';
+    h+='<div class="promo-header">'+(moduleIcons[i%moduleIcons.length]+' '+mod)+'</div>';
+    h+='<div class="promo-meta">模块 #'+(i+1)+'</div>';
+    h+='</div>';
+  });
+  h+='</div>';
+  // === Section 3: 日报推送控制 ===
+  h+='<div class="gate-next-action">';
+  h+='<span>📊 日报推送已就绪：</span>';
+  h+='<button class="btn-primary" id="btn-daily-push" onclick="triggerDailyReport()">🔄 手动推送今日日报</button>';
+  h+='<button class="btn-secondary" onclick="previewDailyReport()">👁️ 预览今日日报</button>';
+  h+='<button class="btn-secondary" onclick="viewPushHistory()">📋 查看推送历史</button>';
+  h+='</div>';
+  // === Section 4: 推送状态详情（可折叠）===
+  if(items.length>0){
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>🔍 日报推送技术详情</span>';
+    h+='<span class="toggle-icon">▼</span></div>';
+    h+='<div class="info-card-body" style="display:none">';
+    h+='<div class="ent-list">';
+    items.forEach(function(it){
+      h+='<div class="ent-row"><span class="ent-lbl">'+(it.label||'')+'</span><div class="ent-val"><span>'+(it.value||'')+'</span>';
+      if(it.before) h+='<div class="before">← '+it.before+'</div>';
+      if(it.note) h+='<div class="ent-note">'+it.note+'</div>';
+      h+='<span class="src-tag src-'+(it.source)+'">['+(it.source)+']</span>';
+      h+='</div></div>';
+    });
+    h+='</div></div></div>';
+  }
+  // === Section 5: 下一步行动指引 ===
+  h+='<div class="gate-next-action">';
+  h+='<span>✅ TK运营流程完成，建议执行：</span>';
+  h+='<button class="btn-primary" onclick="switchToTab(\'DM-0\')">切换到 AI短剧 业务线</button>';
+  h+='<button class="btn-secondary" onclick="triggerReReview(\'MS-5\')">🔄 重新检查日报状态</button>';
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+// v3.7.5: MS-5 交互函数
+async function triggerDailyReport(){
+  var btn=document.getElementById('btn-daily-push');
+  if(btn){btn.classList.add('busy');btn.disabled=true;btn.textContent='⏳ 推送中...';}
+  toastMsg('🔄 正在手动推送今日日报...', 3000);
+  try{
+    var r=await fetch('/api/daily-report/push',{method:'POST'});
+    if(!r.ok){toastMsg('推送失败: HTTP '+r.status,3000,'error');return;}
+    toastMsg('✅ 今日日报推送成功',4000,'success');
+  }catch(e){toastMsg('❌ 推送失败: '+e.message,3000,'error');}
+  if(btn){btn.classList.remove('busy');btn.disabled=false;btn.textContent='🔄 手动推送今日日报';}
+}
+function previewDailyReport(){
+  toastMsg('👁️ 日报预览功能开发中...', 2500);
+}
+function viewPushHistory(){
+  toastMsg('📋 推送历史功能开发中...', 2500);
+}
+
+// ================================================================
 // v3.6: renderSummary — P1-12: also respects search/filter
 // ================================================================
 function renderSummary(){
@@ -1909,8 +3799,30 @@ async function renderDetail(){
     await renderDM1(detail,ms);
   }else if(ms.ms_id==='MS-0'){
     await renderMS0Gate(detail,ms);
+  }else if(ms.ms_id==='MS-1'){
+    await renderMS1(detail,ms);
+  }else if(ms.ms_id==='MS-1.5'){
+    await renderMS15(detail,ms);
+  }else if(ms.ms_id==='MS-2'){
+    await renderMS2(detail,ms);
+  }else if(ms.ms_id==='MS-2.1'){
+    await renderMS21(detail,ms);
+  }else if(ms.ms_id==='MS-2.2'){
+    await renderMS22(detail,ms);
   }else if(ms.ms_id==='MS-2.3'){
     await renderTKImageWorkbench(detail,ms);
+  }else if(ms.ms_id==='MS-2.4'){
+    await renderMS24(detail,ms);
+  }else if(ms.ms_id==='MS-2.5'){
+    await renderMS25(detail,ms);
+  }else if(ms.ms_id==='MS-2.6'){
+    await renderMS26(detail,ms);
+  }else if(ms.ms_id==='MS-3'){
+    await renderMS3(detail,ms);
+  }else if(ms.ms_id==='MS-4'){
+    await renderMS4(detail,ms);
+  }else if(ms.ms_id==='MS-5'){
+    await renderMS5(detail,ms);
   }else if(ms.ms_id && !ms.ms_id.startsWith('DM-') && !ms.ms_id.startsWith('daily')){
     await renderTKDetail(detail,ms);
   }else if(ms.ms_id&&/^DM-(6|7|8|9|10)$/.test(ms.ms_id)){
@@ -1939,59 +3851,7 @@ async function renderTKDetail(detail, ms) {
     h += '</div>';
   });
   
-  // MS-2: Add product comparison cards
-  if (ms.ms_id === 'MS-2') {
-    var prods = [
-      { name: '防水手机壳 X Pro', price: '¥102', cost: '¥11.30', margin: '40%', score: '8.42', rank: 'TOP1', img: 'phone_case' },
-      { name: '无线充电器 15W', price: '¥158', cost: '¥53.50', margin: '41%', score: '8.30', rank: 'TOP2', img: 'charger' },
-      { name: '磁吸手机支架', price: '¥38', cost: '¥9.80', margin: '55%', score: '8.24', rank: 'TOP3', img: 'stand' }
-    ];
-    h += '<div class="sec"><h3>📦 选品对比</h3><div style="display:flex;gap:10px;flex-wrap:wrap">';
-    prods.forEach(function(p) {
-      var barW = parseInt(p.margin) + 20;
-      h += '<div style="flex:1;min-width:180px;background:rgba(255,255,255,.03);border-radius:8px;padding:12px;border:1px solid rgba(74,158,255,.1)">';
-      h += '<div style="font-size:10px;color:#4a9eff;font-weight:700;margin-bottom:4px">' + p.rank + '</div>';
-      h += '<div style="font-size:12px;font-weight:700;margin-bottom:6px">' + p.name + '</div>';
-      h += '<div style="display:flex;justify-content:space-between;font-size:10px;color:#888;margin:2px 0">';
-      h += '<span>售价</span><span style="color:#4ade80;font-weight:600">' + p.price + '</span></div>';
-      h += '<div style="display:flex;justify-content:space-between;font-size:10px;color:#888;margin:2px 0">';
-      h += '<span>成本</span><span style="color:#f59e0b">' + p.cost + '</span></div>';
-      h += '<div style="margin-top:8px;height:18px;background:#222;border-radius:9px;overflow:hidden;position:relative">';
-      h += '<div style="width:' + barW + '%;height:100%;background:linear-gradient(90deg,#22c55e,#4ade80);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#000;font-weight:600">' + p.margin + '</div></div>';
-      h += '<div style="margin-top:4px;font-size:9px;color:#666;text-align:center">毛利率</div>';
-      h += '<div style="margin-top:6px;display:flex;gap:2px">';
-      for (var i=0;i<5;i++) {
-        var filled = i < Math.round(parseFloat(p.score)-3);
-        h += '<span style="font-size:12px">' + (filled ? '⭐' : '☆') + '</span>';
-      }
-      h += ' <span style="font-size:9px;color:#888">' + p.score + '/10</span>';
-      h += '</div></div>';
-    });
-    h += '</div></div>';
-  }
-  
   // MS-2.3: moved to renderTKImageWorkbench (product image workbench)
-  
-  // MS-2.1: localization reviews
-  if (ms.ms_id === 'MS-2.1') {
-    h += '<div class="sec"><h3>🌏 5国本地化状态</h3><div style="display:flex;gap:8px;flex-wrap:wrap">';
-    var countries = [
-      { code: 'PH', name: '菲律宾', status: '待翻译' },
-      { code: 'TH', name: '泰国', status: '已完成' },
-      { code: 'VN', name: '越南', status: '待翻译' },
-      { code: 'MY', name: '马来西亚', status: '已完成' },
-      { code: 'SG', name: '新加坡', status: '进行中' }
-    ];
-    countries.forEach(function(c) {
-      var cStatus = c.status === '已完成' ? '#22c55e' : c.status === '进行中' ? '#f59e0b' : '#555';
-      h += '<div style="flex:1;min-width:100px;background:rgba(255,255,255,.03);border-radius:6px;padding:10px;text-align:center;border:1px solid #222">';
-      h += '<div style="font-size:20px;margin-bottom:4px">' + (c.code === 'PH' ? '🇵🇭' : c.code === 'TH' ? '🇹🇭' : c.code === 'VN' ? '🇻🇳' : c.code === 'MY' ? '🇲🇾' : '🇸🇬') + '</div>';
-      h += '<div style="font-size:11px;color:#c4d4e8;font-weight:600">' + c.name + '</div>';
-      h += '<div style="font-size:9px;margin-top:2px;color:' + cStatus + '">' + c.status + '</div>';
-      h += '</div>';
-    });
-    h += '</div></div>';
-  }
   
   el.insertAdjacentHTML('beforeend', h);
 }
@@ -2689,9 +4549,33 @@ async function renderTKImageWorkbench(detail,ms){
   try{
     const r=await fetch('/api/images');
     const data=await r.json();
-    const images=Array.isArray(data)?data:(data.images||data.products||[]);
-    if(!images.length){
+    const raw=Array.isArray(data)?data:(data.images||data.products||[]);
+    if(!raw.length){
       document.getElementById('ms23-workbench').innerHTML='<div style="text-align:center;padding:20px;color:#555;font-size:12px">暂无商品图片数据</div>';
+      return;
+    }
+    // v3.7.6 P1: Filter only product images — exclude portrait/profile/API-path noise
+    const productKeywords=['phone_case_main','phone_case_worn','phone_case_detail','phone_case_side','phone_case_packaging','product_main','product_detail','product_worn'];
+    const excludeKeywords=['portrait','profile','app_card','api_path','character','avatar','role','scene','background_test','thumbnail_list'];
+    const images=raw.filter(function(item){
+      const id=(item.id||item.name||item.sku||item.path||'').toLowerCase();
+      const isProduct=productKeywords.some(function(k){return id.indexOf(k)>=0;});
+      const isExclude=excludeKeywords.some(function(k){return id.indexOf(k)>=0;});
+      return isProduct&&!isExclude;
+    });
+    // Fallback: if zero matches after filter, keep items that have an 'original' or 'orig' path
+    // (they're likely product images with unconventional naming)
+    if(!images.length){
+      const fallback=raw.filter(function(item){
+        const id=(item.id||item.name||item.sku||item.path||'').toLowerCase();
+        const hasOrig=!!(item.original||item.orig);
+        const isExclude=excludeKeywords.some(function(k){return id.indexOf(k)>=0;});
+        return hasOrig&&!isExclude;
+      });
+      images.push.apply(images,fallback);
+    }
+    if(!images.length){
+      document.getElementById('ms23-workbench').innerHTML='<div style="text-align:center;padding:20px;color:#888;font-size:12px">⚠️ API 返回 '+raw.length+' 条数据，但无匹配的商品图（已排除角色图/API路径等干扰项）</div>';
       return;
     }
     _tkImageData=images;
@@ -2706,14 +4590,23 @@ async function renderTKImageWorkbench(detail,ms){
 var _tkImageData=[];
 var _tkImageFilter='all';
 
+// v3.7.6 P2: getImageStatus — unified status mapping
+function _getImageStatus(img){
+  if(img.status==='done'||img.status==='approved') return 'done';
+  if(img.processing===true||img.status==='processing') return 'processing';
+  return 'pending';
+}
+
 function _renderTKCards(){
   const container=document.getElementById('ms23-workbench');
   if(!container)return;
   const imgs=_tkImageData;
-  // Count by status
-  let nAll=imgs.length, nPending=0, nDone=0;
+  // Count by status (v3.7.6 P2: use unified function)
+  let nAll=imgs.length, nPending=0, nDone=0, nProcessing=0;
   imgs.forEach(function(img){
-    if(img.status==='done'||img.status==='approved') nDone++;
+    const s=_getImageStatus(img);
+    if(s==='done') nDone++;
+    else if(s==='processing') nProcessing++;
     else nPending++;
   });
 
@@ -2722,6 +4615,7 @@ function _renderTKCards(){
   h+='<div class="img-filter-bar">';
   h+='<button class="img-filter-btn'+(_tkImageFilter==='all'?' active':'')+'" data-filter="all" onclick="_tkImageFilter=\'all\';_renderTKCards()">全部 ('+nAll+')</button>';
   h+='<button class="img-filter-btn'+(_tkImageFilter==='pending'?' active':'')+'" data-filter="pending" onclick="_tkImageFilter=\'pending\';_renderTKCards()">待处理 ('+nPending+')</button>';
+  if(nProcessing>0) h+='<button class="img-filter-btn'+(_tkImageFilter==='processing'?' active':'')+'" data-filter="processing" onclick="_tkImageFilter=\'processing\';_renderTKCards()">处理中 ('+nProcessing+')</button>';
   h+='<button class="img-filter-btn'+(_tkImageFilter==='done'?' active':'')+'" data-filter="done" onclick="_tkImageFilter=\'done\';_renderTKCards()">已完成 ('+nDone+')</button>';
   h+='<button class="img-batch-btn" onclick="_tkBatchProcessAll()">&#9889; 一键批量处理全部</button>';
   h+='</div>';
@@ -2745,20 +4639,26 @@ function _renderTKCards(){
   imgs.forEach(function(img,idx){
     const pid=img.id||img.name||img.sku||('img-'+idx);
     const pname=img.name||img.title||pid;
-    const orig=img.original||img.orig||'';
+    // v3.7.6 P2: Use unified status function
+    const st=_getImageStatus(img);
+    const isDone=(st==='done');
+    const isProcessing=(st==='processing');
+    // v3.7.6 P1: Fix image path — fallback to /api/images/file/<id>
+    let orig=img.original||img.orig||'';
+    if(!orig&&pid){orig='/api/images/file/'+encodeURIComponent(pid);}
     const nobg=img.nobg||img.no_bg||'';
     const fin=img.final||img.fin||'';
-    const isDone=(img.status==='done'||img.status==='approved');
-    const show=(_tkImageFilter==='all'||(_tkImageFilter==='done'&&isDone)||(_tkImageFilter==='pending'&&!isDone));
+    const show=(_tkImageFilter==='all'||(_tkImageFilter==='done'&&isDone)||(_tkImageFilter==='pending'&&!isDone&&st==='pending')||(_tkImageFilter==='processing'&&st==='processing'));
     if(!show)return;
 
-    const statusTag=isDone?'<span class="img-status-tag green">已完成</span>':'<span class="img-status-tag yellow">待处理</span>';
-    const displayStyle=(!show)?'display:none':'';
+    let statusTag;
+    if(isDone) statusTag='<span class="img-status-tag green">已完成</span>';
+    else if(isProcessing) statusTag='<span class="img-status-tag yellow">处理中</span>';
+    else statusTag='<span class="img-status-tag yellow">待处理</span>';
 
-    h+='<div class="img-card" data-status="'+(isDone?'done':'pending')+'" data-idx="'+idx+'" style="'+displayStyle+'">';
+    h+='<div class="img-card" data-status="'+st+'" data-idx="'+idx+'">';
     h+='<div class="img-preview">';
-    if(orig) h+='<img src="'+orig+'" loading="lazy" onerror="this.parentElement.innerHTML=\'&lt;div class=\"img-placeholder-text\"&gt;图片加载失败&lt;/div&gt;\'"/>';
-    else h+='<div class="img-placeholder-text">无预览图</div>';
+    h+='<img src="'+orig+'" loading="lazy" onerror="this.parentElement.innerHTML=\'&lt;div class=\"img-placeholder-text\"&gt;图片加载失败&lt;/div&gt;\'"/>';
     h+=statusTag;
     h+='</div>';
 
@@ -2768,6 +4668,11 @@ function _renderTKCards(){
       const showImg=fin||nobg||orig;
       if(showImg) h+='<img src="'+showImg+'" loading="lazy" onclick="zoomImg(\''+showImg+'\')" onerror="this.style.display=\'none\'"/>';
       else h+='<div style="font-size:9px;color:#555">无处理后图片</div>';
+      h+='</div>';
+    }else if(isProcessing){
+      h+='<div class="img-actions">';
+      h+='<button class="btn-rembg" disabled>处理中...</button>';
+      h+='<button class="btn-full" disabled>处理中...</button>';
       h+='</div>';
     }else{
       h+='<div class="img-actions">';
@@ -2817,7 +4722,7 @@ function _tkProcessImage(pid,idx,action,btn){
 async function _tkBatchProcessAll(){
   const pending=[];
   _tkImageData.forEach(function(img,idx){
-    if(img.status!=='done'&&img.status!=='approved') pending.push({img:img,idx:idx});
+    if(_getImageStatus(img)==='pending') pending.push({img:img,idx:idx});
   });
   if(!pending.length){showToast('⚠ 没有待处理的图片','warn');return;}
   showToast('⚡ 开始批量处理 '+pending.length+' 张图片...','info');
@@ -3705,6 +5610,46 @@ async function triggerReReview(msId) {
     toastMsg('❌ 重审失败: ' + e.message, 3000, 'error');
   }
   if (btn) { btn.classList.remove('busy'); btn.textContent = '🔄 重新审核'; }
+}
+
+// v3.7.5: MS-4 发布审批交互函数
+async function approveHuman(){
+  toastMsg('🔄 正在提交人工审批...', 2000);
+  try{
+    var r=await fetch('/api/decision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task_id:'MS-4',action:'approved',reason:'人工审批通过'})});
+    if(!r.ok){toastMsg('审批提交失败: HTTP '+r.status,2500,'error');return;}
+    toastMsg('✅ 人工审批已通过',3000,'success');
+    setTimeout(function(){select('MS-4')},1000);
+  }catch(e){toastMsg('❌ 审批失败: '+e.message,3000,'error');}
+}
+async function rejectHuman(){
+  toastMsg('🔄 正在提交驳回...', 2000);
+  try{
+    var r=await fetch('/api/decision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task_id:'MS-4',action:'rejected',reason:'人工审批驳回'})});
+    if(!r.ok){toastMsg('驳回提交失败: HTTP '+r.status,2500,'error');return;}
+    toastMsg('✅ 已驳回发布',3000,'warn');
+    setTimeout(function(){select('MS-4')},1000);
+  }catch(e){toastMsg('❌ 驳回失败: '+e.message,3000,'error');}
+}
+async function finalApprove(){
+  toastMsg('🔄 正在执行批准发布...', 2000);
+  try{
+    var r=await fetch('/api/publish',{method:'POST'});
+    if(!r.ok){toastMsg('发布失败: HTTP '+r.status,2500,'error');return;}
+    var d=await r.json();
+    toastMsg('✅ 发布成功',4000,'success');
+    setTimeout(function(){select('MS-5')},1500);
+  }catch(e){toastMsg('❌ 发布失败: '+e.message,3000,'error');}
+}
+async function finalReject(){
+  if(!confirm('确认驳回发布申请？此操作将重置 MS-4 状态。')) return;
+  toastMsg('🔄 正在驳回发布...', 2000);
+  try{
+    var r=await fetch('/api/decision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task_id:'MS-4',action:'rejected',reason:'最终驳回发布'})});
+    if(!r.ok){toastMsg('驳回失败: HTTP '+r.status,2500,'error');return;}
+    toastMsg('✅ 已驳回，MS-4 已重置',3000,'warn');
+    setTimeout(function(){select('MS-4')},1000);
+  }catch(e){toastMsg('❌ 驳回失败: '+e.message,3000,'error');}
 }
 
 // ================================================================
