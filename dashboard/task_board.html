@@ -4613,7 +4613,16 @@ async function renderTKDetail(detail, ms) {
 function toggleCharBibleEdit(fid) {
   const sectionId='char-edit-section-'+fid;
   const el=document.getElementById('cbedit-'+fid);
-  if(!el){toggleSection(sectionId);return;}
+  if(!el){
+    var scHel=document.getElementById(sectionId);
+    if(!scHel){
+      // Fallback: switch to TK tab and try to expand character bible
+      toastMsg('\u2728 \u89D2\u8272\u7F16\u8F91\u5728\u89D2\u8272\u5723\u7ECF\u4E2D\uFF0C\u8BF7\u5C55\u5F00\u89D2\u8272\u9762\u677F', 3000);
+      return;
+    }
+    toggleSection(sectionId);
+    return;
+  }
   el.classList.toggle('show');
 }
 
@@ -4978,10 +4987,12 @@ function refreshVoiceButtons(fid) {
 
 async function auditionVoice(fid) {
   const ch = CHARACTER_VOICES[fid];
-  const cfgVoiceEl = document.getElementById('cfg-voice-' + fid);
   const cfgRefEl = document.getElementById('cfg-reftext-' + fid);
-  const refText = cfgRefEl?.value?.trim() || document.getElementById('vc-ref-' + fid)?.textContent || '';
-  if (!refText || refText === '—') { toastMsg('⚠️ 请先配置参考文本', 2000, 'warn'); return; }
+  var refText = (cfgRefEl && cfgRefEl.value || '').trim() || (document.getElementById('vc-ref-' + fid) || {}).textContent || '';
+  if (!refText || refText === '\u2014') {
+    refText = ch ? ch.prompt : '';
+    if (!refText) { toastMsg('\u26A0\uFE0F \u8BF7\u5148\u914D\u7F6E\u53C2\u8003\u6587\u672C', 2000, 'warn'); return; }
+  }
   
   const banner = document.getElementById('version-check');
   const audBtn = document.getElementById('audbtn-' + fid);
