@@ -1439,42 +1439,71 @@ function showScriptDetail(epNum){
 }
 
 function previewScriptHTML(epNum){
-  var existing=document.getElementById('script-preview-dlg');
+  var epId=String(epNum||1).padStart(2,"0");
+  var existing=document.getElementById("script-preview-dlg");
   if(existing)existing.remove();
-  var dlg=document.createElement('div');
-  dlg.id='script-preview-dlg';
-  dlg.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1d27;border:1px solid rgba(59,130,246,.3);border-radius:12px;padding:20px;z-index:500;max-width:800px;width:95%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.6)';
-  dlg.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-size:14px;font-weight:600">\u{1F4E5} EP'+String(epNum).padStart(2,'0')+' HTML\u{9884}\u{89C8}</div><div><button class="mini-btn" id="dl-dlbtn">\u{2B07} \u{4E0B}\u{8F7D}</button><span onclick="this.parentElement.parentElement.parentElement.remove()" style="cursor:pointer;font-size:20px;color:#555;margin-left:8px">&times;</span></div></div><div id="script-preview-body" style="font-size:11px;color:#888"><span class="loading">\u{6E32}\u{67D3}HTML...</span></div>';
-  setTimeout(function(){var b=document.getElementById('dl-dlbtn');if(b)b.onclick=function(){window.open('/api/script/'+epNum+'/export?format=html')};},0);
+  var dlg=document.createElement("div");
+  dlg.id="script-preview-dlg";
+  dlg.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:1000;display:flex;flex-direction:column";
+  dlg.innerHTML=["<div style=\x22flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#1a1d27;border-bottom:1px solid rgba(59,130,246,.3)\x22>",
+    "\x3Cdiv style=\x22font-size:14px;font-weight:600;color:#e4e6eb\x22\x3E\xF0\x9F\x93\xA5 EP"+epId+" HTML\xE9\xA2\x84\xE8\xA7\x88\x3C/div\x3E",
+    "\x3Cdiv\x3E",
+    "\x3Cbutton class=\x22mini-btn\x22 id=\x22dl-dlbtn\x22\x3E\xE2\xAC\x87 \xE4\xB8\x8B\xE8\xBD\xBD\x3C/button\x3E",
+    "\x3Cspan onclick=\x22this.closest('#script-preview-dlg').remove()\x22 style=\x22cursor:pointer;font-size:20px;color:#555;margin-left:8px\x22\x3E\x26times;\x3C/span\x3E",
+    "\x3C/div\x3E\x3C/div\x3E",
+    "\x3Cdiv id=\x22script-preview-body\x22 style=\x22flex:1;overflow:hidden;background:#fff\x22\x3E\x3Cspan class=\x22loading\x22\x3E\xE6\xB8\xB2\xE6\x9F\x93HTML...\x3C/span\x3E\x3C/div\x3E"].join("");
   document.body.appendChild(dlg);
-  fetch('/api/script/'+epNum+'/export?format=html').then(function(r){return r.text();}).then(function(html){
-    var body=document.getElementById('script-preview-body');
-    if(!body) return;
-    body.innerHTML=html;
+  setTimeout(function(){var b=document.getElementById("dl-dlbtn");if(b)b.onclick=function(){window.open("/api/script/"+epId+"/export?format=html")};},0);
+  fetch("/api/script/"+epId+"/export?format=html").then(function(r){return r.text();}).then(function(html){
+    var body=document.getElementById("script-preview-body");
+    if(!body)return;
+    var ifr=document.createElement("iframe");
+    ifr.style.cssText="width:100%;height:100%;border:none";
+    body.innerHTML="";
+    body.appendChild(ifr);
+    var doc=ifr.contentDocument||ifr.contentWindow.document;
+    doc.open();doc.write(html);doc.close();
   }).catch(function(e){
-    // fallback: 用JSON转成简单HTML预览
-    fetch('/api/script/'+epNum).then(function(r){return r.json();}).then(function(data){
-      var body=document.getElementById('script-preview-body');
-      if(!body) return;
-      var h='<div style="background:#fff;color:#333;padding:16px;border-radius:4px;font-family:serif">';
-      h+='<h2 style="text-align:center;margin-bottom:16px;color:#111">'+(data.title||'EP'+String(epNum).padStart(2,'0'))+'</h2>';
-      (data.storyboard||data.scenes||[]).forEach(function(sc){
-        h+='<div style="margin-bottom:12px;padding:8px;border-left:3px solid #3b82f6;background:#f8fafc">';
-        h+='<div style="font-size:10px;color:#666;margin-bottom:4px">场景'+(sc.seq||'')+' · '+(sc.act||'')+' · '+(sc.duration||'')+' · 情感: '+(sc.emotion||'')+'</div>';
-        h+='<div style="font-size:13px;color:#333;line-height:1.6">'+(sc.description||'')+'</div>';
-        if(sc.dialogue) h+='<div style="font-size:12px;color:#555;font-style:italic;margin-top:4px">"'+sc.dialogue+'"</div>';
-        h+='</div>';
-      });
-      h+='</div>';
-      body.innerHTML=h;
-      // Add download for this preview
-      var downloadBtn=document.getElementById('script-preview-dlg').querySelector('.mini-btn');
-      if(downloadBtn) downloadBtn.onclick=function(){
-        var blob=new Blob(['<html><head><meta charset=utf-8><title>'+data.title+'</title></head><body>'+h+'</body></html>'],{type:'text/html'});
-        var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ep'+String(epNum).padStart(2,'0')+'-preview.html';a.click();
+    fetch("/api/script/"+epId).then(function(r){return r.json();}).then(function(data){
+      var body=document.getElementById("script-preview-body");
+      if(!body)return;
+      var sb=data.storyboard||data.scenes||[];
+      var title=data.title||"EP"+epId;
+      var score=data.score||"";
+      var tags=(data.tags||[]).join(", ")||"";
+      var ch=data.main_character||"";
+      var h=["\x3Cdiv style=\x22font-family:PingFang SC,serif;padding:24px;color:#1a1a2e;max-width:800px;margin:0 auto\x22\x3E",
+        "\x3Ch1 style=\x22text-align:center;color:#e94560;border-bottom:2px solid #e94560;padding-bottom:10px;margin-bottom:8px\x22\x3E"+title+"\x3C/h1\x3E",
+        "\x3Cdiv style=\x22text-align:center;color:#888;font-size:12px;margin-bottom:20px\x22\x3E"+ch+(score?" \u00B7 "+score+"\u5206":"")+(tags?" \u00B7 "+tags:"")+"\x3C/div\x3E"];
+      if(sb.length){
+        h.push("\x3Ch3 style=\x22color:#e94560;border-left:3px solid #e94560;padding-left:10px\x22\x3E\xE5\x88\x86\xE9\x95\x9C\xE8\x84\x9A\xE6\x9C\xAC\x3C/h3\x3E");
+        sb.forEach(function(sc,i){
+          var tone=sc.emotion||"";
+          var toneColor="#16213e";var accentColor="#00d2ff";
+          if(/爆|怒|杀|打|冲|战|愤|激烈/.test(tone)){toneColor="#2d1111";accentColor="#ff6b6b";}
+          else if(/悲|哀|哭|痛|伤|泪/.test(tone)){toneColor="#1e1e2d";accentColor="#a78bfa";}
+          else if(/爱|情|温|柔|甜|吻|抱/.test(tone)){toneColor="#2d1b1b";accentColor="#fb7185";}
+          else if(/恐|惊|怕|慌|逃|急/.test(tone)){toneColor="#2d1b1e";accentColor="#fbbf24";}
+          else if(/静|冷|孤|沉|思|默/.test(tone)){toneColor="#1a1e2d";accentColor="#94a3b8";}
+          else if(/疑|问|谜/.test(tone)){toneColor="#1e1e2d";accentColor="#a78bfa";}
+          h.push("\x3Cdiv style=\x22background:"+toneColor+"!important;border-radius:8px;padding:12px;margin-bottom:8px;border-left:4px solid "+accentColor+"\x22\x3E");
+          h.push("\x3Cdiv style=\x22display:flex;gap:8px;margin-bottom:4px\x22\x3E\x3Cspan style=\x22font-size:10px;color:"+accentColor+";font-weight:700\x22\x3E\xE9\x95\x9C"+(i+1)+"\x3C/span\x3E\x3Cspan style=\x22font-size:10px;color:#fbbf24\x22\x3E"+(sc.act||"")+"\x3C/span\x3E\x3Cspan style=\x22font-size:9px;color:#888\x22\x3E"+(sc.duration||"")+"\x3C/span\x3E\x3C/div\x3E");
+          h.push("\x3Cdiv style=\x22font-size:13px;color:#e0e0e0;line-height:1.7\x22\x3E"+(sc.description||"")+"\x3C/div\x3E");
+          if(tone)h.push("\x3Cdiv style=\x22font-size:10px;color:"+accentColor+";margin-top:4px\x22\x3E"+(sc.emotion||"")+"\x3C/div\x3E");
+          if(sc.dialogue)h.push("\x3Cdiv style=\x22font-size:12px;color:#aaa;font-style:italic;margin-top:4px;padding-left:8px\x22\x3E\xE2\x80\x9C"+sc.dialogue+"\xE2\x80\x9D\x3C/div\x3E");
+          h.push("\x3C/div\x3E");
+        });
+      }
+      h.push("\x3Cdiv style=\x22text-align:center;padding:20px;color:#888;font-size:10px\x22\x3EAgentic OS v3.7 \u00B7 \xE6\xB0\xB4\xE6\xB5\x92\xE4\xBC\xA0AI\xE7\x9F\xAD\xE5\x89\xA7\x3C/div\x3E");
+      h.push("\x3C/div\x3E");
+      body.innerHTML=h.join("");
+      var downloadBtn=document.getElementById("dl-dlbtn");
+      if(downloadBtn)downloadBtn.onclick=function(){
+        var blob=new Blob(["\x3Chtml\x3E\x3Chead\x3E\x3Cmeta charset=utf-8\x3E\x3Ctitle\x3E"+title+"\x3C/title\x3E\x3C/head\x3E\x3Cbody\x3E"+h.join("")+"\x3C/body\x3E\x3C/html\x3E"],{type:"text/html"});
+        var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ep"+epId+"-preview.html";a.click();
       };
     }).catch(function(e2){
-      if(body) body.innerHTML='<div style="color:#ef4444">预览失败</div>';
+      if(body)body.innerHTML=["\x3Cdiv style=\x22color:#ef4444;text-align:center;padding:40px\x22\x3E","\xE9\xA2\x84\xE8\xA7\x88\xE5\xA4\xB1\xE8\xB4\xA5","\x3C/div\x3E"].join("");
     });
   });
 }
@@ -5008,8 +5037,8 @@ function startEditSB(epNum,seq){
     <textarea id="sb-new-desc" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px;border-radius:4px;font-size:10px;min-height:40px" placeholder="场景">${_sbUndo[epNum+'-'+seq].desc}</textarea>
     <textarea id="sb-new-dialogue" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px;border-radius:4px;font-size:10px;min-height:30px" placeholder="台词">${_sbUndo[epNum+'-'+seq].dialogue}</textarea>
     <div class="edit-btns">
-      <button class="mini-btn" onclick="saveSB(${epNum},${seq})">保存</button>
-      <button class="mini-btn" onclick="cancelSB(${epNum},${seq})">取消</button>
+      <button class="mini-btn" onclick="saveSB('${epNum}',${seq})">保存</button>
+      <button class="mini-btn" onclick="cancelSB('${epNum}',${seq})">取消</button>
     </div>
   </div>`;
 }
@@ -5021,10 +5050,10 @@ async function loadStoryboard(epNum){
   try {
     var r = await fetch('/api/script/' + epNum);
     var d = await r.json();
-    var shots = d.shots || [];
+    var shots = d.storyboard || d.shots || [];
     if (!shots.length) { el.innerHTML = '<span style="color:#555;font-size:10px">无分镜</span>'; return; }
     // Fetch character video prompts for scheme preview
-    var charName = d.character || '';
+    var charName = d.main_character || d.character || '';
     var videoPrompts = {};
     if (charName) {
       try {
@@ -5069,7 +5098,7 @@ async function loadStoryboard(epNum){
       // Like/Dislike
       h += '<button class="mini-btn sb-fb-btn" id="sblike-' + sid + '" onclick="toggleSBFeedback(\'' + sid + '\',\'like\',\'' + charName + '\')" style="color:' + (liked ? '#22c55e' : '#666') + ';border-color:' + (liked ? '#22c55e' : '#333') + ';margin-left:4px">' + (liked ? '❤️' : '👍') + '</button>';
       h += '<button class="mini-btn sb-fb-btn" id="sbdislike-' + sid + '" onclick="toggleSBFeedback(\'' + sid + '\',\'dislike\',\'' + charName + '\')" style="color:' + (disliked ? '#ef4444' : '#666') + ';border-color:' + (disliked ? '#ef4444' : '#333') + '">' + (disliked ? '💔' : '👎') + '</button>';
-      h += '<button class="mini-btn" id="sb-editbtn-' + sid + '" onclick="startEditSB(' + epNum + ',' + seq + ')">✏ 编辑</button>';
+      h += '<button class="mini-btn" id="sb-editbtn-' + sid + '" onclick="startEditSB(\'' + epNum + '\',' + seq + ')">✏ 编辑</button>';
       h += '</div>';
       // Scheme preview panel (hidden by default)
       h += '<div class="scheme-preview" id="schpreview-' + sid + '" style="display:none;background:rgba(0,0,0,.2);border-radius:4px;padding:8px;margin-top:4px;font-size:9px;color:#888"></div>';
