@@ -1183,6 +1183,61 @@ async function renderDM1(detail, ms) {
   }).filter(Boolean);
   // Default: Top 10, show hint
   applyDM1Filter();
+}
+
+// ================================================================
+// DM-1: Filter, search, chip handlers
+// ================================================================
+function applyDM1Filter() {
+  const q = (currentDM1Filter.query || '').toLowerCase();
+  const cat = currentDM1Filter.category || '';
+  let visible = 0;
+  charDataCache.forEach(c => {
+    if (!c.el) return;
+    let show = true;
+    if (cat === 'tiangang') show = c.isTiangang;
+    else if (cat === 'dishap') show = !c.isTiangang;
+    else if (cat === 'core') show = c.index < 12;
+    if (show && q) {
+      const s = (c.name + ' ' + c.title + ' ' + c.star).toLowerCase();
+      show = s.includes(q);
+    }
+    if (show && !q && !cat) show = c.index < DM1_TOP10;
+    c.el.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  const hint = document.getElementById('dm1-showing');
+  if (!q && !cat) {
+    hint.style.display = 'block';
+    hint.textContent = '已展示 ' + visible + ' 位核心角色，共 ' + charDataCache.length + ' 位，请搜索查看更多';
+  } else {
+    hint.style.display = 'block';
+    hint.textContent = '筛选结果: ' + visible + ' / ' + charDataCache.length + ' 位角色';
+  }
+}
+
+let dm1Timer;
+function onDM1Search(val) {
+  clearTimeout(dm1Timer);
+  dm1Timer = setTimeout(function() {
+    currentDM1Filter.query = val;
+    if (val) { currentDM1Filter.category = ''; document.querySelectorAll('#dm1-chips .dm1-chip').forEach(function(c){c.classList.remove('active')}); }
+    applyDM1Filter();
+  }, 300);
+}
+
+function onDM1Chip(el, cat) {
+  document.querySelectorAll('#dm1-chips .dm1-chip').forEach(function(c){c.classList.remove('active')});
+  el.classList.add('active');
+  currentDM1Filter.category = cat;
+  currentDM1Filter.query = '';
+  document.getElementById('dm1-search').value = '';
+  applyDM1Filter();
+}
+
+// ================================================================
+// EXISTING: render
+// ================================================================
   // Restore generated audios
   Object.keys(generatedAudios).forEach(fid => {
     if (document.getElementById('voiceplayer-' + fid)) {
@@ -1645,7 +1700,9 @@ async function renderTKDetail(detail, ms) {
   }
   
   el.insertAdjacentHTML('beforeend', h);
-}function toggleCharBibleEdit(fid) {
+}
+
+function toggleCharBibleEdit(fid) {
   const el = document.getElementById('cbedit-' + fid);
   if (!el) return;
   el.classList.toggle('show');
@@ -2674,6 +2731,44 @@ function connectPipelineSSE(){
     if (el) el.innerHTML = '<span class="loading" style="color:#ef4444">SSE 断线，5秒后重连...</span>';
     setTimeout(updatePipelineMonitor, 5000);
   };
+}
+
+// ================================================================
+// UX-5: Poll-based pipeline monitor fallback (used when SSE unavailable)
+// ================================================================
+async function updatePipelineMonitor(){
+  const checks = [
+    { name: 'Flask API', url: '/api/status', port: 5001, detail: 'task_wizard', icon: '⚙️' },
+    { name: 'GPT-SoVITS', url: 'http://localhost:9880/control', port: 9880, detail: 'TTS推理', icon: '🎤' },
+    { name: 'ComfyUI', url: 'http://localhost:8188/queue', port: 8188, detail: '图像渲染', icon: '🎨' },
+  ];
+  let rows = '';
+  for (const svc of checks) {
+    let status = 'unknown', detail = '检测中...', extra = '';
+    try {
+      const r = await fetch(svc.url, { signal: AbortSignal.timeout(3000) });
+      status = 'online';
+      if (svc.name === 'ComfyUI' && r.ok) {
+        const d = await r.json();
+        const run = (d.queue_running||[]).length;
+        const pend = (d.queue_pending||[]).length;
+        extra = ' · '+run+'运行 '+pend+'排队';
+      }
+      detail = '端口'+svc.port+'可达'+extra;
+    } catch(e) { status='offline'; detail='端口'+svc.port+'不可达'; }
+    rows += '<div class="svc-row"><span>'+svc.icon+'</span><span class="svc-dot '+status+'"></span><span class="svc-name">'+svc.name+'</span><span class="svc-detail">'+detail+'</span></div>';
+  }
+  try {
+    const r = await fetch('/api/dashboard');
+    const d = await r.json();
+    const ms = d.milestones || [];
+    const done = ms.filter(m=>m.status==='completed'||m.status==='approved').length;
+    const total = ms.length;
+    const pct = total ? Math.round(done/total*100) : 0;
+    rows += '<div class="svc-row" style="flex-wrap:wrap;padding-bottom:10px"><span>📊</span><span class="svc-name">管线总进度</span><span class="svc-detail">'+done+'/'+total+' ('+pct+'%)</span><div style="width:100%;height:4px;background:#222;border-radius:2px;margin-top:2px"><div style="width:'+pct+'%;height:100%;background:#2563eb;border-radius:2px"></div></div></div>';
+  } catch(e) {}
+  const el = document.getElementById('svcMonitor');
+  if (el) el.innerHTML = rows;
 }
 
 // ================================================================
