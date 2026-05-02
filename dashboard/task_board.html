@@ -1133,6 +1133,38 @@ async function renderDM0(detail,ms){
   }catch(e){
     document.getElementById('dm0-episodes').innerHTML=`<span style="font-size:10px;color:#ef4444;">加载失败: ${e.message}</span>`;
   }
+  
+  // v3.7.8: 技术检查折叠卡片 — 收集剩余的 sections 并折叠
+  var detailEl2=document.getElementById('detail');
+  if(detail && detail.sections){
+    var techSections=detail.sections.filter(function(s){return !s.items||!s.items.some(function(it){return it.key&&it.key.startsWith('rv_');});});
+    if(techSections.length>0){
+      var techH='<div class="info-card collapsible" style="margin-top:10px"><div class="info-card-header" onclick="toggleInfoCard(this)"><span>📊 剧本技术检查 ('+techSections.map(function(s){return s.title;}).join('/')+')</span><span class="toggle-icon">▼</span></div><div class="info-card-body" style="display:none">';
+      techSections.forEach(function(s){
+        techH+='<div class="sec" style="margin-bottom:8px"><h3 style="font-size:11px;color:#888;margin-bottom:6px">'+s.title+' <span class="src-tag src-'+s.source+'">['+s.source+']</span></h3>';
+        (s.items||[]).forEach(function(it){
+          var label=it.label||it.key||'';
+          var val=it.value||'';
+          var note=it.note||'';
+          var ic={'ok':'✅','ng':'❌','warn':'⚠️','critical':'🛑'}[it.status]||'';
+          techH+='<div class="ent-row"><span style="min-width:70px;color:#888;flex-shrink:0">'+ic+' '+label+'</span><div class="ent-val"><span>'+val+'</span>';
+          if(note) techH+='<div class="note">'+note+'</div>';
+          techH+='</div></div>';
+        });
+        techH+='</div>';
+      });
+      techH+='<div class="ent-row" style="color:#555;font-size:9px;padding:6px 0">📌 以上为技术检查项，核心结论见上方审核结果区</div></div></div>';
+      detailEl2.insertAdjacentHTML('beforeend', techH);
+    }
+  }
+  
+  // v3.7.8: 下一步行动指引
+  var hasReview2=detail && detail.sections && detail.sections.some(function(s){return s.items&&s.items.some(function(it){return it.key&&it.key.startsWith('rv_');});});
+  if(hasReview2){
+    var detailEl3=document.getElementById('detail');
+    var actionH='<div class="gate-next-action" style="margin-top:12px"><span>⚠️ 综合评分低于阈值(8.0)，建议回流重写或人工复审：</span><button class="btn-primary" onclick="reReviewDM0()">🔄 重新 LLM 审核</button><button class="btn-secondary" onclick="switchToTab(\'DM-1\')">人工直接通过（跳过AI审核）</button></div>';
+    detailEl3.insertAdjacentHTML('beforeend', actionH);
+  }
 }
 
 // ================================================================
@@ -4081,8 +4113,8 @@ async function renderDetail(){
     const sectionCount = (detail.sections||[]).length;
     const itemCount = (detail.sections||[]).reduce((sum,s)=>sum+(s.items||[]).length,0);
     if(banner) banner.textContent = '✅ ' + ms.ms_id + ': ' + sectionCount + ' sections, ' + itemCount + ' items';
-    // v3.7.8 Sprint 1-B: 里程碑摘要卡
-    if(detail.summary){
+    // v3.7.8 Sprint 1-B: 里程碑摘要卡（跳过DM-0, 由内部renderDM0管理）
+    if(detail.summary && ms.ms_id!=='DM-0'){
       const s=detail.summary;
       const scolor=s.status==='blocked'?'#ef4444':s.status==='warning'?'#f59e0b':'#22c55e';
       const sicon=s.status==='blocked'?'&#10060;':s.status==='warning'?'&#9888;':'&#9989;';
@@ -4097,6 +4129,9 @@ async function renderDetail(){
       // 将 renderDefault 输出包裹在 accordion-content 中
       var rd=renderDefault(detail);
       h+='<div class="accordion-content accordion-expanded" id="'+ms.ms_id+'-detail">'+rd+'</div>';
+    // v3.7.8: DM-0 技术检查已在 renderDM0 内部折叠处理
+    } else if(ms.ms_id==='DM-0'){
+      // Already handled inside renderDM0
     } else if(ms.ms_id!=='MS-2.3'){
       h+=renderDefault(detail);
     }
