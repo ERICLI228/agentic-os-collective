@@ -15,7 +15,7 @@
 
 | 能力 | 状态 | 验证 |
 |------|------|------|
-| Flask Dashboard :5001 | ✅ 运行中 | task_board.html **7,051行** · 15功能模块+2工具面板 · UX WBS Sprint 1-4完成 · JS语法零缺陷 |
+| Flask Dashboard :5001 | ✅ 运行中 | task_board.html **7,024行** · 15功能模块+2工具面板 · UX WBS Sprint 1-4完成 · JS语法零缺陷 |
 | API 端点 | ✅ 42+ | Flask :5001 (34+) + FastAPI :5004 (8+) · 80/80 QA PASS |
 | TK 运营（13里程碑）| ✅ 全端点200 | 选品对比/图片处理/5国合规/采集门禁 |
 | ├ MS-0 采集门禁 | 🆕 体检报告 | 运营健康仪表盘 + 门禁指标 + 路由检测 |
@@ -643,7 +643,7 @@ curl /api/detail/DM-0                ✓ 故事板展开 · DM-1 角色画廊
 | 指标 | 数值 |
 |------|------|
 | Git commits (5月2日) | 15+ commits (Sprint 1-4) |
-| task_board.html | **7,051行 / 344KB** |
+| task_board.html | **7,024行 / 362KB** |
 | API端点总数 | 42+ (Flask :5001 34+ · FastAPI :5004 8+) · MS-2.3处理/合规/检查端点 · MS-5日报推送/预览/历史端点 · POST /api/review/trigger/{episode} |
 | 角色定妆照 | 109角色×4张=436张 (476MB) |
 | EP01-10 final.mp4 | 全部1.8-2.1MB (Pillow+ComfyUI双模式) |

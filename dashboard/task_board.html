@@ -2511,6 +2511,8 @@ async function renderMS2(detail,ms){
   }
 
   document.getElementById('detail').innerHTML=h;
+  // v3.7.8 Sprint 3-A: render profit waterfall after canvas exists
+  if(profitSteps.length>0) setTimeout(function(){renderProfitChart({profit_breakdown:profitSteps.map(function(s){return parseFloat(s.value)||(s.value||'').replace(/[^0-9.]/g,'')||0;})});},200);
 }
 
 // ================================================================
@@ -4168,13 +4170,13 @@ function renderMilestoneSummary(detail, ms){
   var cfg={'completed':{icon:'✅',cls:'ok'},'approved':{icon:'✅',cls:'ok'},'running':{icon:'⏳',cls:'warn'},'pending':{icon:'⏸️',cls:''},'waiting_approval':{icon:'⏳',cls:'warn'},'rejected':{icon:'❌',cls:'ng'}};
   var sc=cfg[status]||{icon:'\u23f8\ufe0f',cls:''};
   var hl=summary.headline||(ms.name||ms.ms_id)+' \u8be6\u60c5';
-  var m=summary.section_count ? summary.section_count+' \u6a21\u5757 \u00b7 '+summary.item_count+' \u6570\u636e\u9879' : '';
+  var m=summary.core_metric||(summary.section_count ? summary.section_count+' \u6a21\u5757 \u00b7 '+summary.item_count+' \u6570\u636e\u9879' : '');
   return '<div class="milestone-summary-card '+sc.cls+'">'+
     '<div class="msc-left">'+sc.icon+'</div>'+
     '<div class="msc-center"><div class="msc-headline">'+hl+'</div><div class="msc-metrics">'+m+'</div></div>'+
     '<div class="msc-right">'+
     '<button class="btn btn-p" onclick="toggleSection(\u0027ms-detail-'+ms.ms_id+'\u0027)">\u67e5\u770b\u8be6\u60c5</button>'+
-    '<button class="btn-secondary" style="margin-left:4px;font-size:10px" onclick="showMileDownloadMenu('dl-mile-'+ms.ms_id)">📥</button>'+
+    '<button class="btn-secondary" style="margin-left:4px;font-size:10px" onclick="showMileDownloadMenu(&quot;dl-mile-'+ms.ms_id+'&quot;)">\u2601\ufe0f</button>'+
     '<div id="dl-mile-'+ms.ms_id+'" class="accordion-content mile-dl-menu">'+
     '<a href="#" onclick="window.open(\u0027/api/download?name='+ms.ms_id+'_report.txt\u0027)">\u{1f4c4} TXT</a>'+
     '<a href="#" onclick="window.open(\u0027/api/download?name='+ms.ms_id+'_data.json\u0027)">\u{1f4ca} JSON</a>'+
@@ -6359,6 +6361,8 @@ async function reReviewDM0(){
       if(scoreEl) scoreEl.textContent='综合评分: '+d.overall_score+'/10';
     }
     toastMsg('✅ 审核完成: '+d.overall_score+'/10',3000);
+    // v3.7.8: 三步反馈第三步 - 页面刷新以同步最新审核结果
+    if(typeof refresh==='function'){refresh();render();}
   }catch(e){addLog('❌ 失败: '+e.message);toastMsg('审核失败',3000);}
   if(btn){btn.disabled=false;btn.textContent='🔄 重新审核';}
 }
@@ -6952,37 +6956,6 @@ function renderPipelineTimeline() {
       responsive: true,
       maintainAspectRatio: false,
       scales: { x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' }, max: 100 }, y: { ticks: { color: '#e2e8f0', font: { size: 9 } } } },
-      plugins: { legend: { display: false } }
-    }
-  });
-}
-
-function renderProfitChart(msData) {
-  const canvas = document.getElementById('profitChart');
-  if (!canvas) return;
-  if (profitChartInst) { profitChartInst.destroy(); profitChartInst = null; }
-  var labels = ['订单数','销售额','毛利','净利'];
-  var data = [
-    msData.orders || msData.total_orders || 0,
-    msData.revenue || msData.total_revenue || 0,
-    msData.gross_margin || msData.profit || 0,
-    msData.net || msData.net_profit || 0
-  ];
-  profitChartInst = new Chart(canvas, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: '金额(¥)',
-        data: data,
-        backgroundColor: ['#3b82f6','#8b5cf6','#f59e0b','#22c55e'],
-        borderRadius: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: { y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' }, beginAtZero: true }, x: { ticks: { color: '#e2e8f0' } } },
       plugins: { legend: { display: false } }
     }
   });
