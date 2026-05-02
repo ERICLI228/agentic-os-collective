@@ -4174,7 +4174,7 @@ function renderMilestoneSummary(detail, ms){
     '<div class="msc-center"><div class="msc-headline">'+hl+'</div><div class="msc-metrics">'+m+'</div></div>'+
     '<div class="msc-right">'+
     '<button class="btn btn-p" onclick="toggleSection(\u0027ms-detail-'+ms.ms_id+'\u0027)">\u67e5\u770b\u8be6\u60c5</button>'+
-    '<button class="btn-secondary" style="margin-left:4px;font-size:10px" onclick="showMileDownloadMenu(\u0027mile-'+ms.ms_id+'\u0027)">\u2601\ufe0f</button>'+
+    '<button class="btn-secondary" style="margin-left:4px;font-size:10px" onclick="showMileDownloadMenu('dl-mile-'+ms.ms_id)">📥</button>'+
     '<div id="dl-mile-'+ms.ms_id+'" class="accordion-content mile-dl-menu">'+
     '<a href="#" onclick="window.open(\u0027/api/download?name='+ms.ms_id+'_report.txt\u0027)">\u{1f4c4} TXT</a>'+
     '<a href="#" onclick="window.open(\u0027/api/download?name='+ms.ms_id+'_data.json\u0027)">\u{1f4ca} JSON</a>'+
