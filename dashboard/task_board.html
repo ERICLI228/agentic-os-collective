@@ -4307,7 +4307,9 @@ function renderDefault(detail){
           var colorIdx=Math.abs((name.charCodeAt(0)||0))%colors.length;
           h+='<div class="dm-char-card" style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;overflow:hidden;transition:all .15s">';
           h+='<div style="position:relative;width:100%;height:200px;background:#111;overflow:hidden">';
-          h+='<img src="/api/render/'+fid+'/portrait_0.png" loading="lazy" style="width:100%;height:100%;object-fit:contain" onerror="this.parentElement.innerHTML='<div style=text-align:center;color:#555;padding:60px 0;font-size:30px>\U0001f464</div>'" />';
+          var q=String.fromCharCode(39);
+          h+='<img src="/api/render/'+fid+'/portrait_0.png" loading="lazy" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='+q+'none'+q+'" />';
+          h+='<div class="char-fallback" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;text-align:center;color:#555;padding:60px 0;font-size:30px">\u{1F464}</div>';
           h+='<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:8px 10px">';
           h+='<div style="font-size:13px;font-weight:700;color:#fff">'+name+'</div>';
           h+='<div style="font-size:9px;color:#aaa">'+CHAR_ROLES[name]||''+'</div>';
@@ -4321,14 +4323,14 @@ function renderDefault(detail){
           h+='</div>';
           // 音色+配色
           h+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:9px;color:#888">';
-          h+='<span>\U0001f3a4 '+(voiceInfo.ref?'已配置':'未配置')+'</span>';
+          h+='<span>\u{1F3A4} '+(voiceInfo.ref?'已配置':'未配置')+'</span>';
           h+='<span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:'+colors[colorIdx]+';border:1px solid rgba(255,255,255,.1)"></span>';
           h+='</div>';
           // 操作按钮
           h+='<div style="display:flex;gap:4px">';
-          h+='<button class="mini-btn" onclick="toggleCharBibleEdit(''+fid+'')">\U0001f4dd 编辑属性</button>';
-          h+='<button class="mini-btn" onclick="auditionVoice(''+fid+'');this.textContent='\U0001f50a 播放中...'">\U0001f50a 试听</button>';
-          h+='<button class="mini-btn" onclick="reRenderConfirm(''+fid+'')">\U0001f3a8 重渲染</button>';
+          h+='<button class="mini-btn" onclick="toggleCharBibleEdit(\''+fid+'\')">\u{1F4DD} 编辑属性</button>';
+          h+='<button class="mini-btn" id="audition-btn-'+fid+'" onclick="auditionVoice(\''+fid+'\',this)">\u{1F50A} 试听</button>';
+          h+='<button class="mini-btn" onclick="reRenderConfirm(\''+fid+'\')">\u{1F3A8} 重渲染</button>';
           h+='</div></div></div>';
         });
         h+='</div></div>';
@@ -4344,7 +4346,7 @@ function renderDefault(detail){
           var note=it.note||'';
           var isPass=val.indexOf('✅')>=0||val.indexOf('通过')>=0||val.indexOf('统一')>=0;
           var isWarn=val.indexOf('⚠️')>=0||val.indexOf('冲突')>=0||val.indexOf('复用')>=0;
-          var icon=isPass?'✅':isWarn?'⚠️':'\U0001f4cb';
+          var icon=isPass?'✅':isWarn?'⚠️':'\u{1F4CB}';
           var statusText=isPass?'通过':isWarn?'需关注':'';
           var statusCls=isPass?'pass':'warn';
           // 配色冲突 — special handling with color blocks
