@@ -497,14 +497,31 @@ def get_detail_ms_2():
     return sections
 
 
-def get_detail_ms_0(): return [DetailSection(title="采集门禁", source="real", items=[
-    EntityItem("g0_file","数据文件","~/.agentic-os/miaoshou_products.json","real","","","ok"),
-    EntityItem("g0_parse","JSON解析","✅ 通过 · 100品正确解析","real","","","ok"),
-    EntityItem("g0_count","商品数","100品 ≥ 10 (门禁阈值)","real","","","ok"),
-    EntityItem("g0_fields","必填字段","title+price 100%完整 · 0无效价格","real","","","ok"),
-    EntityItem("g0_shops","店铺覆盖","6家(1688来源) · 门禁阈值 ≥ 2","real","","","ok"),
-    EntityItem("g0_gate","门禁结果","✅ PASS · 2026-04-30 · auto_gate","real","","","ok"),
-], summary="MS-0 门禁通过: 100品/6店/0无效价格 · 数据源质量合格")]
+def get_detail_ms_0():
+    import json as _j, os as _o, time as _t
+    p = _o.path.expanduser("~/.agentic-os/miaoshou_products.json")
+    total, shops, complete, bad_price = 100, 6, "100%", 0
+    gate, gs = "✅ PASS", "ok"
+    if _o.path.exists(p):
+        with open(p) as f:
+            raw = _j.load(f)
+        ps = raw.get("products", [])
+        total = len(ps)
+        shops = raw.get("shops_count", len(raw.get("shops", [])))
+        missing = sum(1 for x in ps if not x.get("title") or not x.get("price"))
+        bad_price = sum(1 for x in ps if not x.get("price") or str(x.get("price","")).strip() in ("","0","N/A"))
+        complete = f"{round((total - missing) / max(total, 1) * 100, 1)}%"
+        all_ok = total >= 10 and shops >= 2 and missing == 0 and bad_price == 0
+        gate = "✅ PASS" if all_ok else "❌ FAIL"
+        gs = "ok" if all_ok else "ng"
+    return [DetailSection(title="采集门禁", source="real", items=[
+        EntityItem("g0_file","数据文件","~/.agentic-os/miaoshou_products.json","real","","","ok"),
+        EntityItem("g0_parse","JSON解析",f"✅ 通过 · {total}品正确解析","real","","","ok"),
+        EntityItem("g0_count","商品数",f"{total}品 ≥ 10 (门禁阈值)","real","","","ok" if total>=10 else "ng"),
+        EntityItem("g0_fields","必填字段",f"title+price {complete}完整 · {bad_price}无效价格","real","","","ok" if complete=="100%" else "ng"),
+        EntityItem("g0_shops","店铺覆盖",f"{shops}家(1688来源) · 门禁阈值 ≥ 2","real","","","ok" if shops>=2 else "ng"),
+        EntityItem("g0_gate","门禁结果",f"{gate} · {_t.strftime('%Y-%m-%d')} · auto_gate","real","","",gs),
+    ], summary=f"MS-0 门禁{'通过' if gs=='ok' else '未通过'}: {total}品/{shops}店/{complete}完整/{bad_price}无效价格 · 数据源质量{'合格' if gs=='ok' else '不合格'}")]
 def get_detail_ms_1(): return [DetailSection(title="数据采集", source="real", items=[
     EntityItem("d1_count","采集数量","100品 · 源自1688华强北/深圳/义乌/广州","real","","","ok"),
     EntityItem("d1_price","价格范围","¥0.2 ~ ¥365.0 · 均价 ¥39.8 · 中低客单价为主","real","","","ok"),

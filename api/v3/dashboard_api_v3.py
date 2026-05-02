@@ -6,6 +6,7 @@ Dashboard API v3 - FastAPI 重构版本
 """
 import json
 import os
+import sys
 import subprocess
 import threading
 import time
@@ -16,6 +17,12 @@ import random
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from contextlib import contextmanager
+
+# detail_engine: rich milestone detail data
+project_root = Path(__file__).resolve().parent.parent.parent  # /agentic-os-collective
+shared_dir = project_root / "shared"
+if str(shared_dir) not in sys.path:
+    sys.path.insert(0, str(shared_dir))
 
 from fastapi import FastAPI, HTTPException, Query, UploadFile, File
 from fastapi.responses import JSONResponse, FileResponse
@@ -1064,6 +1071,15 @@ def api_update_script(ep_num: int):
 @app.get("/api/detail/{ms_id}")
 def api_get_detail(ms_id: str):
     """Return milestone detail with sections for task_board rendering."""
+    # Try detail_engine first (rich structured data)
+    try:
+        from detail_engine import get_all_details
+        de_result = get_all_details(ms_id)
+        if de_result and de_result.get("sections"):
+            return de_result
+    except Exception:
+        pass
+    # Fallback: active task JSON files
     for tf in ACTIVE_DIR.glob("*.json"):
         try:
             with open(tf) as f:

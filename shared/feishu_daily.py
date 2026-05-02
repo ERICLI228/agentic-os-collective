@@ -456,5 +456,98 @@ def main():
         print(f"\n总计: {ok} 成功 / {fail} 失败")
 
 
+def run_daily_report(dry_run=False, target_group=None):
+    """程序化调用入口 — 由 API 直接调用"""
+    load_env()
+
+    status = fetch_status()
+    miaoshou = read_miaoshou()
+    pipeline_db = read_pipeline_db()
+
+    groups_to_push = [target_group] if target_group else list(GROUPS.keys())
+    results = {"ok": 0, "fail": 0, "groups": [], "timestamp": datetime.now(tz).isoformat()}
+
+    for group_key in groups_to_push:
+        if group_key not in GROUPS or group_key not in REPORT_BUILDERS:
+            continue
+
+        builder = REPORT_BUILDERS[group_key]
+        info = GROUPS[group_key]
+
+        if group_key == "选品":
+            card = builder(miaoshou, status)
+        elif group_key == "数据":
+            card = builder(status)
+        elif group_key == "达人":
+            card = builder(miaoshou)
+        elif group_key == "订单":
+            card = builder(miaoshou, status)
+        elif group_key == "内容":
+            card = builder(pipeline_db)
+        elif group_key == "技术":
+            card = builder(status)
+        else:
+            card = builder()
+
+        if dry_run:
+            elements = card.get("elements", [])
+            text_content = "\n".join([e.get("text", {}).get("content", "") for e in elements if e.get("tag") == "div"])
+            results["groups"].append({"group": group_key, "name": info["name"], "emoji": info["emoji"], "content": text_content[:2000]})
+        else:
+            success = send_to_webhook(info["webhook"], card)
+            if success:
+                results["ok"] += 1
+                results["groups"].append({"group": group_key, "name": info["name"], "status": "sent"})
+            else:
+                results["fail"] += 1
+                results["groups"].append({"group": group_key, "name": info["name"], "status": "failed"})
+
+    return results
+
+
+def generate_report_preview():
+    """生成日报预览（不推送），返回所有群组的报告文本"""
+    load_env()
+
+    status = fetch_status()
+    miaoshou = read_miaoshou()
+    pipeline_db = read_pipeline_db()
+
+    previews = []
+    for group_key in list(GROUPS.keys()):
+        if group_key not in REPORT_BUILDERS:
+            continue
+
+        builder = REPORT_BUILDERS[group_key]
+        info = GROUPS[group_key]
+
+        if group_key == "选品":
+            card = builder(miaoshou, status)
+        elif group_key == "数据":
+            card = builder(status)
+        elif group_key == "达人":
+            card = builder(miaoshou)
+        elif group_key == "订单":
+            card = builder(miaoshou, status)
+        elif group_key == "内容":
+            card = builder(pipeline_db)
+        elif group_key == "技术":
+            card = builder(status)
+        else:
+            card = builder()
+
+        elements = card.get("elements", [])
+        text = "\n".join([e.get("text", {}).get("content", "") for e in elements if e.get("tag") == "div"])
+        previews.append({
+            "group": group_key,
+            "name": info["name"],
+            "emoji": info["emoji"],
+            "title": card.get("header", {}).get("title", {}).get("content", ""),
+            "content": text[:3000]
+        })
+
+    return {"generated_at": datetime.now(tz).isoformat(), "total_groups": len(previews), "groups": previews}
+
+
 if __name__ == "__main__":
     main()

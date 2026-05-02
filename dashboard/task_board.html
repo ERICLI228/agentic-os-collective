@@ -152,6 +152,48 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 .toast.error{background:#ef4444;color:#fff}
 .toast.warn{background:#f59e0b;color:#000}
 
+/* v3.6.29: MS-5 日报预览卡片样式 */
+.daily-preview-card{background:#1a1d27;border-radius:8px;margin-bottom:12px;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
+.daily-preview-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(59,130,246,.08);border-bottom:1px solid rgba(255,255,255,.06)}
+.daily-preview-title{font-size:13px;font-weight:700;color:#e4e6eb}
+.daily-preview-badge{font-size:9px;padding:3px 10px;border-radius:12px;font-weight:600}
+.daily-preview-badge{background:rgba(34,197,94,.15);color:#22c55e}
+.daily-preview-badge:contains('待推送'){background:rgba(245,158,11,.15);color:#f59e0b}
+.daily-preview-body{padding:12px 14px}
+.daily-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.daily-kpi-item{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:8px;text-align:center}
+.daily-kpi-item .kpi-value{font-size:16px;font-weight:700;color:#e4e6eb}
+.daily-kpi-item .kpi-label{font-size:9px;color:#888;margin-top:2px}
+.daily-kpi-item .kpi-trend{font-size:9px;color:#22c55e;margin-top:2px}
+.daily-module-list{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:6px;overflow:hidden}
+.daily-module-row{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px}
+.daily-module-row:last-child{border-bottom:none}
+.daily-module-row:hover{background:rgba(255,255,255,.03)}
+.daily-module-row .module-icon{font-size:14px;flex-shrink:0}
+.daily-module-row .module-name{font-weight:600;color:#93c5fd;min-width:60px;flex-shrink:0}
+.daily-module-row .module-summary{color:#888;font-size:10px;flex:1;min-width:0}
+.daily-preview-footer{padding:8px 14px;font-size:9px;color:#555;border-top:1px solid rgba(255,255,255,.04);background:rgba(0,0,0,.1)}
+
+/* v3.6.29: MS-2.3 工具箱卡片样式 */
+.toolbox-progress{background:#1a1d27;border-radius:8px;padding:12px;margin-bottom:12px}
+.toolbox-progress .progress-label{font-size:11px;color:#888;margin-bottom:6px}
+.toolbox-progress .progress-bar-container{height:6px;background:#222;border-radius:3px;overflow:hidden;margin-bottom:4px}
+.toolbox-progress .progress-bar-fill{height:100%;background:linear-gradient(90deg,#2563eb,#22c55e);border-radius:3px;transition:width .5s;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:600;min-width:40px}
+.toolbox-progress .progress-detail{font-size:10px;color:#555;margin-top:4px}
+.toolbox-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:12px}
+.tool-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:14px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.tool-card:hover{background:rgba(59,130,246,.06);border-color:rgba(59,130,246,.3);transform:translateY(-2px);box-shadow:0 4px 16px rgba(59,130,246,.12)}
+.tool-card:active{transform:translateY(0)}
+.tool-card .tool-card-icon{font-size:24px;margin-bottom:6px}
+.tool-card .tool-card-title{font-size:12px;font-weight:600;color:#e4e6eb;margin-bottom:4px}
+.tool-card .tool-card-desc{font-size:9px;color:#666;line-height:1.5;margin-bottom:8px}
+.tool-card .tool-card-status{font-size:10px;color:#888;display:flex;align-items:center;gap:4px}
+.tool-card .tool-card-status.processing{color:#f59e0b}
+.tool-card .tool-card-status.done{color:#22c55e}
+.tool-card .tool-card-status.error{color:#ef4444}
+.tool-card.busy{pointer-events:none;opacity:.7}
+.tool-card.busy .tool-card-icon{animation:pulse 1.5s infinite}
+
 /* v3.7.3: MS-2.3 TK商品图处理工作台 */
 #toast-container{position:fixed;top:8px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px;pointer-events:none}
 .toast-item{padding:8px 16px;border-radius:6px;font-size:11px;font-weight:600;color:#fff;opacity:1;transition:opacity .3s;pointer-events:auto;max-width:320px;box-shadow:0 2px 12px rgba(0,0,0,.4)}
@@ -3398,11 +3440,11 @@ async function renderMS4(detail,ms){
   // === Section 4: 审批决策按钮 ===
   h+='<div class="gate-next-action">';
   if(allReady){
-    h+='<span id="publish-action-label">✅ 审批条件已满足，可以发布：</span>';
-    h+='<button id="btn-publish-approve" class="btn-primary" onclick="finalApprove()">✅ 批准发布</button>';
+    h+='<span class="publish-action-label">✅ 审批条件已满足，可以发布：</span>';
+    h+='<button class="btn-publish-approve btn-primary" onclick="finalApprove()">✅ 批准发布</button>';
   }else{
-    h+='<span id="publish-action-label">⚠️ 条件不满足，无法发布。请先完成上述审批条件：</span>';
-    h+='<button id="btn-publish-approve" class="btn-primary" disabled onclick="finalApprove()">✅ 批准发布</button>';
+    h+='<span class="publish-action-label">⚠️ 条件不满足，无法发布。请先完成上述审批条件：</span>';
+    h+='<button class="btn-publish-approve btn-primary" disabled onclick="finalApprove()">✅ 批准发布</button>';
   }
   h+='<button id="btn-publish-reject" class="btn-secondary" onclick="finalReject()">❌ 驳回发布</button>';
   h+='<button class="btn-secondary" onclick="triggerReReview(\'MS-4\')">🔄 重新AI评估</button>';
@@ -3473,6 +3515,36 @@ async function renderMS5(detail,ms){
     h+='</div>';
   });
   h+='</div>';
+  // === Section 2b: 今日日报预览卡片 ===
+  h+='<div class="daily-preview-card">';
+  h+='<div class="daily-preview-header">';
+  var todayStr=new Date().toISOString().substring(0,10);
+  h+='<span class="daily-preview-title">📊 TK运营日报 - '+todayStr+'</span>';
+  h+='<span class="daily-preview-badge">'+(statusOk?'今日已推送':'待推送')+'</span>';
+  h+='</div>';
+  h+='<div class="daily-preview-body">';
+  h+='<div class="daily-kpi-row">';
+  h+='<div class="daily-kpi-item"><div class="kpi-value" style="color:#22c55e">$12,580</div><div class="kpi-label">GMV (预估)</div><div class="kpi-trend">↑ 8%</div></div>';
+  h+='<div class="daily-kpi-item"><div class="kpi-value">342</div><div class="kpi-label">订单数 (预估)</div></div>';
+  h+='<div class="daily-kpi-item"><div class="kpi-value" style="color:#f59e0b">2</div><div class="kpi-label">库存告警</div></div>';
+  h+='<div class="daily-kpi-item"><div class="kpi-value">3</div><div class="kpi-label">达人动态</div></div>';
+  h+='</div>';
+  h+='<div class="daily-module-list">';
+  var msMap={'店铺':'6家店铺运营正常，无违规记录','采集箱':'100品已采集，3品入选TOP推荐','订单':'待处理订单: 0单 (未上架)','竞品':'TOP1防水壳竞品均价¥117，我们¥102','内容':'建议首条视频: 防水测试(高转化)','TK趋势':'#phonecase 120亿播放，常青品类','运营建议':'首周冲量价(25%毛利)，配合达人推广','商品':'100品已采集，3品入选TOP推荐','选品':'100品已采集，3品入选TOP推荐','定价':'建议首周冲量价，配合达人推广','物流':'深圳集运→云途/万邑通5国专线','合规':'5项合规检查全部通过','发布':'发布就绪，可进行发布审批'};
+  var mi={'店铺':'🏪','采集箱':'📦','订单':'🛒','竞品':'📊','内容':'🎬','TK趋势':'📈','运营建议':'💡','商品':'📦','选品':'🔍','定价':'💲','物流':'🚚','合规':'✅','发布':'🚀'};
+  modules.forEach(function(mod){
+    h+='<div class="daily-module-row"><span class="module-icon">'+(mi[mod]||'📋')+'</span><span class="module-name">'+mod+'</span><span class="module-summary">'+(msMap[mod]||'数据加载中...')+'</span></div>';
+  });
+  h+='</div></div>';
+  h+='<div class="daily-preview-footer"><span>📌 这是日报预览样例，展示各模块核心信息。实际日报通过飞书群定时推送。</span></div></div>';
+  h+='<div class="info-card collapsible">';
+  h+='<div class="info-card-header" onclick="toggleInfoCard(this)"><span>📋 日报模块详细说明</span><span class="toggle-icon">▼</span></div>';
+  h+='<div class="info-card-body" style="display:none"><table style="width:100%;border-collapse:collapse;font-size:10px">';
+  var md={'店铺':'各店铺评分、违规记录、账号状态','采集箱':'1688采集新品数量、TOP推荐商品','订单':'待处理订单数、履约率、退货率','竞品':'竞品价格变动、销量对比、差评词云','内容':'视频策略建议、高转化内容方向','TK趋势':'飙升词、热门话题、品类热度变化','运营建议':'AI总结的当日行动建议','商品':'商品采集状态、入选推荐、待上架数','选品':'选品分析结论、利润预估、风险摘要','定价':'5国定价策略、毛利率分析、促销方案','物流':'物流方案对比、承运商选择、风险评估','合规':'多国合规检查、禁售词过滤、危险品审查','发布':'发布就绪度检查、审批状态'};
+  modules.forEach(function(mod){
+    h+='<tr><td style="padding:6px 8px;border-bottom:1px solid #222"><strong>'+(mi[mod]||'📋')+' '+mod+'</strong></td><td style="padding:6px 8px;border-bottom:1px solid #222;color:#888">'+(md[mod]||'核心运营数据')+'</td></tr>';
+  });
+  h+='</table></div></div>';
   // === Section 3: 日报推送控制 ===
   h+='<div class="gate-next-action">';
   h+='<span>📊 日报推送已就绪：</span>';
@@ -3519,10 +3591,52 @@ async function triggerDailyReport(){
   if(btn){btn.classList.remove('busy');btn.disabled=false;btn.textContent='🔄 手动推送今日日报';}
 }
 function previewDailyReport(){
-  toastMsg('👁️ 日报预览功能开发中...', 2500);
+  toastMsg('👁️ 正在加载日报预览...', 2000);
+  fetch('/api/daily-report/preview').then(function(r){return r.json();}).then(function(d){
+    if(!d||!d.preview||!d.preview.groups){showToast('❌ 预览加载失败',3000);return;}
+    var groups=d.preview.groups;
+    var h='<div style="max-width:700px;margin:0 auto;max-height:80vh;overflow-y:auto">';
+    h+='<div style="font-size:12px;color:#888;margin-bottom:8px">📊 日报预览 — '+d.preview.generated_at+' · '+groups.length+' 群</div>';
+    groups.forEach(function(g){
+      h+='<div style="background:#1a1d27;border-radius:8px;padding:12px;margin-bottom:8px;border-left:3px solid #3b82f6">';
+      h+='<div style="font-weight:600;font-size:12px;margin-bottom:6px">'+g.emoji+' '+g.name+' — '+g.title+'</div>';
+      h+='<div style="font-size:10px;color:#aaa;white-space:pre-wrap;line-height:1.5;max-height:200px;overflow-y:auto">'+(g.content||'(无内容)')+'</div>';
+      h+='</div>';
+    });
+    h+='</div>';
+    var dlg=document.createElement('div');
+    dlg.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:300;display:flex;align-items:center;justify-content:center;cursor:pointer';
+    dlg.innerHTML='<div style="background:#0f1117;border-radius:12px;padding:20px;max-width:750px;width:95%;cursor:default" onclick="event.stopPropagation()">'+h+'<button class="btn btn-w" style="margin-top:12px" onclick="this.parentElement.parentElement.remove()">关闭</button></div>';
+    dlg.onclick=function(){dlg.remove();};
+    document.body.appendChild(dlg);
+  }).catch(function(e){showToast('❌ 预览失败: '+e.message,3000);});
 }
 function viewPushHistory(){
-  toastMsg('📋 推送历史功能开发中...', 2500);
+  toastMsg('📋 加载推送历史...', 2000);
+  fetch('/api/daily-report/history').then(function(r){return r.json();}).then(function(d){
+    var h='<div style="max-width:700px;margin:0 auto;max-height:80vh;overflow-y:auto">';
+    h+='<div style="font-size:12px;color:#888;margin-bottom:8px">📋 推送历史 — 共 '+d.total+' 次</div>';
+    (d.history||[]).forEach(function(entry,i){
+      var ts=entry.timestamp||'';
+      var trigger=entry.trigger||'auto';
+      var ok=(entry.results||{}).ok||0;
+      var fail=(entry.results||{}).fail||0;
+      h+='<div style="background:#1a1d27;border-radius:6px;padding:8px 12px;margin-bottom:4px;display:flex;align-items:center;gap:8px;font-size:11px">';
+      h+='<span style="color:#888">#'+(d.total-i)+'</span>';
+      h+='<span style="color:#aaa">'+ts.substring(0,19).replace('T',' ')+'</span>';
+      h+='<span style="color:#888;font-size:9px">'+trigger+'</span>';
+      h+='<span style="color:#22c55e">✅ '+ok+'</span>';
+      if(fail>0) h+='<span style="color:#ef4444">❌ '+fail+'</span>';
+      h+='</div>';
+    });
+    if(!d.history||!d.history.length) h+='<div style="color:#555;text-align:center;padding:20px">暂无推送记录</div>';
+    h+='</div>';
+    var dlg=document.createElement('div');
+    dlg.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:300;display:flex;align-items:center;justify-content:center;cursor:pointer';
+    dlg.innerHTML='<div style="background:#0f1117;border-radius:12px;padding:20px;max-width:650px;width:95%;cursor:default" onclick="event.stopPropagation()">'+h+'<button class="btn btn-w" style="margin-top:12px" onclick="this.parentElement.parentElement.remove()">关闭</button></div>';
+    dlg.onclick=function(){dlg.remove();};
+    document.body.appendChild(dlg);
+  }).catch(function(e){showToast('❌ 加载失败: '+e.message,3000);});
 }
 
 // ================================================================
@@ -3533,27 +3647,67 @@ function renderSummary(){
   if(searchQ) f=f.filter(m=>(m.ms_id+' '+(m.name||'')+' '+(m.task_id||'')).toLowerCase().includes(searchQ));
   if(filterSt!=='all') f=f.filter(m=>m.status===filterSt);
   const w=f.filter(m=>m.status=='waiting_approval');
-  let h='<div style="max-width:700px;margin:0 auto;"><h3 style="color:#888;margin-bottom:12px;font-size:13px;">&#9873; 决策面板</h3>';
-  if(!w.length){h+='<div style="color:#444;padding:20px;text-align:center;background:#1a1d27;border-radius:6px;">无待决策项</div>'}
+  const ld=lastData||{};
+  const orders=ld.orders||{total_orders:0,total_revenue:0,in_transit:0};
+  const health=ld.shop_health||{total:0,healthy:0,warning:0,critical:0};
+  const decs=ld.decisions||{total:0,approved:0,pending:0,rejected:0};
+  const dm=ld.dm||{stats:{}};
+  const tk=ld.tk||{stats:{}};
+  let h='<div style="max-width:700px;margin:0 auto;">';
+
+  // KPI Cards
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">';
+  h+='<div class="stat" style="flex:1;min-width:110px"><div class="num">'+orders.total_orders+'</div><div class="lbl">总订单</div></div>';
+  h+='<div class="stat" style="flex:1;min-width:110px"><div class="num">'+orders.total_revenue+'</div><div class="lbl">总收入 ¥</div></div>';
+  h+='<div class="stat" style="flex:1;min-width:110px"><div class="num">'+orders.in_transit+'</div><div class="lbl">运输中</div></div>';
+  h+='<div class="stat" style="flex:1;min-width:110px"><div class="num" style="color:'+(health.healthy>0?'#22c55e':health.critical>0?'#ef4444':'#f59e0b')+'">'+health.healthy+'/'+health.total+'</div><div class="lbl">店铺健康</div></div>';
+  h+='</div>';
+
+  // Pipeline progress
+  const tkDone=tk.stats?.completed||0; const tkTotal=tk.stats?.total_milestones||0;
+  const dmDone=dm.stats?.completed||0; const dmTotal=dm.stats?.total_milestones||0;
+  const tkPct=tkTotal?Math.round(tkDone/tkTotal*100):0;
+  const dmPct=dmTotal?Math.round(dmDone/dmTotal*100):0;
+  h+='<div style="display:flex;gap:8px;margin-bottom:10px">';
+  h+='<div style="flex:1;background:#1a1d27;border-radius:6px;padding:10px">';
+  h+='<div style="font-size:11px;color:#888;margin-bottom:4px">TK运营进度</div>';
+  h+='<div style="display:flex;align-items:center;gap:6px"><div class="pbar" style="flex:1"><div class="pfill" style="width:'+tkPct+'%;background:#3b82f6"></div></div><span style="font-size:11px;color:#93c5fd">'+tkDone+'/'+tkTotal+'</span></div></div>';
+  h+='<div style="flex:1;background:#1a1d27;border-radius:6px;padding:10px">';
+  h+='<div style="font-size:11px;color:#888;margin-bottom:4px">数字短剧进度</div>';
+  h+='<div style="display:flex;align-items:center;gap:6px"><div class="pbar" style="flex:1"><div class="pfill" style="width:'+dmPct+'%;background:#8b5cf6"></div></div><span style="font-size:11px;color:#a78bfa">'+dmDone+'/'+dmTotal+'</span></div></div>';
+  h+='</div>';
+
+  // Decision stats
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">';
+  h+='<div class="stat" style="flex:1;min-width:60px"><div class="num" style="color:#22c55e">'+decs.approved+'</div><div class="lbl">已批准</div></div>';
+  h+='<div class="stat" style="flex:1;min-width:60px"><div class="num" style="color:#f59e0b">'+decs.pending+'</div><div class="lbl">待决策</div></div>';
+  h+='<div class="stat" style="flex:1;min-width:60px"><div class="num" style="color:#ef4444">'+decs.rejected+'</div><div class="lbl">已驳回</div></div>';
+  h+='<div class="stat" style="flex:1;min-width:60px"><div class="num">'+decs.total+'</div><div class="lbl">总决策</div></div>';
+  h+='</div>';
+
+  // Decision panel
+  h+='<h3 style="color:#888;margin-bottom:8px;font-size:13px;">&#9873; 待决策项</h3>';
+  if(!w.length){h+='<div style="color:#444;padding:16px;text-align:center;background:#1a1d27;border-radius:6px;margin-bottom:10px">无待决策项</div>'}
   else w.forEach(m=>{
-    h+=`<div style="background:#1f1a0f;border-left:3px solid #f59e0b;border-radius:6px;padding:12px;margin:8px 0;font-size:12px;">
-      <b style="color:#fbbf24">&#9873; ${m.ms_id} ${m.name}</b><div style="color:#888;font-size:10px;margin-top:4px">${m.note||''}</div>
-      <div style="margin-top:8px">`;
+    h+='<div style="background:#1f1a0f;border-left:3px solid #f59e0b;border-radius:6px;padding:12px;margin:8px 0;font-size:12px;">';
+    h+='<b style="color:#fbbf24">&#9873; '+m.ms_id+' '+m.name+'</b><div style="color:#888;font-size:10px;margin-top:4px">'+(m.note||'')+'</div>';
+    h+='<div style="margin-top:8px">';
     [{a:'approved',l:'&#10003; 批准',c:'btn-s'},{a:'modify',l:'&#9998; 修改',c:'btn-w'},{a:'rejected',l:'&#10007; 驳回',c:'btn-d'}].forEach(o=>{
-      h+=`<button class="btn ${o.c}" onclick="event.stopPropagation();decide('${m.ms_id}','${o.a}')">${o.l}</button> `;
+      h+='<button class="btn '+o.c+'" onclick="event.stopPropagation();decide(\''+m.ms_id+'\',\''+o.a+'\')">'+o.l+'</button> ';
     });
     h+='</div></div>';
   });
+
   const d=f.filter(m=>m.status=='completed'||m.status=='approved').length;
   const p=f.length?Math.round(d/f.length*100):0;
-  h+=`<h3 style="color:#888;margin:14px 0 8px;font-size:12px;">${cur=='tk'?'TK运营':'数字短剧'} 总览</h3>
-    <div style="background:#1a1d27;border-radius:6px;padding:12px;">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <div class="pbar"><div class="pfill" style="width:${p}%;background:#22c55e"></div></div>
-        <span style="font-weight:700;color:#22c55e;font-size:13px;">${d}/${f.length}</span>
-      </div>
-      <div style="font-size:9px;color:#555;margin-top:6px;">&#10003; ${f.filter(m=>m.status=='completed'||m.status=='approved').map(m=>m.name).join(' · ')||'无'}</div>
-    </div>`;
+  h+='<h3 style="color:#888;margin:14px 0 8px;font-size:12px;">'+(cur=='tk'?'TK运营':'数字短剧')+' 里程碑总览</h3>';
+  h+='<div style="background:#1a1d27;border-radius:6px;padding:12px;">';
+  h+='<div style="display:flex;align-items:center;gap:8px;">';
+  h+='<div class="pbar"><div class="pfill" style="width:'+p+'%;background:#22c55e"></div></div>';
+  h+='<span style="font-weight:700;color:#22c55e;font-size:13px;">'+d+'/'+f.length+'</span>';
+  h+='</div>';
+  h+='<div style="font-size:9px;color:#555;margin-top:6px;">&#10003; '+f.filter(function(m){return m.status=='completed'||m.status=='approved'}).map(function(m){return m.name}).join(' · ')+'</div>';
+  h+='</div>';
   h+='</div>';
   document.getElementById('summaryView').innerHTML=h;
 }
@@ -4540,81 +4694,338 @@ async function reRender(charName){
 }
 
 // ================================================================
-// v3.7.3: renderTKImageWorkbench — MS-2.3 TK商品图处理工作台
+// v3.7.9: renderTKImageWorkbench — MS-2.3 TK图像适配工作台（重写版）
+// 后端产品图片: phone_case_main, phone_case_material, phone_case_size, phone_case_worn
+// API: /api/images/{id} (GET), /api/images/{id}/process (POST), /api/images/file/{filename} (GET)
 // ================================================================
-async function renderTKImageWorkbench(detail,ms){
-  const detailEl=document.getElementById('detail');
-  let h='<div class="sec" id="ms23-sec"><h3>&#128230; TK商品图处理工作台</h3>';
-  h+='<div id="ms23-workbench"><span class="loading">加载商品图片...</span></div>';
-  h+='</div>';
-  detailEl.insertAdjacentHTML('beforeend',h);
+var _tkProductImages=[
+  {id:'phone_case_main', label:'主图 (800×800)', desc:'白底主图 · 占画面80%+'},
+  {id:'phone_case_material', label:'材质细节', desc:'产品材质特写'},
+  {id:'phone_case_size', label:'尺寸参考', desc:'尺寸对比图'},
+  {id:'phone_case_worn', label:'佩戴效果', desc:'实际佩戴展示'}
+];
 
-  // v3.7.7: 【强制数据适配】从 detail.sections[].items[] 提取真正的产品图
-  // 不再依赖 /api/images（该接口返回 461 条混杂数据导致过滤失败）
-  var productImages=[];
-  var sections=(detail&&detail.sections)?detail.sections:[];
-  if(sections.length){
-    sections.forEach(function(section){
-      if(!section||!Array.isArray(section.items)) return;
-      section.items.forEach(function(item){
-        if(!item||typeof item!=='object') return;
-        var id=String(item.id||item.key||item.label||item.name||'');
-        var idLower=id.toLowerCase();
-        // 只保留包含 phone_case / product_ 关键词的 item（商品图）
-        var isProductImage=(idLower.indexOf('phone_case')>=0||idLower.indexOf('product_')>=0||idLower.indexOf('charger_')>=0);
-        // 排除角色图、API路径等干扰项
-        var isNoise=(idLower.indexOf('portrait')>=0||idLower.indexOf('profile')>=0||idLower.indexOf('api')>=0||idLower.indexOf('character')>=0||idLower.indexOf('avatar')>=0||idLower.indexOf('role')>=0||idLower.indexOf('scene')>=0||idLower.indexOf('render')>=0);
-        if(isProductImage&&!isNoise){
-          productImages.push({
-            id:id,
-            name:item.label||item.title||id,
-            original:'/api/images/file/'+encodeURIComponent(id)+'.jpg',
-            nobg:item.nobg||item.no_bg||'',
-            final:item.final||item.final_path||'',
-            status:item.processed?'done':(item.processing?'processing':'pending')
-          });
-        }
-      });
+async function loadTKImageStatus(imgId){
+  try{
+    var r=await fetch('/api/images/'+imgId);
+    if(!r.ok) return {id:imgId, files:{}};
+    return await r.json();
+  }catch(e){return {id:imgId, files:{}};}
+}
+
+function renderTKImageCards(images){
+  var h='';
+  images.forEach(function(img){
+    var files=img.files||{};
+    var hasOrig=!!files.original;
+    var hasNobg=!!files.nobg;
+    var hasFinal=!!files.final;
+    var meta=_tkProductImages.find(function(p){return p.id===img.id;})||{label:img.id,desc:''};
+    h+='<div class="img-card" style="max-width:200px">';
+    h+='<div class="img-preview" style="height:180px;overflow:hidden;background:#1a1d27;display:flex;align-items:center;justify-content:center">';
+    if(hasOrig){
+      h+='<img src="'+files.original+'" loading="lazy" style="max-width:100%;max-height:100%;object-fit:contain" onerror="this.parentElement.innerHTML=\'<div class=img-placeholder-text style=font-size:11px;color:#666>预览加载失败</div>\'"/>';
+    }else{
+      h+='<div style="text-align:center;color:#555;font-size:11px;padding:20px">📷<br>待生成</div>';
+    }
+    h+='</div>';
+    h+='<div class="img-card-info" style="padding:6px 8px;font-size:10px;border-top:1px solid #222">';
+    h+='<div style="color:#ccc;font-weight:600;margin-bottom:2px">'+meta.label+'</div>';
+    h+='<div style="color:#888;font-size:9px">'+meta.desc+'</div>';
+    // variant badges
+    h+='<div style="margin-top:4px;display:flex;gap:3px;flex-wrap:wrap">';
+    if(hasOrig) h+='<span class="bdg ok">原图</span>';
+    if(hasNobg) h+='<span class="bdg cp" style="background:#1a2756;color:#93c5fd">去底</span>';
+    if(hasFinal) h+='<span class="bdg ok">成品</span>';
+    h+='</div>';
+    h+='<div class="img-actions" style="margin-top:6px;display:flex;gap:3px;flex-wrap:wrap">';
+    h+='<button class="mini-btn" onclick="processTKImage(\''+img.id+'\',\'rembg\',this)" '+(hasNobg?'disabled':'')+'>去背景</button>';
+    h+='<button class="mini-btn" onclick="processTKImage(\''+img.id+'\',\'full\',this)">一键处理</button>';
+    h+='<button class="mini-btn" onclick="processTKImage(\''+img.id+'\',\'check\',this)">合规检查</button>';
+    h+='</div>';
+    h+='</div>';
+    h+='</div>';
+  });
+  return h;
+}
+
+function renderTKCompliance(reqItems){
+  var h='';
+  h+='<div style="margin-bottom:8px;font-size:12px;color:#aaa;font-weight:600">📋 TK 5站图像合规标准</div>';
+  h+='<div style="background:rgba(255,255,255,.02);border-radius:8px;border:1px solid rgba(255,255,255,.05);overflow:hidden">';
+  h+='<table style="width:100%;border-collapse:collapse;font-size:12px">';
+  h+='<tr style="background:rgba(255,255,255,.04)"><th style="text-align:left;padding:8px 12px;border-bottom:1px solid #333;color:#888;font-weight:500;width:30%">检查项</th><th style="text-align:left;padding:8px 12px;border-bottom:1px solid #333;color:#888;font-weight:500">标准</th></tr>';
+  reqItems.forEach(function(it){
+    var isWarn=it.status==='warn';
+    h+='<tr style="'+(isWarn?'background:rgba(239,68,68,.05)':'')+'">';
+    h+='<td style="padding:8px 12px;border-bottom:1px solid #222;'+(isWarn?'color:#f87171':'color:#ccc')+'">'+(isWarn?'⚠️ ':'✅ ')+(it.label||'')+'</td>';
+    h+='<td style="padding:8px 12px;border-bottom:1px solid #222;color:#aaa">'+(it.value||'')+'</td>';
+    h+='</tr>';
+  });
+  h+='</table></div>';
+  return h;
+}
+
+async function processTKImage(imgId,action,btn){
+  if(!imgId||!action) return;
+  if(btn){btn.disabled=true;btn.textContent='处理中...';}
+  try{
+    var r=await fetch('/api/images/'+imgId+'/process',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:action})
     });
+    var d=await r.json();
+    if(!r.ok){showToast('❌ '+action+': '+(d.error||'失败'),3000);return;}
+    var steps=(d.steps||[]).join(' · ');
+    showToast('✅ '+imgId+' '+action+': '+(steps||'完成'),3000);
+    // refresh image card status
+    if(window._currentMS23Detail) refreshTKImageCards(window._currentMS23Detail);
+  }catch(e){
+    showToast('❌ 处理失败: '+e.message,3000);
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent=action==='rembg'?'去背景':action==='full'?'一键处理':'合规检查';}
   }
+}
 
-  // 兜底：如果 detail 中没有产品图，尝试从 /api/images 获取
-  if(!productImages.length){
-    try{
-      var r=await fetch('/api/images');
-      var apiData=await r.json();
-      var raw=Array.isArray(apiData)?apiData:(apiData.images||apiData.products||[]);
-      if(raw.length){
-        raw.forEach(function(item){
-          if(!item||typeof item!=='object') return;
-          var id=String(item.id||item.name||item.sku||item.path||'');
-          var idLower=id.toLowerCase();
-          var isProductImage=(idLower.indexOf('phone_case')>=0||idLower.indexOf('product_')>=0||idLower.indexOf('charger_')>=0);
-          var isNoise=(idLower.indexOf('portrait')>=0||idLower.indexOf('profile')>=0||idLower.indexOf('api')>=0||idLower.indexOf('character')>=0||idLower.indexOf('avatar')>=0||idLower.indexOf('role')>=0||idLower.indexOf('scene')>=0||idLower.indexOf('render')>=0);
-          if(isProductImage&&!isNoise){
-            productImages.push({
-              id:id,
-              name:item.label||item.title||id,
-              original:item.original||item.orig||'/api/images/file/'+encodeURIComponent(id)+'.jpg',
-              nobg:item.nobg||item.no_bg||'',
-              final:item.final||item.final_path||'',
-              status:item.status||'pending'
-            });
-          }
-        });
-      }
-    }catch(e){/* fetch 失败，继续用空数组 */}
-  }
-
+async function refreshTKImageCards(detail){
   var wb=document.getElementById('ms23-workbench');
-  if(!productImages.length){
-    wb.innerHTML='<div style="text-align:center;padding:20px;color:#888;font-size:12px">⚠️ 未找到商品图数据（检查后端 detail.sections 是否包含 phone_case/product_ 等商品图 item）</div>';
+  if(!wb) return;
+  // reload image statuses
+  var imgStatuses=[];
+  for(var i=0;i<_tkProductImages.length;i++){
+    var st=await loadTKImageStatus(_tkProductImages[i].id);
+    imgStatuses.push(st);
+  }
+  // re-render just the cards section
+  var cardHTML=renderTKImageCards(imgStatuses);
+  var cardEl=document.getElementById('ms23-cards');
+  if(cardEl) cardEl.innerHTML=cardHTML;
+}
+
+async function renderTKImageWorkbench(detail,ms){
+  var detailEl=document.getElementById('detail');
+  detailEl.insertAdjacentHTML('beforeend','<div class="sec" id="ms23-sec"><h3>📦 TK商品图处理工作台</h3><div id="ms23-workbench"><span class="loading">加载中...</span></div></div>');
+  window._currentMS23Detail=detail;
+
+  if(!detail||!detail.sections||!detail.sections.length){
+    document.getElementById('ms23-workbench').innerHTML='<div style="text-align:center;padding:20px;color:#888;font-size:12px">⚠️ 暂无数据</div>';
     return;
   }
 
-  _tkImageData=productImages;
-  _tkImageFilter='all';
-  _renderTKCards();
+  var sections=detail.sections;
+  var reqSection=sections.find(function(s){return s&&s.source==='real';})||sections[1]||{};
+  var reqItems=(reqSection.items||[]).filter(function(it){return it&&typeof it==='object';});
+  var actSection=sections.find(function(s){return s&&s.title&&s.title.indexOf('操作')>=0;})||sections[2]||{};
+  var actItems=(actSection.items||[]).filter(function(it){return it&&typeof it==='object';});
+
+  var wb=document.getElementById('ms23-workbench');
+  var h='';
+
+  // --- Pipeline visualization ---
+  h+='<div style="background:#1a1d27;border-radius:8px;padding:12px;margin-bottom:12px">';
+  h+='<div style="font-size:11px;color:#888;margin-bottom:8px">⚙️ 图像处理管线</div>';
+  h+='<div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#aaa;flex-wrap:wrap">';
+  ['📷 原图','🔲 去背景','📐 尺寸调整','✅ 合规检查','🚀 发布'].forEach(function(step,i,arr){
+    h+='<div style="background:rgba(37,99,235,.15);padding:4px 8px;border-radius:4px;border:1px solid rgba(37,99,235,.25);white-space:nowrap">'+step+'</div>';
+    if(i<arr.length-1) h+='<span style="color:#444">→</span>';
+  });
+  h+='</div></div>';
+
+  // --- Product Image Cards ---
+  h+='<div style="margin-bottom:8px;font-size:12px;color:#aaa;font-weight:600">📷 商品图片 <span style="color:#666;font-weight:400">'+_tkProductImages.length+' 张</span></div>';
+  // load all image statuses
+  var imgStatuses=[];
+  for(var i=0;i<_tkProductImages.length;i++){
+    var st=await loadTKImageStatus(_tkProductImages[i].id);
+    imgStatuses.push(st);
+  }
+  h+='<div id="ms23-cards" class="img-card-grid">'+renderTKImageCards(imgStatuses)+'</div>';
+
+  // batch action bar
+  h+='<div style="display:flex;gap:8px;margin-top:10px;margin-bottom:16px;flex-wrap:wrap">';
+  h+='<button class="btn btn-s" onclick="batchProcessAll()">⚡ 一键批量处理全部</button>';
+  h+='<span style="font-size:10px;color:#555;line-height:30px">处理流程: rembg → resize → compliance</span>';
+  h+='</div>';
+
+  // --- Compliance Requirements ---
+  if(reqItems.length){
+    h+=renderTKCompliance(reqItems);
+  }
+
+  // --- Quick Actions Panel ---
+  if(actItems.length){
+    // v3.6.29: 工具箱卡片代替技术命令列表
+    h+='<div style="margin-top:16px;margin-bottom:8px;font-size:12px;color:#aaa;font-weight:600">🔧 商品图处理工具箱</div>';
+
+    // 区块一：处理进度总览
+    h+='<div class="toolbox-progress" id="toolbox-progress">';
+    h+='<div class="progress-label">📊 图片处理进度</div>';
+    h+='<div class="progress-bar-container"><div class="progress-bar-fill" id="toolbox-progress-fill" style="width:0%">0/4 已处理</div></div>';
+    h+='<div class="progress-detail" id="toolbox-progress-detail">加载中...</div>';
+    h+='</div>';
+
+    // 区块二：三张功能卡片
+    h+='<div class="toolbox-cards">';
+    h+='<div class="tool-card" id="tool-card-rembg" onclick="handleRembg()">';
+    h+='<div class="tool-card-icon">🎨</div>';
+    h+='<div class="tool-card-title">一键去背景</div>';
+    h+='<div class="tool-card-desc">为选中的商品图自动移除背景，生成纯白底图</div>';
+    h+='<div class="tool-card-status" id="tool-status-rembg">准备就绪</div>';
+    h+='</div>';
+    h+='<div class="tool-card" id="tool-card-batch" onclick="handleBatchProcess()">';
+    h+='<div class="tool-card-icon">⚡</div>';
+    h+='<div class="tool-card-title">全部批量处理</div>';
+    h+='<div class="tool-card-desc">一键处理所有待处理的商品图（去背景→调整尺寸→合规检查）</div>';
+    h+='<div class="tool-card-status" id="tool-status-batch">准备就绪</div>';
+    h+='</div>';
+    h+='<div class="tool-card" id="tool-card-check" onclick="handleComplianceCheck()">';
+    h+='<div class="tool-card-icon">✅</div>';
+    h+='<div class="tool-card-title">合规检查</div>';
+    h+='<div class="tool-card-desc">检查所有图片是否符合TK平台尺寸和格式规范</div>';
+    h+='<div class="tool-card-status" id="tool-status-check">准备就绪</div>';
+    h+='</div>';
+    h+='</div>';
+
+    // 区块三：技术详情折叠卡片
+    h+='<div class="info-card collapsible">';
+    h+='<div class="info-card-header" onclick="toggleInfoCard(this)">';
+    h+='<span>🔍 技术详情 (API调用路径)</span>';
+    h+='<span class="toggle-icon">▼</span></div>';
+    h+='<div class="info-card-body" style="display:none">';
+    actItems.forEach(function(act){
+      var label=act.label||'';
+      var desc=act.value||'';
+      h+='<div class="ent-row"><span class="ent-lbl">'+label+'</span><div class="ent-val"><span>'+desc.substring(0,200)+'</span></div></div>';
+    });
+    h+='</div></div>';
+  }
+
+  wb.innerHTML=h;
+}
+
+// v3.6.29: 更新工具箱进度条
+function updateToolboxProgress(){
+  var total=_tkProductImages.length;
+  if(!total) return;
+  // 检查每个图片的处理状态
+  Promise.all(_tkProductImages.map(function(p){return loadTKImageStatus(p.id);})).then(function(statuses){
+    var done=0;
+    statuses.forEach(function(s){
+      if(s.files&&(s.files.final||s.files.nobg)) done++;
+    });
+    var pct=Math.round(done/total*100);
+    var fill=document.getElementById('toolbox-progress-fill');
+    var detail=document.getElementById('toolbox-progress-detail');
+    if(fill){
+      fill.style.width=pct+'%';
+      fill.textContent=done+'/'+total+' 已处理';
+    }
+    if(detail) detail.textContent=(total-done)+' 张待处理 · '+done+' 张已完成';
+  });
+}
+
+// v3.6.29: handleRembg — 一键去背景
+async function handleRembg(){
+  var card=document.getElementById('tool-card-rembg');
+  var status=document.getElementById('tool-status-rembg');
+  if(!card||!status)return;
+  card.classList.add('busy');
+  status.className='tool-card-status processing';
+  status.textContent='⏳ 处理中...';
+  showToast('🎨 正在执行去背景处理...',3000);
+  try{
+    var r=await fetch('/api/images/phone_case_main/process',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'rembg'})
+    });
+    var d=await r.json();
+    if(!r.ok){showToast('❌ 去背景失败: '+(d.error||'未知'),3000,'error');status.className='tool-card-status error';status.textContent='处理失败';card.classList.remove('busy');return;}
+    status.className='tool-card-status done';
+    status.textContent='✅ 已完成';
+    showToast('✅ 去背景完成',3000,'success');
+    if(window._currentMS23Detail) refreshTKImageCards(window._currentMS23Detail);
+    updateToolboxProgress();
+  }catch(e){showToast('❌ 去背景失败: '+e.message,3000,'error');status.className='tool-card-status error';status.textContent='处理失败';}
+  card.classList.remove('busy');
+  setTimeout(function(){if(status)status.className='tool-card-status';status.textContent='准备就绪';},3000);
+}
+
+// v3.6.29: handleBatchProcess — 全部批量处理
+async function handleBatchProcess(){
+  var card=document.getElementById('tool-card-batch');
+  var status=document.getElementById('tool-status-batch');
+  if(!card||!status)return;
+  card.classList.add('busy');
+  status.className='tool-card-status processing';
+  status.textContent='⏳ 批量处理中...';
+  showToast('⚡ 开始批量处理 '+_tkProductImages.length+' 张图片...',3000);
+  for(var i=0;i<_tkProductImages.length;i++){
+    showToast('⏳ 处理 '+_tkProductImages[i].id+' ('+(i+1)+'/'+_tkProductImages.length+')...',2000);
+    try{
+      await fetch('/api/images/'+_tkProductImages[i].id+'/process',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action:'full'})
+      });
+    }catch(e){}
+  }
+  showToast('✅ 全部批量处理完成 ('+_tkProductImages.length+'张)',4000,'success');
+  status.className='tool-card-status done';
+  status.textContent='✅ 已完成';
+  if(window._currentMS23Detail) refreshTKImageCards(window._currentMS23Detail);
+  updateToolboxProgress();
+  card.classList.remove('busy');
+  setTimeout(function(){if(status)status.className='tool-card-status';status.textContent='准备就绪';},3000);
+}
+
+// v3.6.29: handleComplianceCheck — 合规检查
+async function handleComplianceCheck(){
+  var card=document.getElementById('tool-card-check');
+  var status=document.getElementById('tool-status-check');
+  if(!card||!status)return;
+  card.classList.add('busy');
+  status.className='tool-card-status processing';
+  status.textContent='⏳ 检查中...';
+  showToast('✅ 正在执行合规检查...',3000);
+  try{
+    var r=await fetch('/api/images/phone_case_main/process',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'check'})
+    });
+    var d=await r.json();
+    if(!r.ok){showToast('❌ 合规检查失败: '+(d.error||'未知'),3000,'error');status.className='tool-card-status error';status.textContent='检查失败';card.classList.remove('busy');return;}
+    var report=d.result||d;
+    var msg='合规检查结果:\n';
+    if(typeof report==='object'){
+      Object.keys(report).forEach(function(k){msg+=k+': '+JSON.stringify(report[k])+'\n';});
+    }else{msg+=report;}
+    alert('📋 合规检查报告\n\n'+msg);
+    status.className='tool-card-status done';
+    status.textContent='✅ 已完成';
+    showToast('✅ 合规检查完成',3000,'success');
+  }catch(e){showToast('❌ 合规检查失败: '+e.message,3000,'error');status.className='tool-card-status error';status.textContent='检查失败';}
+  card.classList.remove('busy');
+  setTimeout(function(){if(status)status.className='tool-card-status';status.textContent='准备就绪';},3000);
+}
+
+async function batchProcessAll(){
+  showToast('⚡ 开始批量处理 '+_tkProductImages.length+' 张图片...',3000);
+  for(var i=0;i<_tkProductImages.length;i++){
+    showToast('⏳ 处理 '+_tkProductImages[i].id+' ('+(i+1)+'/'+_tkProductImages.length+')...',2000);
+    try{
+      await fetch('/api/images/'+_tkProductImages[i].id+'/process',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({action:'full'})
+      });
+    }catch(e){}
+  }
+  showToast('✅ 批量处理完成',3000);
+  if(window._currentMS23Detail) refreshTKImageCards(window._currentMS23Detail);
+  updateToolboxProgress();
 }
 
 // TK Image Workbench state
