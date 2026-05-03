@@ -54,6 +54,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 .ent-val .note{font-size:9px;color:#666;margin-top:1px}
 .src-tag{font-size:8px;padding:0 4px;border-radius:2px;margin-left:4px}
 .src-real{background:#0f3b2e;color:#34d399}.src-mock{background:#3d2e0a;color:#fbbf24}.src-computed{background:#1a2756;color:#93c5fd}
+/* Mock data visual indicators */
+.sec.mock-section{border-left:3px solid rgba(245,158,11,.4);padding-left:12px;background:linear-gradient(90deg,rgba(245,158,11,.03),transparent)}
+.sec.mock-section.mock-highlight{border-left-color:#f59e0b;background:linear-gradient(90deg,rgba(245,158,11,.08),rgba(245,158,11,.01))}
+.sec.real-section{border-left:3px solid rgba(34,197,94,.15);padding-left:12px}
 
 .ai-box{border-left:3px solid #3b82f6;padding:4px 10px;margin:6px 0;font-size:11px}
 .progress-row{display:flex;align-items:center;gap:8px;margin:4px 0}
@@ -1316,12 +1320,13 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <body>
 <div id="toast-container"></div>
 <div id="version-check" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#10b981;color:#fff;text-align:center;padding:6px 12px;font-size:13px;font-family:monospace;letter-spacing:0.5px;cursor:pointer" onclick="this.remove()">
-  🔄 v3.7.21 — 修复删图/重绘API路由，点击关闭
+  🔄 v3.7.22 — P0-Z mock/real数据标识统一，点击关闭
 </div>
 
 <div class="topbar">
   <h1 id="appTitle">Agentic OS 指挥中心</h1>
   <span id="ENV_BADGE" style="font-size:11px;padding:3px 10px;border-radius:6px;font-weight:700;letter-spacing:1px"></span>
+  <span id="DATA_BADGE" style="font-size:10px;padding:3px 10px;border-radius:6px;font-weight:600;letter-spacing:0.5px;cursor:pointer" onclick="toggleMockSections()" title="点击高亮所有模拟数据区"></span>
   <span id="VER_BADGE" style="background:#ff0040;color:#fff;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:700">v3.7.17</span>
   <div class="tabs">
     <button class="tab active" id="tabTK" onclick="switchTab('tk')">TK运营 <span id="tkCount" style="font-size:9px;color:#666"></span></button>
@@ -1400,7 +1405,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <script>
 // v3.7.17: cache check — if URL has old version param, redirect
 (function(){
-   var v = '3.7.21';
+   var v = '3.7.22';
    var q = location.search;
    var lsVer = localStorage.getItem('_dash_v');
    if ((q && q.indexOf('v=') >= 0 && q.indexOf('v='+v) < 0) || (lsVer && lsVer !== v)) {
@@ -2794,8 +2799,57 @@ function render(){
   }
   document.getElementById('list').innerHTML=h;
 
-  if(sel)renderDetail();
-  else{document.getElementById('empty').style.display='block';document.getElementById('detail').style.display='none';renderSummary()}
+  if(sel)renderDetail().then(function(){ updateMockBadge(); });
+  else{document.getElementById('empty').style.display='block';document.getElementById('detail').style.display='none';renderSummary();updateMockBadge()}
+}
+
+// P0-Z: Mock/Real data indicator
+function updateMockBadge() {
+  var badge = document.getElementById('DATA_BADGE');
+  if (!badge) return;
+  var tags = document.querySelectorAll('#detail .src-tag');
+  var mockCount = 0, realCount = 0;
+  tags.forEach(function(t) {
+    if (t.classList.contains('src-mock')) mockCount++;
+    else if (t.classList.contains('src-real')) realCount++;
+  });
+  var total = mockCount + realCount;
+  if (mockCount > 0) {
+    badge.textContent = '⚠️ ' + mockCount + '/' + total + ' 模拟数据';
+    badge.style.background = 'rgba(245,158,11,.15)';
+    badge.style.color = '#fbbf24';
+    badge.style.border = '1px solid rgba(245,158,11,.3)';
+  } else if (total > 0) {
+    badge.textContent = '✅ 全部真实';
+    badge.style.background = 'rgba(34,197,94,.1)';
+    badge.style.color = '#4ade80';
+    badge.style.border = '1px solid rgba(34,197,94,.2)';
+  } else {
+    badge.textContent = '📋 暂无数据';
+    badge.style.background = 'rgba(100,100,100,.1)';
+    badge.style.color = '#888';
+    badge.style.border = '1px solid rgba(100,100,100,.15)';
+  }
+  // Add mock-section class to parent sections
+  document.querySelectorAll('#detail .sec').forEach(function(sec) {
+    var hasMock = sec.querySelectorAll('.src-mock').length > 0;
+    if (hasMock && !sec.classList.contains('mock-section')) sec.classList.add('mock-section');
+    if (!hasMock && sec.querySelectorAll('.src-real').length > 0) sec.classList.add('real-section');
+  });
+}
+
+function toggleMockSections() {
+  var badge = document.getElementById('DATA_BADGE');
+  var showing = badge && badge.dataset.showing === '1';
+  document.querySelectorAll('#detail .mock-section').forEach(function(s) {
+    if (!showing) {
+      s.classList.add('mock-highlight');
+      s.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      s.classList.remove('mock-highlight');
+    }
+  });
+  if (badge) { badge.dataset.showing = showing ? '0' : '1'; badge.textContent = (showing ? badge.textContent.replace('🔍','') : '🔍 '+badge.textContent); }
 }
 
 // ================================================================
