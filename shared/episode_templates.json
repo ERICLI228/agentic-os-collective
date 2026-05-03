@@ -1,0 +1,1009 @@
+{
+  "鲁提辖拳打镇关西": [
+    {
+      "seq": 1,
+      "shot_label": "镜01",
+      "act": "开场",
+      "scene": "渭州酒馆",
+      "description": "鲁提辖在酒馆听到金氏父女哭泣，上前询问",
+      "timecode": {
+        "start": "00:00",
+        "end": "00:45"
+      },
+      "music_cue": "市井喧闹声+轻弦乐",
+      "shot_type": "中景→近景",
+      "camera_move": "横移跟拍",
+      "pacing": "normal",
+      "color_palette": "暖黄酒馆光",
+      "dialogue": [
+        {
+          "speaker": "鲁提辖",
+          "text": "你二人为何在此啼哭？",
+          "style": "modern",
+          "voice_dir": "豪迈关切"
+        },
+        {
+          "speaker": "金老",
+          "text": "那镇关西郑大官人...霸占了我女儿...",
+          "style": "modern",
+          "voice_dir": "颤声泣诉"
+        }
+      ],
+      "emotion": "疑惑→关注",
+      "duration": 45,
+      "performance_notes": [
+        "鲁提辖放下酒碗，眉头紧皱"
+      ]
+    },
+    {
+      "seq": 2,
+      "shot_label": "镜02",
+      "act": "发展",
+      "scene": "酒馆内",
+      "description": "金老诉说镇关西郑屠霸占女儿，鲁提辖勃然大怒",
+      "timecode": {
+        "start": "00:45",
+        "end": "01:30"
+      },
+      "music_cue": "弦乐渐强+低音鼓",
+      "shot_type": "特写→中景",
+      "camera_move": "推镜",
+      "pacing": "normal",
+      "color_palette": "暖黄→暗红渐变",
+      "dialogue": [
+        {
+          "speaker": "鲁提辖",
+          "text": "好个镇关西！我鲁达今日便去会会他！",
+          "style": "classical",
+          "voice_dir": "怒极反笑"
+        }
+      ],
+      "emotion": "同情→愤怒",
+      "duration": 45,
+      "performance_notes": [
+        "一掌拍碎桌角"
+      ]
+    },
+    {
+      "seq": 3,
+      "shot_label": "镜03",
+      "act": "冲突",
+      "scene": "状元桥肉铺",
+      "description": "鲁提辖来到郑屠肉铺，以买肉为名挑起事端",
+      "timecode": {
+        "start": "01:30",
+        "end": "02:45"
+      },
+      "music_cue": "鼓点渐密+紧张弦乐",
+      "shot_type": "中景",
+      "camera_move": "固定→快速摇镜",
+      "pacing": "normal→fast",
+      "color_palette": "肉铺冷青",
+      "dialogue": [
+        {
+          "speaker": "鲁提辖",
+          "text": "给我切十斤精肉，细细地剁作臊子，不要见半点肥的。",
+          "style": "classical",
+          "voice_dir": "冷笑戏谑"
+        },
+        {
+          "speaker": "郑屠",
+          "text": "是、是...提辖稍等...",
+          "style": "modern",
+          "voice_dir": "惶恐"
+        }
+      ],
+      "emotion": "戏耍→紧张",
+      "duration": 75,
+      "performance_notes": [
+        "郑屠额头冒汗，刀法渐乱"
+      ]
+    },
+    {
+      "seq": 4,
+      "shot_label": "镜04",
+      "act": "高潮",
+      "scene": "肉铺前",
+      "description": "鲁提辖三拳打死镇关西，郑屠倒地，围观百姓惊慌",
+      "timecode": {
+        "start": "02:45",
+        "end": "04:00"
+      },
+      "music_cue": "鼓点炸裂→寂静→悲怆弦乐",
+      "shot_type": "特写→远景",
+      "camera_move": "慢镜+静止",
+      "pacing": "fast→slow",
+      "color_palette": "血红+灰白",
+      "dialogue": [
+        {
+          "speaker": "鲁提辖",
+          "text": "你这腌臜泼才！打杀了你，倒是脏了我的手。",
+          "style": "classical",
+          "voice_dir": "爆发→冷冽"
+        }
+      ],
+      "emotion": "爆发→震惊",
+      "duration": 75,
+      "performance_notes": [
+        "三拳慢镜头：血溅→骨裂→倒地",
+        "静帧1秒"
+      ]
+    },
+    {
+      "seq": 5,
+      "shot_label": "镜05",
+      "act": "结局",
+      "scene": "渭州街头",
+      "description": "鲁提辖见郑屠已死，假装醉酒，大步离去，消失在街角",
+      "timecode": {
+        "start": "04:00",
+        "end": "05:00"
+      },
+      "music_cue": "孤独弦乐渐弱→风雪声",
+      "shot_type": "远景",
+      "camera_move": "拉远跟拍",
+      "pacing": "slow",
+      "color_palette": "暮色蓝灰",
+      "dialogue": [
+        {
+          "speaker": "鲁提辖",
+          "text": "这狗一般的人，死了倒干净。",
+          "style": "classical",
+          "voice_dir": "冷冽决绝"
+        }
+      ],
+      "emotion": "冷静→逃离",
+      "duration": 60,
+      "end_credit": "拳下三条命，从此行走江湖，再无回头路",
+      "performance_notes": [
+        "低头快步，身影消失在暮色中"
+      ]
+    }
+  ],
+  "鲁智深倒拔垂杨柳": [
+    {
+      "seq": 1,
+      "shot_label": "镜01",
+      "act": "开场",
+      "scene": "大相国寺菜园",
+      "description": "鲁智深在菜园察看新长柳树，众泼皮围观起哄",
+      "timecode": {
+        "start": "00:00",
+        "end": "00:50"
+      },
+      "music_cue": "轻快弦乐+鸟鸣",
+      "shot_type": "远景",
+      "camera_move": "缓缓推进",
+      "pacing": "normal",
+      "color_palette": "翠绿+暖阳",
+      "dialogue": [
+        {
+          "speaker": "泼皮A",
+          "text": "大和尚！听说你力大无穷，把这树拔起来给兄弟们开开眼？",
+          "style": "modern",
+          "voice_dir": "起哄"
+        }
+      ],
+      "emotion": "悠闲→期待",
+      "duration": 50,
+      "performance_notes": [
+        "鲁智深哈哈大笑，掀起袈裟"
+      ]
+    },
+    {
+      "seq": 2,
+      "shot_label": "镜02",
+      "act": "发展",
+      "scene": "菜园",
+      "description": "鲁智深甩开膀子，双手抱住柳树，准备发力",
+      "timecode": {
+        "start": "00:50",
+        "end": "01:40"
+      },
+      "music_cue": "鼓声渐起+低音弦乐",
+      "shot_type": "中景→近景",
+      "camera_move": "环绕跟拍",
+      "pacing": "slow→normal",
+      "color_palette": "翠绿→深绿",
+      "dialogue": [
+        {
+          "speaker": "鲁智深",
+          "text": "你们几个撮鸟，看洒家拔这棵树！",
+          "style": "classical",
+          "voice_dir": "豪迈大笑"
+        }
+      ],
+      "emotion": "轻松→自信",
+      "duration": 50,
+      "performance_notes": [
+        "腰马合一，手臂青筋暴起"
+      ]
+    },
+    {
+      "seq": 3,
+      "shot_label": "镜03",
+      "act": "冲突",
+      "scene": "菜园",
+      "description": "地面裂开，泥土飞溅，柳树连根拔起",
+      "timecode": {
+        "start": "01:40",
+        "end": "02:20"
+      },
+      "music_cue": "鼓点炸裂+群鸟惊飞声",
+      "shot_type": "特写→全景",
+      "camera_move": "仰角+摇镜",
+      "pacing": "fast",
+      "color_palette": "泥土棕褐+绿叶飞溅",
+      "dialogue": [],
+      "emotion": "震撼→爆发",
+      "duration": 40,
+      "performance_notes": [
+        "泥土飞溅慢镜头",
+        "泼皮们目瞪口呆"
+      ]
+    },
+    {
+      "seq": 4,
+      "shot_label": "镜04",
+      "act": "高潮",
+      "scene": "菜园中央",
+      "description": "鲁智深将柳树高举过头，众泼皮跪地拜服",
+      "timecode": {
+        "start": "02:20",
+        "end": "03:10"
+      },
+      "music_cue": "宏大弦乐+人声惊叹",
+      "shot_type": "仰角特写",
+      "camera_move": "静止",
+      "pacing": "slow",
+      "color_palette": "逆光金橙",
+      "dialogue": [
+        {
+          "speaker": "泼皮们",
+          "text": "神...神仙下凡了！",
+          "style": "modern",
+          "voice_dir": "恐惧敬畏"
+        }
+      ],
+      "emotion": "震撼→敬畏",
+      "duration": 50,
+      "performance_notes": [
+        "柳树在头顶旋转，逆光剪影"
+      ]
+    },
+    {
+      "seq": 5,
+      "shot_label": "镜05",
+      "act": "结局",
+      "scene": "菜园",
+      "description": "鲁智深随手抛下柳树，拍手大笑，坐在石凳上",
+      "timecode": {
+        "start": "03:10",
+        "end": "04:00"
+      },
+      "music_cue": "轻快弦乐回归+笑声",
+      "shot_type": "中景",
+      "camera_move": "缓缓拉远",
+      "pacing": "normal→slow",
+      "color_palette": "夕阳暖金",
+      "dialogue": [
+        {
+          "speaker": "鲁智深",
+          "text": "如何？你这些撮鸟，还敢小看洒家吗？",
+          "style": "classical",
+          "voice_dir": "得意豪迈"
+        }
+      ],
+      "emotion": "得意→豪迈",
+      "duration": 50,
+      "end_credit": "一身神力惊天下，从此江湖称「花和尚」",
+      "performance_notes": []
+    }
+  ],
+  "林冲风雪山神庙": [
+    {
+      "seq": 1,
+      "shot_label": "镜01",
+      "act": "开场",
+      "scene": "沧州草料场外 · 黄昏",
+      "description": "大雪纷飞，林冲肩扛长枪，枪挑酒葫芦，在风雪中缩颈而行",
+      "timecode": {
+        "start": "00:00",
+        "end": "00:45"
+      },
+      "music_cue": "风雪声+低沉弦乐渐入",
+      "shot_type": "远景",
+      "camera_move": "镜头推进",
+      "pacing": "slow",
+      "color_palette": "青灰冷调",
+      "dialogue": [
+        {
+          "speaker": "林冲",
+          "text": "想我林冲，空有一身武艺，却落得个脸上刺字、发配充军的下场……这天道，当真容不得一个良善之人吗？",
+          "style": "classical",
+          "voice_dir": "气声+胸腔共鸣"
+        },
+        {
+          "speaker": "老军",
+          "text": "林教头！这大雪天你往哪儿去？前面五里地有个酒馆，去打点酒暖暖身子吧。",
+          "style": "modern",
+          "voice_dir": "日常语速"
+        }
+      ],
+      "emotion": "沉郁→孤独",
+      "duration": 45,
+      "performance_notes": [
+        "林冲回头看一眼草料场",
+        "老军离去，镜头留在林冲背影"
+      ]
+    },
+    {
+      "seq": 2,
+      "shot_label": "镜02",
+      "act": "发展",
+      "scene": "小酒馆内 · 夜",
+      "description": "林冲独坐角落饮酒。邻桌酒客低声议论陆谦来沧州的消息",
+      "timecode": {
+        "start": "00:45",
+        "end": "01:45"
+      },
+      "music_cue": "杯盏声铺垫+不安弦乐",
+      "shot_type": "内景+特写",
+      "camera_move": "摇镜→推镜",
+      "pacing": "normal",
+      "color_palette": "酒馆暖黄",
+      "dialogue": [
+        {
+          "speaker": "酒客甲",
+          "text": "听说了吗？陆谦那厮也来沧州了。",
+          "style": "modern",
+          "voice_dir": "压低声音"
+        },
+        {
+          "speaker": "酒客乙",
+          "text": "他来做什么？莫不是……东京那边的事还没完？",
+          "style": "modern",
+          "voice_dir": "紧张"
+        },
+        {
+          "speaker": "林冲",
+          "text": "掌柜的，借问一声，那陆谦……",
+          "style": "modern",
+          "voice_dir": "克制"
+        },
+        {
+          "speaker": "掌柜",
+          "text": "客官别问，小的什么都不知道。",
+          "style": "modern",
+          "voice_dir": "躲闪"
+        }
+      ],
+      "emotion": "警觉→不安",
+      "duration": 60,
+      "performance_notes": [
+        "林冲握杯的手顿住，指节发白",
+        "起身冲出风雪"
+      ]
+    },
+    {
+      "seq": 3,
+      "shot_label": "镜03",
+      "act": "冲突",
+      "scene": "草料场小屋 · 深夜",
+      "description": "林冲回来发现小屋被大雪压塌，风雪中辨认方位，远处火光隐现",
+      "timecode": {
+        "start": "01:45",
+        "end": "03:00"
+      },
+      "music_cue": "风雪声加剧+低音鼓点渐密",
+      "shot_type": "外景+快速剪辑",
+      "camera_move": "环摇→推镜",
+      "pacing": "normal→fast",
+      "color_palette": "深黑+火光橙红",
+      "dialogue": [
+        {
+          "speaker": "林冲",
+          "text": "这……老天爷是要绝我林冲的活路吗？",
+          "style": "classical",
+          "voice_dir": "气声+悲愤"
+        },
+        {
+          "speaker": "林冲",
+          "text": "我记得来的路上有座山神庙，先到那里避一夜雪吧。",
+          "style": "modern",
+          "voice_dir": "自语"
+        }
+      ],
+      "emotion": "震惊→警觉",
+      "duration": 75,
+      "performance_notes": [
+        "林冲在雪中辨认方位",
+        "捡拾散落行李",
+        "远处一点火光在草料场方向隐现"
+      ]
+    },
+    {
+      "seq": 4,
+      "shot_label": "镜04",
+      "act": "高潮",
+      "scene": "山神庙内 · 深夜→山神庙外 · 雪夜",
+      "description": "林冲在庙中避雪，听到陆谦等人在庙外密谋烧死自己，草料场大火冲天",
+      "timecode": {
+        "start": "03:00",
+        "end": "04:30"
+      },
+      "music_cue": "神庙肃穆空灵→门外风雪低吼→鼓点炸裂→宏大悲怆配乐",
+      "shot_type": "内景↔外景·主观镜头",
+      "camera_move": "推镜+反应镜头+快速横摇",
+      "pacing": "slow→climax",
+      "color_palette": "深黑→火光橙红→高对比青白",
+      "dialogue": [
+        {
+          "speaker": "陆谦",
+          "text": "这把火放得干净。林冲那厮就算不被烧死，这看守草料场的死罪也算坐实了。",
+          "style": "modern",
+          "voice_dir": "得意阴冷"
+        },
+        {
+          "speaker": "差拨A",
+          "text": "陆大人好计策！高太尉那边……",
+          "style": "modern",
+          "voice_dir": "谄媚"
+        },
+        {
+          "speaker": "陆谦",
+          "text": "骨头捡两块回去交差就行。",
+          "style": "modern",
+          "voice_dir": "轻蔑"
+        },
+        {
+          "speaker": "林冲",
+          "text": "好，好，好……原来这天，从来就没打算给我留一条活路。",
+          "style": "classical",
+          "voice_dir": "气声+燃尽一切的温度"
+        }
+      ],
+      "emotion": "震惊→愤怒→冰寒彻骨",
+      "duration": 90,
+      "performance_notes": [
+        "林冲在门后，脸上肌肉抽搐",
+        "眼神：震惊→痛苦→冰寒彻骨",
+        "庙门被猛然踹开",
+        "提枪而出，背后漫天大雪与火光"
+      ]
+    },
+    {
+      "seq": 5,
+      "shot_label": "镜05",
+      "act": "结局",
+      "scene": "山神庙外 · 雪夜终局",
+      "description": "林冲挺枪杀出，一枪刺倒差拨，陆谦奔逃被搠，伫立风雪中提枪走入雪夜",
+      "timecode": {
+        "start": "04:30",
+        "end": "05:30"
+      },
+      "music_cue": "全部音效收束→寂静→炸裂鼓点→宏大悲怆配乐起→渐弱",
+      "shot_type": "快速动作→静止远景",
+      "camera_move": "摇镜→定格→拉远",
+      "pacing": "climax→slow",
+      "color_palette": "火光橙红→青白→淡出",
+      "dialogue": [
+        {
+          "speaker": "林冲",
+          "text": "陆——谦——！",
+          "style": "classical",
+          "voice_dir": "声震雪夜"
+        },
+        {
+          "speaker": "林冲",
+          "text": "我林冲从不曾负过谁。东京城里，你是我把酒言欢的兄弟。今日方知——这世上最毒的不是风雪，是人心。",
+          "style": "classical",
+          "voice_dir": "悲怆而决绝"
+        },
+        {
+          "speaker": "陆谦",
+          "text": "林教头饶命！都是高太尉让我做的——",
+          "style": "modern",
+          "voice_dir": "恐惧奔逃"
+        },
+        {
+          "speaker": "林冲",
+          "text": "天不容我，我便逆了这天。人若负我……我便弃了这世间。",
+          "style": "classical",
+          "voice_dir": "决绝+胸腔共鸣"
+        }
+      ],
+      "emotion": "爆发→决绝→新生",
+      "duration": 60,
+      "end_credit": "逼上梁山者，并非贪生之辈，而是连死都不由自己做主的人。",
+      "performance_notes": [
+        "枪花一抖→差拨倒地",
+        "陆谦奔逃",
+        "一枪搠出，画面静止",
+        "远景拉远：林冲提枪走入茫茫雪夜"
+      ]
+    }
+  ],
+  "宋江杀阎婆惜": [
+    {
+      "seq": 1,
+      "shot_label": "镜01",
+      "act": "开场",
+      "scene": "宋江书房 · 夜",
+      "description": "宋江深夜回到书房，烛光昏暗，发现阎婆惜正在翻找他的东西",
+      "timecode": {
+        "start": "00:00",
+        "end": "00:45"
+      },
+      "music_cue": "烛火噼啪声+低沉弦乐",
+      "shot_type": "内景·中景",
+      "camera_move": "跟拍→停",
+      "pacing": "slow",
+      "color_palette": "烛光暖黄+暗角阴影",
+      "dialogue": [
+        {
+          "speaker": "宋江",
+          "text": "你在找什么？",
+          "style": "modern",
+          "voice_dir": "警觉低沉"
+        }
+      ],
+      "emotion": "警觉",
+      "duration": 45,
+      "performance_notes": [
+        "宋江停在门口，目光如炬"
+      ]
+    },
+    {
+      "seq": 2,
+      "shot_label": "镜02",
+      "act": "发展",
+      "scene": "书房内 · 灯光昏暗",
+      "description": "阎婆惜拿出梁山书信威胁宋江，宋江面色大变",
+      "timecode": {
+        "start": "00:45",
+        "end": "01:30"
+      },
+      "music_cue": "弦乐骤紧+心跳声",
+      "shot_type": "特写×2",
+      "camera_move": "快速切换",
+      "pacing": "fast",
+      "color_palette": "烛光→暗红",
+      "dialogue": [
+        {
+          "speaker": "阎婆惜",
+          "text": "这是梁山泊给你的书信？若让人知道了，可是死罪。",
+          "style": "modern",
+          "voice_dir": "得意威胁"
+        },
+        {
+          "speaker": "宋江",
+          "text": "你……你竟敢威胁我！",
+          "style": "classical",
+          "voice_dir": "惊吓→暴怒"
+        }
+      ],
+      "emotion": "惊吓→愤怒",
+      "duration": 45,
+      "performance_notes": [
+        "宋江伸手去夺书信",
+        "两人激烈争夺"
+      ]
+    },
+    {
+      "seq": 3,
+      "shot_label": "镜03",
+      "act": "冲突",
+      "scene": "书房内",
+      "description": "阎婆惜大声呼救，宋江慌乱中抽出短刀",
+      "timecode": {
+        "start": "01:30",
+        "end": "02:15"
+      },
+      "music_cue": "鼓点急促+尖叫声",
+      "shot_type": "手持晃动+快切",
+      "camera_move": "不规则晃动",
+      "pacing": "fast",
+      "color_palette": "血色暗红",
+      "dialogue": [
+        {
+          "speaker": "阎婆惜",
+          "text": "来人啊！救命——",
+          "style": "modern",
+          "voice_dir": "尖叫"
+        }
+      ],
+      "emotion": "紧张→失控",
+      "duration": 45,
+      "performance_notes": [
+        "短刀出鞘寒光一闪"
+      ]
+    },
+    {
+      "seq": 4,
+      "shot_label": "镜04",
+      "act": "高潮",
+      "scene": "书房内",
+      "description": "宋江一刀刺入阎婆惜胸膛，鲜血溅在梁山书信上，时间仿佛凝固",
+      "timecode": {
+        "start": "02:15",
+        "end": "03:00"
+      },
+      "music_cue": "一切音效停止→滴血声→悲怆弦乐",
+      "shot_type": "特写+慢镜",
+      "camera_move": "静止+极慢推进",
+      "pacing": "slow→静止",
+      "color_palette": "血红溅染",
+      "dialogue": [
+        {
+          "speaker": "宋江",
+          "text": "……。",
+          "style": "classical",
+          "voice_dir": "无言·喘息"
+        }
+      ],
+      "emotion": "绝望→冲动→空白",
+      "duration": 45,
+      "performance_notes": [
+        "鲜血溅在书信上慢镜头",
+        "静帧1秒"
+      ]
+    },
+    {
+      "seq": 5,
+      "shot_label": "镜05",
+      "act": "结局",
+      "scene": "书房 · 黎明",
+      "description": "宋江擦去血迹，收起梁山书信，晨光中露出复杂而沉重的表情",
+      "timecode": {
+        "start": "03:00",
+        "end": "04:00"
+      },
+      "music_cue": "晨光弦乐+渐强→余韵",
+      "shot_type": "中景→远景",
+      "camera_move": "缓缓拉远",
+      "pacing": "slow",
+      "color_palette": "晨光灰蓝",
+      "dialogue": [
+        {
+          "speaker": "宋江",
+          "text": "这一步踏出……便再无回头路了。",
+          "style": "classical",
+          "voice_dir": "沉郁决断"
+        }
+      ],
+      "emotion": "悔恨→决断",
+      "duration": 60,
+      "end_credit": "一封书信，一条人命，从此江湖多了一个「及时雨」宋江",
+      "performance_notes": [
+        "宋江望着手中染血的书信",
+        "晨光透过窗棂"
+      ]
+    }
+  ],
+  "李逵沂岭杀四虎": [
+    {
+      "seq": 1,
+      "shot_label": "镜01",
+      "act": "开场",
+      "scene": "沂岭山路",
+      "description": "李逵背着老娘走在沂岭山路上，烈日当空，娘说口渴",
+      "timecode": {
+        "start": "00:00",
+        "end": "00:50"
+      },
+      "music_cue": "蝉鸣+轻笛",
+      "shot_type": "中景·背跟",
+      "camera_move": "跟拍",
+      "pacing": "slow",
+      "color_palette": "烈日金黄",
+      "dialogue": [
+        {
+          "speaker": "李逵",
+          "text": "娘，您歇着，我去找水。",
+          "style": "modern",
+          "voice_dir": "温柔·反差"
+        },
+        {
+          "speaker": "老娘",
+          "text": "好，娘等你回来。",
+          "style": "modern",
+          "voice_dir": "慈祥"
+        }
+      ],
+      "emotion": "孝顺→温柔",
+      "duration": 50,
+      "performance_notes": [
+        "李逵小心放下老娘",
+        "用袖子擦汗"
+      ]
+    },
+    {
+      "seq": 2,
+      "shot_label": "镜02",
+      "act": "发展",
+      "scene": "山溪边",
+      "description": "李逵找到山溪舀水，远处传来低沉虎啸声",
+      "timecode": {
+        "start": "00:50",
+        "end": "01:30"
+      },
+      "music_cue": "溪水声+远山虎啸",
+      "shot_type": "中景",
+      "camera_move": "跟拍",
+      "pacing": "normal",
+      "color_palette": "溪水翠绿",
+      "dialogue": [
+        {
+          "speaker": "李逵",
+          "text": "什么声音？",
+          "style": "modern",
+          "voice_dir": "警觉"
+        }
+      ],
+      "emotion": "安心→警觉",
+      "duration": 40,
+      "performance_notes": [
+        "水瓢停在半空",
+        "猛地回头"
+      ]
+    },
+    {
+      "seq": 3,
+      "shot_label": "镜03",
+      "act": "冲突",
+      "scene": "沂岭 · 洞穴外",
+      "description": "回来发现老娘不见，地上血迹斑斑，李逵目眦欲裂",
+      "timecode": {
+        "start": "01:30",
+        "end": "02:20"
+      },
+      "music_cue": "寂静→心跳声→疯狂鼓点",
+      "shot_type": "特写+快速剪辑",
+      "camera_move": "手持晃动",
+      "pacing": "fast",
+      "color_palette": "血红色+阴影黑",
+      "dialogue": [
+        {
+          "speaker": "李逵",
+          "text": "娘——！！！",
+          "style": "classical",
+          "voice_dir": "撕心裂肺·爆发"
+        }
+      ],
+      "emotion": "恐惧→暴怒",
+      "duration": 50,
+      "performance_notes": [
+        "李逵双膝跪地",
+        "手捧血土",
+        "双眼血红"
+      ]
+    },
+    {
+      "seq": 4,
+      "shot_label": "镜04",
+      "act": "高潮",
+      "scene": "沂岭",
+      "description": "李逵双斧挥舞，连杀四虎，虎血染红衣衫，怒吼震山林",
+      "timecode": {
+        "start": "02:20",
+        "end": "03:40"
+      },
+      "music_cue": "鼓点炸裂+虎啸+怒吼",
+      "shot_type": "快速动作·多角度",
+      "camera_move": "摇镜+仰角+跟拍",
+      "pacing": "climax",
+      "color_palette": "血红+暗绿+剪影黑",
+      "dialogue": [
+        {
+          "speaker": "李逵",
+          "text": "还我娘来！！",
+          "style": "classical",
+          "voice_dir": "狂怒震撼"
+        }
+      ],
+      "emotion": "狂怒→悲壮",
+      "duration": 80,
+      "performance_notes": [
+        "第一斧:劈开虎头",
+        "第二斧:横扫虎腰",
+        "连杀四虎的快速蒙太奇"
+      ]
+    },
+    {
+      "seq": 5,
+      "shot_label": "镜05",
+      "act": "结局",
+      "scene": "沂岭 · 黄昏",
+      "description": "李逵跪在老娘失踪处，夕阳下拉长身影，默默收起染血的双斧",
+      "timecode": {
+        "start": "03:40",
+        "end": "04:30"
+      },
+      "music_cue": "悲怆弦乐+夕阳风声",
+      "shot_type": "远景",
+      "camera_move": "缓缓拉远",
+      "pacing": "slow",
+      "color_palette": "夕阳血红→暮色灰蓝",
+      "dialogue": [
+        {
+          "speaker": "李逵",
+          "text": "娘，儿子给您报仇了……",
+          "style": "classical",
+          "voice_dir": "哽咽·铁汉柔情"
+        }
+      ],
+      "emotion": "悲痛→决绝",
+      "duration": 50,
+      "end_credit": "铁牛也有柔情处，四虎换不回一声娘。",
+      "performance_notes": [
+        "跪地三叩首",
+        "夕阳剪影"
+      ]
+    }
+  ],
+  "智取生辰纲": [
+    {
+      "seq": 1,
+      "shot_label": "镜01",
+      "act": "开场",
+      "scene": "聚义厅 · 烛光下",
+      "description": "吴用手持羽扇，烛光映照清瘦面容，展开地图低声策划",
+      "timecode": {
+        "start": "00:00",
+        "end": "01:00"
+      },
+      "music_cue": "烛火声+轻笛+密谋弦乐",
+      "shot_type": "内景·特写→中景",
+      "camera_move": "缓缓推进",
+      "pacing": "slow",
+      "color_palette": "烛光暖黄+暗角阴影",
+      "dialogue": [
+        {
+          "speaker": "吴用",
+          "text": "此番智取，不许动一兵一卒。",
+          "style": "classical",
+          "voice_dir": "沉稳睿智"
+        }
+      ],
+      "emotion": "沉稳→机密",
+      "duration": 60,
+      "performance_notes": [
+        "羽扇轻摇",
+        "手指在地图上划过"
+      ]
+    },
+    {
+      "seq": 2,
+      "shot_label": "镜02",
+      "act": "发展",
+      "scene": "黄泥岗山路",
+      "description": "吴用扮作枣贩，推车行于黄泥岗山路，烈日当空",
+      "timecode": {
+        "start": "01:00",
+        "end": "02:00"
+      },
+      "music_cue": "蝉鸣+轻快笛声",
+      "shot_type": "远景→中景",
+      "camera_move": "跟拍",
+      "pacing": "normal",
+      "color_palette": "烈日金黄+土路棕褐",
+      "dialogue": [
+        {
+          "speaker": "吴用",
+          "text": "按计划行事，各就其位。",
+          "style": "modern",
+          "voice_dir": "低声指挥"
+        }
+      ],
+      "emotion": "伪装→警觉",
+      "duration": 60,
+      "performance_notes": [
+        "众好汉各扮角色"
+      ]
+    },
+    {
+      "seq": 3,
+      "shot_label": "镜03",
+      "act": "冲突",
+      "scene": "黄泥岗",
+      "description": "押送队伍到达，吴用以掺药酒为计，表面争吵掩护",
+      "timecode": {
+        "start": "02:00",
+        "end": "03:00"
+      },
+      "music_cue": "紧张弦乐+争吵声",
+      "shot_type": "多机位切换",
+      "camera_move": "快速切换",
+      "pacing": "normal→fast",
+      "color_palette": "黄土岗暖色",
+      "dialogue": [
+        {
+          "speaker": "杨志",
+          "text": "这酒里莫非有药？",
+          "style": "modern",
+          "voice_dir": "怀疑"
+        },
+        {
+          "speaker": "吴用",
+          "text": "这位军爷说的什么话，我们都是正经生意人。",
+          "style": "modern",
+          "voice_dir": "陪笑掩护"
+        },
+        {
+          "speaker": "白胜",
+          "text": "来来来，天气热，喝碗酒解解渴。",
+          "style": "modern",
+          "voice_dir": "吆喝"
+        }
+      ],
+      "emotion": "紧张→博弈",
+      "duration": 60,
+      "performance_notes": [
+        "吴用和白胜假装争吵",
+        "军士们放松警惕"
+      ]
+    },
+    {
+      "seq": 4,
+      "shot_label": "镜04",
+      "act": "高潮",
+      "scene": "黄泥岗",
+      "description": "吴用与众好汉假装抢酒喝，军士们纷纷倒地，计谋得逞",
+      "timecode": {
+        "start": "03:00",
+        "end": "03:50"
+      },
+      "music_cue": "欢快节奏→得逞笑声",
+      "shot_type": "快速剪辑·反应镜头",
+      "camera_move": "环摇",
+      "pacing": "fast",
+      "color_palette": "胜利暖金",
+      "dialogue": [
+        {
+          "speaker": "吴用",
+          "text": "成了！把车推走。",
+          "style": "classical",
+          "voice_dir": "暗喜从容"
+        }
+      ],
+      "emotion": "暗喜→胜利",
+      "duration": 50,
+      "performance_notes": [
+        "军士们倒地",
+        "吴用羽扇一挥"
+      ]
+    },
+    {
+      "seq": 5,
+      "shot_label": "镜05",
+      "act": "结局",
+      "scene": "黄泥岗 · 夕阳",
+      "description": "吴用摇扇微笑，望着满载珠宝的车队消失在暮色中",
+      "timecode": {
+        "start": "03:50",
+        "end": "05:00"
+      },
+      "music_cue": "胜利弦乐+渐弱",
+      "shot_type": "远景",
+      "camera_move": "缓缓拉远",
+      "pacing": "slow",
+      "color_palette": "夕阳橙金→暮色紫蓝",
+      "dialogue": [
+        {
+          "speaker": "吴用",
+          "text": "不费一兵一卒，十万贯生辰纲，尽入我梁山之手。",
+          "style": "classical",
+          "voice_dir": "得意从容"
+        }
+      ],
+      "emotion": "得意→从容",
+      "duration": 70,
+      "end_credit": "羽扇轻摇定乾坤，从此梁山多了一个「智多星」。",
+      "performance_notes": [
+        "吴用摇扇远望",
+        "车队消失在暮色中"
+      ]
+    }
+  ]
+}

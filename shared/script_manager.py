@@ -284,91 +284,85 @@ def get_episode_detail(ep_num):
 
 
 def _build_storyboard(title, chapter, character):
-    """根据剧集信息构建5段式分镜"""
-    templates = {
-        "鲁提辖拳打镇关西": [
-            {"seq": 1, "act": "开场", "scene": "渭州酒馆", "description": f"鲁提辖在酒馆听到金氏父女哭泣，上前询问", "emotion": "疑惑→关注", "duration": "8秒"},
-            {"seq": 2, "act": "发展", "scene": "酒馆内", "description": f"金老诉说镇关西郑屠霸占女儿，{character}勃然大怒", "emotion": "同情→愤怒", "duration": "10秒"},
-            {"seq": 3, "act": "冲突", "scene": "状元桥肉铺", "description": f"{character}来到郑屠肉铺，以买肉为名挑起事端，三拳打向郑屠", "emotion": "戏耍→爆发", "duration": "12秒"},
-            {"seq": 4, "act": "高潮", "scene": "肉铺前", "description": f"{character}三拳打死镇关西，郑屠倒地，围观百姓惊慌", "emotion": "爆发→震惊", "duration": "10秒"},
-            {"seq": 5, "act": "结局", "scene": "渭州街头", "description": f"{character}见郑屠已死，假装醉酒，大步离去，消失在街角", "emotion": "冷静→逃离", "duration": "8秒"},
-        ],
-        "鲁智深倒拔垂杨柳": [
-            {"seq": 1, "act": "开场", "scene": "大相国寺菜园", "description": f"{character}在菜园中察看新长的柳树，众泼皮围观", "emotion": "悠闲→期待", "duration": "8秒"},
-            {"seq": 2, "act": "发展", "scene": "菜园", "description": f"泼皮们起哄让{character}展示神力，{character}哈哈大笑掀起袈裟", "emotion": "轻松→自信", "duration": "10秒", "dialogue": "你们几个撮鸟，看洒家拔这棵树！"},
-            {"seq": 3, "act": "冲突", "scene": "菜园", "description": f"{character}双手抱住柳树干，一声怒吼，腰马合一，地面裂开", "emotion": "专注→爆发", "duration": "12秒"},
-            {"seq": 4, "act": "高潮", "scene": "菜园中央", "description": f"{character}将整棵柳树连根拔起，泥土飞溅，柳条乱舞，泼皮们目瞪口呆纷纷跪拜", "emotion": "震撼→敬畏", "duration": "12秒"},
-            {"seq": 5, "act": "结局", "scene": "菜园", "description": f"{character}将柳树随手一抛，拍拍手上泥土，大笑着坐在石凳上", "emotion": "得意→豪迈", "duration": "8秒", "dialogue": "如何？你这些撮鸟，还敢小看洒家吗？"},
-        ],
-        "林冲风雪山神庙": [
-            {"seq": 1, "act": "开场", "scene": "沧州草料场", "description": f"{character}被发配沧州看守草料场，风雪交加中独坐茅屋", "emotion": "沉郁→孤独", "duration": "10秒"},
-            {"seq": 2, "act": "发展", "scene": "山神庙", "description": f"大雪压倒草屋，{character}到山神庙暂避，忽闻庙外脚步声", "emotion": "警觉→不安", "duration": "10秒"},
-            {"seq": 3, "act": "冲突", "scene": "山神庙外", "description": f"陆谦等三人在庙外密谋烧死{character}，{character}在门后听得一清二楚", "emotion": "震惊→愤怒", "duration": "12秒"},
-            {"seq": 4, "act": "高潮", "scene": "山神庙雪地", "description": f"{character}提枪冲出，火光中连杀三人，陆谦惊恐求饶", "emotion": "爆发→复仇", "duration": "12秒", "dialogue": "奸贼！今日便是你的死期！"},
-            {"seq": 5, "act": "结局", "scene": "风雪山林", "description": f"{character}杀死陆谦，望着燃烧的草料场，风雪中提枪踏上通往梁山的路", "emotion": "决绝→新生", "duration": "10秒"},
-        ],
-        "宋江杀阎婆惜": [
-            {"seq": 1, "act": "开场", "scene": "宋江书房", "description": f"{character}深夜回到书房，发现阎婆惜正在翻找他的东西", "emotion": "警觉", "duration": "8秒"},
-            {"seq": 2, "act": "发展", "scene": "书房内·灯光昏暗", "description": f"阎婆惜拿出梁山书信威胁{character}，{character}面色大变", "emotion": "惊吓→愤怒", "duration": "10秒", "dialogue": "你…你竟敢威胁我！"},
-            {"seq": 3, "act": "冲突", "scene": "书房内", "description": f"两人激烈争吵，{character}去夺书信，阎婆惜大声呼救", "emotion": "紧张→失控", "duration": "10秒"},
-            {"seq": 4, "act": "高潮", "scene": "书房内", "description": f"混乱中{character}抽出短刀刺向阎婆惜，鲜血溅在梁山书信上", "emotion": "绝望→冲动", "duration": "8秒"},
-            {"seq": 5, "act": "结局", "scene": "书房·黎明", "description": f"{character}擦拭血迹，收起书信，晨光中露出复杂而沉重的表情", "emotion": "悔恨→决断", "duration": "8秒"},
-        ],
-        "李逵沂岭杀四虎": [
-            {"seq": 1, "act": "开场", "scene": "沂岭山路", "description": f"{character}背着老娘走在沂岭山路上，烈日当空，娘说口渴", "emotion": "孝顺→焦急", "duration": "8秒", "dialogue": "娘，您歇着，我去找水"},
-            {"seq": 2, "act": "发展", "scene": "山溪边", "description": f"{character}找到山溪舀水，远处传来低沉的虎啸声", "emotion": "安心→警觉", "duration": "10秒", "dialogue": "什么声音？"},
-            {"seq": 3, "act": "冲突", "scene": "沂岭·洞穴外", "description": f"回来发现老娘不见，地上血迹斑斑，{character}目眦欲裂", "emotion": "恐惧→暴怒", "duration": "12秒"},
-            {"seq": 4, "act": "高潮", "scene": "沂岭", "description": f"{character}双斧挥舞，连杀四虎，虎血染红衣衫，怒吼震山林", "emotion": "狂怒→悲壮", "duration": "14秒"},
-            {"seq": 5, "act": "结局", "scene": "沂岭·黄昏", "description": f"{character}跪在老娘失踪处，夕阳下拉长身影，默默收起染血的双斧", "emotion": "悲痛→决绝", "duration": "8秒"},
-        ],
-        "智取生辰纲": [
-            {"seq": 1, "act": "开场", "scene": "聚义厅·烛光下", "description": f"{character}手持羽扇，烛光映照清瘦面容，展开地图低声策划", "emotion": "沉稳→机密", "duration": "12秒", "dialogue": "此番智取，不许动一兵一卒"},
-            {"seq": 2, "act": "发展", "scene": "黄泥岗山路", "description": f"{character}扮作枣贩，推车行于黄泥岗山路，烈日当空", "emotion": "伪装→警觉", "duration": "12秒"},
-            {"seq": 3, "act": "冲突", "scene": "黄泥岗", "description": f"押送队伍到达，{character}以掺药酒为计，表面争吵掩护", "emotion": "紧张→博弈", "duration": "12秒"},
-            {"seq": 4, "act": "高潮", "scene": "黄泥岗", "description": f"{character}与众好汉假装抢酒喝，军士纷纷倒地，计谋得逞", "emotion": "暗喜→胜利", "duration": "14秒"},
-            {"seq": 5, "act": "结局", "scene": "黄泥岗·夕阳", "description": f"{character}摇扇微笑，望着满载珠宝的车队消失在暮色中", "emotion": "得意→从容", "duration": "10秒"},
-        ],
-        "武松打虎": [
-            {"seq": 1, "act": "开场", "scene": "景阳冈酒家", "description": f"{character}来到景阳冈下的酒店，连饮十八碗烈酒，店家劝阻有猛虎出没", "emotion": "豪迈→微醺", "duration": "12秒", "dialogue": "再来三碗！"},
-            {"seq": 2, "act": "发展", "scene": "景阳冈山路", "description": f"{character}摇摇晃晃走上景阳冈，看到官府告示才知道真有猛虎，但已进退两难", "emotion": "警觉→犹豫", "duration": "10秒"},
-            {"seq": 3, "act": "冲突", "scene": "景阳冈乱石岗", "description": f"狂风骤起，吊睛白额大虫从乱石后跳出，{character}酒醒大半，抽出哨棒", "emotion": "震惊→迎战", "duration": "14秒"},
-            {"seq": 4, "act": "高潮", "scene": "景阳冈松林", "description": f"{character}哨棒打断，赤手空拳骑上虎背，铁拳如雨，打得猛虎七窍流血", "emotion": "爆发→搏杀", "duration": "16秒"},
-            {"seq": 5, "act": "结局", "scene": "景阳冈·朝阳", "description": f"{character}坐在死虎旁喘息，晨曦洒在血迹斑斑的脸上，露出疲惫而自豪的笑容", "emotion": "疲惫→荣耀", "duration": "10秒"},
-        ],
-        "武松斗杀西门庆": [
-            {"seq": 1, "act": "开场", "scene": "武大家灵堂", "description": f"{character}跪在兄长灵前，面色阴沉，手握灵位牌", "emotion": "悲痛→仇恨", "duration": "10秒", "dialogue": "哥哥，武二今日必为你报仇"},
-            {"seq": 2, "act": "发展", "scene": "狮子楼", "description": f"{character}怒气冲冲闯入狮子楼，西门庆正与友人饮酒作乐", "emotion": "愤怒→锁敌", "duration": "10秒"},
-            {"seq": 3, "act": "冲突", "scene": "狮子楼大厅", "description": f"{character}与西门庆激烈搏斗，桌椅碎裂，客人四散奔逃", "emotion": "爆发→搏杀", "duration": "14秒"},
-            {"seq": 4, "act": "高潮", "scene": "狮子楼窗边", "description": f"{character}一脚将西门庆踢出窗外，西门庆从楼上坠落，毙命当场", "emotion": "决绝→复仇", "duration": "12秒"},
-            {"seq": 5, "act": "结局", "scene": "武大家·灵堂", "description": f"{character}擦去手上血迹，跪在兄长灵前三叩首，转身踏入夜色", "emotion": "释然→决断", "duration": "10秒"},
-        ],
-        "林冲雪夜上梁山": [
-            {"seq": 1, "act": "开场", "scene": "沧州道·大雪", "description": f"{character}杀死陆谦后，风雪中提枪独行，身后草料场火光冲天", "emotion": "决绝→孤独", "duration": "10秒"},
-            {"seq": 2, "act": "发展", "scene": "梁山脚下酒馆", "description": f"{character}在酒馆中遇到朱贵，得知梁山可接纳落难英雄", "emotion": "犹豫→希望", "duration": "10秒"},
-            {"seq": 3, "act": "冲突", "scene": "梁山泊水寨", "description": f"王伦刁难{character}，要他纳投名状，{character}隐忍不发", "emotion": "屈辱→忍耐", "duration": "12秒"},
-            {"seq": 4, "act": "高潮", "scene": "聚义厅", "description": f"晁盖等人上山，{character}火并王伦，推举晁盖为寨主", "emotion": "爆发→转折", "duration": "14秒"},
-            {"seq": 5, "act": "结局", "scene": "梁山泊·雪晴", "description": f"雪后天晴，{character}站在梁山顶上，回望来路，目光坚毅", "emotion": "解脱→新生", "duration": "10秒"},
-        ],
-        "花和尚大闹五台山": [
-            {"seq": 1, "act": "开场", "scene": "五台山文殊院", "description": f"{character}出家为僧，但因不守清规，屡犯戒律，众僧颇有不悦", "emotion": "压抑→烦闷", "duration": "10秒"},
-            {"seq": 2, "act": "发展", "scene": "五台山下酒馆", "description": f"{character}下山偷买酒肉，喝得酩酊大醉，醉态可掬", "emotion": "放纵→畅快", "duration": "12秒"},
-            {"seq": 3, "act": "冲突", "scene": "半山亭", "description": f"{character}酒醉后大发酒疯，拆倒半山亭金刚，众僧惊慌躲避", "emotion": "狂暴→混乱", "duration": "14秒"},
-            {"seq": 4, "act": "高潮", "scene": "文殊院山门", "description": f"{character}撞开山门，醉打哼哈二将泥塑，真长老出面喝止", "emotion": "疯狂→震怒", "duration": "14秒"},
-            {"seq": 5, "act": "结局", "scene": "五台山·清晨", "description": f"{character}酒醒后跪在佛前忏悔，真长老授书一封命他投奔大相国寺", "emotion": "悔悟→新生", "duration": "12秒"},
-        ],
-    }
-
-    key = title if title in templates else list(templates.keys())[0]
-    storyboard = templates.get(key, [])
-
-    # 如果没有匹配模板，生成通用分镜
+    """v3.8: 工业级分镜数据模型 — timecode, music_cue, dialogue[], shot_type, color_palette, pacing"""
+    import json as _json
+    ep_data_path = Path(__file__).resolve().parent / "episode_templates.json"
+    templates = {}
+    if ep_data_path.exists():
+        templates = _json.loads(ep_data_path.read_text(encoding="utf-8"))
+    key = title if title in templates else list(templates.keys())[0] if templates else None
+    storyboard = templates.get(key, []) if key else []
     if not storyboard:
         storyboard = [
-            {"seq": i+1, "act": act, "scene": f"场景{i+1}", "description": f"{character}的精彩演绎", "emotion": "待定义", "duration": "10秒"}
+            {"seq": i+1, "shot_label": "镜" + str(i+1).zfill(2), "act": act,
+             "scene": "场景" + str(i+1), "description": character + "的精彩演绎",
+             "timecode": {"start": "00:00", "end": "01:00"},
+             "music_cue": "待定义", "shot_type": "中景", "camera_move": "固定",
+             "pacing": "normal", "color_palette": "待定义",
+             "dialogue": [], "emotion": "待定义", "duration": 60, "performance_notes": []}
             for i, act in enumerate(["开场", "发展", "冲突", "高潮", "结局"])
         ]
-
     return storyboard
+
+
+def compute_dialogue_stats(storyboard):
+    """v3.8: 计算对白比例统计 — classical vs modern word counts"""
+    classical_words = 0
+    modern_words = 0
+    for shot in storyboard:
+        for d in shot.get("dialogue", []):
+            text = d.get("text", "")
+            wc = len(text.replace(" ", ""))
+            if d.get("style") == "classical":
+                classical_words += wc
+            else:
+                modern_words += wc
+    total = classical_words + modern_words
+    classical_pct = round(classical_words / total * 100) if total > 0 else 0
+    modern_pct = round(modern_words / total * 100) if total > 0 else 0
+    return {
+        "classical_chars": classical_words,
+        "modern_chars": modern_words,
+        "total_chars": total,
+        "classical_pct": classical_pct,
+        "modern_pct": modern_pct,
+        "ratio_label": "⚔ " + str(classical_pct) + "% 古典 / " + str(modern_pct) + "% 现代"
+    }
+
+
+def get_episode_detail_rich(ep_num):
+    """v3.8: 工业级端点 — 返回完整 timecode+music_cue+dialogue[]+color_palette+pacing"""
+    detail = get_episode_detail(ep_num)
+    if not detail:
+        return None
+    stats = compute_dialogue_stats(detail.get("storyboard", []))
+    detail["dialogue_stats"] = stats
+    return detail
+
+
+def get_dialogue_stats(ep_num):
+    """v3.8: 对白比例统计端点"""
+    detail = get_episode_detail(ep_num)
+    if not detail:
+        return None
+    return compute_dialogue_stats(detail.get("storyboard", []))
+
+
+def get_all_dialogue_stats():
+    """v3.8: 全部剧集对白比例统计"""
+    episodes = get_all_episodes()
+    result = []
+    for ep in episodes:
+        ep_num = str(ep["episode"]).zfill(2)
+        stats = get_dialogue_stats(ep_num)
+        result.append({
+            "episode": ep_num,
+            "title": ep["title"],
+            "character": ep["main_character"],
+            "stats": stats or {"classical_chars": 0, "modern_chars": 0, "total_chars": 0}
+        })
+    return result
+
 
 
 def update_episode(ep_num, data):

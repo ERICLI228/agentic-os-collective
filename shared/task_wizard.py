@@ -611,6 +611,37 @@ def api_download():
         return jsonify({"error": str(e)}), 500
 
 
+# ===== Sprint A2: /api/script/<ep>/rich — 工业级分镜数据 =====
+@app.route('/api/script/<ep_num>/rich', methods=['GET'])
+def api_script_rich(ep_num):
+    """v3.8: 工业级分镜 — timecode, music_cue, dialogue[], shot_type, color_palette, pacing"""
+    try:
+        from script_manager import get_episode_detail_rich
+        detail = get_episode_detail_rich(str(ep_num).zfill(2))
+        if not detail:
+            return jsonify({"error": "Episode not found"}), 404
+        return jsonify(detail)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===== Sprint A3: /api/script/stats — 对白比例统计 =====
+@app.route('/api/script/stats', methods=['GET'])
+def api_script_stats():
+    """v3.8: 全部6集对白比例 — classical vs modern per episode"""
+    ep = request.args.get('ep')
+    try:
+        from script_manager import get_dialogue_stats, get_all_dialogue_stats
+        if ep:
+            stats = get_dialogue_stats(str(ep).zfill(2))
+            if not stats:
+                return jsonify({"error": "Episode not found"}), 404
+            return jsonify(stats)
+        return jsonify(get_all_dialogue_stats())
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/api/character/<char_name>', methods=['GET', 'POST'])
 def api_character_detail(char_name):
     """角色设计查看/修改 — 支持完整角色档案 (v3.6.7)"""

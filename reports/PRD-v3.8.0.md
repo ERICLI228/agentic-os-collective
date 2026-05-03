@@ -1,7 +1,7 @@
-# 🎬 Agentic OS v3.7.30 产品需求文档 (PRD)
+# 🎬 Agentic OS v3.8.0 产品需求文档 (PRD)
 
 > **文档类型**: 产品需求文档 (Product Requirements Document)
-> **版本**: v3.7.30 (2026-05-03 07:30)
+> **版本**: v3.8.0 (2026-05-03 09:45)
 > **日期**: 2026 年 5 月 3 日
 > **产品名称**: Agentic OS v3.7 用户体验升级版
 > **产品愿景**: 一个指令启动 → 全程自动执行 → **关键节点等你决策** → 输出可发布成果
@@ -63,6 +63,9 @@
 | v3.7.28 | 05-03 | OpenCode + 阿牛 | P2: 剧集角色映射(H) + 台词对照表(N) + 本地渲染fallback(S) | 🚀 |
 | v3.7.29 | 05-03 | OpenCode + 阿牛 | DM-0剧集多选决策 (复选框+全选+已选N/6集+按钮联动+API传episodes) | 🚀 |
 | v3.7.30 | 05-03 | OpenCode + 阿牛 | DM-0全量同步管线 (决策→轮询→原稿→故事板→缓存失效→TXT/SRT联动刷新) | 🚀 |
+|
+
+| v3.8.0 | 2026-05-03 | OpenCode | Sprint A: 工业级分镜数据模型 — _build_storyboard() 从 episode_templates.json 加载 6集×5镜 15字段完整数据(timecode/music_cue/dialogue[]/shot_type/color_palette/pacing/performance_notes); compute_dialogue_stats() 古典vs现代对白比例; /api/script/<ep>/rich + /api/script/stats 端点; EP03林冲风雪山神庙为金标准(46%古典/54%现代) |
 
 > 完整子版本详见表后附录（PHASE 1-5、QA报告、GAP清单）
 
