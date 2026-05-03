@@ -1,1411 +1,4 @@
-<!DOCTYPE html>
-<html lang="zh">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<title>[P5-SHOW] Agentic OS 指挥中心 v3.7.16</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;color:#e4e6eb;height:100vh;display:flex;flex-direction:column}
-.topbar{padding:8px 16px;border-bottom:1px solid #222;display:flex;align-items:center;gap:10px;flex-shrink:0}
-.topbar h1{font-size:15px}
-.tabs{display:flex;gap:4px}
-.tab{padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;border:1px solid #333;color:#888;background:transparent}
-.tab:hover{color:#e4e6eb}
-.tab.active{background:#2563eb;border-color:#2563eb;color:#fff}
-.main{display:flex;flex:1;overflow:hidden}
-.left{width:340px;border-right:1px solid #222;overflow-y:auto;padding:4px 0}
-.right{flex:1;overflow-y:auto;padding:12px 16px}
 
-.task-hdr{display:flex;align-items:center;padding:6px 10px;font-size:10px;color:#555;letter-spacing:0.5px;gap:5px;border-bottom:1px solid #111;margin-top:2px}
-.task-hdr .tn{flex:1;font-weight:600;color:#999;font-size:11px}
-.task-hdr .tp{font-size:9px;color:#444}
-.task-hdr .td{width:6px;height:6px;border-radius:50%}.td.g{background:#22c55e}.td.y{background:#f59e0b}.td.n{background:#444}
-
-.ms-item{display:flex;align-items:center;padding:5px 8px 5px 16px;border-radius:3px;cursor:pointer;font-size:12px;gap:6px}
-.ms-item:hover{background:#1a1d27}
-.ms-item.sel{background:#1e2a3a;border-left:3px solid #3b82f6;padding-left:13px}
-.ms-item.waiting{border-left:3px solid #f59e0b;background:#1f1a0f}
-.ms-item .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.dot.d{background:#22c55e}.dot.w{background:#f59e0b;animation:pulse 1.5s infinite}.dot.p{background:#444}
-.ms-item .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bdg{font-size:9px;padding:0 4px;border-radius:6px;flex-shrink:0}
-.bdg.mk{background:#3d2e0a;color:#fbbf24}.bdg.cp{background:#1a2756;color:#93c5fd}
-.bdg.dc{background:#7c2d12;color:#fbbf24}.bdg.ok{background:#14532d;color:#22c55e}
-
-.stats{display:flex;gap:6px;padding:4px 10px}
-.stat{flex:1;background:#111;border-radius:6px;padding:6px;text-align:center}
-.stat .num{font-size:16px;font-weight:700}
-.stat .lbl{font-size:8px;color:#555}
-
-.detail h2{font-size:16px;margin-bottom:4px;display:flex;align-items:center;gap:6px}
-.detail .meta{font-size:11px;color:#888;margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap}
-.sec{background:#1a1d27;border-radius:6px;padding:12px;margin-bottom:10px}
-.sec h3{font-size:11px;color:#888;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.ent-row{display:flex;padding:4px 0;font-size:11px;gap:8px;border-bottom:1px solid #111;align-items:flex-start}
-.ent-row:last-child{border-bottom:none}
-.ent-lbl{min-width:70px;color:#888;flex-shrink:0}
-.ent-val{flex:1;min-width:0}
-.ent-val .before{font-size:9px;color:#555;margin-top:1px}
-.ent-val .after{font-size:9px;color:#aaa;margin-top:1px}
-.ent-val .note{font-size:9px;color:#666;margin-top:1px}
-.src-tag{font-size:8px;padding:0 4px;border-radius:2px;margin-left:4px}
-.src-real{background:#0f3b2e;color:#34d399}.src-mock{background:#3d2e0a;color:#fbbf24}.src-computed{background:#1a2756;color:#93c5fd}
-
-.ai-box{border-left:3px solid #3b82f6;padding:4px 10px;margin:6px 0;font-size:11px}
-.progress-row{display:flex;align-items:center;gap:8px;margin:4px 0}
-.pbar{flex:1;height:4px;background:#222;border-radius:2px;overflow:hidden}
-.pfill{height:100%;border-radius:2px}
-.btn{display:inline-block;padding:5px 12px;border-radius:5px;border:none;cursor:pointer;font-size:11px;margin:2px}
-.btn-p{background:#2563eb;color:#fff}.btn-w{background:#d97706;color:#fff}.btn-d{background:#dc2626;color:#fff}
-.btn-s{background:#22c55e;color:#000}
-.toast{position:fixed;bottom:16px;right:16px;background:#22c55e;color:#000;padding:6px 14px;border-radius:6px;font-size:11px;opacity:0;transition:opacity .3s;z-index:100}
-.toast.on{opacity:1}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.ic{font-size:11px;margin-right:2px}.ic.ok{color:#22c55e}.ic.ng{color:#ef4444}.ic.wn{color:#f59e0b}.ic.cr{color:#ff0040}
-.empty-state{color:#555;text-align:center;padding:40px 20px;font-size:13px}
-
-/* v3.6: Image gallery */
-.img-gallery{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
-.img-card{background:#111;border-radius:6px;padding:4px;text-align:center;font-size:9px;color:#888;max-width:180px;cursor:pointer;transition:transform .15s}
-.img-card:hover{transform:scale(1.03);box-shadow:0 0 8px rgba(59,130,246,.3)}
-.img-card img{max-width:170px;max-height:300px;border-radius:4px;display:block}
-.img-card .img-label{margin-top:3px;display:block}
-.img-actions{margin-top:4px;display:flex;gap:3px;justify-content:center;flex-wrap:wrap}
-.mini-btn{font-size:9px;padding:2px 6px;border-radius:3px;border:1px solid #333;cursor:pointer;color:#aaa;background:#1a1a2e}
-.mini-btn:hover{background:#2563eb;color:#fff;border-color:#2563eb}
-.mini-btn.busy{opacity:.5;pointer-events:none}
-
-/* v3.6: Modal */
-.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.92);z-index:200;justify-content:center;align-items:center;cursor:pointer}
-.modal.on{display:flex}
-.modal img{max-width:95vw;max-height:95vh;object-fit:contain;border-radius:4px}
-.modal-close{position:absolute;top:16px;right:20px;color:#fff;font-size:28px;cursor:pointer;line-height:1;z-index:201}
-
-/* v3.6: Inline edit */
-.inline-edit{display:none;margin-top:6px}
-.inline-edit.show{display:flex;flex-direction:column;gap:4px}
-.inline-edit textarea,.inline-edit input{width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:4px 6px;border-radius:4px;font-size:10px;margin:2px 0;min-height:50px}
-.inline-edit select{background:#111;border:1px solid #333;color:#e4e6eb;padding:3px;border-radius:4px;font-size:10px}
-.inline-edit .edit-btns{display:flex;gap:4px}
-
-/* v3.6: Storyboard card */
-.sb-card{background:#1a1d27;border-left:3px solid #3b82f6;border-radius:4px;padding:10px;margin:6px 0;position:relative}
-.sb-card .sb-seq{position:absolute;top:8px;left:8px;background:#3b82f6;color:#fff;width:20px;height:20px;border-radius:50%;text-align:center;line-height:20px;font-size:10px;font-weight:700}
-.sb-card .sb-body{margin-left:28px}
-.sb-card .sb-act{color:#93c5fd;font-size:10px;font-weight:600;margin-bottom:2px}
-.sb-card .sb-name{color:#e4e6eb;font-size:11px;font-weight:600;margin-bottom:2px}
-.sb-card .sb-desc{color:#888;font-size:10px;margin:4px 0}
-.sb-card .sb-emotion{color:#fbbf24;font-size:10px;margin:2px 0}
-.sb-card .sb-dialogue{color:#aaa;font-size:10px;margin:4px 0;font-style:italic}
-
-/* v3.6: Subtle edit link */
-.sb-edit{font-size:9px;color:#555;cursor:pointer;text-decoration:none;margin-left:4px;user-select:none}
-.sb-edit:hover{color:#3b82f6}
-
-/* v3.6: Episode row */
-.ep-row{display:flex;align-items:center;padding:8px 10px;background:#14161d;border-radius:4px;margin:4px 0;cursor:pointer;gap:8px;transition:background .15s}
-.ep-row:hover{background:#1e2130}
-.ep-row .ep-num{color:#3b82f6;font-size:11px;font-weight:700;min-width:48px}
-.ep-row .ep-title{flex:1;font-size:11px;color:#e4e6eb}
-.ep-row .ep-toggle{font-size:10px;color:#555;transition:transform .2s}
-.ep-row.open .ep-toggle{transform:rotate(90deg)}
-.ep-row .ep-actions{display:flex;gap:4px}
-
-/* v3.6: Character row */
-.char-row{background:#1a1d27;border-radius:6px;padding:10px;margin:6px 0}
-.char-row .char-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.char-row .char-name{font-size:12px;font-weight:700;color:#e4e6eb}
-.char-row .char-role{font-size:10px;color:#888}
-.char-row .char-gallery{margin:6px 0}
-.char-row .char-actions{display:flex;gap:4px;flex-wrap:wrap}
-
-/* v3.6: Product row */
-.prod-row{background:#1a1d27;border-radius:6px;padding:10px;margin:6px 0}
-.prod-row .prod-name{font-size:11px;font-weight:600;color:#e4e6eb;margin-bottom:6px}
-.prod-compare{display:flex;gap:8px;margin:6px 0;flex-wrap:wrap}
-.prod-compare .img-col{flex:1;min-width:120px}
-.prod-compare .img-col .img-label{font-size:9px;color:#555;margin-bottom:4px}
-.prod-compare .img-col img{max-width:100%;border-radius:4px}
-.img-placeholder{width:100%;height:120px;background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#444;font-size:10px}
-
-/* v3.6: Loading */
-.loading{color:#f59e0b;font-size:10px;animation:pulse 1.5s infinite}
-.status-busy{color:#f59e0b;font-size:10px;margin-left:6px}
-
-/* P1: Global loading bar */
-.loading-bar{position:fixed;top:0;left:0;height:2px;background:#2563eb;z-index:300;width:0;transition:width .3s}
-.loading-bar.on{width:100%;animation:loadPulse 1.5s ease-out forwards}
-@keyframes loadPulse{0%{width:0}60%{width:70%}100%{width:100%}}
-
-/* v3.6.10: Cache busting meta */
-/* NO-CACHE: force fresh load on every visit */
-
-/* P1: Image placeholder */
-.img-placeholder-text{width:100%;height:120px;background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#555;font-size:10px;flex-direction:column;gap:4px}
-.img-placeholder-text::before{content:'🖼️';font-size:20px}
-
-/* P1: Toast color variants */
-.toast.error{background:#ef4444;color:#fff}
-.toast.warn{background:#f59e0b;color:#000}
-
-/* v3.7.8: 通用折叠组件 */
-.accordion-content{display:none}.accordion-content.accordion-expanded{display:block}
-.info-card-header .toggle-icon{transition:transform .2s}.info-card-header.expanded .toggle-icon{transform:rotate(180deg)}
-
-/* v3.7.8: DM-0 可视化检查卡片 */
-.script-file-card{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px 12px;margin-bottom:8px}
-.script-file-card .script-file-icon{font-size:24px;flex-shrink:0}
-.script-file-card .script-file-info{flex:1;min-width:0}
-.script-file-card .script-file-name{font-size:12px;font-weight:600;color:#e4e6eb}
-.script-file-card .script-file-meta{font-size:9px;color:#666}
-.script-file-card .script-file-actions{display:flex;gap:4px;flex-shrink:0}
-.script-file-card button{font-size:9px;padding:3px 8px;border-radius:4px;border:1px solid #444;color:#aaa;background:transparent;cursor:pointer}
-.script-file-card button:hover{background:#2563eb;color:#fff;border-color:#2563eb}
-.check-item-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px 12px;margin-bottom:8px}
-.check-item-card.warning{border-left:3px solid #f59e0b;background:rgba(245,158,11,.04)}
-.check-item-card .check-item-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.check-item-card .check-item-icon{font-size:16px}
-.check-item-card .check-item-name{font-size:11px;font-weight:600;color:#e4e6eb;flex:1}
-.check-item-card .check-item-status{font-size:9px;padding:2px 8px;border-radius:8px;font-weight:600}
-.check-item-card .check-item-status.pass{background:rgba(34,197,94,.12);color:#22c55e}
-.check-item-card .check-item-status.warn{background:rgba(245,158,11,.12);color:#f59e0b}
-.check-item-card .check-item-status.fail{background:rgba(239,68,68,.12);color:#ef4444}
-.check-item-card .check-item-body{font-size:10px;color:#888}
-.check-item-card .check-item-detail{font-size:9px;color:#555;margin-top:4px}
-.check-item-card .progress-bar-container{height:6px;background:#222;border-radius:3px;overflow:hidden;margin-bottom:4px}
-.check-item-card .progress-bar-fill{height:100%;border-radius:3px;transition:width .5s;display:flex;align-items:center;justify-content:center;font-size:7px;color:#fff;font-weight:600;min-width:30px}
-.story-structure-timeline{display:flex;align-items:center;padding:4px 0}
-.story-structure-timeline .timeline-node{font-size:9px;padding:4px 8px;border-radius:4px;color:#888;white-space:nowrap}
-.story-structure-timeline .timeline-node.active{background:rgba(59,130,246,.12);color:#60a5fa;font-weight:600}
-.story-structure-timeline .timeline-connector{flex:1;height:2px;background:#333;margin:0 2px}
-.tag-cloud{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px}
-.tag{font-size:9px;padding:2px 8px;border-radius:10px;font-weight:500}
-.tag-red{background:rgba(239,68,68,.12);color:#f87171}
-.tag-green{background:rgba(34,197,94,.12);color:#34d399}
-.tag-blue{background:rgba(59,130,246,.12);color:#60a5fa}
-.audience-icons{display:flex;flex-direction:column;gap:4px}
-.audience-group{font-size:14px;line-height:1;margin-bottom:2px}
-.audience-label{font-size:9px;color:#555;margin-left:4px}
-.audience-note{font-size:9px;color:#888}
-.audience-warning{font-size:9px;color:#f59e0b;margin-top:2px}
-
-/* v3.7.8: 横向时间轴 */
-.milestone-timeline{display:flex;align-items:center;gap:0;padding:12px 0;margin-bottom:12px;overflow-x:auto}
-.milestone-timeline .tl-node{display:flex;flex-direction:column;align-items:center;flex:1;min-width:60px;position:relative}
-.milestone-timeline .tl-dot{width:12px;height:12px;border-radius:50%;margin-bottom:4px;z-index:2;flex-shrink:0}
-.milestone-timeline .tl-dot.done{background:#22c55e;border:2px solid rgba(34,197,94,.3)}
-.milestone-timeline .tl-dot.active{background:#f59e0b;border:2px solid rgba(245,158,11,.3);animation:pulse 1.5s infinite}
-.milestone-timeline .tl-dot.pending{background:#444;border:2px solid #333}
-.milestone-timeline .tl-dot.fail{background:#ef4444;border:2px solid rgba(239,68,68,.3)}
-.milestone-timeline .tl-line{position:absolute;top:6px;left:50%;width:100%;height:2px;z-index:1}
-.milestone-timeline .tl-line.done{background:#22c55e}
-.milestone-timeline .tl-line.active{background:linear-gradient(90deg,#22c55e,#f59e0b)}
-.milestone-timeline .tl-line.pending{background:#333;border-top:2px dashed #444}
-.milestone-timeline .tl-label{font-size:9px;color:#888;text-align:center;white-space:nowrap}
-.milestone-timeline .tl-label.current{color:#f59e0b;font-weight:600}
-
-/* v3.7.8: 实时审核日志面板 */
-.review-log-panel{background:rgba(0,0,0,.3);border:1px solid rgba(59,130,246,.2);border-radius:6px;padding:10px;margin-top:8px;max-height:300px;overflow-y:auto;font-family:monospace;font-size:10px;line-height:1.8;display:none}
-.review-log-line{padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03)}
-
-/* v3.7.8: 里程碑摘要卡片 */
-.milestone-summary-card{display:flex;align-items:center;gap:12px;background:#1a1d27;border-radius:8px;padding:12px 14px;margin-bottom:10px;border-left:4px solid #444}
-.milestone-summary-card.ok{border-left-color:#22c55e;background:rgba(34,197,94,.04)}
-.milestone-summary-card.warn{border-left-color:#f59e0b;background:rgba(245,158,11,.04)}
-.milestone-summary-card.ng{border-left-color:#ef4444;background:rgba(239,68,68,.04)}
-.msc-left{font-size:24px;flex-shrink:0;width:36px;text-align:center}
-.msc-center{flex:1;min-width:0}
-.msc-headline{font-size:13px;font-weight:600;color:#e4e6eb;margin-bottom:2px}
-.msc-metrics{font-size:10px;color:#888}
-.msc-right{flex-shrink:0}
-
-/* v3.6.29: MS-5 日报预览卡片样式 */
-.daily-preview-card{background:#1a1d27;border-radius:8px;margin-bottom:12px;overflow:hidden;border:1px solid rgba(255,255,255,.06)}
-.daily-preview-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(59,130,246,.08);border-bottom:1px solid rgba(255,255,255,.06)}
-.daily-preview-title{font-size:13px;font-weight:700;color:#e4e6eb}
-.daily-preview-badge{font-size:9px;padding:3px 10px;border-radius:12px;font-weight:600}
-.daily-preview-badge{background:rgba(34,197,94,.15);color:#22c55e}
-.daily-preview-badge:contains('待推送'){background:rgba(245,158,11,.15);color:#f59e0b}
-.daily-preview-body{padding:12px 14px}
-.daily-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
-.daily-kpi-item{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:8px;text-align:center}
-.daily-kpi-item .kpi-value{font-size:16px;font-weight:700;color:#e4e6eb}
-.daily-kpi-item .kpi-label{font-size:9px;color:#888;margin-top:2px}
-.daily-kpi-item .kpi-trend{font-size:9px;color:#22c55e;margin-top:2px}
-.daily-module-list{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:6px;overflow:hidden}
-.daily-module-row{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px}
-.daily-module-row:last-child{border-bottom:none}
-.daily-module-row:hover{background:rgba(255,255,255,.03)}
-.daily-module-row .module-icon{font-size:14px;flex-shrink:0}
-.daily-module-row .module-name{font-weight:600;color:#93c5fd;min-width:60px;flex-shrink:0}
-.daily-module-row .module-summary{color:#888;font-size:10px;flex:1;min-width:0}
-.daily-preview-footer{padding:8px 14px;font-size:9px;color:#555;border-top:1px solid rgba(255,255,255,.04);background:rgba(0,0,0,.1)}
-
-/* v3.6.29: MS-2.3 工具箱卡片样式 */
-.toolbox-progress{background:#1a1d27;border-radius:8px;padding:12px;margin-bottom:12px}
-.toolbox-progress .progress-label{font-size:11px;color:#888;margin-bottom:6px}
-.toolbox-progress .progress-bar-container{height:6px;background:#222;border-radius:3px;overflow:hidden;margin-bottom:4px}
-.toolbox-progress .progress-bar-fill{height:100%;background:linear-gradient(90deg,#2563eb,#22c55e);border-radius:3px;transition:width .5s;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-weight:600;min-width:40px}
-.toolbox-progress .progress-detail{font-size:10px;color:#555;margin-top:4px}
-.toolbox-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:12px}
-.tool-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:14px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
-.tool-card:hover{background:rgba(59,130,246,.06);border-color:rgba(59,130,246,.3);transform:translateY(-2px);box-shadow:0 4px 16px rgba(59,130,246,.12)}
-.tool-card:active{transform:translateY(0)}
-.tool-card .tool-card-icon{font-size:24px;margin-bottom:6px}
-.tool-card .tool-card-title{font-size:12px;font-weight:600;color:#e4e6eb;margin-bottom:4px}
-.tool-card .tool-card-desc{font-size:9px;color:#666;line-height:1.5;margin-bottom:8px}
-.tool-card .tool-card-status{font-size:10px;color:#888;display:flex;align-items:center;gap:4px}
-.tool-card .tool-card-status.processing{color:#f59e0b}
-.tool-card .tool-card-status.done{color:#22c55e}
-.tool-card .tool-card-status.error{color:#ef4444}
-.tool-card.busy{pointer-events:none;opacity:.7}
-.tool-card.busy .tool-card-icon{animation:pulse 1.5s infinite}
-
-/* v3.7.3: MS-2.3 TK商品图处理工作台 */
-#toast-container{position:fixed;top:8px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px;pointer-events:none}
-.toast-item{padding:8px 16px;border-radius:6px;font-size:11px;font-weight:600;color:#fff;opacity:1;transition:opacity .3s;pointer-events:auto;max-width:320px;box-shadow:0 2px 12px rgba(0,0,0,.4)}
-.toast-item.success{background:#22c55e;color:#000}
-.toast-item.error{background:#ef4444;color:#fff}
-.toast-item.warn{background:#f59e0b;color:#000}
-.toast-item.info{background:#3b82f6;color:#fff}
-.toast-item.fade-out{opacity:0}
-.img-filter-bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px;padding:8px 10px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid rgba(255,255,255,.05)}
-.img-filter-btn{font-size:10px;padding:4px 12px;border-radius:16px;border:1px solid #333;color:#888;background:transparent;cursor:pointer;transition:all .15s}
-.img-filter-btn:hover{color:#e4e6eb;border-color:#555}
-.img-filter-btn.active{background:#2563eb;border-color:#2563eb;color:#fff}
-.img-batch-btn{font-size:10px;padding:4px 12px;border-radius:16px;border:1px solid #f59e0b;color:#f59e0b;background:rgba(245,158,11,.08);cursor:pointer;transition:all .15s;margin-left:auto}
-.img-batch-btn:hover{background:#f59e0b;color:#000}
-.img-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin:10px 0}
-.img-card{background:#111;border-radius:8px;padding:6px;border:1px solid #222;transition:all .15s;overflow:hidden}
-.img-card:hover{border-color:#333;box-shadow:0 0 8px rgba(59,130,246,.2)}
-.img-card[data-status="processing"]{border-color:#f59e0b;opacity:.7}
-.img-card[data-status="done"]{border-color:#22c55e}
-.img-card[data-status="pending"]{border:2px solid rgba(34,197,94,.35);background:rgba(34,197,94,.04)}
-.img-preview{position:relative;margin-bottom:6px}
-.img-preview img{width:100%;height:140px;object-fit:cover;border-radius:4px;display:block;background:#0a0a0a}
-.img-status-tag{position:absolute;top:4px;right:4px;font-size:9px;padding:1px 6px;border-radius:8px;font-weight:600}
-.img-status-tag.yellow{background:#f59e0b;color:#000}
-.img-status-tag.green{background:#22c55e;color:#000}
-.img-status-tag.red{background:#ef4444;color:#fff}
-.img-actions{display:flex;gap:4px;margin-top:4px}
-.btn-rembg,.btn-full{flex:1;font-size:9px;padding:4px 6px;border-radius:4px;border:none;cursor:pointer;font-weight:600;transition:all .15s}
-.btn-rembg{background:#1e2a3a;color:#4a9eff}
-.btn-rembg:hover{background:#2563eb;color:#fff}
-.btn-rembg:disabled{opacity:.5;pointer-events:none}
-.btn-full{background:#0f3b2e;color:#34d399}
-.btn-full:hover{background:#22c55e;color:#000}
-.btn-full:disabled{opacity:.5;pointer-events:none}
-.img-compare-area{margin-top:4px;padding-top:4px;border-top:1px solid #1a1a1a}
-.img-compare-area img{width:100%;height:100px;object-fit:cover;border-radius:4px;margin-top:2px;background:#0a0a0a}
-.info-card.collapsible{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;margin:8px 0;overflow:hidden}
-.info-card-header{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;cursor:pointer;font-size:11px;color:#93c5fd;transition:background .15s}
-.info-card-header:hover{background:rgba(255,255,255,.04)}
-.info-card-header .toggle-icon{transition:transform .2s}
-.info-card-body{padding:4px 12px 10px 12px;font-size:10px;color:#888;line-height:1.7}
-.info-card-body ul{margin:0;padding-left:16px}
-.info-card-body li{margin:2px 0}
-.info-card-body li strong{color:#c4d4e8}
-
-/* v3.7.3: DM-1 asset grid */
-.dm1-asset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:10px 0}
-.dm1-asset-item{background:rgba(74,158,255,.03);border:1px solid rgba(74,158,255,.08);border-radius:8px;padding:8px;text-align:center;transition:all .15s}
-.dm1-asset-item:hover{background:rgba(74,158,255,.06);border-color:rgba(74,158,255,.2)}
-.dm1-asset-name{font-size:11px;font-weight:700;color:#e8f0fe;margin-bottom:2px}
-.dm1-asset-title{font-size:9px;color:#6b8aad;margin-bottom:6px}
-.dm1-asset-thumbs{display:flex;gap:4px;justify-content:center}
-.dm1-asset-thumb{width:44px;height:60px;object-fit:cover;border-radius:4px;cursor:pointer;border:1px solid rgba(74,158,255,.1);transition:border-color .15s}
-.dm1-asset-thumb:hover{border-color:#4a9eff}
-
-/* DM-1: Character Bible Panel v3.6.7 — 科技清新风 */
-.char-bible{background:linear-gradient(135deg,#0c1222 0%,#0f1a2e 100%);border:1px solid rgba(74,158,255,.15);border-radius:8px;padding:14px;margin:8px 0;position:relative;transition:all .2s;box-shadow:0 2px 12px rgba(0,0,0,.3)}
-.char-bible:hover{background:linear-gradient(135deg,#0f1628 0%,#12203a 100%);border-color:rgba(74,158,255,.3);box-shadow:0 4px 20px rgba(74,158,255,.08)}
-.char-bible-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(74,158,255,.1)}
-.char-bible-header .cb-name{font-size:15px;font-weight:700;color:#e8f0fe;background:linear-gradient(135deg,#4a9eff,#00d4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none}
-.char-bible-header .cb-title{font-size:11px;color:#6b8aad}
-.char-bible-header .cb-edit-btn{margin-left:auto;font-size:10px;padding:3px 10px;border-radius:6px;border:1px solid rgba(74,158,255,.3);color:#4a9eff;cursor:pointer;background:rgba(74,158,255,.05);transition:all .15s}
-.char-bible-header .cb-edit-btn:hover{background:rgba(74,158,255,.15);color:#70b8ff;border-color:#4a9eff}
-.cb-body{display:flex;gap:14px}
-.cb-left{width:180px;flex-shrink:0}
-.cb-left img{width:100%;border-radius:6px;cursor:pointer;border:1px solid rgba(74,158,255,.1);transition:border-color .15s}
-.cb-left img:hover{border-color:rgba(74,158,255,.3)}
-.cb-left .cb-thumbnails{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
-.cb-thumb-wrap{position:relative;display:inline-block}
-.cb-left .cb-thumb{width:50px;height:50px;border-radius:4px;cursor:pointer;border:2px solid transparent;object-fit:cover;transition:border-color .15s}
-.cb-left .cb-thumb.active,.cb-left .cb-thumb:hover{border-color:#4a9eff}
-.cb-thumb-del{position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:rgba(239,68,68,.85);color:#fff;border:none;font-size:9px;cursor:pointer;display:none;align-items:center;justify-content:center;padding:0;line-height:1;transition:transform .1s}
-.cb-thumb-wrap:hover .cb-thumb-del{display:flex}
-.cb-thumb-del:hover{transform:scale(1.15);background:#ef4444}
-.cb-consistency-warn{display:flex;flex-direction:column;gap:3px;padding:6px 8px;margin-top:6px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.1);border-radius:6px;font-size:9px;color:#f59e0b;line-height:1.4}
-.cb-thumb-actions{display:flex;gap:4px;margin-top:4px}
-.cb-right{flex:1;min-width:0}
-.cb-section{margin-bottom:10px;padding:6px 8px;background:rgba(74,158,255,.03);border-radius:6px}
-.cb-section-title{font-size:10px;color:#6b8aad;margin-bottom:4px;display:flex;align-items:center;gap:4px;font-weight:600}
-.cb-section-title .cb-icon{font-size:12px}
-.cb-section-content{font-size:11px;color:#c4d4e8;line-height:1.5}
-.cb-traits{display:flex;flex-wrap:wrap;gap:4px}
-.cb-trait{background:linear-gradient(135deg,rgba(74,158,255,.15),rgba(0,180,216,.1));color:#70b8ff;padding:2px 8px;border-radius:10px;font-size:9px;border:1px solid rgba(74,158,255,.1)}
-.cb-catchphrase{font-style:italic;color:#ffd54f;font-size:10px;margin:3px 0;padding:3px 8px;border-radius:4px;background:rgba(255,213,79,.06);border-left:2px solid rgba(255,213,79,.3)}
-.cb-habits{font-size:10px;color:#94a3b8;margin:2px 0}
-.cb-habits::before{content:'• ';color:#4a9eff}
-.cb-colors{display:flex;gap:6px;align-items:center;margin:6px 0}
-.cb-color-swatch{width:22px;height:22px;border-radius:5px;border:1px solid rgba(255,255,255,.1);box-shadow:0 2px 4px rgba(0,0,0,.2)}
-.cb-color-label{font-size:9px;color:#5a7a9a}
-.cb-relations{font-size:10px;color:#94a3b8}
-.cb-relations .rel-name{color:#70b8ff;font-weight:500}
-/* DM-1: Voice section */
-.cb-voice-card{background:rgba(0,0,0,.15);border-radius:6px;padding:8px 10px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-.cb-voice-card-body{flex:1;min-width:0}
-.cb-voice-card-row{display:flex;gap:8px;padding:2px 0;font-size:10px}
-.cb-voice-card-row .vc-label{color:#5a7a9a;min-width:32px;flex-shrink:0}
-.cb-voice-card-row .vc-val{color:#94a3b8;word-break:break-all}
-.cb-voice-card-btns{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
-.cb-voice-config-form{margin:6px 0;padding:8px;background:rgba(74,158,255,.04);border:1px solid rgba(74,158,255,.1);border-radius:6px}
-.cb-voice-config-form-row{display:flex;align-items:center;gap:8px;margin:4px 0}
-.cb-voice-config-form-row label{font-size:10px;color:#5a7a9a;min-width:50px}
-.cb-voice-config-form-row select,.cb-voice-config-form-row input{padding:3px 6px;border-radius:4px;border:1px solid rgba(74,158,255,.15);background:rgba(0,0,0,.3);color:#c4d4e8;font-size:10px;flex:1}
-.cb-voice-config-form-btns{display:flex;gap:6px;margin-top:6px}
-.cb-voice-player-row{display:flex;align-items:center;gap:6px;margin:4px 0}
-.cb-voice-player-row .cb-voice-player{flex:1}
-.cb-voice-close{font-size:14px;padding:2px 6px;border-radius:3px;border:1px solid rgba(239,68,68,.3);color:#ef4444;background:rgba(239,68,68,.08);cursor:pointer;line-height:1;flex-shrink:0}
-.cb-voice-close:hover{background:rgba(239,68,68,.2)}
-/* DM-1 Search & Filter */
-.dm1-searchbar{padding:8px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.dm1-searchbar .dm1-search-box{flex:1;min-width:200px;background:#111;border:1px solid #333;color:#e4e6eb;padding:5px 10px;border-radius:6px;font-size:11px;outline:none;transition:border-color .15s}
-.dm1-searchbar .dm1-search-box:focus{border-color:#4a9eff}
-.dm1-filter-chips{display:flex;gap:4px;flex-wrap:wrap;padding:0 12px 8px}
-.dm1-chip{padding:3px 10px;border-radius:12px;font-size:10px;cursor:pointer;border:1px solid rgba(74,158,255,.2);color:#6b8aad;background:rgba(74,158,255,.04);transition:all .15s;user-select:none}
-.dm1-chip:hover{border-color:#4a9eff;color:#93c5fd}
-.dm1-chip.active{background:rgba(74,158,255,.15);border-color:#4a9eff;color:#e8f0fe}
-.dm1-showing{padding:4px 12px 8px;font-size:10px;color:#444;text-align:center}
-/* Video prompts three-scheme cards */
-.cb-vp-card{background:rgba(0,0,0,.1);border-radius:4px;margin:3px 0;overflow:hidden}
-.cb-vp-card-hdr{display:flex;align-items:center;gap:6px;padding:4px 8px;font-size:10px;color:#94a3b8;cursor:pointer;user-select:none;background:rgba(74,158,255,.04)}
-.cb-vp-card-hdr:hover{background:rgba(74,158,255,.08)}
-.cb-vp-card-hdr .vp-icon{font-size:12px}
-.cb-vp-card-body{padding:4px 8px 6px 8px}
-.cb-vp-line{display:flex;gap:6px;padding:2px 0;font-size:9px}
-.cb-vp-line .vp-label{color:#5a7a9a;min-width:36px;flex-shrink:0}
-.cb-vp-line .vp-val{color:#7a8ea8;word-break:break-word}
-.cb-vp-line .vp-prompt{font-family:monospace;font-size:8px;line-height:1.5}
-.vp-btn{font-size:12px;padding:1px 5px;border-radius:3px;border:1px solid #333;background:transparent;color:#666;cursor:pointer;line-height:1;flex-shrink:0}
-.vp-btn:hover{color:#4a9eff;border-color:#4a9eff}
-.vp-preview-btn{font-size:14px}
-.cb-vp-edit{padding:4px 8px 8px 8px;border-top:1px solid #222;background:rgba(0,0,0,.08)}
-.cb-vp-edit-row{margin:4px 0}
-.cb-vp-edit-row label{display:block;font-size:9px;color:#5a7a9a;margin-bottom:2px}
-.cb-vp-edit-row textarea{width:100%;background:#0a0a12;border:1px solid #2a3052;color:#c4d4e8;font-size:9px;font-family:monospace;padding:4px;border-radius:3px;min-height:36px;resize:vertical}
-.cb-vp-edit-btns{display:flex;gap:4px;margin-top:6px}
-.cb-vp-edit-btns .btn{font-size:9px;padding:3px 8px;border-radius:3px;border:1px solid #333;cursor:pointer}
-.cb-vp-edit-btns .btn-save{background:#1a3a5c;color:#93c5fd;border-color:#2a4a7c}
-.cb-vp-edit-btns .btn-cancel{background:transparent;color:#666;border-color:#333}
-.cb-vp-edit-btns .btn-save:hover{background:#2a4a7c}
-.cb-vp-edit-btns .btn-cancel:hover{color:#aaa;border-color:#555}
-.cb-voice-row{display:flex;align-items:center;gap:6px;margin:4px 0}
-.cb-voice-input{width:100%;padding:3px 6px;border-radius:4px;border:1px solid rgba(74,158,255,.15);background:rgba(0,0,0,.3);color:#c4d4e8;font-size:10px;margin:3px 0}
-.cb-voice-input::placeholder{color:#5a7a9a;font-size:10px}
-.cb-voice-player{display:flex;align-items:center;gap:6px;padding:4px 8px;background:rgba(34,197,94,.05);border-radius:4px}
-.cb-voice-player audio{height:24px;flex:1}
-.cb-voice-player .cb-dur{font-size:10px;color:#4ade80;white-space:nowrap}
-.cb-btn-cfg{font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid rgba(74,158,255,.2);color:#4a9eff;background:rgba(74,158,255,.05);cursor:pointer;white-space:nowrap}
-.cb-btn-cfg:hover{background:rgba(74,158,255,.15)}
-.cb-btn-aud{font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid rgba(34,197,94,.2);color:#4ade80;background:rgba(34,197,94,.1);cursor:pointer;white-space:nowrap}
-.cb-btn-aud:hover{background:rgba(34,197,94,.2)}
-.cb-btn-aud:disabled{opacity:.4;cursor:not-allowed}
-.cb-btn-gen{font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid rgba(34,197,94,.2);color:#4ade80;background:rgba(34,197,94,.1);cursor:pointer;transition:all .15s;white-space:nowrap}
-.cb-btn-gen:hover{background:rgba(34,197,94,.2)}
-.cb-btn-gen:disabled{opacity:.4;cursor:not-allowed}
-.cb-voice-spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(74,158,255,.2);border-top-color:#4a9eff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle}
-@keyframes spin{to{transform:rotate(360deg)}}
-.cb-actions{display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(74,158,255,.1);flex-wrap:wrap}
-.cb-actions .cb-btn{font-size:10px;padding:4px 12px;border-radius:6px;cursor:pointer;border:1px solid rgba(74,158,255,.2);color:#8ab4f8;background:rgba(74,158,255,.05);display:flex;align-items:center;gap:4px;transition:all .15s}
-.cb-actions .cb-btn:hover{background:rgba(74,158,255,.15);color:#bbdefb;border-color:#4a9eff}
-.cb-actions .cb-btn.busy{opacity:.5;pointer-events:none}
-.cb-edit-mode{display:none}
-.cb-edit-mode.show{display:block}
-.cb-edit-mode .cb-field{margin-bottom:8px}
-.cb-edit-mode .cb-field label{font-size:9px;color:#6b8aad;display:block;margin-bottom:2px}
-.cb-edit-mode .cb-field input[type="text"],.cb-edit-mode .cb-field textarea{width:100%;background:rgba(15,25,45,.8);border:1px solid rgba(74,158,255,.15);color:#e4e6eb;padding:5px 8px;border-radius:6px;font-size:10px;outline:none;font-family:inherit;transition:border-color .15s}
-.cb-edit-mode .cb-field input:focus,.cb-edit-mode .cb-field textarea:focus{border-color:#4a9eff;box-shadow:0 0 0 2px rgba(74,158,255,.1)}
-.cb-edit-mode .cb-field textarea{min-height:40px;resize:vertical}
-.cb-edit-mode .cb-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
-.cb-edit-mode .cb-chip{background:rgba(74,158,255,.1);color:#70b8ff;padding:2px 8px;border-radius:12px;font-size:9px;cursor:pointer;display:flex;align-items:center;gap:4px;transition:background .15s}
-.cb-edit-mode .cb-chip:hover{background:rgba(239,68,68,.15);color:#fca5a5}
-.cb-edit-mode .cb-chip::after{content:'×';font-size:12px}
-.cb-edit-mode .cb-add-chip{background:transparent;border:1px dashed rgba(74,158,255,.2);color:#5a7a9a;padding:2px 8px;border-radius:12px;font-size:9px;cursor:pointer}
-.cb-edit-mode .cb-add-chip:hover{border-color:#4a9eff;color:#4a9eff}
-.cb-edit-mode .cb-color-input{display:flex;gap:6px;align-items:center}
-.cb-edit-mode .cb-color-input input[type="color"]{width:32px;height:24px;border:1px solid rgba(74,158,255,.2);border-radius:5px;cursor:pointer;background:rgba(15,25,45,.8);padding:0}
-.cb-edit-mode .cb-color-input input[type="text"]{width:80px}
-.cb-edit-mode .cb-edit-btns{display:flex;gap:6px;margin-top:10px;align-items:center}
-.cb-edit-mode .cb-edit-btns .btn{font-size:10px;padding:4px 14px;border-radius:6px;cursor:pointer;border:none;transition:all .15s}
-.cb-edit-mode .cb-edit-btns .btn-save{background:linear-gradient(135deg,#4a9eff,#00b4d8);color:#fff}
-.cb-edit-mode .cb-edit-btns .btn-save:hover{background:linear-gradient(135deg,#5aaaff,#20c4e8);box-shadow:0 2px 8px rgba(74,158,255,.3)}
-.cb-edit-mode .cb-edit-btns .btn-cancel{background:rgba(255,255,255,.05);color:#888}
-.cb-edit-mode .cb-edit-btns .btn-cancel:hover{background:rgba(255,255,255,.1);color:#aaa}
-.cb-edit-mode .cb-edit-btns .btn-ai{background:linear-gradient(135deg,rgba(124,45,18,.6),rgba(154,52,18,.6));color:#fbbf24;margin-left:auto;border:1px solid rgba(251,191,36,.2)}
-.cb-edit-mode .cb-edit-btns .btn-ai:hover{background:linear-gradient(135deg,rgba(154,52,18,.8),rgba(180,62,18,.8))}
-.cb-rerender-progress{display:none;margin-top:8px}
-.cb-rerender-progress.show{display:block}
-.cb-rerender-progress .cb-prog-bar{height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
-.cb-rerender-progress .cb-prog-fill{height:100%;background:linear-gradient(90deg,#4a9eff,#00d4ff);width:0;transition:width .5s;border-radius:2px}
-.cb-rerender-progress .cb-prog-text{font-size:9px;color:#6b8aad;margin-top:3px}
-
-/* UX-1: Image compare split view */
-.compare-view{display:flex;gap:8px;margin:8px 0}
-.compare-view .compare-col{flex:1;min-width:0}
-.compare-view .compare-col .comp-label{font-size:9px;color:#888;margin-bottom:4px;text-align:center}
-.compare-view .compare-col img{width:100%;border-radius:4px;display:block}
-.compare-toggle{font-size:9px;padding:2px 8px;border-radius:3px;border:1px solid #3b82f6;color:#3b82f6;cursor:pointer;background:transparent}
-.compare-toggle:hover{background:#3b82f6;color:#fff}
-.compare-toggle.active{background:#3b82f6;color:#fff}
-
-/* UX-3: Keyboard shortcuts hint */
-.kbd-hint{position:fixed;bottom:16px;left:16px;background:#1a1d27;border:1px solid #333;border-radius:6px;padding:8px 12px;font-size:9px;color:#666;z-index:50;display:none;max-width:240px;line-height:1.6}
-.kbd-hint.show{display:block}
-.kbd{background:#111;border:1px solid #444;border-radius:3px;padding:1px 4px;font-family:monospace;color:#aaa;font-size:9px}
-
-/* UX-4: Pipeline monitor panel */
-.pipeline-monitor{background:#1a1d27;border-radius:6px;padding:12px;margin:8px 0}
-.svc-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #111;font-size:11px}
-.svc-row:last-child{border-bottom:none}
-.svc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.svc-dot.online{background:#22c55e;box-shadow:0 0 6px #22c55e}
-.svc-dot.offline{background:#ef4444;box-shadow:0 0 6px #ef4444}
-.svc-dot.unknown{background:#555}
-.svc-name{flex:1;font-weight:600}
-.svc-detail{color:#666;font-size:9px}
-
-/* UX-5: Detail panel header */
-.detail-hdr{display:flex;align-items:center;gap:8px;padding:8px 0;margin-bottom:8px;border-bottom:1px solid #222}
-.back-btn{font-size:11px;color:#3b82f6;cursor:pointer;padding:2px 8px;border-radius:4px;border:1px solid #3b82f6;background:transparent}
-.back-btn:hover{background:#3b82f6;color:#fff}
-.breadcrumb{font-size:11px;color:#666}
-
-/* UX-6: Refresh status indicator */
-.refresh-status{font-size:9px;color:#444;margin-left:4px}
-.refresh-status.syncing{color:#f59e0b;animation:pulse 1.5s infinite}
-
-/* UX-8: Left panel keyboard focus */
-.ms-item.kb-focus{outline:2px solid #3b82f6;outline-offset:-2px;background:#1e2a3a}
-
-/* UX-10: Search highlight */
-mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
-
-/* v3.6.8: P0-1 Collapsible sections */
-.sec-hdr{cursor:pointer;user-select:none;transition:background .15s}
-.sec-hdr:hover{background:rgba(255,255,255,.03)}
-.sec-hdr .sec-toggle-icon{display:inline-block;transition:transform .2s;font-size:10px;margin-right:4px;color:#555}
-.sec-hdr.expanded .sec-toggle-icon{transform:rotate(90deg)}
-.sec-body{transition:max-height .3s ease-out}
-.sec-body.collapsed{max-height:0;overflow:hidden}
-
-/* v3.6.8: P0-2 Four-dimension review cards */
-.dim-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
-.dim-card{background:#111;border-radius:6px;padding:10px;border-left:3px solid #555}
-.dim-card.good{border-left-color:#22c55e}
-.dim-card.warn{border-left-color:#f59e0b}
-.dim-card.bad{border-left-color:#ef4444}
-.dim-card .dim-name{font-size:10px;color:#888;margin-bottom:4px}
-.dim-card .dim-score{font-size:18px;font-weight:700}
-.dim-card .dim-detail{font-size:9px;color:#666;margin-top:4px;line-height:1.4}
-
-/* v3.6.8: P1-4 Unified download dropdown */
-.dl-dropdown{position:relative;display:inline-block}
-.dl-menu{display:none;position:absolute;top:100%;left:0;background:#1a1d27;border:1px solid #333;border-radius:6px;padding:4px;z-index:100;min-width:140px}
-.dl-menu.show{display:block}
-.dl-menu a{display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:10px;color:#aaa;text-decoration:none;border-radius:4px;cursor:pointer}
-.dl-menu a:hover{background:#2563eb;color:#fff}
-
-/* v3.6.8: P1-6 Chart panel */
-.chart-panel{background:#1a1d27;border-radius:6px;padding:12px;margin:8px 0}
-.chart-panel canvas{max-height:220px;width:100%}
-.chart-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.chart-hdr h4{font-size:11px;color:#888;font-weight:600}
-.chart-tabs{display:flex;gap:4px}
-.chart-tab{font-size:9px;padding:2px 8px;border-radius:3px;border:1px solid #333;color:#555;cursor:pointer;background:transparent}
-.chart-tab.active{border-color:#3b82f6;color:#3b82f6}
-.chart-tag{font-size:9px;padding:2px 10px;border-radius:10px;border:1px solid #333;color:#646;cursor:pointer;background:transparent;transition:all .2s}
-.chart-tag:hover{border-color:#888;color:#aaa}
-.chart-tag.active{border-color:#22c55e;color:#22c55e;background:rgba(34,197,94,.08)}
-
-/* v3.6.8: P2-7 Quality feedback */
-.qf-item{background:#111;border-radius:4px;padding:8px;margin:4px 0;font-size:10px;display:flex;gap:8px;align-items:flex-start}
-.qf-item .qf-icon{font-size:14px;flex-shrink:0}
-.qf-item .qf-text{flex:1;color:#aaa}
-.qf-item .qf-tag{font-size:8px;padding:1px 4px;border-radius:2px;background:#1a2756;color:#93c5fd}
-
-/* v3.6.8: P2-8 Self-heal tip */
-
-/* v3.7: Asset panel */
-.asset-panel{position:fixed;top:0;right:0;width:380px;height:100vh;background:#1a1d27;z-index:1000;box-shadow:-4px 0 20px rgba(0,0,0,.5);transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column}
-.asset-panel.open{transform:translateX(0)}
-.asset-panel-hdr{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #222;font-size:13px;font-weight:600}
-.asset-panel-body{flex:1;overflow-y:auto;padding:8px 12px}
-.asset-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:999;display:none}
-.asset-overlay.on{display:block}
-.asset-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;margin:3px 0;font-size:10px;background:rgba(255,255,255,.02);border:1px solid #222}
-.asset-item:hover{background:rgba(74,158,255,.05);border-color:rgba(74,158,255,.15)}
-.asset-item .thumb{width:36px;height:48px;border-radius:3px;object-fit:cover;background:#111;flex-shrink:0}
-.asset-item .info{flex:1;min-width:0}
-.asset-item .name{color:#c4d4e8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.asset-item .meta{color:#666;font-size:8px}
-.asset-item .dl-btn{font-size:9px;padding:2px 6px;border-radius:3px;border:1px solid #333;cursor:pointer;color:#888;background:transparent}
-.asset-item .dl-btn:hover{background:#2563eb;color:#fff;border-color:#2563eb}
-.asset-tabs{display:flex;gap:4px;padding:6px 12px;border-bottom:1px solid #222}
-.asset-tab{padding:3px 10px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid #333;color:#888;background:transparent}
-.asset-tab.active{background:#2563eb;border-color:#2563eb;color:#fff}
-.self-heal{background:#1f1a0f;border:1px solid #f59e0b;border-radius:6px;padding:10px;margin:8px 0;font-size:10px}
-.self-heal .sh-title{color:#fbbf24;font-weight:600;margin-bottom:4px}
-.self-heal .sh-body{color:#aaa;line-height:1.5}
-.self-heal .sh-dismiss{float:right;color:#555;cursor:pointer;font-size:12px}
-
-/* v3.6.8: P0-1 Collapsible sections */
-.sec-collapsible{cursor:pointer;user-select:none}
-.sec-collapsible .sec-toggle{display:inline-block;transition:transform .2s;font-size:9px;margin-right:4px;color:#555}
-.sec-collapsible.expanded .sec-toggle{transform:rotate(90deg)}
-.sec-body{transition:max-height .3s ease-out}
-.sec-body.collapsed{max-height:0;overflow:hidden}
-
-/* v3.6.8: P0-2 Four-dimension review */
-.four-dim{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0}
-.dim-card{background:#111;border-radius:6px;padding:10px;text-align:center}
-.dim-card .dim-icon{font-size:18px;margin-bottom:4px}
-.dim-card .dim-name{font-size:9px;color:#888;margin-bottom:4px}
-.dim-card .dim-score{font-size:20px;font-weight:700}
-.dim-card .dim-note{font-size:8px;color:#555;margin-top:4px}
-
-/* v3.6.8: P0-3 Re-review button */
-.btn-rerun{background:#7c3aed;color:#fff}
-.btn-rerun:hover{background:#6d28d9}
-.btn-rerun.busy{opacity:.5;pointer-events:none}
-
-/* v3.6.8: P1-4 Unified download (cleaned) */
-.dl-wrap{position:relative;display:inline-block}
-.dl-btn{font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid #3b82f6;color:#3b82f6;cursor:pointer;background:transparent;display:flex;align-items:center;gap:4px}
-.dl-btn:hover{background:#3b82f6;color:#fff}
-.dl-panel{display:none;position:absolute;top:100%;right:0;margin-top:4px;background:#1a1d27;border:1px solid #333;border-radius:8px;padding:6px;z-index:100;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
-.dl-panel.show{display:block}
-.dl-panel a{display:flex;align-items:center;gap:6px;padding:7px 12px;font-size:10px;color:#aaa;text-decoration:none;border-radius:5px;cursor:pointer}
-.dl-panel a:hover{background:#2563eb;color:#fff}
-.dl-panel .dl-divider{height:1px;background:#222;margin:3px 0}
-.dl-panel .dl-hdr{font-size:9px;color:#555;padding:2px 12px;letter-spacing:.5px}
-
-/* v3.6.8: P2-7 Quality KB */
-.qa-item{background:#111;border-radius:4px;padding:8px;margin:4px 0;font-size:10px}
-.qa-item .q-q{color:#fbbf24;font-weight:600;cursor:pointer}
-.qa-item .q-a{color:#888;display:none;margin-top:4px;line-height:1.4}
-.qa-item .q-a.show{display:block}
-
-/* S3-1: Shot Sorter (video merge UI) */
-.shot-sorter{background:#14161d;border-radius:8px;padding:12px;margin:10px 0;border:1px solid #222}
-.shot-sorter h3{font-size:11px;color:#888;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.shot-list{min-height:40px}
-.shot-item{display:flex;align-items:center;gap:8px;padding:6px 8px;background:#1a1d27;border-radius:6px;margin:4px 0;font-size:10px;transition:background .15s}
-.shot-item:hover{background:#1e2130}
-.shot-item .shot-thumb{width:64px;height:36px;border-radius:4px;object-fit:cover;background:#111;flex-shrink:0}
-.shot-item .shot-thumb-placeholder{width:64px;height:36px;border-radius:4px;background:#111;display:flex;align-items:center;justify-content:center;color:#333;font-size:8px;flex-shrink:0}
-.shot-item .shot-name{flex:1;color:#c4d4e8;font-weight:500}
-.shot-item .shot-dur{color:#666;font-size:9px;min-width:40px;text-align:right}
-.shot-item .shot-actions{display:flex;gap:3px;flex-shrink:0}
-.shot-move-btn{width:24px;height:24px;border-radius:4px;border:1px solid #333;background:transparent;color:#aaa;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.shot-move-btn:hover{background:#2563eb;color:#fff;border-color:#2563eb}
-.shot-move-btn:disabled{opacity:.3;cursor:not-allowed}
-.shot-sort-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.shot-empty{text-align:center;color:#555;padding:20px;font-size:10px}
-.btn-merge{background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;padding:6px 16px;border-radius:6px;border:none;cursor:pointer;font-size:11px;font-weight:600}
-.btn-merge:hover{background:linear-gradient(135deg,#3b82f6,#8b5cf6)}
-.btn-merge:disabled{opacity:.4;cursor:not-allowed}
-.btn-subtitle{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;padding:6px 16px;border-radius:6px;border:none;cursor:pointer;font-size:11px;font-weight:600}
-.btn-subtitle:hover{background:linear-gradient(135deg,#4ade80,#22c55e)}
-.btn-subtitle:disabled{opacity:.4;cursor:not-allowed}
-.shot-merge-progress{margin-top:8px;font-size:10px;color:#fbbf24}
-/* S3-1: draggable hint */
-.shot-item.dragging{opacity:.5;border:1px dashed #3b82f6}
-
-/* v3.7.3: MS-0 门禁体检报告 */
-.gate-summary-card{border-radius:8px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;transition:all .2s}
-.gate-summary-card.pass{background:linear-gradient(135deg,#0f3b2e,transparent);border-left:4px solid #22c55e}
-.gate-summary-card.warn{background:linear-gradient(135deg,#3d2e0a,transparent);border-left:4px solid #f59e0b}
-.gate-summary-card.fail{background:linear-gradient(135deg,#3b1111,transparent);border-left:4px solid #ef4444}
-.gate-summary-icon{font-size:28px;flex-shrink:0}
-.gate-summary-title{font-size:14px;font-weight:700;color:#e4e6eb;margin-bottom:2px}
-.gate-summary-meta{font-size:10px;color:#888;margin-bottom:2px}
-.gate-summary-advice{font-size:11px;color:#93c5fd}
-.gate-metrics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:12px}
-.gate-metric-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px;text-align:center;transition:all .2s}
-.gate-metric-card:hover{background:rgba(255,255,255,.05)}
-.gate-metric-card .metric-icon{font-size:20px;margin-bottom:4px}
-.gate-metric-card .metric-value{font-size:22px;font-weight:700;margin-bottom:2px}
-.gate-metric-card .metric-label{font-size:9px;color:#888;margin-bottom:2px}
-.gate-metric-card .metric-threshold{font-size:8px;color:#555;background:rgba(255,255,255,.03);border-radius:3px;padding:2px 4px}
-.gate-metric-card.alert{border-color:#ef4444}
-.gate-metric-card.alert .metric-value{color:#ef4444}
-.gate-metric-card.warn-card{border-color:#f59e0b}
-.gate-metric-card.warn-card .metric-value{color:#f59e0b}
-.gate-next-action{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid rgba(255,255,255,.06);margin-top:12px;flex-wrap:wrap}
-.gate-next-action span{font-size:11px;color:#93c5fd}
-.btn-primary{background:#2563eb;color:#fff;padding:6px 16px;border-radius:6px;border:none;cursor:pointer;font-size:11px;font-weight:600;transition:all .15s}
-.btn-primary:hover{background:#3b82f6}
-.btn-secondary{background:transparent;color:#888;padding:6px 16px;border-radius:6px;border:1px solid #444;cursor:pointer;font-size:11px;transition:all .15s}
-.btn-secondary:hover{color:#e4e6eb;border-color:#888}
-.btn-primary:disabled,.btn-secondary:disabled{opacity:.4;cursor:not-allowed}
-/* v3.7.4: MS-2 选品对比表格/利润预估/风险摘要 */
-.product-compare-table{margin-bottom:12px;overflow-x:auto}
-.product-compare-table table{width:100%;border-collapse:collapse;font-size:11px}
-.product-compare-table th{background:rgba(255,255,255,.04);color:#93c5fd;text-align:left;padding:8px 10px;border-bottom:2px solid rgba(255,255,255,.1);font-weight:600;white-space:nowrap}
-.product-compare-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#c4d4e8;vertical-align:middle}
-.product-compare-table .product-row.selected{background:rgba(34,197,94,.05)}
-.product-compare-table .product-row.rejected{opacity:.55}
-.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700}
-.tag-green{background:rgba(34,197,94,.2);color:#22c55e}
-.tag-yellow{background:rgba(245,158,11,.2);color:#f59e0b}
-.tag-red{background:rgba(239,68,68,.2);color:#ef4444}
-.profit-summary-mini{display:flex;align-items:center;gap:6px;padding:12px;background:rgba(255,255,255,.02);border-radius:8px;margin-bottom:12px;flex-wrap:wrap;font-size:11px}
-.profit-item{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:60px}
-.profit-label{font-size:9px;color:#888}
-.profit-value{font-size:13px;font-weight:700;color:#e4e6eb}
-.profit-result{background:rgba(255,255,255,.04);border-radius:6px;padding:4px 10px}
-.profit-final{background:rgba(34,197,94,.08);border-radius:6px;padding:4px 10px}
-.profit-arrow{color:#555;font-size:14px;font-weight:700}
-.next-action-mixed{display:flex;gap:16px;padding:12px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid rgba(255,255,255,.06);margin-top:12px;flex-wrap:wrap}
-.risk-summary{flex:1;min-width:200px}
-.risk-summary h4{font-size:12px;color:#f59e0b;margin:0 0 6px 0}
-.risk-summary ul{margin:0;padding-left:16px;font-size:10px;color:#888;line-height:1.7}
-.risk-summary p{margin:6px 0 0 0;font-size:10px;color:#4ade80}
-.action-buttons{display:flex;flex-direction:column;gap:6px;justify-content:center}
-/* v3.7.4: MS-2.1 本地化健康度仪表盘 */
-.localization-matrix{margin-bottom:12px;overflow-x:auto}
-.localization-matrix table{width:100%;border-collapse:collapse;font-size:11px}
-.localization-matrix th{background:rgba(255,255,255,.04);color:#93c5fd;text-align:left;padding:8px 10px;border-bottom:2px solid rgba(255,255,255,.1);font-weight:600;white-space:nowrap}
-.localization-matrix td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#c4d4e8;vertical-align:middle}
-.btn-sm{background:rgba(255,255,255,.06);color:#888;padding:4px 10px;border-radius:4px;border:1px solid #555;cursor:pointer;font-size:10px;transition:all .15s}
-.btn-sm:hover{color:#e4e6eb;border-color:#888}
-.btn-sm:disabled{opacity:.4;cursor:not-allowed}
-/* v3.7.4: MS-2.2 属性确认表格 */
-.attribute-status-table{margin-bottom:12px;overflow-x:auto}
-.attribute-status-table table{width:100%;border-collapse:collapse;font-size:11px}
-.attribute-status-table th{background:rgba(255,255,255,.04);color:#93c5fd;text-align:left;padding:8px 10px;border-bottom:2px solid rgba(255,255,255,.1);font-weight:600;white-space:nowrap}
-.attribute-status-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#c4d4e8;vertical-align:middle}
-.attribute-status-table .attr-row.missing{background:rgba(239,68,68,.05)}
-.attribute-status-table .attr-row.warn{background:rgba(245,158,11,.03)}
-/* v3.7.4: MS-2.5 物流策略确认单 */
-.logistics-summary-card{border-radius:8px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:flex-start;gap:12px;transition:all .2s}
-.logistics-summary-card.safe{background:linear-gradient(135deg,rgba(34,197,94,.12),transparent);border-left:4px solid #22c55e}
-.logistics-summary-card.risk{background:linear-gradient(135deg,rgba(245,158,11,.12),transparent);border-left:4px solid #f59e0b}
-.logistics-summary-card.high-risk{background:linear-gradient(135deg,rgba(239,68,68,.12),transparent);border-left:4px solid #ef4444}
-.logistics-summary-icon{font-size:28px;flex-shrink:0}
-.logistics-summary-content{flex:1}
-.logistics-summary-title{font-size:14px;font-weight:700;color:#e4e6eb;margin-bottom:4px}
-.logistics-summary-meta{font-size:10px;color:#888;margin-bottom:4px}
-.logistics-summary-advice{font-size:11px;color:#fbbf24}
-/* 5国承运商对比表 */
-.logistics-table{margin-bottom:12px;overflow-x:auto}
-.logistics-table table{width:100%;border-collapse:collapse;font-size:11px}
-.logistics-table th{background:rgba(255,255,255,.04);color:#93c5fd;text-align:left;padding:8px 10px;border-bottom:2px solid rgba(255,255,255,.1);font-weight:600;white-space:nowrap}
-.logistics-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#c4d4e8;vertical-align:middle}
-.logistics-table tr.risk-row{background:rgba(239,68,68,.04)}
-.logistics-table tr.warn-row{background:rgba(245,158,11,.03)}
-/* 风险/策略卡片 */
-.logistics-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:12px}
-.logistics-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px}
-.logistics-card.warning{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.04)}
-.logistics-card.danger{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.04)}
-.logistics-card .card-header{font-size:12px;font-weight:700;color:#e4e6eb;margin-bottom:4px}
-.logistics-card .card-desc{font-size:10px;color:#888;margin-bottom:6px}
-.logistics-card .card-mitigation{font-size:10px;color:#4ade80;padding:4px 8px;background:rgba(34,197,94,.08);border-radius:4px}
-/* v3.7.4: MS-1 品类分布条形图 */
-.chart-section{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px;margin-bottom:12px}
-.chart-section h4{font-size:12px;color:#93c5fd;margin:0 0 10px 0}
-.bar-chart{display:flex;flex-direction:column;gap:6px}
-.bar-item{display:flex;align-items:center;gap:8px;font-size:11px;color:#c4d4e8}
-.bar-item span:first-child{min-width:80px;text-align:right;flex-shrink:0}
-.bar-item .bar{flex:1;height:16px;background:rgba(34,197,94,.15);border-radius:3px;transition:width .3s}
-.bar-item .bar-fill{height:100%;background:linear-gradient(90deg,#22c55e,#4ade80);border-radius:3px}
-.price-range-info{margin-top:10px;font-size:10px;color:#888;display:flex;gap:12px;flex-wrap:wrap}
-.price-range-info span{background:rgba(255,255,255,.04);padding:2px 8px;border-radius:4px}
-/* v3.7.5: MS-2.4 定价策略仪表盘 */
-.pricing-summary-card{border-radius:8px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:flex-start;gap:12px}
-.pricing-summary-card.ok{background:linear-gradient(135deg,rgba(34,197,94,.12),transparent);border-left:4px solid #22c55e}
-.pricing-summary-card.warn{background:linear-gradient(135deg,rgba(245,158,11,.12),transparent);border-left:4px solid #f59e0b}
-.pricing-summary-card.danger{background:linear-gradient(135deg,rgba(239,68,68,.12),transparent);border-left:4px solid #ef4444}
-.pricing-summary-icon{font-size:28px;flex-shrink:0}
-.pricing-summary-content{flex:1}
-.pricing-summary-title{font-size:14px;font-weight:700;color:#e4e6eb;margin-bottom:4px}
-.pricing-summary-meta{font-size:10px;color:#888;margin-bottom:4px}
-.pricing-summary-advice{font-size:11px;color:#fbbf24}
-/* 5国定价总览表 */
-.pricing-table{margin-bottom:12px;overflow-x:auto}
-.pricing-table table{width:100%;border-collapse:collapse;font-size:11px}
-.pricing-table th{background:rgba(255,255,255,.04);color:#93c5fd;text-align:left;padding:8px 10px;border-bottom:2px solid rgba(255,255,255,.1);font-weight:600;white-space:nowrap}
-.pricing-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#c4d4e8;vertical-align:middle}
-.pricing-table tr.risk-row{background:rgba(239,68,68,.04)}
-.pricing-table tr.warn-row{background:rgba(245,158,11,.03)}
-.pricing-table .price-bold{font-weight:700;color:#e4e6eb}
-/* 促销方案卡片 */
-.promo-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:12px}
-.promo-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px;position:relative}
-.promo-card.recommended{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.04)}
-.promo-card .promo-header{font-size:12px;font-weight:700;color:#e4e6eb;margin-bottom:6px}
-.promo-card .promo-price{font-size:18px;font-weight:700;color:#93c5fd;margin-bottom:4px}
-.promo-card .promo-desc{font-size:10px;color:#888}
-.promo-card .promo-tag{position:absolute;top:8px;right:8px;background:rgba(34,197,94,.2);color:#4ade80;font-size:9px;padding:2px 6px;border-radius:4px;font-weight:600}
-.promo-card .promo-tag.warn{background:rgba(245,158,11,.2);color:#fbbf24}
-/* 技术细节折叠卡片 */
-.info-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;margin-bottom:8px;overflow:hidden}
-.info-card .info-card-header{padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;color:#93c5fd;user-select:none}
-.info-card .info-card-header:hover{background:rgba(255,255,255,.03)}
-.info-card .info-card-header .toggle-icon{font-size:10px;transition:transform .2s}
-.info-card .info-card-header.open .toggle-icon{transform:rotate(180deg)}
-.info-card .info-card-body{padding:0 14px 12px;font-size:10px;color:#c4d4e8;line-height:1.6}
-/* v3.7.5: MS-2.6 合规审核报告 */
-.compliance-summary-card{border-radius:8px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:flex-start;gap:12px}
-.compliance-summary-card.pass{background:linear-gradient(135deg,rgba(34,197,94,.12),transparent);border-left:4px solid #22c55e}
-.compliance-summary-card.review{background:linear-gradient(135deg,rgba(245,158,11,.12),transparent);border-left:4px solid #f59e0b}
-.compliance-summary-card.fail{background:linear-gradient(135deg,rgba(239,68,68,.12),transparent);border-left:4px solid #ef4444}
-.compliance-summary-icon{font-size:28px;flex-shrink:0}
-.compliance-summary-content{flex:1}
-.compliance-summary-title{font-size:14px;font-weight:700;color:#e4e6eb;margin-bottom:4px}
-.compliance-summary-meta{font-size:10px;color:#888;margin-bottom:4px}
-.compliance-summary-advice{font-size:11px;color:#fbbf24}
-/* 合规检查项表格 */
-.compliance-table{margin-bottom:12px;overflow-x:auto}
-.compliance-table table{width:100%;border-collapse:collapse;font-size:11px}
-.compliance-table th{background:rgba(255,255,255,.04);color:#93c5fd;text-align:left;padding:8px 10px;border-bottom:2px solid rgba(255,255,255,.1);font-weight:600;white-space:nowrap}
-.compliance-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#c4d4e8;vertical-align:middle}
-.compliance-table tr.fail-row{background:rgba(239,68,68,.04)}
-.compliance-table tr.warn-row{background:rgba(245,158,11,.03)}
-/* promo-card 变体用于AI审核信息卡 */
-.promo-card.promo-info{border-color:rgba(147,197,253,.3);background:rgba(147,197,253,.04)}
-.promo-card .promo-meta{font-size:9px;color:#6b7280;margin-top:4px}
-/* v3.7.5: MS-4 发布审批决策面板 */
-.publish-summary-card{border-radius:8px;padding:14px 16px;margin-bottom:12px;display:flex;align-items:flex-start;gap:12px}
-.publish-summary-card.ready{background:linear-gradient(135deg,rgba(34,197,94,.12),transparent);border-left:4px solid #22c55e}
-.publish-summary-card.blocked{background:linear-gradient(135deg,rgba(245,158,11,.12),transparent);border-left:4px solid #f59e0b}
-.publish-summary-icon{font-size:28px;flex-shrink:0}
-.publish-summary-content{flex:1}
-.publish-summary-title{font-size:14px;font-weight:700;color:#e4e6eb;margin-bottom:4px}
-.publish-summary-meta{font-size:10px;color:#888;margin-bottom:4px}
-.publish-summary-advice{font-size:11px;color:#fbbf24}
-.publish-checklist{margin-bottom:12px;overflow-x:auto}
-.publish-checklist table{width:100%;border-collapse:collapse;font-size:11px}
-.publish-checklist th{background:rgba(255,255,255,.04);color:#93c5fd;text-align:left;padding:8px 10px;border-bottom:2px solid rgba(255,255,255,.1);font-weight:600;white-space:nowrap}
-.publish-checklist td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#c4d4e8;vertical-align:middle}
-.publish-checklist tr.blocked-row{background:rgba(239,68,68,.04)}
-.publish-checklist tr.pass-row{background:rgba(34,197,94,.03)}
-.btn-danger{background:rgba(239,68,68,.15);color:#fca5a5;padding:4px 10px;border-radius:4px;border:1px solid rgba(239,68,68,.3);cursor:pointer;font-size:10px;transition:all .15s}
-.btn-danger:hover{color:#fef2f2;border-color:rgba(239,68,68,.6)}
-.btn-danger:disabled{opacity:.4;cursor:not-allowed}
-
-/* v3.6.29: DM-2 分镜审阅看板 */
-.sb-summary-card{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:8px;margin-bottom:12px}
-.sb-summary-card.good{background:linear-gradient(135deg,rgba(34,197,94,.08),transparent);border-left:4px solid #22c55e}
-.sb-summary-card.warn{background:linear-gradient(135deg,rgba(245,158,11,.08),transparent);border-left:4px solid #f59e0b}
-.sb-summary-card.bad{background:linear-gradient(135deg,rgba(239,68,68,.08),transparent);border-left:4px solid #ef4444}
-.sb-summary-icon{font-size:28px;flex-shrink:0}
-.sb-summary-content{flex:1}
-.sb-summary-title{font-size:14px;font-weight:700;color:#e4e6eb;margin-bottom:2px}
-.sb-summary-meta{font-size:10px;color:#888;margin-bottom:2px}
-.sb-summary-advice{font-size:11px;color:#fbbf24}
-.sb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
-.sb-card{background:#1a1d27;border-radius:8px;border:1px solid #222;overflow:hidden;transition:all .15s;position:relative}
-.sb-card:hover{border-color:#3b82f6;box-shadow:0 0 12px rgba(59,130,246,.15)}
-.sb-card-header{display:flex;align-items:center;gap:6px;padding:8px 10px;background:rgba(59,130,246,.06);border-bottom:1px solid #222}
-.sb-card-char{font-size:12px;font-weight:700;color:#e4e6eb}
-.sb-card-shot{font-size:10px;color:#6b8aad;background:rgba(59,130,246,.1);padding:1px 6px;border-radius:4px}
-.sb-card-thumb{width:100%;height:120px;object-fit:cover;background:#111;display:block}
-.sb-card-thumb-placeholder{width:100%;height:120px;background:linear-gradient(135deg,#111,#1a1a2e);display:flex;align-items:center;justify-content:center;color:#333;font-size:24px}
-.sb-card-desc{padding:6px 10px;font-size:10px;color:#888;line-height:1.4;max-height:2.8em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sb-card-tags{display:flex;gap:4px;padding:4px 10px 6px;flex-wrap:wrap}
-.sb-tag{font-size:9px;padding:1px 6px;border-radius:3px;font-weight:600}
-.sb-tag.dur{background:rgba(74,158,255,.15);color:#4a9eff}
-.sb-tag.shot{background:rgba(147,197,253,.1);color:#93c5fd}
-.sb-tag.move{background:rgba(0,212,255,.1);color:#00d4ff}
-.sb-card-alert{position:absolute;top:8px;right:8px;font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700;z-index:1}
-.sb-card-alert.red{background:rgba(239,68,68,.2);color:#ef4444}
-.sb-card-alert.yellow{background:rgba(245,158,11,.2);color:#f59e0b}
-.sb-card-footer{display:flex;justify-content:space-between;align-items:center;padding:4px 10px;border-top:1px solid #222}
-.sb-card-expand{font-size:9px;color:#4a9eff;cursor:pointer;background:none;border:none;padding:2px 4px}
-.sb-card-expand:hover{color:#70b8ff;text-decoration:underline}
-.sb-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
-.sb-stat-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:12px}
-.sb-stat-card h4{font-size:11px;color:#93c5fd;margin:0 0 8px 0;font-weight:600}
-.sb-tag-cloud{display:flex;flex-wrap:wrap;gap:4px}
-.sb-stat-tag{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:600;transition:all .15s}
-.sb-stat-tag:hover{transform:scale(1.05)}
-.sb-stat-tag.warn{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.2)}
-.sb-stat-tag.ok{background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.15)}
-.sb-stat-tag.neutral{background:rgba(147,197,253,.08);color:#93c5fd;border:1px solid rgba(147,197,253,.12)}
-.sb-stat-tag .tag-count{font-size:9px;opacity:.8}
-.info-card.collapsible .info-card-header{cursor:pointer}
-.info-card.collapsible .info-card-body pre{white-space:pre-wrap;word-break:break-all;font-size:9px;color:#6b8aad;background:rgba(0,0,0,.2);padding:8px;border-radius:4px;margin:4px 0;max-height:200px;overflow-y:auto}
-.sb-char-divider{font-size:11px;font-weight:700;color:#93c5fd;padding:8px 0 4px;border-bottom:1px solid rgba(147,197,253,.1);margin:12px 0 8px}
-@media(max-width:900px){.sb-grid{grid-template-columns:repeat(2,1fr)}.sb-stat-grid{grid-template-columns:1fr}}
-@media(max-width:600px){.sb-grid{grid-template-columns:1fr}}
-
-/* ===== DM-3 配音生成看板 ===== */
-.dub-summary-card{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;margin-bottom:12px;border-radius:8px;border-left:4px solid #f59e0b;background:linear-gradient(135deg,rgba(245,158,11,.08),transparent)}
-.dub-summary-card.green{border-left-color:#22c55e;background:linear-gradient(135deg,rgba(34,197,94,.08),transparent)}
-.dub-summary-card.red{border-left-color:#ef4444;background:linear-gradient(135deg,rgba(239,68,68,.08),transparent)}
-.dub-summary-icon{font-size:28px;flex-shrink:0;line-height:1}
-.dub-summary-content{flex:1;min-width:0}
-.dub-summary-title{font-weight:700;font-size:14px;color:#e4e6eb;margin-bottom:4px}
-.dub-summary-meta{font-size:11px;color:#888;margin-bottom:4px;line-height:1.4}
-.dub-summary-advice{font-size:11px;color:#f59e0b;line-height:1.4}
-.dub-summary-card.green .dub-summary-advice{color:#22c55e}
-.dub-voice-table{margin-bottom:14px;overflow-x:auto;border-radius:8px;border:1px solid rgba(255,255,255,.06)}
-.dub-voice-table table{width:100%;border-collapse:collapse;font-size:12px}
-.dub-voice-table thead th{background:rgba(255,255,255,.04);color:#93c5fd;text-align:left;padding:8px 10px;border-bottom:2px solid rgba(255,255,255,.1);font-weight:600;white-space:nowrap}
-.dub-voice-table tbody td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);color:#c4d4e8;vertical-align:middle}
-.dub-voice-table tbody tr:last-child td{border-bottom:none}
-.dub-voice-table .conflict-row{background:rgba(245,158,11,.05)}
-.voice-tag{display:inline-block;padding:2px 6px;border-radius:4px;background:rgba(96,165,250,.15);color:#60a5fa;font-size:11px;font-family:monospace}
-.voice-conflict-warn{font-size:10px;color:#f59e0b;margin-left:4px}
-.dub-tech-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:14px}
-.dub-tech-card{padding:12px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:4px}
-.dub-tech-card.warn{border-left:3px solid #f59e0b}
-.dub-tech-card span{font-size:10px;color:#888}
-.dub-tech-card strong{font-size:13px;color:#e4e6eb}
-
-/* ===== DM-6/7 单集成品质量报告 ===== */
-.dm6-summary-card{display:flex;gap:12px;padding:14px 16px;border-radius:8px;margin-bottom:14px;border:1px solid rgba(255,255,255,.08)}
-.dm6-summary-card.green{background:linear-gradient(135deg,rgba(34,197,94,.08),transparent);border-left:4px solid #22c55e}
-.dm6-summary-card.orange{background:linear-gradient(135deg,rgba(245,158,11,.08),transparent);border-left:4px solid #f59e0b}
-.dm6-summary-card.red{background:linear-gradient(135deg,rgba(239,68,68,.08),transparent);border-left:4px solid #ef4444}
-.dm6-summary-icon{font-size:28px;flex-shrink:0;line-height:1}
-.dm6-summary-content{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.dm6-summary-title{font-size:18px;font-weight:800;color:#f0f2f5;letter-spacing:-0.3px}
-.dm6-summary-meta{font-size:12px;color:#60a5fa;display:flex;gap:12px;flex-wrap:wrap}
-.dm6-summary-meta span{display:inline-flex;align-items:center;gap:3px}
-.dm6-summary-meta .meta-val{font-weight:700;color:#e4e6eb}
-.dm6-summary-advice{font-size:11px;color:#fbbf24;padding:4px 0}
-/* Quality score: three-column card-to-card layout */
-.dm6-quality-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
-@media(max-width:600px){.dm6-quality-cards{grid-template-columns:1fr}}
-.dm6-score-item{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px;transition:border .2s}
-.dm6-score-item:hover{border-color:rgba(255,255,255,.12)}
-.dm6-score-item .score-label{font-size:13px;font-weight:700;color:#c4d4e8;display:flex;align-items:center;gap:6px}
-.dm6-score-item .score-bar{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
-.dm6-score-item .score-fill{height:100%;border-radius:3px;transition:width .4s ease;position:relative}
-.dm6-score-item .score-fill.green{background:linear-gradient(90deg,#059669,#22c55e,#4ade80);box-shadow:0 0 8px rgba(34,197,94,.25)}
-.dm6-score-item .score-fill.red{background:linear-gradient(90deg,#991b1b,#ef4444);box-shadow:0 0 8px rgba(239,68,68,.25)}
-.dm6-score-item .score-fill.yellow{background:linear-gradient(90deg,#b45309,#f59e0b,#fbbf24);box-shadow:0 0 8px rgba(245,158,11,.25)}
-.dm6-score-item .score-num{font-size:24px;font-weight:800;line-height:1}
-.dm6-score-item .score-num.green{color:#4ade80}
-.dm6-score-item .score-num.red{color:#ef4444}
-.dm6-score-item .score-num.yellow{color:#fbbf24}
-.dm6-score-item .score-sub{font-size:9px;color:#555}
-.dm6-score-total{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:linear-gradient(135deg,rgba(255,255,255,.04),rgba(255,255,255,.01));border-radius:10px;border:1px solid rgba(255,255,255,.08)}
-.dm6-score-total span{font-size:13px;color:#888;font-weight:600}
-.dm6-score-number{font-size:28px;font-weight:800;letter-spacing:-1px}
-.dm6-score-number.green{color:#22c55e}.dm6-score-number.orange{color:#f59e0b}.dm6-score-number.red{color:#ef4444}
-/* File card: horizontal layout with spec grid */
-.dm7-file-card{display:flex;gap:16px;padding:16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:10px;margin-bottom:14px;align-items:flex-start}
-.dm7-file-card .dm7-file-icon{font-size:40px;flex-shrink:0;width:52px;height:52px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(59,130,246,.1),rgba(139,92,246,.05));border-radius:10px}
-.dm7-file-card .dm7-file-body{flex:1;min-width:0}
-.dm7-file-card .dm7-file-name{font-size:14px;font-weight:700;color:#e4e6eb;margin-bottom:8px;letter-spacing:-0.2px}
-.dm7-file-specs{display:grid;grid-template-columns:repeat(2,1fr);gap:4px 16px;margin-bottom:6px}
-.dm7-file-specs .fs-item{display:flex;align-items:center;gap:6px;font-size:10px;color:#888}
-.dm7-file-specs .fs-item .fs-key{color:#555;min-width:32px;text-transform:uppercase;font-size:8px;font-weight:600}
-.dm7-file-specs .fs-item .fs-val{color:#93c5fd;font-weight:600}
-.dm7-file-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
-.dm7-file-tag{font-size:9px;padding:3px 10px;border-radius:5px;background:rgba(59,130,246,.08);color:#60a5fa;font-weight:600;border:1px solid rgba(59,130,246,.1)}
-.dm7-file-path{font-size:9px;color:#444;font-family:monospace;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* Issue cards */
-.dm6-issue-card{display:flex;gap:12px;padding:14px;margin-bottom:12px;border-radius:8px;background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.12);border-left:4px solid #f59e0b}
-.dm6-issue-icon{font-size:22px;flex-shrink:0;line-height:1}
-.dm6-issue-content{flex:1;min-width:0}
-.dm6-issue-title{font-size:12px;font-weight:700;color:#f59e0b;margin-bottom:3px}
-.dm6-issue-body{font-size:10px;color:#e4e6eb;line-height:1.45}
-.dm6-issue-note{font-size:10px;color:#22c55e;margin-top:4px;padding:4px 8px;background:rgba(34,197,94,.04);border-radius:4px;display:inline-block}
-.dm6-next-action{display:flex;gap:8px;padding:12px 16px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid rgba(255,255,255,.06);margin-top:12px;flex-wrap:wrap;align-items:center}
-.dm6-next-action button{padding:10px 22px;font-size:12px;font-weight:700;border-radius:6px;border:none;cursor:pointer;transition:all .15s}
-.dm6-next-action .btn-primary{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff}
-.dm6-next-action .btn-primary:hover{box-shadow:0 0 16px rgba(59,130,246,.4);transform:translateY(-1px)}
-.dm6-next-action .btn-secondary{background:rgba(255,255,255,.06);color:#93c5fd;border:1px solid rgba(255,255,255,.08)}
-.dm6-next-action .btn-secondary:hover{background:rgba(255,255,255,.1);color:#fff}
-/* Pipeline tech log cards */
-.dm6-tech-log{display:flex;flex-direction:column;gap:10px}
-.pipe-cat{margin-bottom:2px}
-.pipe-cat-hdr{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:#c4d4e8;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.04)}
-.pipe-cat-count{font-size:9px;color:#555;font-weight:400}
-.pipe-cat-items{display:flex;flex-direction:column;gap:4px;margin-top:6px}
-.pipe-item{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:6px;background:rgba(255,255,255,.01);border:1px solid rgba(255,255,255,.03);transition:background .15s}
-.pipe-item:hover{background:rgba(255,255,255,.03)}
-.pipe-item.pipe-ok{border-left:3px solid #22c55e}
-.pipe-item.pipe-warn{border-left:3px solid #f59e0b}
-.pipe-item.pipe-err{border-left:3px solid #ef4444}
-.pipe-item-icon{flex-shrink:0;font-size:11px;line-height:1;margin-top:1px}
-.pipe-item-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.pipe-item-label{font-size:10px;font-weight:600;color:#e4e6eb}
-.pipe-item-val{font-size:9px;color:#888;word-break:break-all}
-.pipe-item-path{font-size:8px;color:#444;font-family:monospace;word-break:break-all}
-.pipe-item-note{font-size:8px;color:#555;font-style:italic}
-/* SFX card styles */
-.sfx-card{border-color:rgba(59,130,246,.15) !important}
-
-/* ===== DM-8 待执行剧集看板 ===== */
-.dm8-ep-card{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;margin-bottom:12px;border-radius:8px;border-left:4px solid #3b82f6;background:linear-gradient(135deg,rgba(59,130,246,.08),transparent)}
-.dm8-ep-icon{font-size:28px;flex-shrink:0}
-.dm8-ep-content{flex:1}
-.dm8-ep-title{font-size:14px;font-weight:700;color:#e4e6eb;margin-bottom:4px}
-.dm8-ep-meta{font-size:11px;color:#93c5fd;margin-bottom:4px}
-.dm8-ep-advice{font-size:11px;color:#fbbf24}
-.dm8-script-card{margin-bottom:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;overflow:hidden}
-.dm8-script-hdr{padding:8px 12px;background:rgba(59,130,246,.06);font-size:12px;font-weight:700;color:#60a5fa}
-.dm8-script-body{padding:12px}
-.dm8-script-title{font-size:14px;font-weight:700;color:#e4e6eb;margin-bottom:8px}
-.dm8-script-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
-.dm8-script-tag{font-size:9px;padding:2px 8px;border-radius:4px;font-weight:600}
-.dm8-script-tag.blue{background:rgba(74,158,255,.12);color:#4a9eff}
-.dm8-script-tag.purple{background:rgba(167,139,250,.12);color:#a78bfa}
-.dm8-script-src{font-size:9px;color:#555;margin-top:4px}
-.dm8-dub-card{display:flex;align-items:center;gap:10px;padding:12px 14px;margin-bottom:12px;background:rgba(239,68,68,.06);border:2px solid rgba(239,68,68,.2);border-radius:8px}
-.dm8-dub-icon{font-size:24px;flex-shrink:0}
-.dm8-dub-content{flex:1;min-width:0}
-.dm8-dub-title{font-size:13px;font-weight:700;color:#fca5a5;margin-bottom:2px}
-.dm8-dub-detail{font-size:10px;color:#888;margin-bottom:2px}
-.dm8-dub-status{font-size:9px;color:#ef4444}
-.dm8-dub-btn{padding:8px 18px;border:none;border-radius:6px;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;transition:all .15s}
-.dm8-dub-btn:hover{box-shadow:0 0 10px rgba(239,68,68,.4);transform:translateY(-1px)}
-.dm8-dub-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
-.dm8-cost-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
-.dm8-cost-card{padding:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;text-align:center}
-.dm8-next-action{border-top:1px solid #222;padding:14px 0 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.dm8-tool-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
-.dm8-tool-item{display:flex;align-items:center;gap:6px;padding:8px 10px;background:rgba(255,255,255,.02);border-radius:6px;font-size:10px}
-.dm8-tool-icon{font-size:14px}
-.dm8-tool-label{color:#888;margin-right:auto}
-.dm8-tool-status{font-weight:600;font-size:10px}
-.dm8-tool-status.ok{color:#22c55e}
-.dm8-tool-status.off{color:#ef4444}
-/* DM-8 enhanced: character grid & emotional arc */
-.dm8-script-meta-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
-.dm8-script-stat{text-align:center;padding:8px;background:rgba(255,255,255,.03);border-radius:6px}
-.dm8-script-stat .ss-icon{font-size:16px;display:block;margin-bottom:4px}
-.dm8-script-stat .ss-val{font-size:14px;font-weight:700;color:#e4e6eb;display:block}
-.dm8-script-stat .ss-label{font-size:9px;color:#888;margin-top:2px}
-.dm8-section-label{font-size:10px;font-weight:700;color:#93c5fd;margin:12px 0 8px;border-bottom:1px solid rgba(147,197,253,.1);padding-bottom:4px}
-.dm8-char-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:8px}
-@media(max-width:768px){.dm8-char-grid{grid-template-columns:repeat(3,1fr)}.dm8-script-meta-row{grid-template-columns:repeat(2,1fr)}}
-.dm8-char-card{text-align:center;padding:8px 4px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:6px;transition:all .15s}
-.dm8-char-card:hover{border-color:rgba(59,130,246,.3)}
-.dm8-char-emoji{font-size:20px;margin-bottom:2px}
-.dm8-char-name{font-size:11px;font-weight:700;color:#e4e6eb}
-.dm8-char-role{font-size:9px;background:rgba(139,92,246,.15);color:#a78bfa;border-radius:3px;padding:1px 6px;display:inline-block;margin:2px 0}
-.dm8-char-desc{font-size:8px;color:#888;margin:2px 0;line-height:1.3}
-.dm8-char-voice{font-size:8px;color:#60a5fa;background:rgba(96,165,250,.1);padding:1px 5px;border-radius:3px}
-.dm8-emo-bar{display:flex;align-items:center;gap:0;padding:8px 0;overflow-x:auto}
-.dm8-emo-stage{text-align:center;flex:1;min-width:50px;padding:6px 4px;background:rgba(255,255,255,.02);border-radius:6px;border:1px solid rgba(255,255,255,.04)}
-.dm8-emo-stage.peak{border-color:#f59e0b;background:rgba(245,158,11,.08)}
-.dm8-emo-stage .emo-icon{font-size:18px;display:block}
-.dm8-emo-stage .emo-label{font-size:9px;color:#e4e6eb;font-weight:600;margin-top:2px}
-.dm8-emo-stage .emo-step{font-size:8px;color:#888;margin-top:1px}
-.dm8-emo-arrow{color:#555;font-size:12px;padding:0 2px;flex-shrink:0}
-
-/* ===== DM-9 批量管理看板 ===== */
-.dm9-summary-card{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;margin-bottom:12px;border-radius:8px;border-left:4px solid #f59e0b;background:linear-gradient(135deg,rgba(245,158,11,.08),transparent)}
-.dm9-summary-icon{font-size:24px;flex-shrink:0}
-.dm9-summary-content{flex:1;min-width:0}
-.dm9-summary-title{font-weight:700;font-size:14px;color:#e4e6eb;margin-bottom:4px}
-.dm9-summary-meta{font-size:11px;color:#93c5fd;margin-bottom:4px}
-.dm9-summary-advice{font-size:10px;color:#f59e0b;line-height:1.4}
-.dm9-compare-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-.dm9-ep-card{background:#1a1d27;border-radius:8px;border:1px solid #222;overflow:hidden;display:flex;flex-direction:column;transition:all .15s;position:relative}
-.dm9-ep-card:hover{border-color:#4a9eff;box-shadow:0 0 12px rgba(74,158,255,.1)}
-.dm9-ep-card.recommended{border:2px solid #22c55e;background:linear-gradient(135deg,rgba(34,197,94,.06),#1a1d27)}
-.dm9-ep-card.warn{border-left:3px solid #f59e0b}
-.dm9-ep-badge.star{position:absolute;top:6px;right:8px;font-size:9px;font-weight:700;color:#22c55e;background:rgba(34,197,94,.12);padding:2px 8px;border-radius:12px;z-index:1}
-.dm9-ep-header{display:flex;align-items:center;gap:6px;padding:10px 12px 6px;border-bottom:1px solid rgba(255,255,255,.04)}
-.dm9-ep-num{font-size:11px;font-weight:700;color:#4a9eff;font-family:monospace}
-.dm9-ep-title{font-size:13px;font-weight:600;color:#e4e6eb}
-.dm9-ep-body{padding:8px 12px;flex:1;display:flex;flex-direction:column;gap:6px}
-.dm9-ep-tags{display:flex;gap:6px;flex-wrap:wrap}
-.dm9-ep-tag{font-size:9px;padding:2px 8px;border-radius:4px;font-weight:600}
-.dm9-ep-tag.blue{background:rgba(74,158,255,.12);color:#4a9eff}
-.dm9-ep-tag.purple{background:rgba(167,139,250,.12);color:#a78bfa}
-.dm9-ep-cost{font-size:12px;font-weight:700;color:#fbbf24}
-.dm9-ep-risk.warn{font-size:9px;color:#f59e0b;background:rgba(245,158,11,.08);padding:4px 6px;border-radius:4px}
-.dm9-ep-advantage{font-size:10px;color:#22c55e;line-height:1.4}
-.dm9-ep-action{padding:8px 12px;border-top:1px solid rgba(255,255,255,.04);display:flex;gap:6px}
-.btn-sm9{padding:6px 12px;border-radius:6px;border:none;cursor:pointer;font-weight:600;font-size:11px;transition:all .15s;white-space:nowrap}
-.btn-sm9.primary{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff}
-.btn-sm9.primary:hover{box-shadow:0 0 8px rgba(59,130,246,.4);transform:translateY(-1px)}
-.btn-sm9.primary:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
-.btn-sm9.primary.large{padding:8px 16px;font-size:12px;background:linear-gradient(135deg,#22c55e,#16a34a)}
-.btn-sm9.preview{background:rgba(168,85,247,.12);color:#a855f7;border:1px solid rgba(168,85,247,.2)}
-.btn-sm9.preview:hover{background:rgba(168,85,247,.2)}
-.btn-sm9.mini{padding:2px 8px;font-size:9px;background:rgba(255,255,255,.05);color:#93c5fd;border:1px solid rgba(255,255,255,.08);border-radius:4px}
-.btn-sm9.mini:hover{background:rgba(255,255,255,.1);color:#fff}
-.btn-sm9.mini.warn{background:rgba(245,158,11,.1);color:#f59e0b;border-color:rgba(245,158,11,.2)}
-.btn-sm9.mini.warn:hover{background:rgba(245,158,11,.2);color:#fef3c7}
-.dm9-cost-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-.dm9-cost-card{padding:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;text-align:center}
-.cc9-label{display:block;font-size:10px;color:#888;margin-bottom:4px}
-.cc9-val{display:block;font-size:18px;font-weight:700;color:#fbbf24;margin-bottom:2px}
-.cc9-meta{display:block;font-size:9px;color:#555}
-.dm9-risk-card{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;margin-bottom:14px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:8px}
-.dm9-risk-icon{font-size:20px;flex-shrink:0}
-.dm9-risk-body{flex:1;min-width:0}
-.dm9-risk-title{font-size:12px;font-weight:700;color:#f59e0b;margin-bottom:4px}
-.dm9-risk-detail{font-size:10px;color:#888;line-height:1.5;margin-bottom:4px}
-.dm9-risk-advice{font-size:10px;color:#93c5fd;line-height:1.4}
-.dm9-next-action{border-top:1px solid #222;padding:14px 0 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.btn-p9{padding:8px 16px;border-radius:6px;border:none;cursor:pointer;font-weight:600;font-size:12px;transition:all .15s}
-.btn-p9.primary{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff}
-.btn-p9.primary:hover{box-shadow:0 0 10px rgba(59,130,246,.4)}
-.btn-p9.primary:disabled{opacity:.5;cursor:not-allowed;box-shadow:none}
-.btn-p9.secondary{background:rgba(255,255,255,.06);color:#93c5fd;border:1px solid rgba(255,255,255,.08)}
-.btn-p9.secondary:hover{background:rgba(255,255,255,.1);color:#fff}
-.btn-p9.warn{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
-.btn-p9.warn:hover{background:rgba(245,158,11,.2);color:#fef3c7}
-@media(max-width:768px){.dm9-compare-grid{grid-template-columns:1fr}.dm9-cost-grid,.dm8-cost-grid{grid-template-columns:1fr 1fr}}
-
-.cc-label{display:block;font-size:10px;color:#888;margin-bottom:4px}
-.cc-val{display:block;font-size:18px;font-weight:700;color:#fbbf24;margin-bottom:2px}
-.dm9-tool-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
-.dm9-tool-item{display:flex;align-items:center;gap:6px;padding:8px 10px;background:rgba(255,255,255,.02);border-radius:6px;font-size:10px}
-.dm9-tool-icon{font-size:14px}
-.dm9-tool-label{color:#888;margin-right:auto}
-.dm9-tool-status{font-weight:600;font-size:10px}
-.dm9-tool-status.ok{color:#22c55e}
-.dm9-tool-status.off{color:#ef4444}
-.dm9-checklist{margin-top:12px}
-.dm9-check-title{font-size:11px;font-weight:700;color:#93c5fd;margin-bottom:8px}
-.dm9-check-item{font-size:10px;color:#888;padding:4px 0;line-height:1.5}
-.dm9-check-item.done{color:#22c55e}
-.dm9-check-item.warn{color:#f59e0b}
-.check-pending{color:#555}
-.dm9-batch-status{margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06)}
-.dm9-batch-title{font-size:11px;font-weight:700;color:#93c5fd;margin-bottom:8px}
-.dm9-batch-bar{position:relative;height:20px;background:rgba(255,255,255,.05);border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:9px;color:#888}
-.dm9-batch-fill{position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#2563eb,#3b82f6);border-radius:10px;transition:width .5s}
-
-/* ===== DM-3 监控仪表盘 ===== */
-.dm3-mon-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
-.dm3-mon-card{padding:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px}
-.dm3-mon-label{font-size:10px;color:#888;margin-bottom:6px;font-weight:600}
-.dm3-mon-bar{height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden;margin-bottom:4px}
-.dm3-mon-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa);border-radius:4px;transition:width .6s}
-.dm3-mon-fill.green{background:linear-gradient(90deg,#22c55e,#4ade80)}
-.dm3-mon-val{font-size:10px;color:#888}
-.dm3-mon-val.large{font-size:16px;font-weight:700;color:#fbbf24;margin-bottom:2px}
-.dm3-mon-val.large.warn{color:#f59e0b}
-.dm3-mon-sub{font-size:9px;color:#555}
-
-/* ========== DM-4 升级路径决策看板 (v3.7.12) ========== */
-/* Panel 1: Upgrade conclusion summary */
-.upgrade-summary-card{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;margin-bottom:12px;border-radius:8px;background:linear-gradient(135deg,rgba(245,158,11,.1),transparent);border-left:4px solid #f59e0b}
-.upgrade-summary-card .upgrade-summary-icon{font-size:28px;flex-shrink:0;line-height:1.2}
-.upgrade-summary-card .upgrade-summary-content{flex:1;min-width:0}
-.upgrade-summary-card .upgrade-summary-title{font-size:14px;font-weight:700;color:#e4e6eb;margin-bottom:4px}
-.upgrade-summary-card .upgrade-summary-meta{font-size:10px;color:#888;margin-bottom:4px;line-height:1.5}
-.upgrade-summary-card .upgrade-summary-advice{font-size:11px;color:#fbbf24;line-height:1.5}
-/* Panel 2: Three-scheme comparison */
-.upgrade-compare-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-@media(max-width:900px){.upgrade-compare-grid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:600px){.upgrade-compare-grid{grid-template-columns:1fr}}
-.upgrade-card{border-radius:8px;padding:14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);position:relative;display:flex;flex-direction:column;gap:8px;transition:all .2s}
-.upgrade-card:hover{border-color:rgba(255,255,255,.15)}
-.upgrade-card.current{border-left:4px solid rgba(239,68,68,.5)}
-.upgrade-card.recommended{border:2px solid #22c55e;background:linear-gradient(135deg,rgba(34,197,94,.06),transparent);box-shadow:0 0 20px rgba(34,197,94,.08)}
-.upgrade-card.future{border-left:4px solid rgba(59,130,246,.3);opacity:.85}
-.upgrade-card-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;display:inline-block;width:fit-content}
-.upgrade-card.current .upgrade-card-badge{background:rgba(239,68,68,.15);color:#ef4444}
-.upgrade-card.recommended .upgrade-card-badge{background:#22c55e;color:#fff}
-.upgrade-card.future .upgrade-card-badge{background:rgba(59,130,246,.1);color:#60a5fa}
-.upgrade-card.recommended .upgrade-card-badge.highlight{animation:pulse-badge 2s infinite}
-@keyframes pulse-badge{0%,100%{opacity:1}50%{opacity:.7}}
-.upgrade-card-header{font-size:13px;font-weight:700;color:#e4e6eb;margin-top:2px}
-.upgrade-card-specs{display:flex;flex-wrap:wrap;gap:6px}
-.upgrade-card-specs span{font-size:10px;color:#888;background:rgba(255,255,255,.04);padding:3px 8px;border-radius:4px}
-.upgrade-card-quality{margin:2px 0}
-.quality-bar{height:6px;border-radius:3px;font-size:8px;color:#fff;padding:0 6px;line-height:6px;text-align:right;min-width:20%}
-.quality-bar.red{background:linear-gradient(90deg,#ef4444,#dc2626)}
-.quality-bar.yellow{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
-.quality-bar.green{background:linear-gradient(90deg,#22c55e,#4ade80)}
-.upgrade-card-risk{font-size:9px;color:#ef4444;background:rgba(239,68,68,.06);padding:4px 6px;border-radius:4px}
-.upgrade-card-benefit{font-size:9px;color:#22c55e;background:rgba(34,197,94,.06);padding:4px 6px;border-radius:4px;line-height:1.4}
-.upgrade-card-block{font-size:9px;color:#f59e0b;background:rgba(245,158,11,.06);padding:4px 6px;border-radius:4px}
-.upgrade-card-status{font-size:9px;color:#888;padding:4px 6px;background:rgba(255,255,255,.03);border-radius:4px}
-.upgrade-card button{margin-top:4px;width:100%}
-/* Panel 3: Defect warning */
-.publish-check-card.fail{display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:8px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-left:4px solid #ef4444;margin-bottom:12px}
-.publish-check-card .check-card-icon{font-size:24px;flex-shrink:0}
-.publish-check-card .check-card-title{font-size:12px;font-weight:700;color:#ef4444;margin-bottom:4px}
-.publish-check-card .check-card-detail{font-size:10px;color:#fca5a5;line-height:1.5}
-.publish-check-card .check-card-advice{font-size:10px;color:#22c55e;margin-top:2px;line-height:1.4}
-/* Panel 4: Tech specs */
-.dm4-tech-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px}
-@media(max-width:768px){.dm4-tech-grid{grid-template-columns:repeat(3,1fr)}}
-.dm4-tech-card{padding:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;text-align:center;display:flex;flex-direction:column;gap:4px}
-.dm4-tech-card .tc-icon{font-size:18px}
-.dm4-tech-card .tc-label{font-size:9px;color:#888}
-.dm4-tech-card .tc-value{font-size:12px;font-weight:700;color:#e4e6eb}
-.dm4-tech-card .tc-sub{font-size:9px;color:#555}
-/* Panel 5: Collapsible tools */
-.dm4-tools-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
-@media(max-width:768px){.dm4-tools-grid{grid-template-columns:repeat(2,1fr)}}
-.dm4-tool-card{padding:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:6px;display:flex;flex-direction:column;gap:4px}
-.dm4-tool-card .tool-icon{font-size:16px}
-.dm4-tool-card .tool-name{font-size:10px;font-weight:600;color:#e4e6eb}
-.dm4-tool-card .tool-status{font-size:9px;color:#888}
-.dm4-tool-card .tool-status.ok{color:#22c55e}
-.dm4-tool-card .tool-status.warn{color:#f59e0b}
-.dm4-tool-card .tool-status.ng{color:#ef4444}
-/* Panel 6: Next action */
-.gate-next-action{display:flex;gap:10px;padding:12px 16px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid rgba(255,255,255,.06);margin-top:12px;flex-wrap:wrap;align-items:center}
-.gate-next-action .btn-lg{padding:8px 20px;font-size:13px;font-weight:700;border-radius:6px}
-
-/* ========== DM-5 AI视频生成状态看板 (v3.7.11 optimized) ========== */
-.dm5-summary-card{display:flex;gap:12px;padding:14px 16px;border-radius:8px;margin-bottom:14px;border:1px solid rgba(255,255,255,.08)}
-.dm5-summary-card.red{background:linear-gradient(135deg,rgba(239,68,68,.08),transparent);border-left:4px solid #ef4444}
-.dm5-summary-card.green{background:linear-gradient(135deg,rgba(34,197,94,.08),transparent);border-left:4px solid #22c55e}
-.dm5-summary-icon{font-size:22px;flex-shrink:0}
-.dm5-summary-content{flex:1;display:flex;flex-direction:column;gap:4px}
-.dm5-summary-title{font-size:13px;font-weight:700;color:#e4e6eb}
-.dm5-summary-meta{font-size:11px;color:#93c5fd}
-.dm5-summary-advice{font-size:10px;color:#888}
-.dm5-block-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:14px}
-.dm5-block-card{padding:14px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:8px}
-.dm5-block-card.fail{border-left:4px solid #ef4444}
-.dm5-block-card.warn{border-left:4px solid #f59e0b;background:rgba(245,158,11,.04)}
-.dm5-block-card.ok{border-left:4px solid #22c55e}
-.dm5-block-header{font-size:12px;font-weight:700}
-.fail-hdr{color:#ef4444}
-.warn-hdr{color:#f59e0b}
-.ok-hdr{color:#22c55e}
-.dm5-block-body{font-size:11px;color:#e4e6eb;line-height:1.6}
-.dm5-block-action{display:flex;gap:8px;margin-top:auto;flex-wrap:wrap}
-.dm5-block-note{font-size:10px;color:#888;padding-top:4px;border-top:1px solid rgba(255,255,255,.06)}
-.dm5-tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:14px}
-.dm5-tech-card{padding:12px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:6px;position:relative}
-.dm5-tech-card.recommended{border:2px solid #22c55e;background:linear-gradient(135deg,rgba(34,197,94,.06),transparent)}
-.dm5-tech-card .tc-icon{font-size:20px}
-.dm5-tech-card .tc-name{font-size:12px;font-weight:700;color:#e4e6eb}
-.dm5-tech-card .tc-price{font-size:14px;font-weight:700;color:#22c55e}
-.dm5-tech-card .tc-meta{font-size:10px;color:#888}
-.dm5-tech-card .tc-tags{display:flex;gap:4px;flex-wrap:wrap}
-.dm5-tech-card .tc-tag{font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,.06);color:#93c5fd}
-.dm5-tech-card .tc-tag.blue{background:rgba(59,130,246,.15);color:#60a5fa}
-.dm5-tech-card .tc-tag.green{background:rgba(34,197,94,.15);color:#22c55e}
-.dm5-tech-card .tc-tag.yellow{background:rgba(245,158,11,.15);color:#f59e0b}
-.dm5-tech-card .tc-tag.purple{background:rgba(139,92,246,.15);color:#a78bfa}
-.dm5-tech-card .tc-quality{margin-top:4px}
-.dm5-tech-card .tc-quality-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden}
-.dm5-tech-card .tc-quality-fill{height:100%;border-radius:3px}
-.dm5-tech-card .tc-quality-fill.low{background:#ef4444}
-.dm5-tech-card .tc-quality-fill.mid{background:#f59e0b}
-.dm5-tech-card .tc-quality-fill.high{background:#22c55e}
-.dm5-tech-card .reco-badge{position:absolute;top:-8px;left:12px;font-size:9px;font-weight:700;background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px}
-.dm5-reg-card{margin-bottom:12px}
-.dm5-kling-hint{font-size:11px;color:#22c55e;background:rgba(34,197,94,.06);padding:8px 12px;border-radius:6px;margin-bottom:12px;border:1px solid rgba(34,197,94,.15)}
-.dm5-consistency-risk{padding:12px 14px;border-radius:8px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-left:4px solid #f59e0b;margin-bottom:12px}
-.dm5-consistency-risk .risk-icon{font-size:20px;flex-shrink:0}
-.dm5-consistency-risk .risk-title{font-size:12px;font-weight:700;color:#f59e0b;margin-bottom:4px}
-.dm5-consistency-risk .risk-body{font-size:11px;color:#e4e6eb;line-height:1.6}
-.dm5-consistency-risk .risk-mitigation{font-size:10px;color:#22c55e;margin-top:6px;padding:4px 8px;background:rgba(34,197,94,.06);border-radius:4px}
-.dm5-next-action{display:flex;gap:8px;padding:10px 14px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid rgba(255,255,255,.06);margin-top:12px;flex-wrap:wrap;align-items:center}
-.btn-sm5{padding:6px 12px;border-radius:6px;border:none;cursor:pointer;font-size:11px;font-weight:600;transition:all .15s}
-.btn-sm5.primary{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}
-.btn-sm5.primary:hover{box-shadow:0 0 10px rgba(34,197,94,.4)}
-.btn-sm5.primary:disabled{opacity:.5;cursor:not-allowed}
-.btn-sm5.secondary{background:rgba(255,255,255,.08);color:#93c5fd;border:1px solid rgba(255,255,255,.1)}
-.btn-sm5.secondary:hover{background:rgba(255,255,255,.12);color:#fff}
-.btn-sm5:disabled{opacity:.5;cursor:not-allowed}
-.dm5-solution-entrance{padding:10px 12px;background:rgba(34,197,94,.06);border-radius:8px;border:1px solid rgba(34,197,94,.15);margin:4px 0}
-.dm5-solution-text{font-size:11px;color:#22c55e;font-weight:600;margin-bottom:8px}
-.dm5-solution-btns{display:flex;gap:8px;flex-wrap:wrap}
-.btn-sm5.primary.kling-btn{background:linear-gradient(135deg,#22c55e,#16a34a);font-weight:700;box-shadow:0 2px 8px rgba(34,197,94,.2)}
-.btn-sm5.primary.kling-btn:hover{box-shadow:0 0 14px rgba(34,197,94,.5)}
-/* DM-5 quality pipeline & cost summary */
-.dm5-pipeline-bar{display:flex;align-items:center;gap:0;margin:14px 0;padding:8px 0;overflow-x:auto}
-.dm5-pipeline-stage{flex:1;min-width:80px;text-align:center;padding:8px 4px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);position:relative}
-.dm5-pipeline-stage:first-child{border-radius:8px 0 0 8px}
-.dm5-pipeline-stage:last-child{border-radius:0 8px 8px 0}
-.dm5-pipeline-stage .pl-icon{font-size:20px;margin-bottom:4px}
-.dm5-pipeline-stage .pl-name{font-size:10px;font-weight:700;color:#e4e6eb}
-.dm5-pipeline-stage .pl-score{font-size:8px;color:#888;margin-top:2px}
-.dm5-pipeline-arrow{font-size:14px;color:#555;flex-shrink:0;padding:0 4px}
-.dm5-pipeline-stage.current{border-color:#ef4444;background:rgba(239,68,68,.08)}
-.dm5-pipeline-stage.recommended{border-color:#22c55e;background:rgba(34,197,94,.08);border-style:dashed;border-width:2px}
-.dm5-cost-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
-@media(max-width:768px){.dm5-cost-grid{grid-template-columns:repeat(2,1fr)}}
-.dm5-cost-card{padding:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;text-align:center}
-.dm5-cost-card .cc-icon{font-size:18px;margin-bottom:4px}
-.dm5-cost-card .cc-name{font-size:10px;font-weight:700;color:#e4e6eb;margin-bottom:2px}
-.dm5-cost-card .cc-price{font-size:14px;font-weight:700;color:#fbbf24;margin-bottom:2px}
-.dm5-cost-card .cc-meta{font-size:9px;color:#888}
-.dm5-cost-card.recommended{border-color:#22c55e;background:rgba(34,197,94,.05)}
-/* DM-5 prediction cards & pipeline flow */
-.dm5-pred-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
-@media(max-width:768px){.dm5-pred-grid{grid-template-columns:1fr}}
-.dm5-pred-card{padding:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px}
-.dm5-pred-card.wide{grid-column:1/-1}
-.dm5-pred-card .pred-icon{font-size:18px;margin-bottom:4px}
-.dm5-pred-card .pred-label{font-size:9px;color:#888;text-transform:uppercase;margin-bottom:4px}
-.dm5-pred-card .pred-val{font-size:11px;color:#e4e6eb;line-height:1.5}
-.dm5-pred-card .pred-compare{font-size:9px;color:#888;margin-top:4px;padding-top:4px;border-top:1px solid rgba(255,255,255,.06)}
-.dm5-flow-bar{display:flex;align-items:center;gap:0;padding:8px 0;margin-bottom:0;overflow-x:auto}
-.dm5-flow-step{padding:8px 12px;text-align:center;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:6px;min-width:60px}
-.dm5-flow-step .flow-icon{font-size:16px;display:block}
-.dm5-flow-step .flow-label{font-size:9px;color:#888;margin-top:2px}
-.dm5-flow-step.done{border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.06)}
-.dm5-flow-step.done .flow-label{color:#22c55e}
-.dm5-flow-step.block{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.08);box-shadow:0 0 8px rgba(239,68,68,.15)}
-.dm5-flow-step.block .flow-label{color:#ef4444;font-weight:700}
-.dm5-flow-arrow{color:#555;font-size:14px;padding:0 4px;flex-shrink:0}
-@media(max-width:768px){.dm5-flow-bar{flex-wrap:wrap;justify-content:center}}
-
-/* ========== DM-10 发布检查面板 (v3.7.16 optimized) ========== */
-.publish-check-summary-card{display:flex;gap:14px;padding:16px;border-radius:10px;margin-bottom:16px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02)}
-.publish-check-summary-card.green{background:linear-gradient(135deg,rgba(34,197,94,.08),transparent);border-left:4px solid #22c55e}
-.publish-check-summary-card.red{background:linear-gradient(135deg,rgba(239,68,68,.08),transparent);border-left:4px solid #ef4444}
-.publish-check-summary-card.orange{background:linear-gradient(135deg,rgba(245,158,11,.08),transparent);border-left:4px solid #f59e0b}
-.publish-check-summary-icon{font-size:24px;flex-shrink:0}
-.publish-check-summary-content{flex:1;display:flex;flex-direction:column;gap:4px}
-.publish-check-summary-title{font-size:14px;font-weight:700;color:#e4e6eb}
-.publish-check-summary-meta{font-size:11px;color:#93c5fd}
-.publish-check-summary-advice{font-size:10px;color:#888}
-.pc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
-@media(max-width:900px){.pc-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:600px){.pc-grid{grid-template-columns:1fr}}
-.pc-card{padding:14px;border-radius:8px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:8px;transition:all .15s}
-.pc-card:hover{background:rgba(255,255,255,.04)}
-.pc-card.pass{border-left:4px solid #22c55e;background:rgba(34,197,94,.03)}
-.pc-card.fail{border-left:4px solid #ef4444;background:rgba(239,68,68,.04)}
-.pc-card.warn{border-left:4px solid #f59e0b;background:rgba(245,158,11,.04)}
-.pc-card-header{display:flex;align-items:center;gap:8px}
-.pc-card-icon{font-size:18px}
-.pc-card-title{font-size:12px;font-weight:700;color:#e4e6eb}
-.pc-card-body{font-size:11px;color:#c4d4e8;line-height:1.5}
-.pc-card-footer{display:flex;flex-direction:column;gap:8px;margin-top:auto}
-.pc-size-bars{display:flex;flex-direction:column;gap:4px}
-.pc-size-row{display:flex;align-items:center;gap:8px}
-.pc-size-label{font-size:9px;color:#888;width:60px;flex-shrink:0}
-.pc-size-bar{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
-.pc-size-bar-fill{height:100%;border-radius:3px}
-.pc-size-bar-fill.ok{background:linear-gradient(90deg,#22c55e,#16a34a)}
-.pc-size-bar-fill.bad{background:linear-gradient(90deg,#ef4444,#dc2626)}
-.pc-size-val{font-size:10px;color:#e4e6eb;width:50px;text-align:right;flex-shrink:0}
-.pc-size-target{font-size:9px;color:#f59e0b;padding:2px 6px;background:rgba(245,158,11,.08);border-radius:3px}
-.pc-lang-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:4px}
-.pc-lang-item{font-size:10px;padding:6px 8px;border-radius:4px}
-.pc-lang-item.missing{background:rgba(239,68,68,.08);color:#fca5a5;border:1px solid rgba(239,68,68,.15)}
-.pc-lang-item.done{background:rgba(34,197,94,.08);color:#86efac;border:1px solid rgba(34,197,94,.15)}
-.pc-card-action{padding:8px 12px;border-radius:6px;border:none;cursor:pointer;font-size:11px;font-weight:600;transition:all .15s;width:100%}
-.pc-card-action.primary{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}
-.pc-card-action.primary:hover{box-shadow:0 0 10px rgba(34,197,94,.4)}
-.pc-card-action.primary:disabled{opacity:.5;cursor:not-allowed}
-.pc-card-action.secondary{background:rgba(255,255,255,.06);color:#93c5fd;border:1px solid rgba(255,255,255,.08)}
-.pc-card-action.secondary:hover{background:rgba(255,255,255,.1);color:#fff}
-.pc-next-action{display:flex;gap:10px;padding:12px 16px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid rgba(255,255,255,.06);margin-top:12px;flex-wrap:wrap;align-items:center}
-.pc-next-action .btn-primary{padding:10px 24px;font-size:13px;font-weight:700;border-radius:6px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;cursor:pointer;border:none;transition:all .15s}
-.pc-next-action .btn-primary:hover{box-shadow:0 0 12px rgba(59,130,246,.4)}
-.pc-next-action .btn-primary:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
-.pc-next-action .btn-secondary{padding:10px 16px;font-size:12px;font-weight:600;border-radius:6px;background:rgba(255,255,255,.06);color:#93c5fd;cursor:pointer;border:1px solid rgba(255,255,255,.08);transition:all .15s}
-.pc-next-action .btn-secondary:hover{background:rgba(255,255,255,.1);color:#fff}
-
-</style>
-<!-- P1-6: Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer id="chartjs"></script>
-</head>
-<body>
-<div id="toast-container"></div>
-<div id="version-check" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#10b981;color:#fff;text-align:center;padding:6px 12px;font-size:13px;font-family:monospace;letter-spacing:0.5px;cursor:pointer" onclick="this.remove()">🔄 v3.7.20 — DM-1视图删图/重绘+🎤→DM-3管线串联，点击关闭</div>
-
-<div class="topbar">
-  <h1 id="appTitle">Agentic OS 指挥中心 v3.7</h1>
-  <span id="VER_BADGE" style="background:#ff0040;color:#fff;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:700">v3.7.17</span>
-  <div class="tabs">
-    <button class="tab active" id="tabTK" onclick="switchTab('tk')">TK运营 <span id="tkCount" style="font-size:9px;color:#666"></span></button>
-    <button class="tab" id="tabDM" onclick="switchTab('drama')">数字短剧 <span id="dmCount" style="font-size:9px;color:#666"></span></button>
-  </div>
-  <span style="font-size:10px;color:#444;margin-left:auto" id="lastRefresh"></span>
-  <span class="refresh-status" id="refreshStatus"></span>
-  <span class="compare-toggle" id="kbdToggle" onclick="toggleKbdHint()">⌨ 快捷键</span>
-  <span class="compare-toggle" id="expandAll" onclick="toggleAllSections()">📂 全展开</span>
-  <a href="/gallery" class="compare-toggle" style="text-decoration:none" target="_blank">🖼 画廊</a>
-  <span class="compare-toggle" id="dirModeBtn" onclick="toggleDirectorMode()" style="color:#f59e0b">🎬 导演模式</span>
-  <span class="compare-toggle" id="assetToggle" onclick="toggleAssetPanel()" style="position:relative">📦 资产</span>
-  <!-- P1-4: Unified download button -->
-  <div class="dl-wrap">
-    <button class="dl-btn" onclick="toggleDlPanel()">📥 导出 <span style="font-size:8px">▼</span></button>
-    <div class="dl-panel" id="dlPanel">
-      <div class="dl-hdr">选择导出格式</div>
-      <a onclick="downloadAs('json')">📋 JSON (完整数据)</a>
-      <a onclick="downloadAs('csv')">📊 CSV (里程碑表)</a>
-      <a onclick="downloadAs('csv-decisions')">📋 CSV (决策记录)</a>
-      <div class="dl-divider"></div>
-      <a onclick="downloadAs('md')">📝 Markdown 报告</a>
-      <a onclick="downloadAs('html')">🌐 HTML 快照</a>
-    </div>
-  </div>
-</div>
-<div id="prdStaleAlert" style="display:none;width:100%;background:#7f1d1d;color:#fca5a5;text-align:center;font-size:11px;padding:6px 16px;border-bottom:1px solid #991b1b;flex-shrink:0">
-  ⚠️ <b>PRD 版本滞后</b>: 代码已到 <span id="prdAlertCodeVer">v3.6.XX</span>，但 PRD 仅记录到 <span id="prdAlertPrdVer">v3.6.YY</span> — <a href="#" onclick="alert('请在 reports/PRD-v3.6.md 新增版本条目，然后 git commit+push')" style="color:#f87171;text-decoration:underline">查看修复步骤</a>
-</div>
-<div class="main">
-  <div class="left">
-    <!-- P1-12: Search & filter bar -->
-    <div style="padding:4px 8px;display:flex;gap:4px">
-      <input id="searchInput" placeholder="🔍 搜索..." style="flex:1;background:#111;border:1px solid #333;color:#e4e6eb;padding:3px 6px;border-radius:4px;font-size:10px;outline:none" oninput="onSearch(this.value)" />
-      <select id="filterSelect" style="background:#111;border:1px solid #333;color:#e4e6eb;padding:2px 4px;border-radius:4px;font-size:10px" onchange="onFilter(this.value)">
-        <option value="all">全部</option>
-        <option value="waiting_approval">待决策</option>
-        <option value="completed">已完成</option>
-        <option value="pending">待执行</option>
-      </select>
-    </div>
-    <div class="stats">
-      <div class="stat"><div class="num" id="statDone" style="color:#22c55e">-</div><div class="lbl">已完成</div></div>
-      <div class="stat"><div class="num" id="statPending" style="color:#f59e0b">-</div><div class="lbl">待决策</div></div>
-      <div class="stat"><div class="num" id="statMock" style="color:#fbbf24">-</div><div class="lbl">模拟</div></div>
-      <div class="stat"><div class="num" id="statTotal" style="color:#666">-</div><div class="lbl">总计</div></div>
-    </div>
-    <!-- v3.7: TK search/filter bar -->
-    <div id="tkSearchBar" style="display:none;padding:4px 8px">
-      <input id="tkSearch" placeholder="🔍 搜索里程碑..." style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:3px 6px;border-radius:4px;font-size:10px;outline:none" oninput="onTKSearch(this.value)">
-    </div>
-    <div id="list"></div>
-  </div>
-  <div class="right">
-    <div class="empty-state" id="empty"><div id="summaryView"></div></div>
-    <div class="detail" id="detail" style="display:none"></div>
-  </div>
-</div>
-<div class="loading-bar" id="loadingBar"></div>
-<div class="toast" id="toast"></div>
-<div class="modal" id="modal" onclick="closeModal()">
-  <span class="modal-close">&times;</span>
-  <img id="modalImg" src="" alt="zoom" />
-</div>
-<div class="kbd-hint" id="kbdHint">
-  <b>键盘快捷键</b><br>
-  <span class="kbd">←/→</span> 切换 TK/短剧 Tab<br>
-  <span class="kbd">↑/↓</span> 导航左侧列表<br>
-  <span class="kbd">Enter</span> 打开选中项详情<br>
-  <span class="kbd">Esc</span> 关闭弹窗/返回<br>
-  <span class="kbd">R</span> 手动刷新<br>
-  <span class="kbd">/</span> 聚焦搜索框<br>
-  <span class="kbd">?</span> 显示/隐藏此提示
-</div>
-
-<script>
-// v3.7.17: cache check — if URL has old version param, redirect
-(function(){
-   var v = '3.7.20';
-   var q = location.search;
-   var lsVer = localStorage.getItem('_dash_v');
-   if ((q && q.indexOf('v=') >= 0 && q.indexOf('v='+v) < 0) || (lsVer && lsVer !== v)) {
-     localStorage.clear();
-     location.href = location.href.split('?')[0] + '?v=' + v;
-   }
-   localStorage.setItem('_dash_v', v);
- })();
 // ================================================================
 // CONSTANTS
 // ================================================================
@@ -1633,9 +226,6 @@ async function renderDM0(detail,ms){
     decH += `<h3>&#129302; AI 对抗审核结果 (CODING 自动运行)</h3>`;
     decH += `<div style="font-size:14px;font-weight:700;color:${scoreColor};margin:8px 0;">${scoreIcon} 综合评分: ${score} / 10 &mdash; ${decisionText}</div>`;
     decH += dimCards;
-    // v3.7.17: 完整剧本展示 — 用户可以看到审核依据
-    decH += `<div class="accordion-section" style="margin:12px 0"><div class="accordion-header" onclick="toggleSection('dm0-script-sec')"><span>&#128214; 完整剧本 (审核依据) — 点击展开</span></div>`;
-    decH += `<div class="accordion-content" id="dm0-script-sec" style="display:none"><div id="dm0-script-content"><span class="loading">加载剧本中...</span></div></div></div>`;
     decH += `<div style="margin:12px 0;">`;
     decH += `<div style="font-size:10px;color:#888;margin-bottom:6px;">&#9889; 你的决策 (选择后 Agent 自动执行):</div>`;
     decH += `<div style="display:flex;gap:8px;flex-wrap:wrap;">`;
@@ -1663,45 +253,6 @@ async function renderDM0(detail,ms){
       }
     }
     _tryRadar();
-    // v3.7.17: Load full script into the collapsible section
-    (async function loadDM0Scripts(){
-      var scriptBox = document.getElementById('dm0-script-content');
-      if(!scriptBox) return;
-      try {
-        var r = await fetch('/api/script'), eps = await r.json();
-        var elist = Array.isArray(eps) ? eps : (eps.episodes || []);
-        if(!elist.length){ scriptBox.innerHTML='<div style="color:#555;font-size:11px;padding:12px">无剧本数据</div>'; return; }
-        var allHtml = '';
-        for (var i=0; i<elist.length; i++) {
-          var ep = elist[i];
-          var en = ep.ep || ep.episode || ep.num || (i+1);
-          var epNum = String(en).padStart(2,'0');
-          var title = ep.title || ep.name || ('第'+parseInt(epNum)+'集');
-          allHtml += '<div style="border-bottom:1px solid rgba(255,255,255,.06);padding:10px 0"><strong style="color:#93c5fd;font-size:13px">EP'+epNum+' ' + title + '</strong>';
-          try {
-            var sr = await fetch('/api/script/'+parseInt(en));
-            var sd = await sr.json();
-            var shots = sd.shots || sd.storyboard || [];
-            if (shots.length) {
-              shots.forEach(function(sh,si){
-                var scene = sh.scene || sh.description || sh.desc || '';
-                var dia = sh.dialogue || sh.lines || '';
-                var note = sh.note || sh.director_note || '';
-                allHtml += '<div style="margin:6px 0 6px 12px;font-size:10px;color:#e4e6eb;line-height:1.5"><span style="color:#f59e0b">镜' + String(si+1).padStart(2,'0') + '.</span> ';
-                if (scene) allHtml += '<span style="color:#a5b4c4">' + scene + '</span> ';
-                if (dia) allHtml += '<span style="color:#60a5fa">「' + (dia.length>100?dia.substring(0,100)+'...':dia) + '」</span> ';
-                if (note) allHtml += '<span style="color:#888;font-style:italic">' + note + '</span>';
-                allHtml += '</div>';
-              });
-            } else {
-              allHtml += '<div style="color:#555;font-size:10px;margin:4px 12px">暂无分镜数据</div>';
-            }
-          } catch(ex){ allHtml += '<div style="color:#ef4444;font-size:10px;margin:4px 12px">加载失败</div>'; }
-          allHtml += '</div>';
-        }
-        scriptBox.innerHTML = allHtml;
-      } catch(e) { scriptBox.innerHTML = '<div style="color:#ef4444;font-size:11px;padding:12px">剧本加载失败: '+e.message+'</div>'; }
-    })();
   } else {
     // v3.7.8: 无审核结果时显示"触发 AI 审核"入口
     var noReviewSec = '<div class="sec" style="border-left:3px solid #3b82f6;text-align:center;padding:20px">';
@@ -2393,30 +944,20 @@ async function renderDM1(detail, ms) {
         <div class="cb-left">
           <img src="${mainRender}" loading="lazy" onclick="zoomImg('${mainRender}')" onerror="this.style.display='none'" />
           <div class="cb-thumbnails" id="cbthumbs-${fid}">`;
-    // Count renders for consistency warning
-    var renderCount = renders.length || 0;
-    if (renderCount === 0) {
-      for (var si = 1; si <= 3; si++) {
-        var shot = String(si).padStart(2, '0');
-        var url = '/api/render/' + fid + '/shot_' + shot + '.png';
-        html += '<div class="cb-thumb-wrap"><img class="cb-thumb" src="' + url + '" loading="lazy" onclick="swapCharImg(\"' + fid + '\",\"' + url + '\",this)" onerror="this.parentElement.remove()" /><button class="cb-thumb-del" title="删除此角度" onclick="event.stopPropagation();deleteRenderFile(\"' + fid + '\",\"shot_' + shot + '.png\",this)" onmouseover="showDelTooltip(event,\"单击删除\")">✕</button></div>';
+    renders.forEach((r, ri) => {
+      const url = typeof r === 'string' ? r : (r.url || r.src || '');
+      if (url) html += `<img class="cb-thumb${ri === 0 ? ' active' : ''}" src="${url}" loading="lazy" onclick="swapCharImg('${fid}','${url}',this)" />`;
+    });
+    // fallback thumbnails
+    if (renders.length === 0) {
+      for (let si = 1; si <= 3; si++) {
+        const shot = String(si).padStart(2, '0');
+        const url = `/api/render/${fid}/shot_${shot}.png`;
+        html += `<img class="cb-thumb" src="${url}" loading="lazy" onclick="swapCharImg('${fid}','${url}',this)" onerror="this.style.display='none'" />`;
       }
-    } else {
-      renders.forEach(function(r, ri) {
-        var url = typeof r === 'string' ? r : (r.url || r.src || '');
-        if (!url) return;
-        var filename = url.split('/').pop();
-        html += '<div class="cb-thumb-wrap"><img class="cb-thumb' + (ri === 0 ? ' active' : '') + '" src="' + url + '" loading="lazy" onclick="swapCharImg(\"' + fid + '\",\"' + url + '\",this)" /><button class="cb-thumb-del" title="删除此角度" onclick="event.stopPropagation();deleteRenderFile(\"' + fid + '\",\"' + filename + '\",this)" onmouseover="showDelTooltip(event,\"单击删除\")">✕</button></div>';
-      });
     }
-    html += '</div>';
-    // Consistency warning if 3+ renders
-    if (renderCount >= 3) {
-      html += '<div class="cb-consistency-warn"><span>⚠️ 多角度一致性风险</span><span style="font-size:8px;color:#888">有 ' + renderCount + ' 张渲染图，AI 多角度生成可能不一致。点击 ✕ 删除不一致的图 → 「🔁 重新生成」</span></div>';
-    }
-    var regenOnclick = "regenerateCharacter('" + fid + "',this)";
-    html += '<div class="cb-thumb-actions"><button class="mini-btn" onclick="' + regenOnclick + '" style="font-size:9px;margin-top:4px">\u267B 重新生成所有角度</button></div>' +
-        `</div>
+    html += `</div>
+        </div>
         <div class="cb-right">
           <!-- 基本信息 -->
           <div class="cb-section">
@@ -5121,9 +3662,9 @@ function renderDefault(detail){
             h+='<span style="font-size:8px;padding:2px 7px;border-radius:10px;background:rgba(59,130,246,.1);color:#60a5fa">'+t.substring(0,15)+'</span>';
           });
           h+='</div>';
-          // Voice info + color dot — clickable to navigate to DM-3 Voice Design
+          // Voice info + color dot
           h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:9px;color:#888">';
-          h+='<span style="cursor:pointer;text-decoration:underline;text-underline-offset:2px;color:'+(voiceInfo.ref?'#4ade80':'#888')+'" onclick="switchToTab(\'drama\');select(\'DM-3\');setTimeout(function(){var vr=document.getElementById(\'dm3-voice-'+fid+'\');if(vr){vr.scrollIntoView({behavior:\'smooth\',block:\'center\'});vr.style.background=\'rgba(59,130,246,.08)\';setTimeout(function(){vr.style.background=\'\'},2000);}},800)" title="点击跳转到 DM-3 配音设计">\u{1F3A4} '+(voiceInfo.ref?'\u5DF2\u914D\u7F6E':'\u672A\u914D\u7F6E')+'</span>';
+          h+='<span>\u{1F3A4} '+(voiceInfo.ref?'\u5DF2\u914D\u7F6E':'\u672A\u914D\u7F6E')+'</span>';
           h+='<span title="色标" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:'+colors[colorIdx]+';border:2px solid rgba(255,255,255,.12)"></span>';
           h+='</div>';
           // Actions
@@ -5217,25 +3758,15 @@ async function renderDetail(){
     const sectionCount = (detail.sections||[]).length;
     const itemCount = (detail.sections||[]).reduce((sum,s)=>sum+(s.items||[]).length,0);
     if(banner) banner.textContent = '✅ ' + ms.ms_id + ': ' + sectionCount + ' sections, ' + itemCount + ' items';
-    // v3.7.9: 里程碑摘要卡（DM-1专用渲染 + 非DM/非MS-2.3自动显示）
-    if(detail.summary && ms.ms_id!=='MS-2.3' && (!ms.ms_id.startsWith('DM-') || ms.ms_id==='DM-1')){
+    // v3.7.9: 里程碑摘要卡（跳过所有DM面板+MS-2.3, 由专用渲染器管理）
+    if(detail.summary && !ms.ms_id.startsWith('DM-') && ms.ms_id!=='MS-2.3'){
       const s=detail.summary;
       const scolor=s.status==='blocked'?'#ef4444':s.status==='warning'?'#f59e0b':'#22c55e';
       const sicon=s.status==='blocked'?'&#10060;':s.status==='warning'?'&#9888;':'&#9989;';
-      h+='<div class="milestone-summary-card" style="display:flex;align-items:flex-start;gap:12px;padding:14px 16px;margin-bottom:10px;border-radius:8px;border-left:4px solid '+scolor+';background:rgba('+(s.status==='blocked'?'239,68,68':s.status==='warning'?'245,158,11':'34,197,94')+',.08)">';
-      h+='<div style="font-size:22px;flex-shrink:0;padding-top:2px">'+sicon+'</div>';
+      h+='<div class="milestone-summary-card" style="display:flex;align-items:center;gap:12px;padding:12px 16px;margin-bottom:10px;border-radius:8px;border-left:4px solid '+scolor+';background:rgba('+(s.status==='blocked'?'239,68,68':s.status==='warning'?'245,158,11':'34,197,94')+',.08)">';
+      h+='<div style="font-size:22px;flex-shrink:0">'+sicon+'</div>';
       h+='<div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px;color:#e4e6eb">'+s.headline+'</div>';
-      h+='<div style="font-size:11px;color:#888;margin-top:2px">'+s.core_metric+'</div>';
-      // DM-1: show consistency warnings inline
-      if(ms.ms_id==='DM-1'){
-        var csSection = (detail.sections||[]).find(function(x){return x.title&&x.title.indexOf('一致性')>=0});
-        if(csSection){
-          (csSection.items||[]).forEach(function(it){
-            if(it.status==='warn') h+='<div style="font-size:10px;color:#fbbf24;margin:3px 0;padding-left:8px;border-left:2px solid #f59e0b">⚠️ '+((it.value||'').replace(/^⚠️\s*/,''))+'</div>';
-          });
-        }
-      }
-      h+='</div>';
+      h+='<div style="font-size:11px;color:#888;margin-top:2px">'+s.core_metric+'</div></div>';
       h+='<div style="display:flex;gap:6px;flex-shrink:0">';
       h+='<button class="mini-btn" onclick="toggleSection(\''+ms.ms_id+'-detail\')">查看详情</button>';
       h+='<button class="mini-btn" style="color:#60a5fa" onclick="triggerReReview(\''+ms.ms_id+'\')">重新检查</button>';
@@ -5275,16 +3806,6 @@ async function renderDetail(){
     await renderDM4(detail,ms);
   }else if(ms.ms_id==='DM-5'){
     await renderDM5(detail,ms);
-  }else if(ms.ms_id==='DM-8'){
-    await renderDM8(detail,ms);
-  }else if(ms.ms_id==='DM-9'){
-    await renderDM9(detail,ms);
-  }else if(ms.ms_id==='DM-10'){
-    await renderDM10(detail,ms);
-  }else if(ms.ms_id==='DM-6'){
-    await renderDM6(ms.ms_id,detail,ms);
-  }else if(ms.ms_id==='DM-7'){
-    await renderDM6(ms.ms_id,detail,ms);
   }else if(ms.ms_id==='MS-0'){
     await renderMS0Gate(detail,ms);
   }else if(ms.ms_id==='MS-1'){
@@ -5313,6 +3834,8 @@ async function renderDetail(){
     await renderMS5(detail,ms);
   }else if(ms.ms_id && !ms.ms_id.startsWith('DM-') && !ms.ms_id.startsWith('daily')){
     await renderTKDetail(detail,ms);
+  }else if(ms.ms_id&&/^DM-(6|7|8|9|10)$/.test(ms.ms_id)){
+    await renderDMEpisode(ms.ms_id,detail,ms);
   }
 }
 
@@ -5393,36 +3916,19 @@ async function renderTKDetail(detail, ms) {
   el.insertAdjacentHTML('beforeend', h);
 }
 function toggleCharBibleEdit(fid) {
+  const sectionId='char-edit-section-'+fid;
   const el=document.getElementById('cbedit-'+fid);
-  if(el){ el.classList.toggle('show'); return; }
-  // Edit form not in DOM — navigate to DM-1 and auto-open after render
-  switchToTab('drama');
-  scrollToDM1Edit(fid);
-  toastMsg('🚀 正在打开 ' + fid + ' 角色编辑...', 3000);
-  return;
-}
-
-function scrollToDM1Edit(fid) {
-  var checkCount = 0;
-  var checkInterval = setInterval(function() {
-    checkCount++;
-    var cb = document.getElementById('charbible-' + fid);
-    if (cb) {
-      clearInterval(checkInterval);
-      // Scroll to view and stabilize
-      cb.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      select('DM-1');
-      // Try to open edit after a small delay
-      setTimeout(function() {
-        var editEl = document.getElementById('cbedit-' + fid);
-        if (editEl) {
-          editEl.classList.add('show');
-          editEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 600);
+  if(!el){
+    var scHel=document.getElementById(sectionId);
+    if(!scHel){
+      // Fallback: switch to TK tab and try to expand character bible
+      toastMsg('\u2728 \u89D2\u8272\u7F16\u8F91\u5728\u89D2\u8272\u5723\u7ECF\u4E2D\uFF0C\u8BF7\u5C55\u5F00\u89D2\u8272\u9762\u677F', 3000);
+      return;
     }
-    if (checkCount > 30) clearInterval(checkInterval);
-  }, 300);
+    toggleSection(sectionId);
+    return;
+  }
+  el.classList.toggle('show');
 }
 
 // ================================================================
@@ -5465,55 +3971,6 @@ function saveVideoPrompt(fid, key) {
 // ================================================================
 // DM-1: Save character bible changes
 // ================================================================
-// ===== DM-1: Render file management (delete + regenerate) =====
-async function deleteRenderFile(fid, filename, btnEl) {
-  if (!confirm('确定删除 ' + fid + ' 的角度图 ' + filename + ' ？\n删除后可点击「🔁 重新生成」恢复。')) return;
-  if (btnEl) btnEl.textContent = '⏳';
-  try {
-    var r = await fetch('/api/render/' + fid + '/' + filename, { method: 'DELETE' });
-    var d = await r.json();
-    if (d.status === 'ok') {
-      toastMsg('🗑️ ' + d.message, 2500, 'success');
-      // Remove the thumbnail wrapper
-      if (btnEl && btnEl.parentElement) btnEl.parentElement.remove();
-    } else {
-      toastMsg('❌ ' + d.message, 3000, 'error');
-      if (btnEl) btnEl.textContent = '✕';
-    }
-  } catch (e) {
-    toastMsg('❌ 删除失败: ' + e.message, 3000, 'error');
-    if (btnEl) btnEl.textContent = '✕';
-  }
-}
-
-async function regenerateCharacter(fid, btnEl) {
-  if (!confirm('重新生成 ' + fid + ' 的渲染图？\n这将调用 ComfyUI/图片生成管线，约需 1-2 分钟。')) return;
-  if (btnEl) { btnEl.disabled = true; btnEl.textContent = '⏳ 生成中...'; }
-  toastMsg('🎨 触发 ' + fid + ' 重新渲染...', 5000);
-  try {
-    var r = await fetch('/api/render/' + fid + '/regenerate', { method: 'POST' });
-    var d = await r.json();
-    if (d.status === 'ok') {
-      toastMsg('✅ ' + d.message, 4000, 'success');
-      if (btnEl) { btnEl.textContent = '⏳ 渲染中...'; }
-      // Auto refresh DM-1 after 10s
-      setTimeout(function() {
-        if (btnEl) { btnEl.disabled = false; btnEl.textContent = '🔁 重新生成所有角度'; }
-        select('DM-1');
-      }, 10000);
-    } else {
-      toastMsg('❌ ' + d.message, 4000, 'error');
-      if (btnEl) { btnEl.disabled = false; btnEl.textContent = '🔁 重新生成所有角度'; }
-    }
-  } catch (e) {
-    toastMsg('❌ 生成失败: ' + e.message, 4000, 'error');
-    if (btnEl) { btnEl.disabled = false; btnEl.textContent = '🔁 重新生成所有角度'; }
-  }
-}
-
-function showDelTooltip(ev, text) { /* hover hint via title attr */ }
-
-// ===== DM-1: Save Character Bible =====
 async function saveCharBible(fid) {
   const toast = document.getElementById('toast');
   // Collect all form values
@@ -5725,7 +4182,7 @@ async function generateVoice(fid) {
       top_k: '6', top_p: '0.9', temperature: '0.7', speed: '1.0'
     });
     if (banner) banner.textContent = '🎤 生成中...';
-    const r = await fetch('/api/tts/proxy?' + params.toString());
+    const r = await fetch('http://localhost:9880/?' + params.toString());
     if (!r.ok) { toastMsg('⚠️ API错误 HTTP ' + r.status, 5000, 'warn'); if(banner)banner.textContent='❌ HTTP '+r.status; return; }
     const blob = await r.blob();
     const audioUrl = URL.createObjectURL(blob);
@@ -5861,7 +4318,7 @@ async function auditionVoice(fid) {
       top_k: '6', top_p: '0.9', temperature: '0.7', speed: '1.0'
     });
     if (banner) banner.textContent = '🔊 试听生成中...';
-    const r = await fetch('/api/tts/proxy?' + params.toString());
+    const r = await fetch('http://localhost:9880/?' + params.toString());
     if (!r.ok) { toastMsg('⚠️ API错误 HTTP ' + r.status, 5000, 'warn'); return; }
     const blob = await r.blob();
     const url = URL.createObjectURL(blob);
@@ -6857,7 +5314,6 @@ async function renderShotSorter(epNum){
   }catch(e){
     document.getElementById('shot-list-'+epNum).innerHTML='<div class="shot-empty">暂无视频片段</div>';
   }
-}
 
 // v3.6.29: DM-2 分镜审阅看板
 // ================================================================
@@ -7057,9 +5513,7 @@ function _renderDM2ShotGrid(shots) {
           <span class="sb-tag move">🎥 ${mv}</span>
         </div>
         <div class="sb-card-footer">
-          <button class="sb-card-expand" onclick="_toggleShotPrompt(this, '${char}-镜${shotNum}')">📋 Prompt</button>
-          <button class="sb-card-expand" onclick="switchToTab('drama');setTimeout(function(){select('DM-1')},200)" title="编辑角色档案">📝 编辑</button>
-          <button class="sb-card-expand" onclick="auditionVoice('${CHAR_MAP[char] || 'wusong'}')" title="试听配音">🔊 试听</button>
+          <button class="sb-card-expand" onclick="_toggleShotPrompt(this, '${char}-镜${shotNum}')">📋 查看完整 Prompt</button>
         </div>
         <div id="shot-prompt-${char}-镜${shotNum}" style="display:none;padding:8px 10px;font-size:9px;color:#6b8aad;background:rgba(0,0,0,.2);border-top:1px solid #222;white-space:pre-wrap;max-height:150px;overflow-y:auto">${prompt}</div>
       </div>`;
@@ -7278,53 +5732,28 @@ async function renderDM10(detail, ms) {
   gridHtml += '</div>';
   el.insertAdjacentHTML('beforeend', gridHtml);
 
-  // Panel 3: Next Action Buttons (板块四：下一步行动指引)
+  // Panel 3: Next Action Buttons
   var allPassed = ng === 0;
   el.insertAdjacentHTML('beforeend',
     '<div class="pc-next-action">' +
-    '  <span style="font-size:11px;color:#888;flex:1">' + (allPassed ? '✅ 全部通过，可以发布：' : '❌ ' + ng + '项未达标，建议执行：') + '</span>' +
     '  <button class="btn-primary" ' + (allPassed ? '' : 'disabled') + ' onclick="triggerFinalPublish()">🚀 一键发布（需先满足所有条件）</button>' +
-    '  <button class="btn-secondary" onclick="switchToTab(\'DM-4\')">升级视频质量</button>' +
-    '  <button class="btn-secondary" onclick="switchToTab(\'MS-2.1\')">添加多国字幕</button>' +
     '  <button class="btn-secondary" onclick="triggerReReview(\'DM-10\')">重新检查</button>' +
     '</div>'
   );
 
-  // Panel 4: 工具与监控面板（可折叠）
+  // Panel 4: Collapsible Video Preview & Episode Gallery (retained from DM-10 gallery)
   var vpId = 'dm10-video-preview';
   el.insertAdjacentHTML('beforeend',
     '<div class="sec" id="' + vpId + '">' +
-    '  <div class="sec-hdr" onclick="toggleSec(\'' + vpId + '\')"><h3><span class="sec-toggle-icon">&#9654;</span> 🎬 视频预览与片段排序</h3></div>' +
+    '  <div class="sec-hdr" onclick="toggleSec(\'' + vpId + '\')"><h3><span class="sec-toggle-icon">&#9654;</span> 🔍 视频预览与片段管理</h3></div>' +
     '  <div class="sec-body" id="' + vpId + '-body">' +
     '    <span class="loading">加载渲染图...</span>' +
     '  </div>' +
     '</div>'
   );
+
+  // Load episode gallery inside the collapsible
   loadVideoPreview('10', vpId + '-body');
-
-  // Panel 4b: Collapsible Pipeline Service Status (with real data)
-  var pipeId = 'dm10-pipeline-status';
-  el.insertAdjacentHTML('beforeend',
-    '<div class="sec" id="' + pipeId + '">' +
-    '  <div class="sec-hdr" onclick="toggleSec(\'' + pipeId + '\')"><h3><span class="sec-toggle-icon">&#9654;</span> 🔧 管线服务状态</h3></div>' +
-    '  <div class="sec-body" id="' + pipeId + '-body">' +
-    '    <div class="info-card"><div class="info-card-body"><span class="loading">加载中...</span></div></div>' +
-    '  </div>' +
-    '</div>'
-  );
-  loadPipelineStatus(pipeId + '-body');
-
-  // Panel 4c: Collapsible Quality Feedback Knowledge Base (with real data)
-  var kbId = 'dm10-quality-kb';
-  el.insertAdjacentHTML('beforeend',
-    '<div class="sec" id="' + kbId + '">' +
-    '  <div class="sec-hdr" onclick="toggleSec(\'' + kbId + '\')"><h3><span class="sec-toggle-icon">&#9654;</span> 📚 质量反馈知识库</h3></div>' +
-    '  <div class="sec-body" id="' + kbId + '-body">' +
-    '    <div class="info-card"><div class="info-card-body"><span class="loading">加载中...</span></div></div>' +
-    '  </div>' +
-    '</div>'
-  );
-  loadQualityFeedback(kbId + '-body');
 }
 
 // DM-10 helper: load video preview inside collapsible
@@ -7505,49 +5934,18 @@ async function renderDM8(detail, ms) {
     '</div>'
   );
 
-  // ===== Panel 2: Script card (enhanced: comprehensive visual) =====
-  var chars = [
-    { name:'林冲', role:'主角', voice:'zhilun', desc:'八十万禁军教头', emoji:'🗡️' },
-    { name:'陆谦', role:'反派', voice:'zhiming', desc:'林冲旧友·陷害者', emoji:'🦊' },
-    { name:'富安', role:'反派', voice:'zhiming', desc:'高俅爪牙', emoji:'🐍' },
-    { name:'差拨', role:'配角', voice:'zhilun', desc:'沧州牢城小吏', emoji:'📜' },
-    { name:'李小二', role:'配角', voice:'zhilun', desc:'酒店老板·报信者', emoji:'🍶' }
-  ];
-  var charHtml = '<div class="dm8-char-grid">';
-  chars.forEach(function(c) {
-    charHtml += '<div class="dm8-char-card">' +
-      '<div class="dm8-char-emoji">' + c.emoji + '</div>' +
-      '<div class="dm8-char-name">' + c.name + '</div>' +
-      '<div class="dm8-char-role">' + c.role + '</div>' +
-      '<div class="dm8-char-desc">' + c.desc + '</div>' +
-      '<span class="dm8-char-voice">🎤 ' + c.voice + '</span>' +
-      '</div>';
-  });
-  charHtml += '</div>';
-
-  var emoStages = ['😔 压抑', '😟 警觉', '😠 愤怒', '💥 爆发', '🗡️ 复仇', '🌨️ 尾声'];
-  var emoHtml = '<div class="dm8-emo-bar">';
-  emoStages.forEach(function(e, i) {
-    emoHtml += '<div class="dm8-emo-stage' + (i === 3 ? ' peak' : '') + '"><div class="emo-icon">' + e.split(' ')[0] + '</div><div class="emo-label">' + e.split(' ')[1] + '</div><div class="emo-step">S' + (i+1) + '</div></div>';
-    if (i < emoStages.length - 1) emoHtml += '<span class="dm8-emo-arrow">▸</span>';
-  });
-  emoHtml += '</div>';
-
+  // ===== Panel 2: Script card =====
   el.insertAdjacentHTML('beforeend',
     '<div class="dm8-script-card">' +
-    '  <div class="dm8-script-hdr">📖 剧本 · ' + scriptName + '</div>' +
+    '  <div class="dm8-script-hdr">📖 剧本</div>' +
     '  <div class="dm8-script-body">' +
-    '    <div class="dm8-script-meta-row">' +
-    '      <div class="dm8-script-stat"><span class="ss-icon">🎬</span><span class="ss-val">' + sceneCount + '</span><span class="ss-label">场景</span></div>' +
-    '      <div class="dm8-script-stat"><span class="ss-icon">⏱️</span><span class="ss-val">' + durSec + 's</span><span class="ss-label">时长</span></div>' +
-    '      <div class="dm8-script-stat"><span class="ss-icon">📂</span><span class="ss-val">story</span><span class="ss-label">来源</span></div>' +
-    '      <div class="dm8-script-stat"><span class="ss-icon">📋</span><span class="ss-val">idx7</span><span class="ss-label">序号</span></div>' +
+    '    <div class="dm8-script-title">' + scriptName + '</div>' +
+    '    <div class="dm8-script-tags">' +
+    '      <span class="dm8-script-tag blue">' + sceneCount + '场景</span>' +
+    '      <span class="dm8-script-tag blue">' + durSec + '秒</span>' +
+    '      <span class="dm8-script-tag purple">' + emotion + '</span>' +
     '    </div>' +
-    '    <div class="dm8-section-label">🎭 角色表</div>' +
-    charHtml +
-    '    <div class="dm8-section-label">📈 情绪弧线</div>' +
-    emoHtml +
-    (scriptSrc ? '<div class="dm8-script-src">📄 数据源: ' + scriptSrc + '</div>' : '') +
+    (scriptSrc ? '<div class="dm8-script-src">' + scriptSrc + '</div>' : '') +
     '  </div>' +
     '</div>'
   );
@@ -7580,15 +5978,10 @@ async function renderDM8(detail, ms) {
   el.insertAdjacentHTML('beforeend',
     '<div class="info-card collapsible" id="' + toolId + '">' +
     '  <div class="info-card-header" onclick="toggleInfoCard(this)">' +
-    '    <span>🛠️ 制作工具与监控</span><span class="toggle-icon">▼</span>' +
+    '    <span>🛠️ 工具与监控面板</span><span class="toggle-icon">▼</span>' +
     '  </div>' +
     '  <div class="info-card-body" style="display:none">' +
-    '    <div class="dm8-tool-grid">' +
-    '      <div class="dm8-tool-item"><span class="dm8-tool-icon">⚙️</span><span class="dm8-tool-label">Flask API</span><span class="dm8-tool-status ok">✅ 可达</span></div>' +
-    '      <div class="dm8-tool-item"><span class="dm8-tool-icon">🎤</span><span class="dm8-tool-label">NLS TTS</span><span class="dm8-tool-status ok">✅ 在线</span></div>' +
-    '      <div class="dm8-tool-item"><span class="dm8-tool-icon">🎨</span><span class="dm8-tool-label">ComfyUI</span><span class="dm8-tool-status off">⚠️ 不可达</span></div>' +
-    '      <div class="dm8-tool-item"><span class="dm8-tool-icon">📊</span><span class="dm8-tool-label">管线进度</span><span class="dm8-tool-status">19/24 (79%)</span></div>' +
-    '    </div>' +
+    renderDefault(detail) +
     '  </div>' +
     '</div>'
   );
@@ -7602,49 +5995,45 @@ async function renderDM8(detail, ms) {
   );
 }
 
-// DM-8/9 helper: generate single episode voice + preview
-function generateEpisode(ep, btn) {
-  if (!btn) btn = document.getElementById('dm'+(ep==='03'?'8':'9')+'-btn-' + ep);
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ 生成中...'; }
+// DM-8 helper: generate voice for episode
+function generateEpisode(epNum, btn) {
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '生成中...';
+    btn.style.opacity = '0.5';
+  }
   var banner = document.getElementById('version-check');
-  if (banner) banner.textContent = '⏳ EP' + ep + ' 配音生成中...';
-  fetch('/api/voice/generate/ep' + ep, { method: 'POST' })
-    .then(function(r) {
-      if (!r.ok) throw new Error('API不可达('+r.status+')');
-      return r.json();
-    })
+  if (banner) banner.textContent = '⏳ 生成 EP' + epNum + ' 配音...';
+  fetch('/api/voice/generate/ep' + epNum, { method: 'POST' })
+    .then(function(r) { return r.json(); })
     .then(function(d) {
-      if (d.error) throw new Error(d.error);
-      if (btn) { btn.textContent = '✅ 已生成'; btn.style.background = '#22c55e'; btn.disabled = true; btn.style.opacity = '1'; }
-      if (d.url) {
-        var actionDiv = (btn && btn.parentElement);
-        if (actionDiv) {
-          var exist = document.getElementById('dm-preview-' + ep);
-          if (!exist) {
-            actionDiv.insertAdjacentHTML('beforeend', '<button class="btn-sm9 preview" id="dm-preview-' + ep + '" onclick="previewAudio(&quot;' + d.url + '&quot;,this)">🎧 试听</button>');
-          }
-        }
-        window['_dm_audio_' + ep] = d.url;
+      if (banner) banner.textContent = '✅ EP' + epNum + ' 配音完成: ' + (d.message || '');
+      toastMsg('✅ EP' + epNum + ' 配音生成完成', 3000, 'success');
+      if (btn) {
+        btn.textContent = '✅ 已生成';
+        btn.style.opacity = '1';
+        btn.style.background = '#22c55e';
+        btn.disabled = true;
       }
+      // Update the dub status card
       var dubCard = document.getElementById('dm8-dub-card');
-      if (dubCard) { dubCard.style.borderColor = '#22c55e'; var t = dubCard.querySelector('.dm8-dub-title'); if (t) { t.textContent = '✅ 配音已生成'; t.style.color = '#22c55e'; } }
-      if (banner) banner.textContent = '✅ EP' + ep + ' 配音完成';
-      toastMsg('✅ EP' + ep + ' 配音完成', 2500, 'success');
+      if (dubCard) {
+        dubCard.style.borderColor = '#22c55e';
+        var title = dubCard.querySelector('.dm8-dub-title');
+        if (title) { title.textContent = '✅ 配音已生成'; title.style.color = '#22c55e'; }
+        var status = dubCard.querySelector('.dm8-dub-status');
+        if (status) status.textContent = '✅ EP' + epNum + ' 配音已完成';
+      }
     })
     .catch(function(e) {
-      toastMsg('⚠️ EP' + ep + ' 后端未就绪', 3000, 'warn');
-      if (btn) { btn.disabled = false; btn.textContent = '⚡ 生成配音'; btn.style.opacity = '1'; }
-      if (banner) banner.textContent = '';
+      if (banner) banner.textContent = '❌ 生成失败: ' + e.message;
+      toastMsg('❌ 配音生成失败: ' + e.message, 3000, 'error');
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = '⚡ 一键生成配音';
+        btn.style.opacity = '1';
+      }
     });
-}
-
-var _dmAudioPlayer = null;
-function previewAudio(url, btn) {
-  if (_dmAudioPlayer && !_dmAudioPlayer.paused) { _dmAudioPlayer.pause(); if (btn) btn.textContent = '🎧 试听'; return; }
-  if (!_dmAudioPlayer) { _dmAudioPlayer = new Audio(); _dmAudioPlayer.addEventListener('ended', function() { if (btn) btn.textContent = '🎧 试听'; }); _dmAudioPlayer.addEventListener('error', function() { toastMsg('⚠️ 音频播放失败', 2000, 'warn'); }); }
-  _dmAudioPlayer.src = url;
-  _dmAudioPlayer.play().catch(function() { toastMsg('⚠️ 播放失败', 1500, 'warn'); });
-  if (btn) btn.textContent = '⏸ 暂停';
 }
 
 // ================================================================
@@ -7789,23 +6178,9 @@ async function renderDM9(detail, ms) {
   el.insertAdjacentHTML('beforeend',
     '<div class="info-card collapsible" id="' + toolId + '">' +
     '  <div class="info-card-header" onclick="toggleInfoCard(this)">' +
-    '    <span>🛠️ 制作工具与监控</span><span class="toggle-icon">▼</span>' +
+    '    <span>🛠️ 工具与监控面板</span><span class="toggle-icon">▼</span>' +
     '  </div>' +
-    '  <div class="info-card-body" style="display:none">' +
-    '    <div class="dm9-tool-grid">' +
-    '      <div class="dm9-tool-item"><span class="dm9-tool-icon">⚙️</span><span class="dm9-tool-label">Flask API</span><span class="dm9-tool-status ok">✅ 可达</span></div>' +
-    '      <div class="dm9-tool-item"><span class="dm9-tool-icon">🎤</span><span class="dm9-tool-label">NLS TTS</span><span class="dm9-tool-status ok">✅ 在线</span></div>' +
-    '      <div class="dm9-tool-item"><span class="dm9-tool-icon">🎨</span><span class="dm9-tool-label">ComfyUI</span><span class="dm9-tool-status off">⚠️ 不可达</span></div>' +
-    '      <div class="dm9-tool-item"><span class="dm9-tool-icon">📊</span><span class="dm9-tool-label">管线进度</span><span class="dm9-tool-status">19/24 (79%)</span></div>' +
-    '    </div>' +
-    '    <div class="dm9-checklist">' +
-    '      <div class="dm9-check-title">📋 制作前置检测</div>' +
-    '      <div class="dm9-check-item done">✅ 剧本审批 — 三集剧本已就绪</div>' +
-    '      <div class="dm9-check-item"><span class="check-pending">⬜</span> 角色配音分配 — NLS资源包29817字可用</div>' +
-    '      <div class="dm9-check-item"><span class="check-pending">⬜</span> 分镜审阅 — 参考DM-2看板</div>' +
-    '      <div class="dm9-check-item warn">⚠️ 内容审核预检 — EP04/EP05 含暴力/敏感场景</div>' +
-    '    </div>' +
-    '  </div>' +
+    '  <div class="info-card-body" style="display:none">' + renderDefault(detail) + '</div>' +
     '</div>'
   );
 
@@ -7854,51 +6229,21 @@ function generateAllEpisodes() {
 
 // DM-10 helper: switch renderer
 function switchToRenderer(mode) {
-  var banner = document.getElementById('version-check');
-  if (banner) banner.textContent = '🖥️ 渲染器切换至 ' + mode;
-  toastMsg('✅ 已切换至 ' + mode + ' 渲染模式，请手动运行 pipeline', 3000, 'success');
-}
-
-// DM-4 helper: switch to ComfyUI pipeline
-function switchToComfyUI() {
-  var banner = document.getElementById('version-check');
-  if (banner) banner.textContent = '✅ ComfyUI 渲染模式已激活';
-  toastMsg('✅ 已切换到 ComfyUI 静态角色画面 — 本地免费方案就绪', 4000, 'success');
-}
-
-// DM-5 helper: go to Kling with loading feedback
-function goToKling(btn) {
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = '打开中...';
-  }
-  toastMsg('🎬 正在前往 Kling (可灵)...', 2000, 'info');
-  var banner = document.getElementById('version-check');
-  if (banner) banner.textContent = '🎬 前往 Kling (可灵) AI 视频生成平台...';
-  setTimeout(function() {
-    window.open('https://kling.kuaishou.com', '_blank');
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = '前往 Kling (¥15/6集) →';
-    }
-    if (banner) banner.textContent = '✅ 已打开 Kling 页面';
-  }, 500);
+  alert('切换渲染器至 ' + mode + '。请运行: pipeline --render ' + mode);
+  // Could trigger backend rerun here
 }
 
 // DM-10 helper: trigger sub-pipeline
 function triggerSubPipeline(msId) {
   var banner = document.getElementById('version-check');
   if (banner) banner.textContent = '⏳ 启动 ' + msId + ' 管线...';
-  toastMsg('⏳ 启动 ' + msId + '...', 2000, 'info');
-  fetch('/api/gate/' + msId + '/run', { method: 'POST' })
+  fetch('/api/run/' + msId, { method: 'POST' })
     .then(function(r) { return r.json(); })
     .then(function(d) {
-      if (banner) banner.textContent = '✅ ' + msId + ' 已启动: ' + (d.summary || d.message || d.status || '');
-      toastMsg('✅ ' + msId + ' 已启动', 3000, 'success');
+      if (banner) banner.textContent = '✅ ' + msId + ' 已启动: ' + (d.message || '');
     })
     .catch(function(e) {
       if (banner) banner.textContent = '❌ 启动失败: ' + e.message;
-      toastMsg('❌ 启动失败: ' + e.message, 4000, 'error');
     });
 }
 
@@ -7907,87 +6252,14 @@ function triggerFinalPublish() {
   if (!confirm('确认发布当前剧集至所有平台？')) return;
   var banner = document.getElementById('version-check');
   if (banner) banner.textContent = '⏳ 发布中...';
-  fetch('/api/publish', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ task_id: 'TK-DM-PROD' })
-  })
+  fetch('/api/publish/DM-10', { method: 'POST' })
     .then(function(r) { return r.json(); })
     .then(function(d) {
-      if (banner) banner.textContent = '✅ 发布完成: ' + (d.message || d.status || '');
-      toastMsg('🚀 发布成功: ' + (d.task_id || ''), 3000, 'success');
+      if (banner) banner.textContent = '✅ 发布完成: ' + (d.message || '');
       render();
     })
     .catch(function(e) {
       if (banner) banner.textContent = '❌ 发布失败: ' + e.message;
-      toastMsg('❌ 发布失败: ' + e.message, 4000, 'error');
-    });
-}
-
-// DM-10: load pipeline service status with real checks
-function loadPipelineStatus(containerId) {
-  var body = document.getElementById(containerId);
-  if (!body) return;
-
-  function render(apiData, comfyOk, nlsOk, sovitsOk) {
-    var checks = (apiData && apiData.health_checks) || {};
-    var services = [
-      { name:'Flask API', icon:'🔌', key:'api' },
-      { name:'数据库', icon:'🗄️', key:'database' },
-      { name:'知识引擎', icon:'🧠', key:'knowledge' },
-      { name:'ComfyUI', icon:'🎨', ok:comfyOk },
-      { name:'NLS TTS', icon:'🎤', ok:nlsOk },
-      { name:'GPT-SoVITS', icon:'🗣️', ok:sovitsOk }
-    ];
-    var html = '<div class="dm9-tool-grid">';
-    services.forEach(function(svc) {
-      var status = svc.ok !== undefined ? svc.ok : (checks[svc.key] === 'ok');
-      html += '<div class="dm9-tool-item"><span class="dm9-tool-icon">' + svc.icon + '</span><span class="dm9-tool-label">' + svc.name + '</span><span class="dm9-tool-status' + (status ? ' ok' : ' off') + '">' + (status ? '✅ 在线' : '⚠️ 不可达') + '</span></div>';
-    });
-    html += '</div>';
-    if (apiData && apiData.timestamp) html += '<div style="font-size:9px;color:#555;margin-top:6px">⏱ ' + new Date(apiData.timestamp).toLocaleString() + '</div>';
-    body.innerHTML = '<div class="info-card"><div class="info-card-body">' + html + '</div></div>';
-  }
-
-  // Fetch core API status + ping external services in parallel
-  var apiP = fetch('/api/status').then(function(r){return r.json();}).catch(function(){return null;});
-  var comfyP = fetch('http://localhost:8188',{mode:'no-cors'}).then(function(){return true;}).catch(function(){return false;});
-  var sovitsP = fetch('http://localhost:9880',{mode:'no-cors'}).then(function(){return true;}).catch(function(){return false;});
-  // NLS TTS: check /api/status health_checks includes tts (non-destructive)
-  var nlsP = Promise.resolve(true);
-
-  Promise.all([apiP, comfyP, nlsP, sovitsP]).then(function(r){
-    render(r[0], r[1], r[2], r[3]);
-  }).catch(function(){
-    render(null, false, false, false);
-  });
-}
-
-// DM-10: load quality feedback from /api/feedback
-function loadQualityFeedback(containerId) {
-  var body = document.getElementById(containerId);
-  if (!body) return;
-  fetch('/api/feedback')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var items = data.feedback || [];
-      if (!items.length) {
-        body.innerHTML = '<div class="info-card"><div class="info-card-body" style="color:#888">暂无质量反馈记录</div></div>';
-        return;
-      }
-      var html = '';
-      items.forEach(function(fb) {
-        var sevIcon = fb.severity === 'major' ? '🔴' : fb.severity === 'minor' ? '🟡' : 'ℹ️';
-        html += '<div class="dm8-tool-item" style="margin-bottom:6px;flex-direction:column;align-items:flex-start;gap:2px">' +
-          '<div style="display:flex;align-items:center;gap:6px;width:100%"><span style="font-size:12px">' + sevIcon + '</span><span style="font-size:10px;color:#e4e6eb;font-weight:600">' + (fb.type || '反馈') + '</span><span style="font-size:8px;color:#888;margin-left:auto">' + (fb.source || '') + '</span></div>' +
-          '<div style="font-size:9px;color:#888;line-height:1.4;padding-left:18px">' + (fb.description || '') + '</div>' +
-          '</div>';
-      });
-      html += '<div style="font-size:9px;color:#555;margin-top:6px">共 ' + items.length + ' 条反馈 · 截至 ' + (items[0] ? new Date(items[0].timestamp).toLocaleDateString() : '') + '</div>';
-      body.innerHTML = '<div class="info-card"><div class="info-card-body">' + html + '</div></div>';
-    })
-    .catch(function(e) {
-      body.innerHTML = '<div class="info-card"><div class="info-card-body" style="color:#ef4444">❌ 无法获取反馈数据: ' + e.message + '</div></div>';
     });
 }
 
@@ -8122,7 +6394,7 @@ async function renderDM3(detail, ms) {
   charRows.forEach(function(r) {
     var trClass = r.isConflict && r.status !== 'ok' ? ' class="conflict"' : '';
     var voiceTagClass = 'voice-tag ' + r.voice;
-    tableHtml += '<tr' + trClass + ' id="dm3-voice-'+r.charId+'">';
+    tableHtml += '<tr' + trClass + '>';
     tableHtml += '  <td><strong>' + r.name + '</strong></td>';
     tableHtml += '  <td><span class="' + voiceTagClass + '">' + r.voice + '</span></td>';
     tableHtml += '  <td>' + r.desc + '</td>';
@@ -8131,9 +6403,9 @@ async function renderDM3(detail, ms) {
     tableHtml += '  <td>';
     // Play button for completed
     if (r.status === 'ok') {
-      tableHtml += '<button class="btn-sm" onclick="playDubVoice(\'' + r.charId + '\')">▶ 试听</button>';
+      tableHtml += '<button class="btn-sm" onclick="playVoice(\'' + r.charId + '\')">▶ 试听</button>';
     } else {
-      tableHtml += '<button class="btn-sm btn-primary" onclick="generateDubVoice(\'' + r.charId + '\', this)">生成配音</button>';
+      tableHtml += '<button class="btn-sm btn-primary" onclick="generateVoice(\'' + r.charId + '\', this)">生成配音</button>';
     }
     if (r.isConflict && r.status !== 'ok') {
       tableHtml += '<span class="voice-conflict-warn">⚠️ 音色冲突</span>';
@@ -8144,22 +6416,17 @@ async function renderDM3(detail, ms) {
   tableHtml += '</tbody></table></div>';
   el.insertAdjacentHTML('beforeend', tableHtml);
 
-  // Panel 3: Tech cards with SFX visualization
+  // Panel 3: Tech cards
   var techCardHtml = '<div class="dub-tech-cards">';
-  var sfxCardHtml = '';
   techItems.forEach(function(t) {
     var key = t.key || '';
     var label = t.label || '';
     var val = t.value || '';
     var note = t.note || '';
-    if (key === 'aq_bgm') {
-      // SFX will be rendered as timeline below
-      sfxCardHtml = '<div class="dub-tech-card sfx-card" id="dm3-sfx-card"><span>🔊 ' + label + '</span><strong>✅ SFX 已集成</strong><div id="dm3-sfx-timeline" style="margin-top:8px"><span class="loading">加载音效数据...</span></div></div>';
-      return;
-    }
     var icon = '';
     if (key === 'nv_cost') icon = '💰';
     else if (key === 'aq_sync') icon = '👄';
+    else if (key === 'aq_bgm') icon = '🔊';
     else icon = '⚙️';
     var statusIcon = '';
     if (t.status === 'ok') statusIcon = '✅ ';
@@ -8168,81 +6435,17 @@ async function renderDM3(detail, ms) {
     techCardHtml += '<div class="dub-tech-card"><span>' + icon + ' ' + label + '</span><strong>' + statusIcon + val.split('·')[0] + '</strong><span>' + (note || '·') + '</span></div>';
   });
   techCardHtml += '</div>';
-  if(sfxCardHtml) techCardHtml += sfxCardHtml;
-  // Localization runner
-  techCardHtml += '<div class="dub-tech-card" style="cursor:pointer;border-color:rgba(59,130,246,.2)" onclick="runLocalizationReview()"><span>🌏 本地化审查</span><strong>⚡ 点击运行5国本地化</strong><span id="loc-review-status" style="font-size:9px;color:#888">localization_reviewer.py 就绪</span></div>';
-  techCardHtml += '<div id="loc-review-results" style="display:none"></div>';
   el.insertAdjacentHTML('beforeend', techCardHtml);
-  // Load SFX timeline
-  (function loadSFXTimeline(){
-    var tl = document.getElementById('dm3-sfx-timeline');
-    if(!tl) return;
-    fetch('/api/sfx/1').then(function(r){return r.json()}).then(function(d){
-      var tracks = d.tracks || [];
-      if(!tracks.length){ tl.innerHTML='<span style="font-size:10px;color:#555">暂无音效数据</span>'; return; }
-      var totalDur = Math.max.apply(null, tracks.map(function(t){ return (t.start_sec||0)+(t.duration_sec||0); })) || 23;
-      var barW = Math.min(100, Math.max(60, tl.parentElement.offsetWidth - 120));
-      var scale = barW / totalDur;
-      var h = '<div style="position:relative;height:80px;margin:4px 0;font-size:9px">';
-      // Time markers
-      for(var ti=0; ti<=totalDur; ti+=5){
-        h += '<span style="position:absolute;left:'+(60+ti*scale)+'px;top:0;color:#555;font-size:8px">' + ti + 's</span>';
-      }
-      tracks.forEach(function(t,idx){
-        var left = 60 + (t.start_sec||0)*scale;
-        var w = Math.max(20, (t.duration_sec||3)*scale);
-        var top = 20 + idx*20;
-        var colors = ['#4ade80','#60a5fa','#fbbf24','#f87171','#a78bfa','#fb923c'];
-        var c = colors[idx % colors.length];
-        h += '<div style="position:absolute;left:'+left+'px;top:'+top+'px;width:'+w+'px;height:16px;background:'+c+';opacity:.25;border-radius:3px;border:1px solid '+c+'" title="'+(t.scene||t.type||'')+' 音量:'+(t.volume||0)+'">';
-        h += '<span style="position:absolute;left:4px;top:1px;color:'+c+';font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:'+(w-8)+'px">🎵 ' + (t.scene||'SFX') + '</span>';
-        h += '</div>';
-      });
-      h += '</div>';
-      // Track list
-      h += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">';
-      tracks.forEach(function(t,idx){
-        var colors = ['#4ade80','#60a5fa','#fbbf24','#f87171','#a78bfa','#fb923c'];
-        h += '<span style="font-size:9px;padding:2px 8px;border-radius:3px;background:rgba(255,255,255,.03);border:1px solid '+colors[idx%colors.length]+';color:'+colors[idx%colors.length]+'">' + (t.scene||t.type||'SFX'+idx) + ' @' + (t.start_sec||0)+'s ×'+(t.volume||'?')+'</span>';
-      });
-      h += '</div>';
-      tl.innerHTML = h;
-    }).catch(function(){ tl.innerHTML='<span style="font-size:10px;color:#555">音效数据加载失败</span>'; });
-  })();
 
-  // Panel 4: Production monitoring dashboard
+  // Panel 4: Collapsible technical details
   var techSecId = 'dm3-tech-log';
-  var tDone = Math.round(doneCount / voiceItems.length * 100) || 0;
-  var usagePct = Math.round((29817 - 29817 * (voiceItems.length - doneCount) / voiceItems.length * 0.017) / 30000 * 100) || 99;
+  var techHtml = renderDefault(detail);
   el.insertAdjacentHTML('beforeend',
     '<div class="info-card collapsible" id="' + techSecId + '">' +
     '  <div class="info-card-header" onclick="toggleInfoCard(this)">' +
-    '    <span>📊 制作监控仪表盘</span><span class="toggle-icon">▼</span>' +
+    '    <span>🔍 配音技术日志 (原始数据)</span><span class="toggle-icon">▼</span>' +
     '  </div>' +
-    '  <div class="info-card-body" style="display:none">' +
-    '    <div class="dm3-mon-grid">' +
-    '      <div class="dm3-mon-card">' +
-    '        <div class="dm3-mon-label">配音进度</div>' +
-    '        <div class="dm3-mon-bar"><div class="dm3-mon-fill" style="width:' + tDone + '%"></div></div>' +
-    '        <div class="dm3-mon-val">' + doneCount + '/' + voiceItems.length + ' 角色 (' + tDone + '%)</div>' +
-    '      </div>' +
-    '      <div class="dm3-mon-card">' +
-    '        <div class="dm3-mon-label">NLS 资源包余量</div>' +
-    '        <div class="dm3-mon-bar"><div class="dm3-mon-fill green" style="width:' + usagePct + '%"></div></div>' +
-    '        <div class="dm3-mon-val">~29817/30000 字符 (99%)</div>' +
-    '      </div>' +
-    '      <div class="dm3-mon-card">' +
-    '        <div class="dm3-mon-label">配音成本</div>' +
-    '        <div class="dm3-mon-val large">¥0.75/集</div>' +
-    '        <div class="dm3-mon-sub">6集合计≈¥4.50 · 极低成本</div>' +
-    '      </div>' +
-    '      <div class="dm3-mon-card">' +
-    '        <div class="dm3-mon-label">音色冲突</div>' +
-    '        <div class="dm3-mon-val large' + (zhimingCount>1||zhilunCount>1 ? ' warn' : '') + '">' + (zhimingCount>1||zhilunCount>1 ? '⚠️ 需字幕' : '✅ 无冲突') + '</div>' +
-    '        <div class="dm3-mon-sub">zhiming×' + zhimingCount + ' zhilun×' + zhilunCount + '</div>' +
-    '      </div>' +
-    '    </div>' +
-    '  </div>' +
+    '  <div class="info-card-body" style="display:none">' + techHtml + '</div>' +
     '</div>'
   );
 
@@ -8250,79 +6453,57 @@ async function renderDM3(detail, ms) {
   el.insertAdjacentHTML('beforeend',
     '<div class="dub-next-action">' +
     '  <span style="font-size:11px;color:#888;flex:1">✅ 配音生成检查完成，建议执行：</span>' +
-    '  <button class="btn-primary" onclick="generateAllDubVoices()">⚡ 一键生成全部</button>' +
     '  <button class="btn-primary" onclick="switchToTab(\'DM-F\')">进入 DM-F 视频合成管线</button>' +
     '  <button class="btn-secondary" onclick="triggerReReview(\'DM-3\')">重新检查配音状态</button>' +
     '</div>'
   );
 }
 
-// DM-3: Play voice audition (renamed to avoid conflict with DM-10 voice panel)
-function playDubVoice(charId) {
-  auditionVoice(charId);
+// DM-3: Play voice audition
+function playVoice(charId) {
+  var url = '/api/tts/play/' + charId;
+  var audio = new Audio(url);
+  audio.play().catch(function(e) {
+    var banner = document.getElementById('version-check');
+    if (banner) banner.textContent = '❌ 试听失败: ' + e.message;
+  });
 }
 
-// DM-3: Generate voice for a character (renamed to avoid conflict with DM-10 voice panel)
-function generateDubVoice(charId, btn) {
+// DM-3: Generate voice for a character
+function generateVoice(charId, btn) {
   if (btn) {
     btn.disabled = true;
     btn.textContent = '生成中...';
   }
   var banner = document.getElementById('version-check');
   if (banner) banner.textContent = '⏳ 生成 ' + charId + ' 配音...';
-  // Try GPT-SoVITS API directly
-  var cfg = { wusong:{ref:'output/wusong/ref.wav',prompt:'我是武松，景阳冈打虎的好汉。'}, luzhishen:{ref:'output/luzhishen/ref.wav',prompt:'洒家鲁智深，拳打镇关西的好汉。'}, linchong:{ref:'output/linchong/ref.wav',prompt:'小人林冲，八十万禁军教头。'}, songjiang:{ref:'output/songjiang/ref.wav',prompt:'小可宋江，郓城县押司。'}, likui:{ref:'output/likui/ref.wav',prompt:'俺是黑旋风李逵。'}, wuyong:{ref:'output/wuyong/ref.wav',prompt:'小生吴用，人称智多星。'} };
-  var ch = cfg[charId];
-  if (!ch) { if(btn){btn.disabled=false;btn.textContent='生成配音';} toastMsg('⚠️ 未知角色: '+charId, 3000, 'warn'); return; }
-  fetch('http://localhost:9880/?refer_wav_path='+encodeURIComponent(ch.ref)+'&prompt_text='+encodeURIComponent(ch.prompt)+'&prompt_language=zh&text='+encodeURIComponent(ch.prompt)+'&text_language=zh&top_k=6&top_p=0.9&temperature=0.7&speed=1.0')
-    .then(function(r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.blob();
-    })
-    .then(function(blob) {
-      var audioUrl = URL.createObjectURL(blob);
-      var audio = new Audio(audioUrl);
-      audio.play();
-      if (banner) banner.textContent = '✅ ' + charId + ' 配音已生成并播放';
-      if (btn) { btn.textContent = '✅ 已生成'; btn.className = 'btn-sm'; btn.disabled = true; }
-      toastMsg('🎤 ' + charId + ' 配音生成成功', 3000, 'success');
+  fetch('/api/voice/generate/' + charId, { method: 'POST' })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (banner) banner.textContent = '✅ ' + charId + ' 配音完成: ' + (d.message || '');
+      if (btn) {
+        btn.textContent = '✅ 已生成';
+        btn.className = 'btn-sm';
+        btn.disabled = true;
+      }
     })
     .catch(function(e) {
       if (banner) banner.textContent = '❌ 生成失败: ' + e.message;
-      if (btn) { btn.disabled = false; btn.textContent = '生成配音'; }
-      toastMsg('❌ 生成失败: ' + e.message + ' (请确认 GPT-SoVITS 运行在 9880)', 5000, 'warn');
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = '生成配音';
+      }
     });
 }
 
-// DM-3: Generate all pending voices
-function generateAllDubVoices() {
-  var banner = document.getElementById('version-check');
-  var pending = ['wusong','luzhishen','linchong','songjiang','likui','wuyong'];
-  if (banner) banner.textContent = '⏳ 批量生成 ' + pending.length + ' 个角色配音...';
-  toastMsg('⏳ 开始批量生成 ' + pending.length + ' 个角色配音', 3000, 'info');
-  // Sequential generation to avoid overloading GPT-SoVITS
-  var i = 0;
-  function genNext() {
-    if (i >= pending.length) {
-      if (banner) banner.textContent = '✅ 全部 ' + pending.length + ' 个角色配音生成完成';
-      toastMsg('✅ 全部配音生成完成', 3000, 'success');
-      return;
-    }
-    var charId = pending[i];
-    generateDubVoice(charId, null);
-    i++;
-    setTimeout(genNext, 2000); // 2s interval between generations
-  }
-  genNext();
-}
-
 // ================================================================
-// v3.7.12: DM-4 升级路径决策看板 (可视化重构)
+// v3.7.10: DM-4 字幕帧过渡方案看板
 // ================================================================
 async function renderDM4(detail, ms) {
   var el = document.getElementById('detail');
   if (!el) return;
 
+  // Extract items
   var items = [];
   if (detail && detail.sections) {
     (detail.sections[0]?.items || []).forEach(function(it) { items.push(it); });
@@ -8332,6 +6513,7 @@ async function renderDM4(detail, ms) {
     return;
   }
 
+  // Find items by key
   function findItem(key) { return items.find(function(it) { return it.key === key; }); }
   var whatItem = findItem('pf_what');
   var whyItem = findItem('pf_why');
@@ -8339,110 +6521,139 @@ async function renderDM4(detail, ms) {
   var altItem = findItem('pf_alt');
   var specItem = findItem('pf_spec');
 
-  var hasIssue = items.some(function(it) { return it.status === 'ng'; });
+  // Summary stats
+  var okCount = items.filter(function(it){ return it.status === 'ok'; }).length;
+  var ngCount = items.filter(function(it){ return it.status === 'ng'; }).length;
+  var wnCount = items.filter(function(it){ return it.status === 'warn'; }).length;
+  var hasIssue = ngCount > 0;
+  var hasWarn = wnCount > 0;
 
-  // ===== Panel 1: Upgrade conclusion summary =====
-  var specVal = specItem ? (specItem.value || '').split('·').map(function(s){return s.trim()})[0] || '' : '';
+  // ===== Panel 1: Summary =====
+  var sumClass = 'dm4-summary-card';
+  var sumIcon = '';
+  if (ngCount === 0 && wnCount === 0) { sumClass += ' green'; sumIcon = '✅'; }
+  else if (ngCount > 0) { sumClass += ' red'; sumIcon = '❌'; }
+  else { sumClass += ' orange'; sumIcon = '⚠️'; }
+
+  var summaryTitle = okCount + '/' + items.length + ' 项正常 · ' + (hasIssue ? ngCount + '项阻塞' : '') + (hasWarn ? (hasIssue ? ' · ' : '') + wnCount + '项警告' : '');
+  var specVal = specItem ? (specItem.value || '').substring(0, 50) + '...' : '';
+  var summaryMeta = (whatItem ? (whatItem.value || '').split('·')[0].trim() : 'Pillow字幕帧') + ' · ' + specVal;
+  var adviceText = '建议: ';
+  if (ngCount > 0 && issueItem) adviceText += '升级至 ComfyUI 提升画质；';
+  if (wnCount > 0 && whyItem) adviceText += 'fal.ai 付费后启用真AI视频；';
+  if (ngCount === 0 && wnCount === 0) adviceText = '✅ 过渡方案可工作，建议尽快升级至 AI 视频';
+
   el.insertAdjacentHTML('beforeend',
-    '<div class="upgrade-summary-card">' +
-    '  <div class="upgrade-summary-icon">⚠️</div>' +
-    '  <div class="upgrade-summary-content">' +
-    '    <div class="upgrade-summary-title">当前 Pillow 字幕帧质量偏低，建议升级到 ComfyUI</div>' +
-    '    <div class="upgrade-summary-meta">' + (specVal || '231KB') + ' · 静态文字画面 · TikTok 算法可能降权 · ComfyUI 免费可用</div>' +
-    '    <div class="upgrade-summary-advice">推荐立即升级到 ComfyUI 静态角色画面（免费 · 本地 GPU · 完播率预计 +50%）</div>' +
+    '<div class="' + sumClass + '">' +
+    '  <div class="dm4-summary-icon">' + sumIcon + '</div>' +
+    '  <div class="dm4-summary-content">' +
+    '    <div class="dm4-summary-title">' + summaryTitle + '</div>' +
+    '    <div class="dm4-summary-meta">' + summaryMeta + '</div>' +
+    '    <div class="dm4-summary-advice">' + adviceText + '</div>' +
     '  </div>' +
     '</div>'
   );
 
-  // ===== Panel 2: Three-scheme comparison cards =====
-  var compHtml = '<div class="upgrade-compare-grid">';
+  // ===== Panel 2: Compare grid — Current vs Alternative =====
+  var compareHtml = '<div class="dm4-compare-grid">';
 
-  // Pillow (current)
-  var curVal = whatItem ? (whatItem.value || 'Pillow生成PNG字幕帧 → ffmpeg合并 → .mp4') : '';
-  compHtml += '<div class="upgrade-card current">';
-  compHtml += '  <span class="upgrade-card-badge">当前使用</span>';
-  compHtml += '  <div class="upgrade-card-header">Pillow 字幕帧</div>';
-  compHtml += '  <div class="upgrade-card-specs"><span>231KB/23s</span><span>纯文字画面</span><span>💰 免费</span></div>';
-  compHtml += '  <div class="upgrade-card-quality"><div class="quality-bar red" style="width:20%">画质 2/10</div></div>';
-  compHtml += '  <div class="upgrade-card-risk">⚠️ TikTok 判定 low-quality → 降权</div>';
-  compHtml += '  <div class="upgrade-card-status">✅ 已跑通 · 当前使用中</div>';
-  compHtml += '</div>';
+  // Current
+  var curVal = whatItem ? (whatItem.value || 'Pillow生成PNG字幕帧') : '';
+  var curBefore = whatItem ? (whatItem.before || '') : '';
+  var curNote = whatItem ? (whatItem.note || '') : '';
+  compareHtml += '<div class="dm4-compare-card current"><span class="dm4-compare-badge">当前方案</span>';
+  compareHtml += '<div class="dm4-compare-title">Pillow 字幕帧</div>';
+  compareHtml += '<div class="dm4-compare-desc">' + curVal + '</div>';
+  if (curBefore) compareHtml += '<span class="dm4-compare-tag neutral">📋 ' + curBefore + '</span>';
+  compareHtml += '<div class="dm4-compare-note">' + (curNote || '运行: pipeline --render pillow') + '</div>';
+  compareHtml += '</div>';
 
-  // ComfyUI (recommended)
-  compHtml += '<div class="upgrade-card recommended">';
-  compHtml += '  <span class="upgrade-card-badge highlight">⭐ 推荐升级</span>';
-  compHtml += '  <div class="upgrade-card-header">ComfyUI 静态角色画面</div>';
-  compHtml += '  <div class="upgrade-card-specs"><span>约 2MB/集</span><span>有角色形象</span><span>💰 免费</span></div>';
-  compHtml += '  <div class="upgrade-card-quality"><div class="quality-bar yellow" style="width:50%">画质 5/10</div></div>';
-  compHtml += '  <div class="upgrade-card-benefit">✅ 完播率预计 +50% · 本地 GPU · 约 10 分钟/集</div>';
-  compHtml += '  <button class="btn-primary btn-sm" onclick="switchToComfyUI()">⚡ 一键升级</button>';
-  compHtml += '</div>';
+  // Alternative
+  var altVal = altItem ? (altItem.value || 'ComfyUI + Stable Diffusion 3') : '';
+  var altBefore = altItem ? (altItem.before || '') : '';
+  var altNote = altItem ? (altItem.note || '') : '';
+  compareHtml += '<div class="dm4-compare-card alternative"><span class="dm4-compare-badge">推荐升级</span>';
+  compareHtml += '<div class="dm4-compare-title">ComfyUI 静态角色画面</div>';
+  compareHtml += '<div class="dm4-compare-desc">' + altVal + '</div>';
+  if (altBefore) compareHtml += '<span class="dm4-compare-tag good">📈 ' + altBefore + '</span>';
+  compareHtml += '<div class="dm4-compare-note">' + (altNote || '免费 · 本地GPU · 约10分钟/集') + '</div>';
+  compareHtml += '</div>';
 
-  // fal.ai / Kling (future)
-  compHtml += '<div class="upgrade-card future">';
-  compHtml += '  <span class="upgrade-card-badge">未来目标</span>';
-  compHtml += '  <div class="upgrade-card-header">fal.ai / Kling AI 视频</div>';
-  compHtml += '  <div class="upgrade-card-specs"><span>2-10MB/集</span><span>真 AI 视频</span><span>💰 ¥2.5-15/集</span></div>';
-  compHtml += '  <div class="upgrade-card-quality"><div class="quality-bar green" style="width:85%">画质 8.5/10</div></div>';
-  compHtml += '  <div class="upgrade-card-block">🔒 fal.ai 未付费 · Kling 微信支付可用</div>';
-  compHtml += '  <button class="btn-secondary btn-sm" onclick="switchToTab(\'DM-5\')">前往 DM-5 解决付费</button>';
-  compHtml += '</div>';
+  compareHtml += '</div>';
+  el.insertAdjacentHTML('beforeend', compareHtml);
 
-  compHtml += '</div>';
-  el.insertAdjacentHTML('beforeend', compHtml);
+  // ===== Panel 3: Upgrade Path =====
+  var upgradeHtml = '<div class="dm4-upgrade-path">';
+  upgradeHtml += '<span class="upgrade-label">升级路径</span>';
+  upgradeHtml += '<div class="upgrade-steps">';
+  upgradeHtml += '  <span class="upgrade-step active">✅ Pillow 字幕帧</span>';
+  upgradeHtml += '  <span class="upgrade-arrow">→</span>';
+  upgradeHtml += '  <span class="upgrade-step">ComfyUI 静态图</span>';
+  upgradeHtml += '  <span class="upgrade-arrow">→</span>';
+  upgradeHtml += '  <span class="upgrade-step">fal.ai / Kling AI 视频</span>';
+  upgradeHtml += '</div>';
+  upgradeHtml += '</div>';
+  el.insertAdjacentHTML('beforeend', upgradeHtml);
 
-  // ===== Panel 3: Quality defect warning card =====
-  var issueVal = issueItem ? (issueItem.value || '231KB/23s · 静态文字画面 · TikTok算法判定low-quality → 降权') : '';
+  // ===== Panel 4: Issue/Warning block =====
+  if (issueItem) {
+    var issueVal = issueItem.value || '';
+    var issueBefore = issueItem.before || '';
+    var issueNote = issueItem.note || '';
+    var issueStatus = issueItem.status || 'ng';
+    var warnColor = issueStatus === 'ng' ? '#ef4444' : '#f59e0b';
+    var warnTitle = issueStatus === 'ng' ? '❌ 质量缺陷 — ' : '⚠️ 注意 — ';
+    el.insertAdjacentHTML('beforeend',
+      '<div class="dm4-warn-block" style="border-color:' + warnColor + '">' +
+      '  <div class="dm4-warn-title" style="color:' + warnColor + '">' + warnTitle + issueItem.label + '</div>' +
+      '  <div class="dm4-warn-body">' + issueVal.replace(/ · /g, '<br>') + '</div>' +
+      (issueBefore ? '<div class="dm4-warn-body" style="margin-top:4px;color:#888">← ' + issueBefore + '</div>' : '') +
+      (issueNote ? '<div class="dm4-warn-note">💡 ' + issueNote + '</div>' : '') +
+      '</div>'
+    );
+  }
+  if (whyItem && whyItem.status === 'warn') {
+    el.insertAdjacentHTML('beforeend',
+      '<div class="dm4-warn-block" style="border-color:#f59e0b;margin-top:8px">' +
+      '  <div class="dm4-warn-title" style="color:#f59e0b">⚠️ ' + whyItem.label + '</div>' +
+      '  <div class="dm4-warn-body">' + (whyItem.value || '').replace(/ · /g, '<br>') + '</div>' +
+      (whyItem.after ? '<div class="dm4-warn-body" style="margin-top:4px;color:#888">→ ' + whyItem.after + '</div>' : '') +
+      '</div>'
+    );
+  }
+
+  // ===== Panel 5: Spec tags =====
+  if (specItem) {
+    var specVal = specItem.value || '';
+    var specs = specVal.split('·').map(function(s) { return s.trim(); }).filter(Boolean);
+    var specHtml = '<div class="dm4-spec-bar">';
+    specs.forEach(function(sp) {
+      sp = sp.trim();
+      var parts = sp.split(/[：:]/);
+      var label = parts[0].trim();
+      var val = parts.length > 1 ? parts.slice(1).join(':').trim() : '';
+      specHtml += '<div class="dm4-spec-tag"><span class="spec-label">' + label + '</span><span class="spec-value">' + val + '</span></div>';
+    });
+    specHtml += '</div>';
+    el.insertAdjacentHTML('beforeend', specHtml);
+  }
+
+  // ===== Panel 6: Collapsible tech log =====
+  var techSecId = 'dm4-tech-log';
+  var techHtml = '<div class="info-card collapsible" id="' + techSecId + '">' +
+    '<div class="info-card-header" onclick="toggleInfoCard(this)">' +
+    '  <span>🔍 技术日志 (原始数据)</span><span class="toggle-icon">▼</span>' +
+    '</div>' +
+    '<div class="info-card-body" style="display:none">' + renderDefault(detail) + '</div>' +
+    '</div>';
+  el.insertAdjacentHTML('beforeend', techHtml);
+
+  // ===== Panel 7: Next action =====
   el.insertAdjacentHTML('beforeend',
-    '<div class="publish-check-card fail">' +
-    '  <div class="check-card-icon">❌</div>' +
-    '  <div style="flex:1;min-width:0">' +
-    '    <div class="check-card-title">质量缺陷警告</div>' +
-    '    <div class="check-card-detail">' + issueVal + '</div>' +
-    '    <div class="check-card-advice">建议至少升级到 ComfyUI 静态画面（免费 · 开源）· 比纯字幕提升 50%+ 完播率</div>' +
-    '  </div>' +
-    '</div>'
-  );
-
-  // ===== Panel 4: Technical specs card =====
-  el.insertAdjacentHTML('beforeend',
-    '<div class="dm4-tech-grid">' +
-    '  <div class="dm4-tech-card"><div class="tc-icon">📦</div><div class="tc-label">格式</div><div class="tc-value">MP4 H.264</div></div>' +
-    '  <div class="dm4-tech-card"><div class="tc-icon">📱</div><div class="tc-label">分辨率</div><div class="tc-value">1080×1920</div><div class="tc-sub">9:16 竖屏</div></div>' +
-    '  <div class="dm4-tech-card"><div class="tc-icon">⏱️</div><div class="tc-label">时长</div><div class="tc-value">23s</div></div>' +
-    '  <div class="dm4-tech-card"><div class="tc-icon">🎞️</div><div class="tc-label">帧率</div><div class="tc-value">24fps</div></div>' +
-    '  <div class="dm4-tech-card"><div class="tc-icon">🎵</div><div class="tc-label">BGM</div><div class="tc-value">无</div></div>' +
-    '</div>'
-  );
-
-  // ===== Panel 5: Collapsible tools & monitoring =====
-  var toolsId = 'dm4-tools-panel';
-  el.insertAdjacentHTML('beforeend',
-    '<div class="info-card collapsible" id="' + toolsId + '">' +
-    '  <div class="info-card-header" onclick="toggleInfoCard(this)">' +
-    '    <span>🛠️ 工具与管线监控</span><span class="toggle-icon">▼</span>' +
-    '  </div>' +
-    '  <div class="info-card-body" style="display:none">' +
-    '    <div class="dm4-tools-grid">' +
-    '      <div class="dm4-tool-card"><div class="tool-icon">🎬</div><div class="tool-name">视频播放器</div><div class="tool-status ok">✅ 可用</div></div>' +
-    '      <div class="dm4-tool-card"><div class="tool-icon">🔀</div><div class="tool-name">片段排序器</div><div class="tool-status ok">✅ 可用</div></div>' +
-    '      <div class="dm4-tool-card"><div class="tool-icon">🖥️</div><div class="tool-name">ComfyUI 管线</div><div class="tool-status ' + (hasIssue ? 'warn' : 'ok') + '">' + (hasIssue ? '⚠️ 待切换' : '✅ 就绪') + '</div></div>' +
-    '      <div class="dm4-tool-card"><div class="tool-icon">🐍</div><div class="tool-name">Python Pillow</div><div class="tool-status ok">✅ 已跑通</div></div>' +
-    '      <div class="dm4-tool-card"><div class="tool-icon">🤖</div><div class="tool-name">fal.ai 视频</div><div class="tool-status ng">❌ 未付费</div></div>' +
-    '      <div class="dm4-tool-card"><div class="tool-icon">🎥</div><div class="tool-name">ffmpeg 合成</div><div class="tool-status ok">✅ 可用</div></div>' +
-    '      <div class="dm4-tool-card"><div class="tool-icon">📊</div><div class="tool-name">质量反馈知识库</div><div class="tool-status ok">✅ 活跃</div></div>' +
-    '      <div class="dm4-tool-card"><div class="tool-icon">🔄</div><div class="tool-name">TikTok 合规检查</div><div class="tool-status warn">⚠️ 文字-低质</div></div>' +
-    '    </div>' +
-    '  </div>' +
-    '</div>'
-  );
-
-  // ===== Panel 6: Next action =====
-  el.insertAdjacentHTML('beforeend',
-    '<div class="gate-next-action">' +
-    '  <span style="font-size:11px;color:#888;flex:1">✅ DM-4 升级路径分析完成 — 推荐升级到 ComfyUI</span>' +
-    '  <button class="btn-primary btn-lg" onclick="switchToComfyUI()">⭐ 一键升级到 ComfyUI（推荐）</button>' +
-    '  <button class="btn-secondary" onclick="switchToTab(\'DM-5\')">前往 fal.ai 付费方案</button>' +
+    '<div class="dm4-next-action">' +
+    '  <span style="font-size:11px;color:#888;flex:1">✅ 字幕帧方案检查完成</span>' +
+    '  <button class="btn-primary" onclick="switchToTab(\'DM-5\')">进入 DM-5 AI 视频升级决策</button>' +
+    '  <button class="btn-secondary" onclick="triggerReReview(\'DM-4\')">重新检查</button>' +
     '</div>'
   );
 }
@@ -8479,31 +6690,6 @@ async function renderDM5(detail, ms) {
   // Summary
   var blocked = blWhat && blWhat.status === 'ng';
   var apiReady = blPipeline && blPipeline.status === 'ok';
-
-  // Panel 0: Quality evolution pipeline & cost comparison
-  el.insertAdjacentHTML('beforeend',
-    '<div style="font-size:10px;color:#888;font-weight:600;margin:0 0 4px">📈 画质进化路线</div>' +
-    '<div class="dm5-pipeline-bar">' +
-    '  <div class="dm5-pipeline-stage current"><div class="pl-icon">📄</div><div class="pl-name">Pillow</div><div class="pl-score">2/10 · 免费</div></div>' +
-    '  <span class="dm5-pipeline-arrow">→</span>' +
-    '  <div class="dm5-pipeline-stage recommended"><div class="pl-icon">🖥️</div><div class="pl-name">ComfyUI</div><div class="pl-score">5/10 · 免费</div></div>' +
-    '  <span class="dm5-pipeline-arrow">→</span>' +
-    '  <div class="dm5-pipeline-stage"><div class="pl-icon">🎬</div><div class="pl-name">Kling</div><div class="pl-score">8.5/10 · ¥15</div></div>' +
-    '  <span class="dm5-pipeline-arrow">→</span>' +
-    '  <div class="dm5-pipeline-stage"><div class="pl-icon">🌐</div><div class="pl-name">Seedance</div><div class="pl-score">8.5/10 · $7.5</div></div>' +
-    '</div>'
-  );
-  el.insertAdjacentHTML('beforeend',
-    '<div style="font-size:10px;color:#888;font-weight:600;margin:12px 0 4px">💰 6集成品成本预估</div>' +
-    '<div class="dm5-cost-grid">' +
-    '  <div class="dm5-cost-card"><div class="cc-icon">📄</div><div class="cc-name">Pillow</div><div class="cc-price">¥0</div><div class="cc-meta">即时生成</div></div>' +
-    '  <div class="dm5-cost-card recommended"><div class="cc-icon">🖥️</div><div class="cc-name">ComfyUI</div><div class="cc-price">¥0</div><div class="cc-meta">~10分钟/集</div></div>' +
-    '  <div class="dm5-cost-card recommended"><div class="cc-icon">🎬</div><div class="cc-name">⭐ Kling</div><div class="cc-price">¥15</div><div class="cc-meta">1-3分钟/镜</div></div>' +
-    '  <div class="dm5-cost-card"><div class="cc-icon">🌐</div><div class="cc-name">Seedance</div><div class="cc-price">$7.50</div><div class="cc-meta">2-5分钟/镜</div></div>' +
-    '</div>'
-  );
-
-  // Summary
   var sumClass = 'dm5-summary-card' + (blocked ? ' red' : ' green');
   var sumIcon = blocked ? '❌' : '✅';
   var altVal = blAlt ? (blAlt.value || '').substring(0, 60) : 'Kling(可灵) ¥15/6集';
@@ -8525,22 +6711,19 @@ async function renderDM5(detail, ms) {
     '</div>'
   );
 
-  // Panel 2: Block & Solution cards grid (优化一：增强支付阻塞卡片)
+  // Panel 2: Block & Solution cards grid
   var blockHtml = '<div class="dm5-block-grid">';
 
-  // Payment block card with prominent Kling solution
+  // Payment block card
   blockHtml += '<div class="dm5-block-card fail">';
   blockHtml += '  <div class="dm5-block-header fail-hdr">🔒 支付阻塞</div>';
   blockHtml += '  <div class="dm5-block-body">';
   if (blWhat) blockHtml += (blWhat.value || 'fal.ai 需外币卡').replace(/·/g, '<br>') + '<br>';
+  if (blAlt) blockHtml += '<strong>推荐替代: Kling (可灵)</strong> — 中文界面 + 微信支付 + ¥15/6集';
   blockHtml += '  </div>';
-  // 解决方案入口
-  blockHtml += '  <div class="dm5-solution-entrance">';
-  blockHtml += '    <div class="dm5-solution-text">💰 推荐替代方案：Kling (可灵) — 支持微信支付</div>';
-  blockHtml += '    <div class="dm5-solution-btns">';
-  blockHtml += '      <button class="btn-sm5 primary kling-btn" onclick="goToKling(this)">前往 Kling (¥15/6集) →</button>';
-  blockHtml += '      <button class="btn-sm5 secondary" onclick="switchToRenderer(\'comfyui\')">ComfyUI 本地免费方案</button>';
-  blockHtml += '    </div>';
+  blockHtml += '  <div class="dm5-block-action">';
+  blockHtml += '    <button class="btn-sm5 primary" onclick="window.open(\'https://kling.kuaishou.com\')">前往 Kling</button>';
+  blockHtml += '    <button class="btn-sm5 secondary" onclick="switchToRenderer(\'comfyui\')">使用 ComfyUI 本地免费方案</button>';
   blockHtml += '  </div>';
   if (blReg) blockHtml += '  <div class="dm5-block-note">' + (blReg.value || '').substring(0, 80) + '...</div>';
   blockHtml += '</div>';
@@ -8577,102 +6760,24 @@ async function renderDM5(detail, ms) {
   blockHtml += '</div>';
   el.insertAdjacentHTML('beforeend', blockHtml);
 
-  // Panel 3: Solution comparison cards with quality bars
+  // Panel 3: Solution comparison cards
   var techHtml = '<div class="dm5-tech-grid">';
   var plans = [
-    { name:'Kling', icon:'🎬', price:'¥15/6集', meta:'微信支付 | 1-3分钟/镜', quality:85, qLabel:'高', reco:true, tags:[{t:'微信/支付宝',c:'green'},{t:'中文界面',c:'blue'},{t:'本月可用',c:'green'}] },
-    { name:'Seedance', icon:'🌐', price:'$7.50/6集', meta:'外币卡 | 2-5分钟/镜', quality:85, qLabel:'高', reco:false, tags:[{t:'需外币卡',c:'yellow'},{t:'英文界面',c:'yellow'}] },
-    { name:'ComfyUI', icon:'🖥️', price:'免费', meta:'本地GPU | ~10分钟/集', quality:50, qLabel:'中', reco:false, tags:[{t:'免费·开源',c:'green'},{t:'本地运行',c:'blue'},{t:'可立即开始',c:'green'}] },
-    { name:'Pillow', icon:'📄', price:'免费', meta:'即时生成 | 纯文字画面', quality:20, qLabel:'低', reco:false, tags:[{t:'无画面',c:'yellow'},{t:'TikTok降权',c:'yellow'}] }
+    { name:'Kling', icon:'🎬', price:'¥15/6集', meta:'微信支付 | 1-3分钟/镜 | 画质8.5/10', reco:true },
+    { name:'Seedance', icon:'🌐', price:'$7.50/6集', meta:'外币卡 | 2-5分钟/镜 | 画质8.5/10', reco:false },
+    { name:'ComfyUI', icon:'🖥️', price:'免费', meta:'本地GPU | 约10分钟/集 | 画质5/10', reco:false },
+    { name:'Pillow', icon:'📄', price:'免费', meta:'即时生成 | 无画面 | 画质2/10', reco:false }
   ];
   plans.forEach(function(p) {
-    var qFillClass = p.quality >= 80 ? 'high' : p.quality >= 40 ? 'mid' : 'low';
     techHtml += '<div class="dm5-tech-card' + (p.reco ? ' recommended' : '') + '">';
-    if (p.reco) techHtml += '<div class="reco-badge">⭐ 推荐</div>';
-    techHtml += '  <div class="tc-icon">' + p.icon + '</div>';
-    techHtml += '  <div class="tc-name">' + p.name + '</div>';
-    techHtml += '  <div class="tc-price">' + p.price + '</div>';
-    techHtml += '  <div class="tc-meta">' + p.meta + '</div>';
-    techHtml += '  <div class="tc-quality"><div class="tc-quality-bar"><div class="tc-quality-fill ' + qFillClass + '" style="width:' + p.quality + '%"></div></div><span style="font-size:9px;color:#888;margin-top:2px">画质 ' + p.quality/10 + '/10 &nbsp;' + (p.quality>=80?'🟢':p.quality>=40?'🟡':'🔴') + ' ' + p.qLabel + '</span></div>';
-    techHtml += '  <div class="tc-tags">';
-    p.tags.forEach(function(t) { techHtml += '<span class="tc-tag ' + t.c + '">' + t.t + '</span>'; });
-    techHtml += '  </div>';
+    techHtml += '  <span class="tc-icon">' + p.icon + '</span>';
+    techHtml += '  <span class="tc-name">' + (p.reco ? '⭐ 推荐 ' : '') + p.name + '</span>';
+    techHtml += '  <span class="tc-price">' + p.price + '</span>';
+    techHtml += '  <span class="tc-meta">' + p.meta + '</span>';
     techHtml += '</div>';
   });
   techHtml += '</div>';
   el.insertAdjacentHTML('beforeend', techHtml);
-
-  // Panel 3.3: Quality prediction + time estimate (director's decision data)
-  if (exQuality || exTime) {
-    var predHtml = '<div style="font-size:10px;color:#888;font-weight:600;margin:12px 0 4px">📊 产出预测</div><div class="dm5-pred-grid">';
-    if (exQuality) {
-      var qVal = exQuality.value || 'Seedance: 1080p · 24fps · 8K photorealistic';
-      var qBefore = exQuality.before || '';
-      predHtml += '<div class="dm5-pred-card wide"><div class="pred-icon">🎨</div><div class="pred-label">预期画质</div><div class="pred-val">' + qVal.replace(/·/g,'<br>') + '</div>';
-      if (qBefore) predHtml += '<div class="pred-compare">' + qBefore + '</div>';
-      predHtml += '</div>';
-    }
-    if (exTime) {
-      var tVal = exTime.value || 'Seedance: 约2-5分钟/镜 · 18镜≈60分钟';
-      predHtml += '<div class="dm5-pred-card"><div class="pred-icon">⏱️</div><div class="pred-label">生成时间</div><div class="pred-val">' + tVal.replace(/·/g,'<br>') + '</div></div>';
-    }
-    predHtml += '</div>';
-    el.insertAdjacentHTML('beforeend', predHtml);
-  }
-
-  // Panel 3.4: Pipeline flow diagram
-  el.insertAdjacentHTML('beforeend',
-    '<div style="font-size:10px;color:#888;font-weight:600;margin:12px 0 4px">🔀 生成管线</div>' +
-    '<div class="dm5-flow-bar">' +
-    '  <div class="dm5-flow-step done"><div class="flow-icon">📖</div><div class="flow-label">bible</div></div><span class="dm5-flow-arrow">→</span>' +
-    '  <div class="dm5-flow-step done"><div class="flow-icon">🐍</div><div class="flow-label">pipeline</div></div><span class="dm5-flow-arrow">→</span>' +
-    '  <div class="dm5-flow-step block"><div class="flow-icon">🔑</div><div class="flow-label">API Key</div></div><span class="dm5-flow-arrow">→</span>' +
-    '  <div class="dm5-flow-step"><div class="flow-icon">🤖</div><div class="flow-label">AI生成</div></div><span class="dm5-flow-arrow">→</span>' +
-    '  <div class="dm5-flow-step"><div class="flow-icon">🎥</div><div class="flow-label">ffmpeg</div></div>' +
-    '</div>' +
-    '<div style="font-size:9px;color:#f59e0b;margin:4px 0 12px">⚠️ 阻塞在「API Key」→ 解决后 10 分钟内可跑通整条管线</div>'
-  );
-
-  // Panel 3.5: Consistency risk warning
-  if (exRisk) {
-    el.insertAdjacentHTML('beforeend',
-      '<div class="dm5-consistency-risk">' +
-      '  <div class="risk-icon">⚠️</div>' +
-      '  <div>' +
-      '    <div class="risk-title">一致性风险警告</div>' +
-      '    <div class="risk-body">' + (exRisk.value || '').replace(/·/g, '<br>') + '</div>' +
-      (exRisk.note ? '<div class="risk-mitigation">💡 ' + exRisk.note + '</div>' : '') +
-      '  </div>' +
-      '</div>'
-    );
-  }
-
-  // Panel 3.6: Kling hint (when blocked)
-  if (blocked) {
-    el.insertAdjacentHTML('beforeend',
-      '<div class="dm5-kling-hint">💡 推荐方案：Kling (可灵) — 中文界面 + 微信/支付宝支付 · ¥15/6集 · 1-3分钟/镜 · 国内可用</div>'
-    );
-  }
-
-  // Panel 3.7: 优化四：fal.ai 注册流程折叠
-  if (blReg) {
-    var regId = 'dm5-reg-flow';
-    el.insertAdjacentHTML('beforeend',
-      '<div class="info-card collapsible dm5-reg-card" id="' + regId + '">' +
-      '  <div class="info-card-header" onclick="toggleInfoCard(this)">' +
-      '    <span>📋 fal.ai 注册流程（5步）</span><span class="toggle-icon">▼</span>' +
-      '  </div>' +
-      '  <div class="info-card-body" style="display:none">' +
-      '    <div class="dm5-block-body">' + (blReg.value || '') + '</div>' +
-      '  </div>' +
-      '</div>'
-    );
-    if (blocked) {
-      el.insertAdjacentHTML('beforeend',
-        '<div class="dm5-kling-hint">提示：推荐使用 Kling 替代 fal.ai，无需此注册流程</div>'
-      );
-    }
-  }
 
   // Panel 4: Collapsible tech log
   var techSecId = 'dm5-tech-log';
@@ -8688,9 +6793,9 @@ async function renderDM5(detail, ms) {
   // Panel 5: Next action
   el.insertAdjacentHTML('beforeend',
     '<div class="dm5-next-action">' +
-    '  <span style="font-size:11px;color:#888;flex:1">' + (blocked ? '❌ AI视频生成阻塞 — 以下是可用方案：' : '✅ AI视频生成就绪，选择方案启动：') + '</span>' +
-    '  <button class="btn-primary btn-lg" onclick="window.open(\'https://kling.kuaishou.com\')">⭐ 前往 Kling (¥15/6集 · 推荐)</button>' +
-    '  <button class="btn-secondary" onclick="switchToComfyUI()">🖥️ 用 ComfyUI 免费生成</button>' +
+    '  <span style="font-size:11px;color:#888;flex:1">' + (blocked ? '❌ AI视频生成阻塞，建议执行：' : '✅ AI视频生成就绪') + '</span>' +
+    '  <button class="btn-primary" onclick="window.open(\'https://kling.kuaishou.com\')">前往 Kling (¥15/6集)</button>' +
+    '  <button class="btn-secondary" onclick="switchToRenderer(\'comfyui\')">切回 ComfyUI 本地方案</button>' +
     '  <button class="btn-secondary" onclick="triggerReReview(\'DM-5\')">重新检查</button>' +
     '</div>'
   );
@@ -8702,6 +6807,8 @@ async function renderDM5(detail, ms) {
 async function renderDM6(msId, detail, ms) {
   var el = document.getElementById('detail');
   if (!el) return;
+
+  var epNum = parseInt(msId.replace('DM-', ''));
 
   // Extract items
   var fileItem = null, audioItem = null, contentItem = null, qualityItem = null;
@@ -8716,13 +6823,6 @@ async function renderDM6(msId, detail, ms) {
       });
     });
   }
-
-  // Derive episode number from data key (e.g. e1_file → 1), fall back to panel offset
-  var epNum = 1;
-  var firstKey = (fileItem || audioItem || contentItem || qualityItem || {}).key || '';
-  var keyMatch = firstKey.match(/e(\d+)_/);
-  if (keyMatch) { epNum = parseInt(keyMatch[1]); }
-  else { epNum = parseInt(msId.replace('DM-', '')) - 5; }
 
   if (!fileItem && !qualityItem) {
     el.insertAdjacentHTML('beforeend', '<div class="sec"><h3>第' + epNum + '集 成品报告</h3><div style="color:#555;font-size:11px;padding:12px">暂无该集成品数据</div></div>');
@@ -8792,26 +6892,19 @@ async function renderDM6(msId, detail, ms) {
   qualityHtml += '</div>';
   el.insertAdjacentHTML('beforeend', qualityHtml);
 
-  // ===== Panel 3: File info card =====
+  // ===== Panel 3: File info card (replaces old 3-card grid) =====
   var filePath = fileItem ? (fileItem.before || '') : '';
   var fileHtml = '<div class="dm7-file-card">' +
     '<div class="dm7-file-icon">📦</div>' +
-    '<div class="dm7-file-body">' +
-    '  <div class="dm7-file-name">' + (fileName || 'final.mp4') + '</div>' +
-    '  <div class="dm7-file-specs">' +
-    '    <div class="fs-item"><span class="fs-key">体积</span><span class="fs-val">' + (fileSize || '?') + ' KB</span></div>' +
-    '    <div class="fs-item"><span class="fs-key">分辨率</span><span class="fs-val">' + (fileRes || '?') + '</span></div>' +
-    '    <div class="fs-item"><span class="fs-key">时长</span><span class="fs-val">' + (fileDur || '?') + ' 秒</span></div>' +
-    '    <div class="fs-item"><span class="fs-key">编码</span><span class="fs-val">' + (fileCodec || 'H.264') + '</span></div>' +
-    (fileNLS ? '    <div class="fs-item"><span class="fs-key">配音</span><span class="fs-val">' + fileNLS + '</span></div>' : '') +
-    '  </div>' +
-    (filePath ? '<div class="dm7-file-path">' + filePath + '</div>' : '') +
-    '  <div class="dm7-file-tags">' +
-    '    <span class="dm7-file-tag">' + (fileRes || '?') + '</span>' +
-    '    <span class="dm7-file-tag">' + (fileCodec || 'H.264') + '</span>' +
-    (fileNLS ? '    <span class="dm7-file-tag">' + fileNLS + '</span>' : '') +
-    '  </div>' +
+    '<div class="dm7-file-name">' + (fileName || 'final.mp4') + '</div>' +
+    '<div class="dm7-file-tags">' +
+    '  <span class="dm7-file-tag">' + (fileSize || '?') + 'KB</span>' +
+    '  <span class="dm7-file-tag">' + (fileRes || '?') + '</span>' +
+    '  <span class="dm7-file-tag">' + (fileDur || '?') + '秒</span>' +
+    '  <span class="dm7-file-tag">' + (fileCodec || 'H.264') + '</span>' +
+    (fileNLS ? '  <span class="dm7-file-tag">' + fileNLS + '</span>' : '') +
     '</div>' +
+    (filePath ? '<div class="dm7-file-path">' + filePath + '</div>' : '') +
     '</div>';
   el.insertAdjacentHTML('beforeend', fileHtml);
 
@@ -8864,63 +6957,14 @@ async function renderDM6(msId, detail, ms) {
   // Load episode gallery + shot sorter
   loadEpGallery(epNum, vpId + '-body');
 
-  // ===== Panel 6: Pipeline execution cards =====
+  // ===== Panel 6: Collapsible tech log =====
   var techSecId = 'dm6-tech-log-' + epNum;
-  var allSectItems = [];
-  if (detail && detail.sections) {
-    detail.sections.forEach(function(s) { (s.items || []).forEach(function(it) { allSectItems.push(it); }); });
-  }
-  // Extract pipeline log items
-  var pipeLines = [];
-  var pipeMap = {};
-  allSectItems.forEach(function(it) {
-    var key = it.key || '';
-    var label = it.label || '';
-    var val = it.value || '';
-    var note = it.note || '';
-    var before = it.before || '';
-    var status = it.status || 'ok';
-    // Categorize: ffmpeg / tts / render / system
-    var cat = '';
-    if (/ffmpeg|合成/.test(label)) cat = 'ffmpeg';
-    else if (/tts|NLS|配音|音频|mp3/.test(label)) cat = 'audio';
-    else if (/pillow|渲染|render|帧/.test(label)) cat = 'render';
-    else if (/路径|path|file/.test(key) && /e\d_file/.test(key)) cat = 'file';
-    else if (/content|内容|剧本|场景/.test(label)) cat = 'content';
-    else if (/quality|质量|评分/.test(label)) cat = 'quality';
-    else cat = 'system';
-    pipeMap[cat] = (pipeMap[cat] || []).concat([it]);
-  });
-  // Render structured pipeline cards
-  var techHtml = '<div class="dm6-tech-log">';
-  var catOrder = ['file', 'audio', 'render', 'ffmpeg', 'content', 'quality', 'system'];
-  var catIcons = {file:'📦', audio:'🎤', render:'🖼️', ffmpeg:'🎬', content:'📜', quality:'⭐', system:'⚙️'};
-  catOrder.forEach(function(cat) {
-    var items = pipeMap[cat] || [];
-    if (!items.length) return;
-    var catLabel = {file:'成品文件', audio:'音频轨道', render:'图像渲染', ffmpeg:'FFmpeg 合成', content:'内容信息', quality:'质量评估', system:'系统日志'}[cat];
-    techHtml += '<div class="pipe-cat"><div class="pipe-cat-hdr"><span>' + (catIcons[cat]||'') + ' ' + catLabel + '</span><span class="pipe-cat-count">' + items.length + ' 项</span></div>';
-    techHtml += '<div class="pipe-cat-items">';
-    items.forEach(function(it) {
-      var stCls = it.status === 'ok' ? 'pipe-ok' : it.status === 'warn' ? 'pipe-warn' : 'pipe-err';
-      var stIcon = it.status === 'ok' ? '✅' : it.status === 'warn' ? '⚠️' : '❌';
-      techHtml += '<div class="pipe-item ' + stCls + '">';
-      techHtml += '<span class="pipe-item-icon">' + stIcon + '</span>';
-      techHtml += '<div class="pipe-item-body"><span class="pipe-item-label">' + (it.label || it.key || '') + '</span>';
-      techHtml += '<span class="pipe-item-val">' + (it.value || '').substring(0, 120) + '</span>';
-      if (it.before) techHtml += '<span class="pipe-item-path">' + it.before + '</span>';
-      if (it.note) techHtml += '<span class="pipe-item-note">' + it.note + '</span>';
-      techHtml += '</div></div>';
-    });
-    techHtml += '</div></div>';
-  });
-  techHtml += '</div>';
   el.insertAdjacentHTML('beforeend',
     '<div class="info-card collapsible" id="' + techSecId + '">' +
     '  <div class="info-card-header" onclick="toggleInfoCard(this)">' +
-    '    <span>🔍 管线执行日志</span><span class="toggle-icon">▼</span>' +
+    '    <span>🔍 技术日志 (原始数据)</span><span class="toggle-icon">▼</span>' +
     '  </div>' +
-    '  <div class="info-card-body" style="display:none">' + techHtml + '</div>' +
+    '  <div class="info-card-body" style="display:none">' + renderDefault(detail) + '</div>' +
     '</div>'
   );
 
@@ -8959,15 +7003,12 @@ async function renderDM6(msId, detail, ms) {
   }
 }
 
-// Helper: single quality score bar — card layout with big number + bar
+// Helper: single quality score bar
 function dm6ScoreItem(label, score, colorClass) {
   var pct = Math.min(Math.max((score || 0) / 10 * 100, 5), 100);
-  var numClass = score >= 7 ? 'green' : score >= 4 ? 'yellow' : 'red';
-  return '<div class="dm6-score-item">' +
-    '<div class="score-label">' + label + '</div>' +
-    '<div class="score-num ' + numClass + '">' + (score || 0) + '<span style="font-size:12px;color:inherit;opacity:.6">/10</span></div>' +
-    '<div class="score-bar"><div class="score-fill ' + colorClass + '" style="width:' + pct + '%"></div></div>' +
-    '<div class="score-sub">' + (score >= 8 ? '优秀' : score >= 6 ? '良好' : score >= 4 ? '一般' : '较差') + '</div>' +
+  return '<div class="dm6-quality-item">' +
+    '<span class="score-label">' + label + '</span>' +
+    '<div class="dm6-score-bar"><div class="dm6-score-fill ' + colorClass + '" style="width:' + pct + '%">' + (score || 0) + '/10</div></div>' +
     '</div>';
 }
 
@@ -9030,6 +7071,8 @@ function renderEpShotSorter(epNum, containerId) {
     var listEl = document.getElementById('shot-list-' + epNum);
     if (listEl) listEl.innerHTML = '<div class="shot-empty">暂无视频片段</div>';
   });
+}
+
 }
 
 function renderShotList(epNum,shots){
@@ -9111,94 +7154,19 @@ async function mergeShots(epNum){
   if(msgEl)msgEl.style.display='none';
 }
 
-// S3-2: Generate subtitle with whisper (v3.7.16: preview+edit panel)
+// S3-2: Generate subtitle with whisper
 async function generateSubtitle(epNum){
-  var msgEl=document.getElementById('shot-msg-'+epNum);
-  if(msgEl){msgEl.style.display='block';msgEl.textContent='⏳ 正在生成字幕 (whisper)...';}
+  const msgEl=document.getElementById('shot-msg-'+epNum);
+  if(msgEl){msgEl.style.display='block';msgEl.textContent='正在生成字幕...';}
 
   try{
-    var r=await fetch('/api/subtitle',{method:'POST',headers:{'Content-Type':'application/json'},
+    const r=await fetch('/api/subtitle',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({episode:String(epNum)})});
-    var d=await r.json();
-    if(d.error){toastMsg('字幕生成失败: '+d.error,3000,'error');if(msgEl)msgEl.style.display='none';return;}
-    var srt=d.srt||'';
-    toastMsg('✅ 字幕生成成功 (' + srt.split('\n').filter(function(l){return /^\d+$/.test(l.trim());}).length + ' 条)',3000,'success');
-    showSubtitlePreview(epNum, srt, d.srt_path||'');
+    const d=await r.json();
+    if(d.error){toastMsg('字幕生成失败: '+d.error,3000,'error');}
+    else{toastMsg('字幕生成成功',3000);if(d.srt)console.log('SRT:',d.srt);}
   }catch(e){toastMsg('字幕请求失败: '+e.message,3000,'error');}
   if(msgEl)msgEl.style.display='none';
-}
-
-// S3-2b: Show subtitle preview panel with edit capability
-function showSubtitlePreview(epNum, srtContent, srtPath) {
-  var sorter = document.getElementById('shot-sorter-' + epNum);
-  if (!sorter) return;
-  // Remove old preview if exists
-  var oldPreview = document.getElementById('sub-preview-' + epNum);
-  if (oldPreview) oldPreview.remove();
-  var lines = srtContent.split('\n');
-  var entryCount = lines.filter(function(l){return /^\d+$/.test(l.trim());}).length;
-  var previewHtml =
-    '<div class="info-card collapsible" id="sub-preview-' + epNum + '" style="margin-top:8px">' +
-    '  <div class="info-card-header" onclick="toggleInfoCard(this)">' +
-    '    <span>💬 字幕预览 ' + epochStr(epNum) + ' · ' + entryCount + ' 条</span><span class="toggle-icon">▼</span>' +
-    '  </div>' +
-    '  <div class="info-card-body" id="sub-preview-body-' + epNum + '">' +
-    '    <div style="margin-bottom:8px;display:flex;gap:6px">' +
-    '      <button class="btn-sm5 secondary" onclick="toggleSubEdit(\'' + epNum + '\')">✏️ 编辑模式</button>' +
-    '      <button class="btn-sm5 secondary" onclick="generateSubtitle(\'' + epNum + '\')">🔄 重新生成</button>' +
-    '      <span style="font-size:9px;color:#888;margin-left:auto;align-self:center">' + (srtPath||'') + '</span>' +
-    '    </div>' +
-    '    <pre id="sub-srt-text-' + epNum + '" style="white-space:pre-wrap;font-size:10px;background:rgba(0,0,0,.2);padding:8px;border-radius:4px;max-height:300px;overflow-y:auto;color:#c4d4e8;line-height:1.6">' + srtContent.replace(/</g,'&lt;') + '</pre>' +
-    '    <textarea id="sub-srt-edit-' + epNum + '" style="display:none;width:100%;min-height:200px;font-size:10px;background:rgba(0,0,0,.3);color:#e4e6eb;border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:8px;font-family:monospace;line-height:1.5;resize:vertical"></textarea>' +
-    '    <div id="sub-edit-actions-' + epNum + '" style="display:none;margin-top:6px;gap:6px">' +
-    '      <button class="btn-sm5 primary" onclick="saveSubtitleEdit(\'' + epNum + '\',\'' + (srtPath||'') + '\')">💾 保存修改</button>' +
-    '      <button class="btn-sm5 secondary" onclick="toggleSubEdit(\'' + epNum + '\')">取消</button>' +
-    '    </div>' +
-    '  </div>' +
-    '</div>';
-  sorter.insertAdjacentHTML('afterend', previewHtml);
-}
-
-function epochStr(epNum){return 'EP' + String(epNum).padStart(2,'0');}
-var _subEditMode={};
-function toggleSubEdit(epNum) {
-  _subEditMode[epNum] = !_subEditMode[epNum];
-  var pre = document.getElementById('sub-srt-text-' + epNum);
-  var ta = document.getElementById('sub-srt-edit-' + epNum);
-  var act = document.getElementById('sub-edit-actions-' + epNum);
-  if (!pre || !ta) return;
-  if (_subEditMode[epNum]) {
-    ta.value = (pre.textContent || '').replace(/&lt;/g,'<');
-    pre.style.display = 'none';
-    ta.style.display = 'block';
-    if(act) act.style.display = 'flex';
-  } else {
-    pre.style.display = 'block';
-    ta.style.display = 'none';
-    if(act) act.style.display = 'none';
-  }
-}
-
-async function saveSubtitleEdit(epNum, srtPath) {
-  var ta = document.getElementById('sub-srt-edit-' + epNum);
-  if (!ta) return;
-  var newContent = ta.value;
-  try {
-    var r = await fetch('/api/subtitle/save', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({episode: String(epNum), srt: newContent, path: srtPath})
-    });
-    var d = await r.json();
-    if (d.error) { toastMsg('保存失败: ' + d.error, 3000, 'error'); return; }
-    // Update preview
-    var pre = document.getElementById('sub-srt-text-' + epNum);
-    if (pre) pre.textContent = newContent.replace(/</g,'&lt;');
-    toggleSubEdit(epNum);
-    toastMsg('✅ 字幕已保存', 2000, 'success');
-  } catch(e) {
-    toastMsg('保存失败: ' + e.message, 3000, 'error');
-  }
 }
 
 // ================================================================
@@ -10617,18 +8585,3 @@ function renderMilestoneCharts(fid) {
   }
 }
 
-</script>
-<!-- v3.7: Asset Panel (slide-out drawer) -->
-<div class="asset-panel" id="assetPanel">
-  <div class="asset-panel-hdr">
-    <span>📦 资产管理</span>
-    <span onclick="toggleAssetPanel()" style="cursor:pointer;font-size:16px">&times;</span>
-  </div>
-  <div class="asset-panel-body" id="assetBody">
-    <div id="assetContent" style="font-size:11px;color:#888;text-align:center;padding:20px">加载中...</div>
-  </div>
-</div>
-<div class="asset-overlay" id="assetOverlay" onclick="toggleAssetPanel()"></div>
-
-</body>
-</html>

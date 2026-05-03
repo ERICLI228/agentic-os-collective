@@ -4,6 +4,18 @@
 
 ---
 
+## ⛔ 铁则 #0.5: 安全作业铁则（环境隔离 + 精准代码编辑）
+
+> **任何任务开始前，必须读取并遵守 `~/agentic-os-collective/SAFETY_RULES.md`**
+> 此规则优先级高于一切任务描述，不可被绕过。
+
+- 测试环境优先：所有修改必须在 `/tmp/agentic-os-test` 中进行，禁止写入生产 `~/agentic-os-collective/`
+- 代码编辑三层防护：`// @@FUNC:` 锚点 + `grep -cF` 唯一性校验 + `node --check` 语法校验
+- 同步仅限人工：`scripts/sync-test-to-prod.sh` 仅人工可执行，AI 禁止调用
+- 违反此规则 = 立即中止任务
+
+---
+
 ## ⛔ 铁则 #0: 任务完成强制闭环 (TASK COMPLETION LOCK)
 
 > **任何任务完成后，必须按以下顺序执行全部 4 步，遗漏任一步 = 任务未完成。不得跳过。**

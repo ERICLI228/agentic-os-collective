@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>RenderDM Test</title></head>
+<body>
+<h1>RenderDM Function Test</h1>
+<pre id="output"></pre>
+<script>
+var out = document.getElementById('output');
+var lines = [];
+
+// Test 1: renderDM2
+try {
+async function renderDM2(detail, ms) {
+  const detailEl = document.getElementById('detail');
+  const msId = ms ? ms.ms_id : 'DM-2';
+
+  // Step 1: Extract storyboard data from API response
+  let shots = _extractShots(detail);
+  if (!shots.length) {
+    shots = _buildMockShots();
+  }
+
+  // Step 2: Compute statistics
+  const stats = _computeShotStats(shots);
+  const health = _computeHealth(shots, stats);
+
+  // Step 3: Render Panel 1 - Summary Card
+  detailEl.insertAdjacentHTML('beforeend', _renderDM2Summary(health, stats));
+
+  // Step 4: Render Panel 2 - Shot Card Grid
+  detailEl.insertAdjacentHTML('beforeend', _renderDM2ShotGrid(shots));
+
+  // Step 5: Render Panel 3 - Statistics Tag Clouds
+  detailEl.insertAdjacentHTML('beforeend', _renderDM2Stats(stats));
+
+  // Step 6: Render Panel 4 - Collapsible Technical Details
+  detailEl.insertAdjacentHTML('beforeend', _renderDM2Technical(shots));
+
+  // Step 7: Also render any remaining default sections (non-storyboard)
+  const h = renderDefault(detail);
+  if (h && h.trim()) {
+    detailEl.insertAdjacentHTML('beforeend', '<div style="margin-top:8px">' + h + '</div>');
+  }
+}
+  lines.push('renderDM2: DEFINED, typeof=' + typeof renderDM2);
+} catch(e) {
+  lines.push('renderDM2: ERROR - ' + e.message);
+}
+
+// Test 2: renderDM3
+try {
+async function renderDM3(detail, ms) {
+  var el = document.getElementById('detail');
+  if (!el) return;
+
+  // Extract items from sections
+  var voiceItems = [];
+  var techItems = [];
+  var engineInfo = {};
+  if (detail && detail.sections) {
+    detail.sections.forEach(function(sec) {
+      (sec.items || []).forEach(function(it) {
+        var key = it.key || '';
+        // Voice/NLS items
+        if (key === 'nv_engine') { engineInfo = it; return; }
+        if (key === 'nv_ws' || key === 'nv_lzs' || key === 'nv_lc' ||
+            key === 'nv_sj' || key === 'nv_lk' || key === 'nv_wy') {
+          voiceItems.push(it);
+          return;
+        }
+        techItems.push(it);
+      });
+    });
+  }
+
+  // Character voice configs
+  var charMap = {
+    nv_ws:  { name:'武松',   voice:'zhiming', desc:'浑厚有力·男声',   trait:'勇猛/嗜酒/重义',      charId:'wusong',   ep:'01' },
+    nv_lzs: { name:'鲁智深', voice:'zhiming', desc:'粗犷豪迈·男声',   trait:'狂野/正义/佛门暴力', charId:'luzhishen', ep:'02' },
+    nv_lc:  { name:'林冲',   voice:'zhilun',  desc:'沉郁悲壮·男声',   trait:'压抑/爆发/悲剧',     charId:'linchong', ep:'03' },
+    nv_sj:  { name:'宋江',   voice:'zhilun',  desc:'沉稳内敛·男声',   trait:'算计/隐忍/爆发',     charId:'songjiang',ep:'04' },
+    nv_lk:  { name:'李逵',   voice:'zhiming', desc:'暴烈粗犷·男声',   trait:'孝心/暴躁/忠诚',     charId:'likui',    ep:'05' },
+    nv_wy:  { name:'吴用',   voice:'zhilun',  desc:'沉稳睿智·男声',   trait:'智谋/从容/领袖',     charId:'wuyong',   ep:'06' }
+  };
+
+  // Compute summary
+  var doneCount = 0, pendingCount = 0, ngCount = 0;
+  var charRows = [];
+  voiceItems.forEach(function(it) {
+    var key = it.key || '';
+    var cfg = charMap[key];
+    if (!cfg) return;
+    var status = it.status || 'unknown';
+    var isDone = status === 'ok';
+    var isNg = status === 'ng';
+    if (isDone) doneCount++;
+    else if (isNg) ngCount++;
+    else pendingCount++;
+    var statusText = '';
+    var statusClass = '';
+    if (isDone) {
+      var val = it.value || '';
+      statusText = '✅ ' + (val.match(/EP\d+/)?.[0] || '已生成');
+      statusClass = 'tag-green';
+    } else if (isNg) {
+      statusText = '❌ 待生成';
+      statusClass = 'tag-red';
+    } else {
+      statusText = '⏳ 处理中';
+      statusClass = 'tag-yellow';
+    }
+    // Check if this voice is shared with another character
+    var isConflict = false;
+    voiceItems.forEach(function(other) {
+      if (other.key === key) return;
+      var otherCfg = charMap[other.key];
+      if (otherCfg && otherCfg.voice === cfg.voice) isConflict = true;
+    });
+    charRows.push({
+      key: key,
+      name: cfg.name,
+      voice: cfg.voice,
+      desc: cfg.desc,
+      trait: cfg.trait,
+      charId: cfg.charId,
+      ep: cfg.ep,
+      status: status,
+      statusText: statusText,
+      statusClass: statusClass,
+      isConflict: isConflict,
+      note: it.note || '',
+      before: it.before || '',
+      after: it.after || '',
+      value: it.value || ''
+    });
+  });
+
+  // Count zhiming conflicts
+  var zhimingCount = charRows.filter(function(r) { return r.voice === 'zhiming' && r.status !== 'ok'; }).length;
+  var zhilunCount = charRows.filter(function(r) { return r.voice === 'zhilun' && r.status !== 'ok'; }).length;
+  var allDone = doneCount === voiceItems.length;
+
+  // Panel 1: Summary
+  var sumClass = 'dub-summary-card';
+  var sumIcon = '';
+  if (allDone) { sumClass += ' green'; sumIcon = '✅'; }
+  else if (ngCount > 0) { sumClass += ' orange'; sumIcon = '⚠️'; }
+  else { sumClass += ' green'; sumIcon = '✅'; }
+
+  var engineVal = engineInfo.value || '阿里云NLS TTS';
+  var costText = '';
+  techItems.forEach(function(t) {
+    if (t.key === 'nv_cost') costText = t.value || '';
+  });
+  var summaryTitle = doneCount + '/' + voiceItems.length + '角色已生成配音，' + (voiceItems.length - doneCount) + '个待处理';
+  var summaryMeta = '引擎: ' + engineVal;
+  var adviceParts = [];
+  if (zhimingCount > 0) adviceParts.push('武松/鲁智深共用zhiming音色需字幕区分');
+  if (zhilunCount > 0) adviceParts.push('林冲/宋江/吴用共用zhilun音色需字幕区分');
+  var adviceText = adviceParts.length ? '⚠️ 注意：' + adviceParts.join('；') : '✅ 所有角色配音就绪';
+
+  el.insertAdjacentHTML('beforeend',
+    '<div class="' + sumClass + '">' +
+    '  <div class="dub-summary-icon">' + sumIcon + '</div>' +
+    '  <div class="dub-summary-content">' +
+    '    <div class="dub-summary-title">' + summaryTitle + '</div>' +
+    '    <div class="dub-summary-meta">' + summaryMeta + '</div>' +
+    '    <div class="dub-summary-advice">' + adviceText + '</div>' +
+    '  </div>' +
+    '</div>'
+  );
+
+  // Panel 2: Voice table
+  var tableHtml = '<div class="dub-voice-table"><table><thead><tr>' +
+    '<th>角色</th><th>音色</th><th>音色描述</th><th>匹配性格</th><th>状态</th><th>操作</th>' +
+    '</tr></thead><tbody>';
+  charRows.forEach(function(r) {
+    var trClass = r.isConflict && r.status !== 'ok' ? ' class="conflict"' : '';
+    var voiceTagClass = 'voice-tag ' + r.voice;
+    tableHtml += '<tr' + trClass + '>';
+    tableHtml += '  <td><strong>' + r.name + '</strong></td>';
+    tableHtml += '  <td><span class="' + voiceTagClass + '">' + r.voice + '</span></td>';
+    tableHtml += '  <td>' + r.desc + '</td>';
+    tableHtml += '  <td>' + r.trait + '</td>';
+    tableHtml += '  <td><span class="tag ' + r.statusClass + '">' + r.statusText + '</span></td>';
+    tableHtml += '  <td>';
+    // Play button for completed
+    if (r.status === 'ok') {
+      tableHtml += '<button class="btn-sm" onclick="playVoice(\'' + r.charId + '\')">▶ 试听</button>';
+    } else {
+      tableHtml += '<button class="btn-sm btn-primary" onclick="generateVoice(\'' + r.charId + '\', this)">生成配音</button>';
+    }
+    if (r.isConflict && r.status !== 'ok') {
+      tableHtml += '<span class="voice-conflict-warn">⚠️ 音色冲突</span>';
+    }
+    tableHtml += '  </td>';
+    tableHtml += '</tr>';
+  });
+  tableHtml += '</tbody></table></div>';
+  el.insertAdjacentHTML('beforeend', tableHtml);
+
+  // Panel 3: Tech cards
+  var techCardHtml = '<div class="dub-tech-cards">';
+  techItems.forEach(function(t) {
+    var key = t.key || '';
+    var label = t.label || '';
+    var val = t.value || '';
+    var note = t.note || '';
+    var icon = '';
+    if (key === 'nv_cost') icon = '💰';
+    else if (key === 'aq_sync') icon = '👄';
+    else if (key === 'aq_bgm') icon = '🔊';
+    else icon = '⚙️';
+    var statusIcon = '';
+    if (t.status === 'ok') statusIcon = '✅ ';
+    else if (t.status === 'warn') statusIcon = '⚠️ ';
+    else if (t.status === 'ng') statusIcon = '❌ ';
+    techCardHtml += '<div class="dub-tech-card"><span>' + icon + ' ' + label + '</span><strong>' + statusIcon + val.split('·')[0] + '</strong><span>' + (note || '·') + '</span></div>';
+  });
+  techCardHtml += '</div>';
+  el.insertAdjacentHTML('beforeend', techCardHtml);
+
+  // Panel 4: Collapsible technical details
+  var techSecId = 'dm3-tech-log';
+  var techHtml = renderDefault(detail);
+  el.insertAdjacentHTML('beforeend',
+    '<div class="info-card collapsible" id="' + techSecId + '">' +
+    '  <div class="info-card-header" onclick="toggleInfoCard(this)">' +
+    '    <span>🔍 配音技术日志 (原始数据)</span><span class="toggle-icon">▼</span>' +
+    '  </div>' +
+    '  <div class="info-card-body" style="display:none">' + techHtml + '</div>' +
+    '</div>'
+  );
+
+  // Panel 5: Next action
+  el.insertAdjacentHTML('beforeend',
+    '<div class="dub-next-action">' +
+    '  <span style="font-size:11px;color:#888;flex:1">✅ 配音生成检查完成，建议执行：</span>' +
+    '  <button class="btn-primary" onclick="switchToTab(\'DM-F\')">进入 DM-F 视频合成管线</button>' +
+    '  <button class="btn-secondary" onclick="triggerReReview(\'DM-3\')">重新检查配音状态</button>' +
+    '</div>'
+  );
+}
+  lines.push('renderDM3: DEFINED, typeof=' + typeof renderDM3);
+} catch(e) {
+  lines.push('renderDM3: ERROR - ' + e.message);
+}
+
+out.textContent = lines.join('\n');
+</script>
+</body></html>

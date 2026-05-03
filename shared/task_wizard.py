@@ -4,6 +4,7 @@
 包含智能推荐、内容引导、参数建议
 """
 import sys
+import os
 import json
 import yaml
 import re
@@ -56,6 +57,7 @@ def serve_gallery():
 
 
 @app.route('/dashboard')
+
 def serve_dashboard():
     """驾驶舱 HTML"""
     dashboard_path = Path(__file__).resolve().parent.parent / "dashboard" / "task_board.html"
@@ -688,6 +690,65 @@ def api_character_detail(char_name):
         return jsonify({"error": str(e)}), 500
 
 
+# ===== DM-9 配音生成端点 (阿里云NLS) =====
+_VOICE_GEN_PATH = str(Path(__file__).resolve().parent.parent / "drama/openclaw/skills/water-margin-drama")
+_AUDIO_SCRIPT = os.path.join(_VOICE_GEN_PATH, "audio_generator.py")
+
+@app.route('/api/voice/generate/<ep>', methods=['POST'])
+def api_voice_generate(ep):
+    """触发单集配音生成 (调用阿里云NLS TTS资源包)"""
+    ep_map = {'03':'林冲风雪山神庙', '3':'林冲风雪山神庙', '4': '宋江怒杀阎婆惜', '5': '李逵沂岭杀四虎', '6': '智取生辰纲'}
+    ep_name = ep_map.get(ep, f'EP{ep}')
+    if not os.path.exists(_AUDIO_SCRIPT):
+        return jsonify({"error": f"audio_generator.py 未找到: {_AUDIO_SCRIPT}", "status": "unavailable"}), 503
+    try:
+        sys.path.insert(0, _VOICE_GEN_PATH)
+        from audio_generator import generate_voice
+        sys.path.pop(0)
+        output_dir = os.path.join(_VOICE_GEN_PATH, "output", "audio")
+        os.makedirs(output_dir, exist_ok=True)
+        voice = "宋江" if ep == '4' else ("李逵" if ep == '5' else ("林冲" if ep in ('03','3') else "吴用"))
+        text_map = {'03':'好大雪！今日便要那陆谦狗贼，血溅山神庙！', '3':'好大雪！今日便要那陆谦狗贼，血溅山神庙！', '4':'阎婆惜！你竟敢私通张三，今日便要你命丧于此！', '5':'痛快！今日沂岭之上，连杀四虎，也算为一方除害！', '6':'杨志，这生辰纲，我等便笑纳了！'}
+        text = text_map.get(ep, f'{ep_name} 配音测试')
+        path = generate_voice(text, voice, output_dir)
+        fname = os.path.basename(path)
+        url = f"/api/audio/{fname}"
+        return jsonify({"success": True, "ep": ep, "voice": voice, "path": path, "url": url, "text": text[:40]})
+    except ModuleNotFoundError:
+        return jsonify({"error": "阿里云NLS SDK未安装", "status": "unavailable"}), 503
+    except Exception as e:
+        return jsonify({"error": str(e), "status": "failed"}), 500
+
+
+# ===== GPT-SoVITS TTS 代理 (解决浏览器 CORS) =====
+import urllib.request
+
+@app.route('/api/tts/proxy', methods=['GET'])
+def api_tts_proxy():
+    """代理 GPT-SoVITS 9880 请求，绕过浏览器 CORS 限制"""
+    try:
+        qs = request.query_string.decode() if request.query_string else ''
+        url = f"http://localhost:9880/?{qs}"
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = resp.read()
+            ct = resp.headers.get('Content-Type', 'audio/wav')
+            return Response(data, mimetype=ct)
+    except Exception as e:
+        return jsonify({"error": f"GPT-SoVITS unreachable: {str(e)}"}), 503
+
+
+@app.route('/api/audio/<path:subpath>')
+def api_audio_serve(subpath):
+    """Serve generated audio files from drama output directory"""
+    audio_dir = str(Path(__file__).resolve().parent.parent / "drama/openclaw/skills/water-margin-drama/output/audio")
+    full = os.path.join(audio_dir, subpath)
+    if not os.path.isfile(full):
+        return jsonify({"error": "file not found"}), 404
+    mime = "audio/mpeg" if full.endswith(".mp3") else "audio/wav" if full.endswith(".wav") else "application/octet-stream"
+    return send_file(full, mimetype=mime)
+
+
 @app.route('/api/character/<char_name>/generate', methods=['POST'])
 def api_character_generate(char_name):
     """AI 生成/刷新角色档案 (v3.6.8)"""
@@ -797,6 +858,46 @@ def api_render_image(char_id, filename):
         return "Not found", 404
     from flask import send_file
     return send_file(str(path), mimetype="image/png")
+
+
+@app.route('/api/render/<char_id>/<filename>', methods=['DELETE'])
+def api_delete_render(char_id, filename):
+    """删除指定角色的渲染图文件"""
+    renders_dir = Path.home() / ".agentic-os" / "character_designs" / "renders"
+    path = renders_dir / char_id / filename
+    if not path.exists():
+        from script_manager import CHARACTER_ID_MAP
+        REVERSE_MAP = {v: k for k, v in CHARACTER_ID_MAP.items()}
+        cn_name = REVERSE_MAP.get(char_id, char_id)
+        path = renders_dir / cn_name / filename
+    if not path.exists():
+        return jsonify({"status": "error", "message": f"文件 {filename} 不存在"}), 404
+    try:
+        path.unlink()
+        return jsonify({"status": "ok", "message": f"已删除 {filename}", "file": filename})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route('/api/render/<char_id>/regenerate', methods=['POST'])
+def api_regenerate_render(char_id):
+    """触发角色渲染图重新生成（调用 character_bible.py 管线）"""
+    import subprocess
+    try:
+        script_path = Path(__file__).parent / "character_bible.py"
+        if not script_path.exists():
+            script_path = Path.home() / "agentic-os-collective" / "shared" / "character_bible.py"
+        if not script_path.exists():
+            return jsonify({"status": "error", "message": "character_bible.py 脚本未找到"}), 500
+
+        env = os.environ.copy()
+        env["PATH"] = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:" + env.get("PATH", "")
+        cmd = [sys.executable, str(script_path), "--character", char_id, "--render-only"]
+
+        subprocess.Popen(cmd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return jsonify({"status": "ok", "message": f"已触发 {char_id} 重新渲染，请稍后刷新查看"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 # EP → character 映射（用于 /api/render/epXX/shot_X.png 别名路由）
@@ -1431,16 +1532,20 @@ def generate_subtitle():
     if not episode_dir.exists():
         return jsonify({"error": f"Episode directory not found: episode_{ep_num}"}), 404
 
-    # Look for audio file (merged or any wav/mp3)
+    # Look for audio file — prefer final.mp4 (has audio), fall back to video_dir clips
     audio_file = None
     video_dir = episode_dir / "video"
-    if video_dir.exists():
-        # Check for merged video first
+
+    # Priority 1: final.mp4 in episode root (has audio track)
+    final_mp4 = episode_dir / "final.mp4"
+    if final_mp4.exists():
+        audio_file = str(final_mp4)
+
+    if not audio_file and video_dir.exists():
         merged = video_dir / f"episode_{ep_num}_merged.mp4"
         if merged.exists():
             audio_file = str(merged)
         else:
-            # Use first available video file
             for f in sorted(video_dir.iterdir()):
                 if f.suffix.lower() in ('.mp4', '.mov', '.avi', '.mkv', '.wav', '.mp3'):
                     audio_file = str(f)
@@ -1453,7 +1558,8 @@ def generate_subtitle():
         }), 404
 
     # Output SRT path
-    srt_output = str(video_dir / f"episode_{ep_num}_subtitle.srt") if video_dir.exists() else str(episode_dir / f"episode_{ep_num}_subtitle.srt")
+    out_dir = video_dir if video_dir.exists() else episode_dir
+    srt_output = str(out_dir / f"episode_{ep_num}_subtitle.srt")
 
     # Run whisper_subtitle.py script
     script_path = Path(__file__).resolve().parent / "scripts" / "whisper_subtitle.py"
@@ -1461,10 +1567,15 @@ def generate_subtitle():
         return jsonify({"error": f"whisper_subtitle.py not found at {script_path}"}), 500
 
     try:
+        # Ensure ffmpeg is findable in subprocess PATH
+        env = os.environ.copy()
+        path_dirs = ["/opt/homebrew/bin", "/usr/local/bin", "/usr/bin"]
+        env["PATH"] = ":".join(path_dirs) + ":" + env.get("PATH", "")
         result = subprocess.run(
             [sys.executable or "python3", str(script_path),
              "--input", audio_file, "--output", srt_output],
-            capture_output=True, text=True, timeout=600
+            capture_output=True, text=True, timeout=600,
+            env=env
         )
 
         if result.returncode != 0:
@@ -1480,12 +1591,36 @@ def generate_subtitle():
             "success": True,
             "srt": srt_content,
             "srt_path": srt_output,
-            "audio_input": audio_file
+            "audio_input": audio_file,
+            "stderr": result.stderr[:2000] if result.stderr else ""
         })
     except subprocess.TimeoutExpired:
         return jsonify({"error": "Subtitle generation timed out (600s)"}), 500
     except FileNotFoundError:
         return jsonify({"error": "python3 not found"}), 500
+
+
+@app.route('/api/subtitle/save', methods=['POST'])
+def save_subtitle():
+    """Save edited SRT subtitle back to file."""
+    data = request.get_json()
+    if not data or 'episode' not in data or 'srt' not in data:
+        return jsonify({"error": "Missing episode or srt parameter"}), 400
+
+    ep_num = str(int(data['episode'])).zfill(2)
+    srt_path = data.get('path', '')
+    if not srt_path:
+        episode_dir = Path.home() / f".agentic-os/episode_{ep_num}"
+        video_dir = episode_dir / "video"
+        srt_path = str(video_dir / f"episode_{ep_num}_subtitle.srt")
+
+    try:
+        output = Path(srt_path)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(data['srt'], encoding='utf-8')
+        return jsonify({"success": True, "srt_path": srt_path, "bytes": output.stat().st_size})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # ================================================================
@@ -1513,6 +1648,35 @@ def api_l10n_retranslate(country_code):
         "timestamp": datetime.now().isoformat(),
         "message": f"{country_code} 站内容已触发重新翻译"
     })
+
+@app.route('/api/localization/review/<ep>', methods=['POST', 'GET'])
+def api_localization_review(ep):
+    """5国本地化审查 — 调用 localization_reviewer.py"""
+    ep_titles = {
+        '01': '鲁提辖拳打镇关西', '02': '鲁智深倒拔垂杨柳',
+        '03': '林冲风雪山神庙', '04': '宋江怒杀阎婆惜',
+        '05': '李逵沂岭杀四虎', '06': '吴用智取生辰纲',
+    }
+    ep_str = ep.zfill(2)
+    title = ep_titles.get(ep_str, f'水浒传第{ep}集')
+    task_id = f'TK-LOCALIZE-EP{ep_str}'
+    desc = f'{title} 字幕翻译 · 角色对白 · 旁白 · 本地化5国'
+
+    try:
+        result = subprocess.run(
+            [sys.executable, str(Path(__file__).parent / 'localization_reviewer.py'),
+             '--task', task_id, '--product', title, '--desc', desc, '--category', '字幕'],
+            capture_output=True, text=True, timeout=120
+        )
+        if result.returncode == 0:
+            data = json.loads(result.stdout.strip())
+            return jsonify({'status': 'ok', 'ep': ep_str, 'task_id': task_id, 'results': data})
+        else:
+            return jsonify({'status': 'error', 'message': result.stderr[:500] or result.stdout[:500]}), 500
+    except json.JSONDecodeError:
+        return jsonify({'status': 'error', 'message': '审查引擎返回格式异常', 'raw': result.stdout[:1000]}), 500
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 # ================================================================
 # 日报推送 (MS-5)
@@ -1585,6 +1749,39 @@ def _append_push_log(entry):
     log.append(entry)
     with open(log_file, 'w') as f:
         json.dump(log, f, ensure_ascii=False, indent=2)
+
+
+# v3.7.17: /api/localization/review — 5国本地化审查
+# ================================================================
+@app.route('/api/localization/review', methods=['POST'])
+def localize_review():
+    """Run localization review for 5 countries."""
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Missing request body"}), 400
+    task_id = data.get('task_id', 'TK-LOCALIZE')
+    product_name = data.get('product_name', '防水手机壳 Pro')
+    original_title = data.get('title', product_name)
+    original_desc = data.get('description', '高品质防水防摔手机壳')
+    category = data.get('category', '手机壳')
+    use_llm = data.get('use_llm', True)
+
+    try:
+        from localization_reviewer import review_localization
+        reviews = review_localization(
+            task_id, product_name, original_title, original_desc,
+            category=category, use_llm=use_llm,
+        )
+        result = [{
+            'country': r.country, 'target_lang': r.target_lang, 'score': r.score,
+            'issues': [{'severity': i.severity, 'description': i.description, 'suggestion': i.suggested} for i in r.issues],
+            'translated_title': r.translated_title, 'translated_desc': r.translated_desc,
+            'has_taboo': r.has_taboo, 'data_source': r.data_source
+        } for r in reviews]
+        avg_score = sum(r['score'] for r in result) / len(result) if result else 0
+        return jsonify({'success': True, 'reviews': result, 'avg_score': round(avg_score, 1), 'count': len(result)})
+    except Exception as e:
+        return jsonify({"error": f"Localization review failed: {str(e)}"}), 500
 
 
 if __name__ == '__main__':
