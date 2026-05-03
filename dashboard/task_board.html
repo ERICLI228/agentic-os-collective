@@ -1357,7 +1357,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <body>
 <div id="toast-container"></div>
 <div id="version-check" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#10b981;color:#fff;text-align:center;padding:6px 12px;font-size:13px;font-family:monospace;letter-spacing:0.5px;cursor:pointer" onclick="this.remove()">
-  🔄 v3.7.25 — P0-Y 导演总览视图 (管线进度+剧集状态+关键指标+快捷跳转)，点击关闭
+  🔄 v3.7.26 — P1-D/L/I/P: charMap动态加载+剧集过滤+mock警告+渲染队列，点击关闭
 </div>
 
 <div class="topbar">
@@ -1443,7 +1443,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <script>
 // v3.7.17: cache check — if URL has old version param, redirect
 (function(){
-   var v = '3.7.25';
+   var v = '3.7.26';
    var q = location.search;
    var lsVer = localStorage.getItem('_dash_v');
    if ((q && q.indexOf('v=') >= 0 && q.indexOf('v='+v) < 0) || (lsVer && lsVer !== v)) {
@@ -7100,8 +7100,18 @@ async function renderDM2(detail, ms) {
 
   // Step 1: Extract storyboard data from API response
   let shots = _extractShots(detail);
+  var usingMock = false;
   if (!shots.length) {
-    shots = _buildMockShots();
+    shots = _buildMockShots(1);
+    usingMock = true;
+  }
+
+  // P1-I+P1-D: Mock warning + episode guidance
+  if (usingMock) {
+    detailEl.insertAdjacentHTML('beforeend',
+      '<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:6px;padding:8px 14px;margin:8px 0;font-size:11px">' +
+      '<span style="color:#fbbf24;font-weight:700">⚠️ 模拟数据</span> ' +
+      '<span style="color:#a09070">分镜为 AI 样板 · 角色按 EP01 过滤 · 点击「数字短剧」浏览完整故事板</span></div>');
   }
 
   // Step 2: Compute statistics
@@ -7152,8 +7162,13 @@ function _extractShots(detail) {
   return [];
 }
 
-function _buildMockShots() {
-  const chars = ['武松','鲁智深','林冲','宋江','李逵','吴用'];
+function _buildMockShots(epNum) {
+  epNum = parseInt(epNum) || 1;
+  // P1-D: Filter by episode — only show characters relevant to current episode
+  var allCharsArr = ['鲁智深','林冲','武松','宋江','李逵','吴用','卢俊义','杨志','晁盖'];
+  var epCharMap = {1:['鲁智深','金翠莲','郑屠'], 2:['鲁智深','泼皮','林冲'], 3:['林冲','高俅','鲁智深'],
+                    4:['宋江','阎婆惜'], 5:['李逵','宋江'], 6:['吴用','晁盖','公孙胜']};
+  const chars = epCharMap[epNum] || allCharsArr.slice(0, 3);
   const shotTypes = ['中景','特写','全景','近景','仰角','俯角','跟随','广角','双人'];
   const moves = ['推','拉','摇','移','跟','升','降','固定'];
   const lights = ['月光','火光','烛光','晨曦','逆光','伦勃朗','烈日','moody','剪影'];
@@ -7830,51 +7845,37 @@ async function renderDM8(detail, ms) {
     '  <button class="btn-secondary" onclick="switchToTab(\'DM-9\')">跳过，查看下一集</button>' +
     '</div>'
   );
-}
 
-// DM-8/9 helper: generate single episode voice + preview
-function generateEpisode(ep, btn) {
-  if (!btn) btn = document.getElementById('dm'+(ep==='03'?'8':'9')+'-btn-' + ep);
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ 生成中...'; }
-  var banner = document.getElementById('version-check');
-  if (banner) banner.textContent = '⏳ EP' + ep + ' 配音生成中...';
-  fetch('/api/voice/generate/ep' + ep, { method: 'POST' })
-    .then(function(r) {
-      if (!r.ok) throw new Error('API不可达('+r.status+')');
-      return r.json();
-    })
-    .then(function(d) {
-      if (d.error) throw new Error(d.error);
-      if (btn) { btn.textContent = '✅ 已生成'; btn.style.background = '#22c55e'; btn.disabled = true; btn.style.opacity = '1'; }
-      if (d.url) {
-        var actionDiv = (btn && btn.parentElement);
-        if (actionDiv) {
-          var exist = document.getElementById('dm-preview-' + ep);
-          if (!exist) {
-            actionDiv.insertAdjacentHTML('beforeend', '<button class="btn-sm9 preview" id="dm-preview-' + ep + '" onclick="previewAudio(&quot;' + d.url + '&quot;,this)">🎧 试听</button>');
-          }
-        }
-        window['_dm_audio_' + ep] = d.url;
-      }
-      var dubCard = document.getElementById('dm8-dub-card');
-      if (dubCard) { dubCard.style.borderColor = '#22c55e'; var t = dubCard.querySelector('.dm8-dub-title'); if (t) { t.textContent = '✅ 配音已生成'; t.style.color = '#22c55e'; } }
-      if (banner) banner.textContent = '✅ EP' + ep + ' 配音完成';
-      toastMsg('✅ EP' + ep + ' 配音完成', 2500, 'success');
-    })
-    .catch(function(e) {
-      toastMsg('⚠️ EP' + ep + ' 后端未就绪', 3000, 'warn');
-      if (btn) { btn.disabled = false; btn.textContent = '⚡ 生成配音'; btn.style.opacity = '1'; }
-      if (banner) banner.textContent = '';
-    });
-}
-
-var _dmAudioPlayer = null;
-function previewAudio(url, btn) {
-  if (_dmAudioPlayer && !_dmAudioPlayer.paused) { _dmAudioPlayer.pause(); if (btn) btn.textContent = '🎧 试听'; return; }
-  if (!_dmAudioPlayer) { _dmAudioPlayer = new Audio(); _dmAudioPlayer.addEventListener('ended', function() { if (btn) btn.textContent = '🎧 试听'; }); _dmAudioPlayer.addEventListener('error', function() { toastMsg('⚠️ 音频播放失败', 2000, 'warn'); }); }
-  _dmAudioPlayer.src = url;
-  _dmAudioPlayer.play().catch(function() { toastMsg('⚠️ 播放失败', 1500, 'warn'); });
-  if (btn) btn.textContent = '⏸ 暂停';
+  // P1-P: Render queue management for DM-4
+  var rqId = 'dm4-render-queue';
+  el.insertAdjacentHTML('beforeend',
+    '<div class="info-card collapsible" id="' + rqId + '">' +
+    '  <div class="info-card-header" onclick="toggleInfoCard(this)">' +
+    '    <span>📋 渲染队列 · 6集 × 6角色</span><span class="toggle-icon">▼</span>' +
+    '  </div>' +
+    '  <div class="info-card-body" style="display:none" id="' + rqId + '-body">' +
+    '    <div id="dm4-rq-content"><span class="loading">扫描渲染目录...</span></div>' +
+    '  </div>' +
+    '</div>'
+  );
+  (async function loadRenderQueue() {
+    var box = document.getElementById(rqId + '-body');
+    if (!box) return;
+    var epChars = {1:['鲁智深'],2:['鲁智深','林冲'],3:['林冲'],4:['宋江'],5:['李逵'],6:['吴用']};
+    var rows = '';
+    for (var ei=1; ei<=6; ei++) {
+      var epTitle = 'EP' + String(ei).padStart(2,'0');
+      (epChars[ei]||[]).forEach(function(cn) {
+        rows += '<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:10px">' +
+          '<span style="color:#64748b;width:34px">' + epTitle + '</span>' +
+          '<span style="color:#93c5fd;width:50px">' + cn + '</span>' +
+          '<span style="color:#f59e0b">⏳ 待执行</span>' +
+          '</div>';
+      });
+    }
+    box.innerHTML = (rows || '<div style="color:#555">暂无渲染数据</div>') +
+      '<div style="font-size:9px;color:#555;margin-top:8px;line-height:1.6">提示：ComfyUI 升级后渲染队列将自动纳入管线调度 · 当前仅在 Pillow 阶段</div>';
+  })();
 }
 
 // ================================================================
@@ -8248,8 +8249,34 @@ async function renderDM3(detail, ms) {
     });
   }
 
-  // Character voice configs
-  var charMap = {
+  // P1-L + DM-3: Build voice charMap from API (dynamic), fallback to hardcoded
+  var _dm3CharMapCache = null;
+  async function _loadDM3CharMap() {
+    if (_dm3CharMapCache && Object.keys(_dm3CharMapCache).length) return _dm3CharMapCache;
+    try {
+      var r = await fetch('/api/characters/all');
+      var d = await r.json();
+      var chars = d.characters || [];
+      var map = {};
+      chars.forEach(function(c) {
+        var n = c.name || '';
+        var py = (c.pinyin || CHAR_MAP[n] || '').toLowerCase();
+        if (!py) return;
+        map['nv_'+py] = {
+          name: n, voice: c.preferred_voice || 'zhiming',
+          desc: (c.description||'').substring(0,20) || '—',
+          trait: (c.tags||[]).slice(0,3).join('/') || '—',
+          charId: py,
+          ep: c.first_appearance_ep || ''
+        };
+      });
+      if (Object.keys(map).length > 0) _dm3CharMapCache = map;
+    } catch(e) { console.warn('[DM-3] dynamic charMap failed:', e.message); }
+    return _dm3CharMapCache;
+  }
+
+  // Fallback charMap (hardcoded, used until API loads)
+  var charMapFb = {
     nv_ws:  { name:'武松',   voice:'zhiming', desc:'浑厚有力·男声',   trait:'勇猛/嗜酒/重义',      charId:'wusong',   ep:'01' },
     nv_lzs: { name:'鲁智深', voice:'zhiming', desc:'粗犷豪迈·男声',   trait:'狂野/正义/佛门暴力', charId:'luzhishen', ep:'02' },
     nv_lc:  { name:'林冲',   voice:'zhilun',  desc:'沉郁悲壮·男声',   trait:'压抑/爆发/悲剧',     charId:'linchong', ep:'03' },
@@ -8257,6 +8284,10 @@ async function renderDM3(detail, ms) {
     nv_lk:  { name:'李逵',   voice:'zhiming', desc:'暴烈粗犷·男声',   trait:'孝心/暴躁/忠诚',     charId:'likui',    ep:'05' },
     nv_wy:  { name:'吴用',   voice:'zhilun',  desc:'沉稳睿智·男声',   trait:'智谋/从容/领袖',     charId:'wuyong',   ep:'06' }
   };
+
+  // Active charMap: try dynamic from API, fallback to hardcoded
+  var charMap = await _loadDM3CharMap();
+  if (!charMap || !Object.keys(charMap).length) charMap = charMapFb;
 
   // Compute summary
   var doneCount = 0, pendingCount = 0, ngCount = 0;
