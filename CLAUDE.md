@@ -1,18 +1,44 @@
 # Agentic OS v3.7 — Agent Quick Reference
 
-> 最后更新: 2026-05-01 | 完成度 基础设施97% / 核心功能85% | `~/agentic-os-collective/`
+> 最后更新: 2026-05-03 | 完成度 基础设施97% / 核心功能85% | `~/agentic-os-collective/`
 
 ---
 
-## ⛔ 铁则 #0.5: 安全作业铁则（环境隔离 + 精准代码编辑）
+## ⛔ 铁则 #0.5: 测试环境优先（AI 必须遵守）
 
-> **任何任务开始前，必须读取并遵守 `~/agentic-os-collective/SAFETY_RULES.md`**
-> 此规则优先级高于一切任务描述，不可被绕过。
+> **所有代码、PRD、Wiki、Obsidian 的修改必须在测试环境中进行。**
+> 正式环境仅供人工审核后的单向同步。此规则优先级高于一切任务描述。
 
-- 测试环境优先：所有修改必须在 `/tmp/agentic-os-test` 中进行，禁止写入生产 `~/agentic-os-collective/`
-- 代码编辑三层防护：`// @@FUNC:` 锚点 + `grep -cF` 唯一性校验 + `node --check` 语法校验
-- 同步仅限人工：`scripts/sync-test-to-prod.sh` 仅人工可执行，AI 禁止调用
-- 违反此规则 = 立即中止任务
+### AI 工作流
+
+```
+用户指令 → /tmp/agentic-os-test (测试环境 :5002)
+                ↓
+        修改代码 + 更新测试PRD + 测试Wiki
+                ↓
+        自验通过 → bash scripts/ensure-sync.sh
+                ↓
+        呈现变更给用户 → 等待人工审核
+                ↓
+  ⛔ AI 在此停止 ⛔ ← 用户明确说"批准同步"
+                ↓
+   sync-test-to-prod.sh → 正式环境 :5001
+```
+
+### 允许操作（测试环境 /tmp/agentic-os-test/）
+- ✅ 修改 `dashboard/task_board.html`
+- ✅ 修改 `shared/task_wizard.py`
+- ✅ 更新 `reports/PRD-v3.7.21.md`
+- ✅ 更新 `shared/knowledge/wiki/log.md` / `index.md`
+- ✅ 重启测试 Flask :5002
+- ✅ `git commit` 到 `test` 分支
+
+### 禁止操作（除非用户明确批准）
+- ❌ 修改 `~/agentic-os-collective/` 下任何文件
+- ❌ 重启正式 Flask :5001
+- ❌ 执行 `sync-test-to-prod.sh`
+- ❌ 合并 `test` → `main`
+- 违反此规则 = 立即中止任务，警告用户
 
 ---
 
@@ -29,10 +55,11 @@
 | 步骤 | 命令/操作 | 验证 |
 |------|----------|------|
 | **1. 标注 PRD** | 编辑 `reports/PRD-v3.7.21.md`，新增版本条目（版本号/日期/修订人/内容摘要/环境），更新标题版本号 | `grep v3.7.XX reports/PRD-v3.7.21.md` 能找到本次版本 |
-| **2. Git 推送** | `git add -A && git commit -m "v3.6.XX: <摘要>" && git push origin main && git push origin test` | `git log -1` 显示本次 commit |
-| **3. Obsidian** | `python3 ~/.openclaw/workspace/knowledge-base/sync_tasks_to_obsidian.py` | 输出 `✅ 同步完成` |
-| **4. Wiki** | 追加 `wiki/log.md` + 更新 `wiki/index.md`（total_pages/最近新增） | `tail -5 wiki/log.md` 显示本次条目 |
-| **5. 环境同步** | `bash scripts/ensure-sync.sh` | 输出 `✅ 全部 7 个文件已同步` |
+| **2. Git 推送** | `git add -A && git commit -m "v3.7.XX: <摘要>" && git push origin test` (测试分支) | `git log -1` 显示本次 commit |
+| | 仅在用户批准同步后: `git push origin main` | |
+| **4. Wiki** | 追加 `wiki/log.md` + 更新 `wiki/index.md`（total_pages/最近新增）| `tail -5 wiki/log.md` 显示本次条目 |
+| **5. 环境同步** | `bash scripts/ensure-sync.sh` (仅校验，不同步) | 输出 `✅ 全部 7 个文件已同步` |
+| | **不同步 → 人工审查后再执行 `sync-test-to-prod.sh`** | |
 
 ### 协同规则 (OpenClaw ↔ OpenCode)
 - 双方**主动相互协助与验证测试**，任何一方完成修改后，另一方运行验证
