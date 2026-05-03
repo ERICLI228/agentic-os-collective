@@ -404,6 +404,14 @@ System: 🐂 压缩参数已升级并重启：reserveTokensFloor 30000→50000, 
 - **管线审计**: 14项发现(P0×4: mock标识/视频播放/导演总览/剧本对照; P1×4: charMap动态加载/渲染队列/分镜时间线/按剧集过滤角色; P2×6: 关系图/台词表/全局排播/批量渲染等) · 待线下讨论决策
 - **决策**: 本周所有改动由人工实时监督操作生产环境(违反SAFETY_RULES Part 1但经人工授权)
 
+## [2026-05-03 06:00] infra | 环境分离体系建立
+- **GitHub**: 新增 `test` 分支（并行 `main`），未来改动先推 `test` → 人工审批 → 合并 `main`
+- **PRD**: 版本表新增 `环境` 列（🚀已发布 / 🧪测试中）
+- **页面**: topbar 固定环境标签 `（正式）` 绿色 / `（测试）` 橙色
+- **本地目录**: `/tmp/agentic-os-test`（测试） vs `~/agentic-os-collective/`（正式）
+- **端口**: Flask :5002（测试） vs :5001（正式）
+- **Obsidian**: 共用同一 vault，任务中标注 `[测试]` / `[正式]` 区分
+
   - [Fri 2026-05-01 20:07 PDT] 这只是新增的一个目录呀 file:///Users/hokeli/.agentic-os/character_designs/gallery.html 我的角色板什么都能做的呀
 - 决策:
   - - ✅ `gallery.html` 存在（987行，5月1日 04:26 创建）

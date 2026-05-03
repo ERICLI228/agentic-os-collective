@@ -1315,10 +1315,13 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 </head>
 <body>
 <div id="toast-container"></div>
-<div id="version-check" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#10b981;color:#fff;text-align:center;padding:6px 12px;font-size:13px;font-family:monospace;letter-spacing:0.5px;cursor:pointer" onclick="this.remove()">🔄 v3.7.20 — DM-1视图删图/重绘+🎤→DM-3管线串联，点击关闭</div>
+<div id="version-check" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#10b981;color:#fff;text-align:center;padding:6px 12px;font-size:13px;font-family:monospace;letter-spacing:0.5px;cursor:pointer" onclick="this.remove()">
+  🔄 v3.7.21 — 修复删图/重绘API路由，点击关闭
+</div>
 
 <div class="topbar">
-  <h1 id="appTitle">Agentic OS 指挥中心 v3.7</h1>
+  <h1 id="appTitle">Agentic OS 指挥中心</h1>
+  <span id="ENV_BADGE" style="font-size:11px;padding:3px 10px;border-radius:6px;font-weight:700;letter-spacing:1px"></span>
   <span id="VER_BADGE" style="background:#ff0040;color:#fff;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:700">v3.7.17</span>
   <div class="tabs">
     <button class="tab active" id="tabTK" onclick="switchTab('tk')">TK运营 <span id="tkCount" style="font-size:9px;color:#666"></span></button>
@@ -1397,7 +1400,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <script>
 // v3.7.17: cache check — if URL has old version param, redirect
 (function(){
-   var v = '3.7.20';
+   var v = '3.7.21';
    var q = location.search;
    var lsVer = localStorage.getItem('_dash_v');
    if ((q && q.indexOf('v=') >= 0 && q.indexOf('v='+v) < 0) || (lsVer && lsVer !== v)) {
@@ -1405,6 +1408,24 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
      location.href = location.href.split('?')[0] + '?v=' + v;
    }
    localStorage.setItem('_dash_v', v);
+   // Environment badge in topbar (persistent, not dismissible)
+   var envBadge = document.getElementById('ENV_BADGE');
+   var vcBanner = document.getElementById('version-check');
+   var appTitle = document.getElementById('appTitle');
+   if (envBadge) {
+     if (location.port === '5002' || location.port === '5005') {
+       envBadge.textContent = '（测试）';
+       envBadge.style.background = '#b45309';
+       envBadge.style.color = '#fde68a';
+       if (appTitle) appTitle.textContent = 'Agentic OS 指挥中心（测试）';
+       if (vcBanner) vcBanner.style.background = '#b45309';
+     } else {
+       envBadge.textContent = '（正式）';
+       envBadge.style.background = '#059669';
+       envBadge.style.color = '#6ee7b7';
+       if (appTitle) appTitle.textContent = 'Agentic OS 指挥中心（正式）';
+     }
+   }
  })();
 // ================================================================
 // CONSTANTS

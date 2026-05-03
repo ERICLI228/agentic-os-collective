@@ -843,13 +843,33 @@ def api_character_regenerate(char_name):
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/api/render/<char_id>/regenerate', methods=['POST'])
+def api_regenerate_render(char_id):
+    """触发角色渲染图重新生成（调用 character_bible.py 管线）"""
+    import subprocess
+    try:
+        script_path = Path(__file__).resolve().parent.parent / "drama" / "openclaw" / "skills" / "water-margin-drama" / "character_bible.py"
+        if not script_path.exists():
+            script_path = Path.home() / "agentic-os-collective" / "drama" / "openclaw" / "skills" / "water-margin-drama" / "character_bible.py"
+        if not script_path.exists():
+            return jsonify({"status": "error", "message": "character_bible.py 脚本未找到"}), 500
+
+        env = os.environ.copy()
+        env["PATH"] = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:" + env.get("PATH", "")
+        cmd = [sys.executable, str(script_path), "--character", char_id, "--render-only"]
+
+        subprocess.Popen(cmd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return jsonify({"status": "ok", "message": f"已触发 {char_id} 重新渲染，请稍后刷新查看"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
 @app.route('/api/render/<char_id>/<filename>')
 def api_render_image(char_id, filename):
     """渲染图静态文件服务（支持拼音id和中文名目录）"""
     renders_dir = Path.home() / ".agentic-os" / "character_designs" / "renders"
     path = renders_dir / char_id / filename
     if not path.exists():
-        # Fallback: try CHARACTER_ID_MAP reverse lookup (pinyin → Chinese name)
         from script_manager import CHARACTER_ID_MAP
         REVERSE_MAP = {v: k for k, v in CHARACTER_ID_MAP.items()}
         cn_name = REVERSE_MAP.get(char_id, char_id)
@@ -875,27 +895,6 @@ def api_delete_render(char_id, filename):
     try:
         path.unlink()
         return jsonify({"status": "ok", "message": f"已删除 {filename}", "file": filename})
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-
-@app.route('/api/render/<char_id>/regenerate', methods=['POST'])
-def api_regenerate_render(char_id):
-    """触发角色渲染图重新生成（调用 character_bible.py 管线）"""
-    import subprocess
-    try:
-        script_path = Path(__file__).parent / "character_bible.py"
-        if not script_path.exists():
-            script_path = Path.home() / "agentic-os-collective" / "shared" / "character_bible.py"
-        if not script_path.exists():
-            return jsonify({"status": "error", "message": "character_bible.py 脚本未找到"}), 500
-
-        env = os.environ.copy()
-        env["PATH"] = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:" + env.get("PATH", "")
-        cmd = [sys.executable, str(script_path), "--character", char_id, "--render-only"]
-
-        subprocess.Popen(cmd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        return jsonify({"status": "ok", "message": f"已触发 {char_id} 重新渲染，请稍后刷新查看"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
