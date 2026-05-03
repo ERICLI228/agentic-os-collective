@@ -4,190 +4,300 @@
       "seq": 1,
       "shot_label": "镜01",
       "act": "开场",
-      "scene": "渭州酒馆",
-      "description": "鲁提辖在酒馆听到金氏父女哭泣，上前询问",
+      "scene": "渭州潘家酒楼·午后",
+      "description": "🎬 【中景】斜阳穿透雕花木窗棂，在粗陶酒碗与油渍桌面上切割出明暗交错的几何光斑。构图呈对角线分割，左侧喧闹酒客虚化为暖色噪点，右侧鲁达独坐前景。镜头自窗外市井烟火缓缓横移入室，聚焦其粗布青衫与腰间铜牌，尘埃在逆光中悬浮。",
       "timecode": {
         "start": "00:00",
         "end": "00:45"
       },
-      "music_cue": "市井喧闹声+轻弦乐",
-      "shot_type": "中景→近景",
+      "music_cue": "三弦拨弄市井小调+远处隐约啜泣声+木质酒碗碰撞底噪，情绪：闲适渐转凝滞",
+      "shot_type": "中景",
       "camera_move": "横移跟拍",
-      "pacing": "normal",
-      "color_palette": "暖黄酒馆光",
+      "pacing": "slow",
+      "color_palette": "暖黄酒馆光+暗金轮廓",
       "dialogue": [
         {
-          "speaker": "鲁提辖",
-          "text": "你二人为何在此啼哭？",
+          "speaker": "鲁达",
+          "text": "那桌的老人家，为何只顾掩面垂泪？可是遇了难处？",
           "style": "modern",
-          "voice_dir": "豪迈关切",
-          "emotion_mark": "自然/真挚",
-          "subtext": "你二人为何在此啼哭？",
-          "timing_hint": "常速"
+          "voice_dir": "声线粗粝但压低，带探究意味",
+          "emotion_mark": "警觉/关切",
+          "subtext": "江湖人本能察觉异样",
+          "timing_hint": "缓速+微顿"
         },
         {
           "speaker": "金老",
-          "text": "那镇关西郑大官人...霸占了我女儿...",
+          "text": "提辖明鉴……那镇关西郑大官人，强纳了小女，如今又逼着还那三千贯虚钱……",
           "style": "modern",
-          "voice_dir": "颤声泣诉",
-          "emotion_mark": "自然/真挚",
-          "subtext": "那镇关西郑大官人...霸占了我女儿...",
-          "timing_hint": "常速"
+          "voice_dir": "颤声泣诉，气息断续",
+          "emotion_mark": "绝望/卑微",
+          "subtext": "底层百姓走投无路",
+          "timing_hint": "常速+哽咽"
         }
       ],
-      "emotion": "疑惑→关注",
-      "duration": 45,
       "performance_notes": [
-        "鲁提辖放下酒碗，眉头紧皱"
+        "鲁达搁酒碗时指节微叩桌面三次，目光如炬",
+        "金老袖口剧烈颤抖，始终不敢直视提辖"
       ],
-      "camera_script": "横移跟拍 中景→近景 鲁提辖在酒馆听到金氏父女哭泣，上前询问",
+      "camera_script": "中景3秒→慢横移入室5秒→推至鲁达面部特写4秒→固定倾听，剪辑节奏平稳留白",
+      "duration": 45,
+      "emotion": "疑惑→关注",
       "end_credit": false
     },
     {
       "seq": 2,
       "shot_label": "镜02",
       "act": "发展",
-      "scene": "酒馆内",
-      "description": "金老诉说镇关西郑屠霸占女儿，鲁提辖勃然大怒",
+      "scene": "潘家酒楼雅座",
+      "description": "🎬 【近景】光线骤暗，烛火摇曳将鲁达面部轮廓刻出硬朗阴影。金氏父女跪坐矮凳，采用低角度仰拍构图，凸显权力压迫感。冷暖光在桌面对撞，暗喻阶级鸿沟。画面右侧留白，暗示风暴将至。",
       "timecode": {
         "start": "00:45",
-        "end": "01:30"
+        "end": "01:35"
       },
-      "music_cue": "弦乐渐强+低音鼓",
-      "shot_type": "特写→中景",
+      "music_cue": "低音大提琴拨弦+压抑的埙声渐入，情绪：隐忍转向暗涌",
+      "shot_type": "近景",
       "camera_move": "推镜",
       "pacing": "normal",
-      "color_palette": "暖黄→暗红渐变",
+      "color_palette": "暖黄转暗红渐变",
       "dialogue": [
         {
-          "speaker": "鲁提辖",
-          "text": "好个镇关西！我鲁达今日便去会会他！",
+          "speaker": "金翠莲",
+          "text": "我们父女想逃，店小二却死死守着门……那契书上的字，我们一个也不识啊。",
+          "style": "modern",
+          "voice_dir": "气声微弱，带哭腔",
+          "emotion_mark": "凄楚/无助",
+          "subtext": "被权势与文字双重碾压",
+          "timing_hint": "语速渐慢"
+        },
+        {
+          "speaker": "鲁达",
+          "text": "好个镇关西！仗着几两臭钱，也敢在渭州城横行？洒家这双拳头，专打不平！",
           "style": "classical",
-          "voice_dir": "怒极反笑",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "好个镇关西！我鲁达今日便去会会他！",
-          "timing_hint": "缓速+停顿2s"
+          "voice_dir": "怒极反笑，胸腔共鸣",
+          "emotion_mark": "愤慨/决断",
+          "subtext": "豪侠本性被彻底点燃",
+          "timing_hint": "缓速+重音停顿"
         }
       ],
-      "emotion": "同情→愤怒",
-      "duration": 45,
       "performance_notes": [
-        "一掌拍碎桌角"
+        "鲁达下颌线骤然绷紧，鼻翼微张呼吸加重",
+        "金翠莲以袖掩面，指缝间泪光折射烛火"
       ],
-      "camera_script": "推镜 特写→中景 金老诉说镇关西郑屠霸占女儿，鲁提辖勃然大怒",
+      "camera_script": "特写金老泪眼2秒→快速摇镜至鲁达怒容3秒→缓慢推近至其紧握的拳头，节奏由缓转沉",
+      "duration": 50,
+      "emotion": "同情→愤怒",
       "end_credit": false
     },
     {
       "seq": 3,
       "shot_label": "镜03",
-      "act": "冲突",
-      "scene": "状元桥肉铺",
-      "description": "鲁提辖来到郑屠肉铺，以买肉为名挑起事端",
+      "act": "转折",
+      "scene": "酒楼门口→长街",
+      "description": "🎬 【全景转特写】鲁达猛然起身，木凳翻倒扬起微尘。逆光剪影中他大步跨出店门。穿插0.5秒快剪闪回：金女被拽发髻、郑屠冷笑、虚钱实契按手印。画面色彩由暖黄骤褪为冷青，市井喧嚣瞬间抽离。",
       "timecode": {
-        "start": "01:30",
-        "end": "02:45"
+        "start": "01:35",
+        "end": "02:20"
       },
-      "music_cue": "鼓点渐密+紧张弦乐",
-      "shot_type": "中景",
-      "camera_move": "固定→快速摇镜",
-      "pacing": "normal→fast",
-      "color_palette": "肉铺冷青",
+      "music_cue": "琵琶轮指急促+心跳重低音+穿堂风声，情绪：决断与怒火交织",
+      "shot_type": "全景",
+      "camera_move": "跟拍起身→手持晃动",
+      "pacing": "fast",
+      "color_palette": "冷青+逆光剪影",
       "dialogue": [
         {
-          "speaker": "鲁提辖",
-          "text": "给我切十斤精肉，细细地剁作臊子，不要见半点肥的。",
-          "style": "classical",
-          "voice_dir": "冷笑戏谑",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "给我切十斤精肉，细细地剁作臊子，不要见半...",
-          "timing_hint": "缓速+停顿2s"
+          "speaker": "店小二",
+          "text": "提辖！使不得啊！郑屠背后有人，您这差事怕是要……",
+          "style": "modern",
+          "voice_dir": "压低嗓音，急促劝阻",
+          "emotion_mark": "惶恐/顾虑",
+          "subtext": "官场潜规则的警告",
+          "timing_hint": "语速极快"
         },
         {
-          "speaker": "郑屠",
-          "text": "是、是...提辖稍等...",
-          "style": "modern",
-          "voice_dir": "惶恐",
-          "emotion_mark": "自然/真挚",
-          "subtext": "是、是...提辖稍等...",
-          "timing_hint": "常速"
+          "speaker": "鲁达",
+          "text": "洒家只认理，不认人。这渭州的天，今日便由我鲁达来捅一捅！",
+          "style": "classical",
+          "voice_dir": "声如洪钟，掷地有声",
+          "emotion_mark": "豪迈/无畏",
+          "subtext": "彻底斩断世俗羁绊",
+          "timing_hint": "爆发式+尾音拖长"
         }
       ],
-      "emotion": "戏耍→紧张",
-      "duration": 75,
       "performance_notes": [
-        "郑屠额头冒汗，刀法渐乱"
+        "鲁达甩袖带翻酒壶，水渍溅地成放射状",
+        "转身时眼神由怒转沉，咬肌微动，步伐沉稳"
       ],
-      "camera_script": "固定→快速摇镜 中景 鲁提辖来到郑屠肉铺，以买肉为名挑起事端",
+      "camera_script": "跟拍起身2秒→手持晃动跟拍出门3秒→0.5s快切闪回（三帧）→定格于鲁达决绝侧脸，剪辑凌厉",
+      "duration": 45,
+      "emotion": "决意→出鞘",
       "end_credit": false
     },
     {
       "seq": 4,
       "shot_label": "镜04",
-      "act": "高潮",
-      "scene": "肉铺前",
-      "description": "鲁提辖三拳打死镇关西，郑屠倒地，围观百姓惊慌",
+      "act": "冲突",
+      "scene": "状元桥郑屠肉铺",
+      "description": "🎬 【中景】阴云蔽日，肉铺腥气仿佛凝成灰绿色雾气。鲁达立于案板前，居高临下俯视郑屠。构图利用肉钩与钢刀形成垂直压迫线，冷调青灰主导画面。前景虚化肉块，后景聚焦两人对峙。",
       "timecode": {
-        "start": "02:45",
-        "end": "04:00"
+        "start": "02:20",
+        "end": "03:20"
       },
-      "music_cue": "鼓点炸裂→寂静→悲怆弦乐",
-      "shot_type": "特写→远景",
-      "camera_move": "慢镜+静止",
-      "pacing": "fast→slow",
-      "color_palette": "血红+灰白",
+      "music_cue": "铁砧敲击采样+紧张弦乐碎弓，情绪：戏谑与紧绷对峙",
+      "shot_type": "中景",
+      "camera_move": "俯拍全景→快速下摇",
+      "pacing": "normal→fast",
+      "color_palette": "肉铺冷青+灰绿",
       "dialogue": [
         {
-          "speaker": "鲁提辖",
-          "text": "你这腌臜泼才！打杀了你，倒是脏了我的手。",
+          "speaker": "鲁达",
+          "text": "先切十斤精肉，细细剁作臊子，不可见半点肥的。",
           "style": "classical",
-          "voice_dir": "爆发→冷冽",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "你这腌臜泼才！打杀了你，倒是脏了我的手。",
-          "timing_hint": "缓速+停顿2s"
+          "voice_dir": "冷笑戏谑，尾音上扬",
+          "emotion_mark": "猫戏老鼠",
+          "subtext": "故意刁难，试探底线",
+          "timing_hint": "缓速+停顿2秒"
+        },
+        {
+          "speaker": "郑屠",
+          "text": "是、是……提辖稍等，小人这就切。",
+          "style": "modern",
+          "voice_dir": "惶恐堆笑，喉结滚动",
+          "emotion_mark": "心虚/强撑",
+          "subtext": "察觉来者不善",
+          "timing_hint": "常速+结巴"
         }
       ],
-      "emotion": "爆发→震惊",
-      "duration": 75,
       "performance_notes": [
-        "三拳慢镜头：血溅→骨裂→倒地",
-        "静帧1秒"
+        "郑屠握刀指节泛白，刀刃在肉上打滑",
+        "鲁达斜倚柱石，嘴角勾起冷笑，食指轻叩案沿"
       ],
-      "camera_script": "慢镜+静止 特写→远景 鲁提辖三拳打死镇关西，郑屠倒地，围观百姓惊慌",
+      "camera_script": "俯拍全景2秒→快速下摇至案板3秒→环绕跟拍郑屠切肉5秒→特写刀锋与汗珠，节奏由稳转乱",
+      "duration": 60,
+      "emotion": "戏耍→紧张",
       "end_credit": false
     },
     {
       "seq": 5,
       "shot_label": "镜05",
-      "act": "结局",
-      "scene": "渭州街头",
-      "description": "鲁提辖见郑屠已死，假装醉酒，大步离去，消失在街角",
+      "act": "对峙",
+      "scene": "肉铺前",
+      "description": "🎬 【双人近景】郑屠终于掷刀怒骂，鲁达反手扣住其腕。侧逆光打入，形成强烈明暗交界线。背景虚化的围观百姓如剪影环伺，构图呈封闭三角，聚焦两人肢体角力与眼神交锋。",
       "timecode": {
-        "start": "04:00",
-        "end": "05:00"
+        "start": "03:20",
+        "end": "04:15"
       },
-      "music_cue": "孤独弦乐渐弱→风雪声",
-      "shot_type": "远景",
-      "camera_move": "拉远跟拍",
-      "pacing": "slow",
-      "color_palette": "暮色蓝灰",
+      "music_cue": "堂鼓重击+金属摩擦尖啸，情绪：怒极将爆，一触即发",
+      "shot_type": "近景",
+      "camera_move": "手持微晃跟拍→快速推近",
+      "pacing": "fast",
+      "color_palette": "暗蓝灰+侧逆金边",
       "dialogue": [
         {
-          "speaker": "鲁提辖",
-          "text": "这狗一般的人，死了倒干净。",
-          "style": "classical",
-          "voice_dir": "冷冽决绝",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "这狗一般的人，死了倒干净。",
-          "timing_hint": "缓速+停顿2s"
+          "speaker": "郑屠",
+          "text": "鲁提辖！你分明是来找茬的！真当老子好欺负不成？",
+          "style": "modern",
+          "voice_dir": "撕破脸，嘶吼破音",
+          "emotion_mark": "恼羞成怒",
+          "subtext": "虚张声势掩盖恐惧",
+          "timing_hint": "语速渐快+破音"
+        },
+        {
+          "speaker": "鲁达",
+          "text": "欺软怕硬的东西。今日这十斤软骨臊子，你若切不出，洒家便替你切！",
+          "style": "modern",
+          "voice_dir": "低沉压迫，字字如铁",
+          "emotion_mark": "平静下的爆发",
+          "subtext": "彻底撕破伪装，准备动手",
+          "timing_hint": "极缓+重音顿挫"
         }
       ],
-      "emotion": "冷静→逃离",
-      "duration": 60,
-      "end_credit": "拳下三条命，从此行走江湖，再无回头路",
       "performance_notes": [
-        "低头快步，身影消失在暮色中"
+        "郑屠额头青筋暴起，唾液飞溅",
+        "鲁达瞳孔收缩，手腕发力反压，呼吸粗重如风箱"
       ],
-      "camera_script": "拉远跟拍 远景 鲁提辖见郑屠已死，假装醉酒，大步离去，消失在街角"
+      "camera_script": "手持微晃跟拍3秒→快速推近至面部对峙2秒→慢速横移展现肌肉紧绷3秒→骤停，剪辑窒息",
+      "duration": 55,
+      "emotion": "对峙→临界",
+      "end_credit": false
+    },
+    {
+      "seq": 6,
+      "shot_label": "镜06",
+      "act": "高潮",
+      "scene": "肉铺前",
+      "description": "🎬 【特写转大远景】三拳连环。第一拳鼻骨碎裂，血雾在逆光中呈放射状；第二拳眼眶凹陷，慢镜捕捉瞳孔涣散；第三拳太阳穴重击，郑屠如断线木偶轰然倒地。色彩瞬间抽离为血红与灰白，尘土与肉屑共舞。",
+      "timecode": {
+        "start": "04:15",
+        "end": "05:20"
+      },
+      "music_cue": "战鼓炸裂→瞬间真空静音0.5秒→悲怆埙声与低频嗡鸣交织，情绪：暴烈宣泄转至苍凉",
+      "shot_type": "特写→大远景",
+      "camera_move": "慢镜+快切+拉远",
+      "pacing": "fast→slow",
+      "color_palette": "血红+灰白抽离",
+      "dialogue": [
+        {
+          "speaker": "鲁达",
+          "text": "你这腌臜泼才！装什么死？打杀了你，倒是脏了洒家的手！",
+          "style": "classical",
+          "voice_dir": "爆发转冷冽，气息粗重",
+          "emotion_mark": "狂怒→骤冷",
+          "subtext": "意识到下手过重，但绝不退缩",
+          "timing_hint": "爆发+骤停3秒"
+        },
+        {
+          "speaker": "围观百姓",
+          "text": "打死人啦！提辖打死郑屠啦！快跑啊！",
+          "style": "modern",
+          "voice_dir": "惊恐尖叫，声浪叠加",
+          "emotion_mark": "恐慌/混乱",
+          "subtext": "秩序崩塌",
+          "timing_hint": "语速极快"
+        }
+      ],
+      "performance_notes": [
+        "鲁达拳锋带风，肩背肌肉贲张如弓",
+        "郑屠倒地后胸口微颤两下，随即死寂，鲁达甩手抖血"
+      ],
+      "camera_script": "极近特写2秒→120帧慢镜跟拍拳风轨迹4秒→快切三拳落点3秒→拉远至俯拍全景，节奏重缓炸裂",
+      "duration": 65,
+      "emotion": "爆发→震惊→空茫",
+      "end_credit": false
+    },
+    {
+      "seq": 7,
+      "shot_label": "镜07",
+      "act": "结局",
+      "scene": "渭州长街·暮色",
+      "description": "🎬 【大远景】暮色四合，青石板街被染成暗蓝灰色。鲁达背影融入长街尽头，两侧飞檐压低形成视觉隧道。镜头缓缓拉升，留白处初雪飘落，天地苍茫。",
+      "timecode": {
+        "start": "05:20",
+        "end": "06:20"
+      },
+      "music_cue": "孤箫独奏渐弱+远处打更梆子声+初雪落地微响，情绪：孤绝、宿命、余韵",
+      "shot_type": "大远景",
+      "camera_move": "拉远跟拍→升镜头",
+      "pacing": "slow",
+      "color_palette": "暮色蓝灰+冷白",
+      "dialogue": [
+        {
+          "speaker": "鲁达",
+          "text": "这厮倒也死得干脆。俺得赶紧走，迟了，官府的人就该围上来了。",
+          "style": "modern",
+          "voice_dir": "自语低喃，带喘息",
+          "emotion_mark": "冷静/警觉",
+          "subtext": "从杀戮中抽离，回归现实",
+          "timing_hint": "缓速+气息渐平"
+        }
+      ],
+      "performance_notes": [
+        "鲁达步伐由急转缓，肩背微塌显露疲惫",
+        "回头一瞥时眼神空茫，随即大步迈入阴影，不再回头"
+      ],
+      "camera_script": "低角度跟拍背影5秒→缓慢拉远至大远景8秒→升镜头俯瞰街道5秒→渐隐黑场，剪辑留白悠长",
+      "duration": 60,
+      "emotion": "冷静→孤绝",
+      "end_credit": true
     }
   ],
   "鲁智深倒拔垂杨柳": [
@@ -195,160 +305,246 @@
       "seq": 1,
       "shot_label": "镜01",
       "act": "开场",
-      "scene": "大相国寺菜园",
-      "description": "鲁智深在菜园察看新长柳树，众泼皮围观起哄",
+      "scene": "大相国寺菜园·清晨",
+      "description": "🎬 【大远景】晨雾未散，青灰色天幕下菜园阡陌纵横。一株合抱粗的垂杨柳斜倚土墙，枝叶婆娑。镜头自树冠缓缓下摇至泥地，暖金色侧逆光穿透薄雾，勾勒出鲁智深宽厚背影与泼皮们散漫的站位。",
       "timecode": {
         "start": "00:00",
         "end": "00:50"
       },
-      "music_cue": "轻快弦乐+鸟鸣",
-      "shot_type": "远景",
-      "camera_move": "缓缓推进",
-      "pacing": "normal",
-      "color_palette": "翠绿+暖阳",
+      "music_cue": "竹笛清越+微风拂叶白噪音+远处晨钟余韵，情绪宁静中暗藏张力",
+      "shot_type": "大远景",
+      "camera_move": "慢摇下移→水平跟拍",
+      "pacing": "slow",
+      "color_palette": "青灰+暖金+薄雾白",
       "dialogue": [
         {
           "speaker": "泼皮A",
-          "text": "大和尚！听说你力大无穷，把这树拔起来给兄弟们开开眼？",
+          "text": "和尚，这柳树根扎得比铁还深，你莫不是要拿它练把式？",
           "style": "modern",
-          "voice_dir": "起哄",
-          "emotion_mark": "自然/真挚",
-          "subtext": "大和尚！听说你力大无穷，把这树拔起来给兄...",
-          "timing_hint": "常速"
+          "voice_dir": "戏谑挑眉，语调上扬",
+          "emotion_mark": "试探/轻慢",
+          "subtext": "想看和尚出丑，试探其虚实",
+          "timing_hint": "语速轻快，尾音拖长"
         }
       ],
-      "emotion": "悠闲→期待",
+      "emotion": "悠闲→微疑",
       "duration": 50,
       "performance_notes": [
-        "鲁智深哈哈大笑，掀起袈裟"
+        "指尖无意识捻动僧袍下摆",
+        "靴尖轻点碎土试探硬度"
       ],
-      "camera_script": "缓缓推进 远景 鲁智深在菜园察看新长柳树，众泼皮围观起哄",
+      "camera_script": "大远景定帧5秒建立空间→慢摇下移15秒揭示人物与环境关系→水平跟拍鲁智深踱步30秒，保持画面纵深与呼吸感",
       "end_credit": false
     },
     {
       "seq": 2,
       "shot_label": "镜02",
       "act": "发展",
-      "scene": "菜园",
-      "description": "鲁智深甩开膀子，双手抱住柳树，准备发力",
+      "scene": "菜园·晨",
+      "description": "🎬 【中景】鲁智深褪去外披直裰，露出筋肉虬结的臂膀。阳光转为明亮暖黄，构图采用对角线分割，人物居左，巨树居右，形成力量对峙。镜头环绕半周，捕捉他吐纳时胸腔起伏与地面阴影的拉长。",
       "timecode": {
         "start": "00:50",
         "end": "01:40"
       },
-      "music_cue": "鼓声渐起+低音弦乐",
-      "shot_type": "中景→近景",
-      "camera_move": "环绕跟拍",
-      "pacing": "slow→normal",
-      "color_palette": "翠绿→深绿",
+      "music_cue": "大提琴低音铺底+牛皮鼓轻击，情绪蓄势待发",
+      "shot_type": "中景",
+      "camera_move": "环绕跟拍→缓推",
+      "pacing": "normal",
+      "color_palette": "暖黄+深褐+高对比阴影",
       "dialogue": [
         {
           "speaker": "鲁智深",
-          "text": "你们几个撮鸟，看洒家拔这棵树！",
+          "text": "洒家行军布阵，何曾遇过这等硬茬？且看这柳条，配不配得起洒家的臂力。",
           "style": "classical",
-          "voice_dir": "豪迈大笑",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "你们几个撮鸟，看洒家拔这棵树！",
-          "timing_hint": "缓速+停顿2s"
+          "voice_dir": "沉丹田发声，胸腔共鸣",
+          "emotion_mark": "傲然/笃定",
+          "subtext": "军旅生涯的自信投射于当下",
+          "timing_hint": "缓速+尾音拉长2秒"
         }
       ],
-      "emotion": "轻松→自信",
+      "emotion": "轻松→蓄力",
       "duration": 50,
       "performance_notes": [
-        "腰马合一，手臂青筋暴起"
+        "双手搓热后猛然拍击树干震落浮灰",
+        "颈部青筋随深呼吸隐现"
       ],
-      "camera_script": "环绕跟拍 中景→近景 鲁智深甩开膀子，双手抱住柳树，准备发力",
+      "camera_script": "中景起幅→360度环绕跟拍15秒强化人物体积感→缓推至近景15秒聚焦面部微表情→固定机位捕捉呼吸节奏20秒",
       "end_credit": false
     },
     {
       "seq": 3,
       "shot_label": "镜03",
-      "act": "冲突",
-      "scene": "菜园",
-      "description": "地面裂开，泥土飞溅，柳树连根拔起",
+      "act": "转折",
+      "scene": "菜园/回忆·晨/幻境",
+      "description": "🎬 【近景】鲁智深双臂合抱树干，肌肉骤然绷紧。画面瞬间抽离现实，冷色调闪回切入：渭州三拳打镇关西的血色飞溅、五台山醉打山门的破碎酒坛。快切交织后，画面猛地切回暖黄现实，逆光中尘土悬浮如金粉。",
       "timecode": {
         "start": "01:40",
-        "end": "02:20"
+        "end": "02:25"
       },
-      "music_cue": "鼓点炸裂+群鸟惊飞声",
-      "shot_type": "特写→全景",
-      "camera_move": "仰角+摇镜",
-      "pacing": "fast",
-      "color_palette": "泥土棕褐+绿叶飞溅",
-      "dialogue": [],
-      "emotion": "震撼→爆发",
-      "duration": 40,
-      "performance_notes": [
-        "泥土飞溅慢镜头",
-        "泼皮们目瞪口呆"
+      "music_cue": "弦乐急弓+心跳低频+金属摩擦音效（闪回段）→骤停1秒→重低音轰鸣（切回），情绪压抑→爆发前兆",
+      "shot_type": "近景",
+      "camera_move": "推至特写→快切闪回→急摇回现实",
+      "pacing": "fast→normal",
+      "color_palette": "冷蓝（闪回）→暖金（现实）",
+      "dialogue": [
+        {
+          "speaker": "鲁智深",
+          "text": "这世道，拳头软了，连口安稳饭都讨不到。",
+          "style": "modern",
+          "voice_dir": "咬牙低语，气息粗重带砂砾感",
+          "emotion_mark": "愤懑/清醒",
+          "subtext": "借拔树立威以镇服群小，重拾尊严",
+          "timing_hint": "语速渐快→重音顿挫"
+        }
       ],
-      "camera_script": "仰角+摇镜 特写→全景 地面裂开，泥土飞溅，柳树连根拔起",
+      "emotion": "隐忍→决意",
+      "duration": 45,
+      "performance_notes": [
+        "瞳孔骤然收缩后迅速恢复平静",
+        "脚跟碾碎枯叶调整马步重心"
+      ],
+      "camera_script": "近景推至面部特写8秒→快切闪回（0.5秒/镜×3镜，配合音效硬切）→急摇回现实5秒→慢动作（升格）捕捉肌肉震颤32秒",
       "end_credit": false
     },
     {
       "seq": 4,
       "shot_label": "镜04",
-      "act": "高潮",
-      "scene": "菜园中央",
-      "description": "鲁智深将柳树高举过头，众泼皮跪地拜服",
+      "act": "冲突",
+      "scene": "菜园·晨",
+      "description": "🎬 【特写】粗糙树皮嵌入掌心，指节因过度用力泛出青白色。镜头俯拍地面，龟裂纹路如蛛网般向四周蔓延，泥土颗粒在慢镜头中悬浮、剥落。冷蓝阴影与暖金高光在树干表面激烈碰撞，形成视觉撕裂感。",
       "timecode": {
-        "start": "02:20",
-        "end": "03:10"
+        "start": "02:25",
+        "end": "03:15"
       },
-      "music_cue": "宏大弦乐+人声惊叹",
-      "shot_type": "仰角特写",
-      "camera_move": "静止",
-      "pacing": "slow",
-      "color_palette": "逆光金橙",
+      "music_cue": "战鼓连击+大镲滚奏+木质断裂低频音效，情绪焦灼/对抗",
+      "shot_type": "特写",
+      "camera_move": "俯拍→极速推至树根→慢镜捕捉崩裂",
+      "pacing": "slow→fast",
+      "color_palette": "泥土棕褐+青白指节+高光金",
       "dialogue": [
         {
-          "speaker": "泼皮们",
-          "text": "神...神仙下凡了！",
+          "speaker": "泼皮B",
+          "text": "这、这树根底下全是老砖石，他疯了不成？",
           "style": "modern",
-          "voice_dir": "恐惧敬畏",
-          "emotion_mark": "自然/真挚",
-          "subtext": "神...神仙下凡了！",
-          "timing_hint": "常速"
+          "voice_dir": "倒吸凉气，声音发颤破音",
+          "emotion_mark": "惊疑/恐惧",
+          "subtext": "认知被绝对力量颠覆的震撼",
+          "timing_hint": "急促喘息+语无伦次"
         }
       ],
-      "emotion": "震撼→敬畏",
+      "emotion": "紧张→震撼",
       "duration": 50,
       "performance_notes": [
-        "柳树在头顶旋转，逆光剪影"
+        "嘴唇紧抿至泛白，牙关咬合咯咯作响",
+        "肩背肌肉呈波浪状自下而上发力传导"
       ],
-      "camera_script": "静止 仰角特写 鲁智深将柳树高举过头，众泼皮跪地拜服",
+      "camera_script": "俯拍特写起幅5秒→极速推至树根缝隙10秒→升格慢镜头（120fps）捕捉泥土崩裂与根系撕裂25秒→手持微晃增强临场压迫感10秒",
       "end_credit": false
     },
     {
       "seq": 5,
       "shot_label": "镜05",
-      "act": "结局",
-      "scene": "菜园",
-      "description": "鲁智深随手抛下柳树，拍手大笑，坐在石凳上",
+      "act": "对峙",
+      "scene": "菜园·晨",
+      "description": "🎬 【全景】人树僵持。鲁智深呈弓步扎马，双足深陷泥中，柳树剧烈摇晃却未倾倒。逆光勾勒出人影轮廓，尘埃在光柱中狂舞。构图极度失衡，倾斜的地平线营造千钧一发的窒息感，情绪张力拉满。",
       "timecode": {
-        "start": "03:10",
+        "start": "03:15",
         "end": "04:00"
       },
-      "music_cue": "轻快弦乐回归+笑声",
-      "shot_type": "中景",
-      "camera_move": "缓缓拉远",
-      "pacing": "normal→slow",
-      "color_palette": "夕阳暖金",
+      "music_cue": "管弦乐骤停→仅留风声与粗重喘息→加入人声低吟（无词），情绪极限拉扯/意志较量",
+      "shot_type": "全景",
+      "camera_move": "固定→缓慢推近→手持微晃",
+      "pacing": "normal",
+      "color_palette": "逆光剪影+尘埃金+暗绿",
       "dialogue": [
         {
           "speaker": "鲁智深",
-          "text": "如何？你这些撮鸟，还敢小看洒家吗？",
+          "text": "树有根，人有骨。今日不断此根，洒家这身本事，便真成了笑话！",
           "style": "classical",
-          "voice_dir": "得意豪迈",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "如何？你这些撮鸟，还敢小看洒家吗？",
-          "timing_hint": "缓速+停顿2s"
+          "voice_dir": "怒喝破音，气血翻涌",
+          "emotion_mark": "决绝/悲壮",
+          "subtext": "以树喻己，誓要挣脱命运枷锁与世俗偏见",
+          "timing_hint": "爆发式吐字+尾音撕裂"
         }
       ],
-      "emotion": "得意→豪迈",
+      "emotion": "僵持→破局",
+      "duration": 45,
+      "performance_notes": [
+        "额头汗珠滚落砸入泥土溅起微尘",
+        "喉结剧烈上下滚动伴随沉重换气"
+      ],
+      "camera_script": "全景固定10秒建立对峙格局→缓慢推近至中景15秒强化人物挣扎状态→手持微晃20秒模拟力量传导的震颤感",
+      "end_credit": false
+    },
+    {
+      "seq": 6,
+      "shot_label": "镜06",
+      "act": "高潮",
+      "scene": "菜园·晨",
+      "description": "🎬 【大仰角特写】伴随裂帛巨响，柳树轰然离地，漫天泥雨如瀑布倾泻。鲁智深双臂高举巨树，逆光剪影宛如天神。泼皮们如麦浪伏地跪倒，画面色彩瞬间转为辉煌的金橙色，情绪彻底释放。",
+      "timecode": {
+        "start": "04:00",
+        "end": "04:50"
+      },
+      "music_cue": "铜管乐齐鸣+定音鼓重击+群鸟惊飞振翅声，情绪震撼/敬畏/释放",
+      "shot_type": "大仰角特写",
+      "camera_move": "仰角起幅→慢镜捕捉泥雨→急速拉远→环绕半周",
+      "pacing": "fast→slow",
+      "color_palette": "辉煌金橙+泥褐飞溅+逆光白",
+      "dialogue": [
+        {
+          "speaker": "众泼皮",
+          "text": "活佛！真是活佛降世啊！",
+          "style": "modern",
+          "voice_dir": "齐声嘶喊，混杂哭腔与颤抖",
+          "emotion_mark": "狂热/臣服",
+          "subtext": "彻底折服于超越凡俗的绝对力量",
+          "timing_hint": "破音重叠→声浪渐弱"
+        }
+      ],
+      "emotion": "爆发→敬畏",
       "duration": 50,
-      "end_credit": "一身神力惊天下，从此江湖称「花和尚」",
-      "performance_notes": [],
-      "camera_script": "缓缓拉远 中景 鲁智深随手抛下柳树，拍手大笑，坐在石凳上"
+      "performance_notes": [
+        "双臂肌肉贲张至极限后缓缓卸力",
+        "仰天长啸时胸腔完全打开，袈裟随风鼓荡"
+      ],
+      "camera_script": "大仰角起幅8秒强化压迫感→升格慢镜头（120fps）捕捉泥雨飞溅与根系脱离瞬间12秒→急速拉远至全景15秒展现群体跪拜→环绕半周15秒完成情绪收束",
+      "end_credit": false
+    },
+    {
+      "seq": 7,
+      "shot_label": "镜07",
+      "act": "结局",
+      "scene": "菜园·晨转午",
+      "description": "🎬 【中景】柳树轰然砸向空地，激起最后一片尘烟。鲁智深随意抹去脸上泥汗，盘腿坐于青石上，阳光转为明朗暖白。构图回归平稳对称，尘埃落定，光影柔和，余韵悠长。",
+      "timecode": {
+        "start": "04:50",
+        "end": "05:35"
+      },
+      "music_cue": "三弦轻拨+悠远箫声回归，情绪豁达/洒脱/余韵",
+      "shot_type": "中景",
+      "camera_move": "固定→缓慢拉远→叠化",
+      "pacing": "slow",
+      "color_palette": "明朗暖白+青石灰+新绿",
+      "dialogue": [
+        {
+          "speaker": "鲁智深",
+          "text": "日后若还有不长眼的，便叫这柳树教教规矩。",
+          "style": "modern",
+          "voice_dir": "朗声大笑，气息绵长通透",
+          "emotion_mark": "豪迈/从容",
+          "subtext": "立威已成，心境澄明，归于日常",
+          "timing_hint": "笑声渐收→从容收尾"
+        }
+      ],
+      "emotion": "释然→平静",
+      "duration": 45,
+      "performance_notes": [
+        "随手抓过粗陶水瓢舀水冲洗双臂",
+        "眼角笑纹舒展，目光望向远方天际"
+      ],
+      "camera_script": "中景固定10秒定格人物落座姿态→缓慢拉远至远景20秒展现菜园全貌与人物渺小感→叠化黑屏15秒留白",
+      "end_credit": "一身神力惊天下，从此江湖称「花和尚」"
     }
   ],
   "林冲风雪山神庙": [
@@ -657,183 +853,246 @@
       "seq": 1,
       "shot_label": "镜01",
       "act": "开场",
-      "scene": "宋江书房 · 夜",
-      "description": "宋江深夜回到书房，烛光昏暗，发现阎婆惜正在翻找他的东西",
+      "scene": "宋江书房·深夜",
+      "description": "🎬【中景转特写】夜雨敲窗，冷蓝月光与昏黄烛火交织形成高反差明暗对比（Chiaroscuro）。镜头自窗外雨丝缓缓推入室内，掠过凌乱书案，最终定格于阎婆惜背对镜头、正翻找暗格的剪影。宋江推门而入，带进一阵寒风，烛火剧烈摇曳，构图呈对角线压迫感。",
       "timecode": {
         "start": "00:00",
         "end": "00:45"
       },
-      "music_cue": "烛火噼啪声+低沉弦乐",
-      "shot_type": "内景·中景",
-      "camera_move": "跟拍→停",
+      "music_cue": "夜雨环境底噪+低音大提琴缓慢拨弦（压抑/悬疑）",
+      "shot_type": "中景转特写",
+      "camera_move": "推入→水平横移→急停",
       "pacing": "slow",
-      "color_palette": "烛光暖黄+暗角阴影",
+      "color_palette": "冷蓝月光+暖黄烛火+暗角阴影",
       "dialogue": [
         {
           "speaker": "宋江",
-          "text": "你在找什么？",
+          "text": "三更半夜，你在此翻找何物？",
           "style": "modern",
-          "voice_dir": "警觉低沉",
-          "emotion_mark": "自然/真挚",
-          "subtext": "你在找什么？",
-          "timing_hint": "常速"
+          "voice_dir": "警觉低沉，气息微凝",
+          "emotion_mark": "疑惑/戒备",
+          "subtext": "越界了，休要乱动",
+          "timing_hint": "缓速，尾音下沉"
         }
       ],
       "emotion": "警觉",
       "duration": 45,
       "performance_notes": [
-        "宋江停在门口，目光如炬"
+        "宋江握门框的手指骨节骤然泛白",
+        "阎婆惜指尖微颤后强装镇定，未立刻回头"
       ],
-      "camera_script": "跟拍→停 内景·中景 宋江深夜回到书房，烛光昏暗，发现阎婆惜正在翻找他的东西",
+      "camera_script": "远景雨丝3秒→慢推至室内中景8秒→水平横移跟拍阎婆惜翻找动作→急停于宋江入画，镜头微晃模拟推门动势",
       "end_credit": false
     },
     {
       "seq": 2,
       "shot_label": "镜02",
       "act": "发展",
-      "scene": "书房内 · 灯光昏暗",
-      "description": "阎婆惜拿出梁山书信威胁宋江，宋江面色大变",
+      "scene": "书房内·烛光下",
+      "description": "🎬【近景】暖黄烛光被窗外冷风切割，画面采用浅景深突出主体。阎婆惜猛然转身，手中紧攥一封火漆密信，信角已撕裂。她将信件高举至镜头前，逆光中“梁山”二字清晰可见。宋江瞳孔骤然收缩，面部半明半暗，构图呈失衡倾斜状。",
       "timecode": {
         "start": "00:45",
-        "end": "01:30"
+        "end": "01:35"
       },
-      "music_cue": "弦乐骤紧+心跳声",
-      "shot_type": "特写×2",
-      "camera_move": "快速切换",
+      "music_cue": "古筝泛音骤起+低频心跳鼓点（紧张/危机逼近）",
+      "shot_type": "近景",
+      "camera_move": "快速推近→摇镜反打",
       "pacing": "fast",
-      "color_palette": "烛光→暗红",
+      "color_palette": "暗金烛光+冷青阴影+信纸惨白",
       "dialogue": [
         {
           "speaker": "阎婆惜",
-          "text": "这是梁山泊给你的书信？若让人知道了，可是死罪。",
+          "text": "晁盖的信，梁山泊的勾当……宋押司，这可是抄家灭族的铁证。",
           "style": "modern",
-          "voice_dir": "得意威胁",
-          "emotion_mark": "自然/真挚",
-          "subtext": "这是梁山泊给你的书信？若让人知道了，可是...",
-          "timing_hint": "常速"
-        },
-        {
-          "speaker": "宋江",
-          "text": "你……你竟敢威胁我！",
-          "style": "classical",
-          "voice_dir": "惊吓→暴怒",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "你……你竟敢威胁我！",
-          "timing_hint": "缓速+停顿2s"
+          "voice_dir": "得意轻蔑，咬字清晰带讥诮",
+          "emotion_mark": "威胁/掌控",
+          "subtext": "你的命现在捏在我手里",
+          "timing_hint": "语速渐快，句末上扬"
         }
       ],
-      "emotion": "惊吓→愤怒",
-      "duration": 45,
+      "emotion": "危机",
+      "duration": 50,
       "performance_notes": [
-        "宋江伸手去夺书信",
-        "两人激烈争夺"
+        "阎婆惜用指甲反复刮擦信纸边缘，眼神挑衅",
+        "宋江喉结上下滚动，呼吸微乱，脚步后退半步"
       ],
-      "camera_script": "快速切换 特写×2 阎婆惜拿出梁山书信威胁宋江，宋江面色大变",
+      "camera_script": "镜头快速推近至信件特写2秒→急摇向阎婆惜面部3秒→反打宋江震惊近景，伴随轻微手持抖动增强不安感",
       "end_credit": false
     },
     {
       "seq": 3,
       "shot_label": "镜03",
-      "act": "冲突",
-      "scene": "书房内",
-      "description": "阎婆惜大声呼救，宋江慌乱中抽出短刀",
+      "act": "转折",
+      "scene": "书房内/记忆闪回",
+      "description": "🎬【特写穿插快剪】现实烛光与记忆冷光交错。画面在宋江颤抖的双眼与闪回片段间快速切换：浔阳楼题诗的背影、押司官印的沉重、梁山兄弟歃血为盟的粗粝刀锋。现实镜头虚化背景，仅聚焦宋江逐渐失去焦距的眼神，暗示理智与道义的撕裂。",
       "timecode": {
-        "start": "01:30",
-        "end": "02:15"
+        "start": "01:35",
+        "end": "02:20"
       },
-      "music_cue": "鼓点急促+尖叫声",
-      "shot_type": "手持晃动+快切",
-      "camera_move": "不规则晃动",
+      "music_cue": "尺八凄厉长音+金属摩擦音效+弦乐滑音（恍惚/撕裂）",
+      "shot_type": "特写快剪",
+      "camera_move": "极快推近眼部→闪回快切→缓慢拉回",
       "pacing": "fast",
-      "color_palette": "血色暗红",
+      "color_palette": "现实暖黄+回忆冷灰+血色残影",
       "dialogue": [
         {
-          "speaker": "阎婆惜",
-          "text": "来人啊！救命——",
-          "style": "modern",
-          "voice_dir": "尖叫",
-          "emotion_mark": "自然/真挚",
-          "subtext": "来人啊！救命——",
-          "timing_hint": "常速"
+          "speaker": "宋江",
+          "text": "我本欲行忠孝，奈何世道逼人……你若肯将信交还，金银田产，任凭开口。",
+          "style": "classical",
+          "voice_dir": "隐忍恳切，气声夹杂微颤",
+          "emotion_mark": "妥协/挣扎",
+          "subtext": "别逼我，给彼此留条活路",
+          "timing_hint": "停顿2秒后语速加快"
         }
       ],
-      "emotion": "紧张→失控",
+      "emotion": "撕裂",
       "duration": 45,
       "performance_notes": [
-        "短刀出鞘寒光一闪"
+        "宋江额角渗出冷汗，双手微抬作安抚状又无力垂下",
+        "阎婆惜眼神轻蔑，向后撤半步拉开安全距离"
       ],
-      "camera_script": "不规则晃动 手持晃动+快切 阎婆惜大声呼救，宋江慌乱中抽出短刀",
+      "camera_script": "极快推近眼部特写1秒→三连闪回快切（各0.5秒，硬切无过渡）→缓慢拉回现实全景4秒，节奏由乱转滞",
       "end_credit": false
     },
     {
       "seq": 4,
       "shot_label": "镜04",
-      "act": "高潮",
-      "scene": "书房内",
-      "description": "宋江一刀刺入阎婆惜胸膛，鲜血溅在梁山书信上，时间仿佛凝固",
+      "act": "冲突",
+      "scene": "书房内·狭窄空间",
+      "description": "🎬【中景手持跟拍】冷蓝月光被剧烈晃动的烛影吞噬，画面构图失衡倾斜。两人围绕书案展开激烈争夺，衣袖翻飞带倒笔墨纸砚，墨汁如血般在宣纸上洇开。镜头紧贴两人肢体运动轨迹，采用不规则手持跟拍，营造窒息般的压迫感。",
       "timecode": {
-        "start": "02:15",
-        "end": "03:00"
+        "start": "02:20",
+        "end": "03:10"
       },
-      "music_cue": "一切音效停止→滴血声→悲怆弦乐",
-      "shot_type": "特写+慢镜",
-      "camera_move": "静止+极慢推进",
-      "pacing": "slow→静止",
-      "color_palette": "血红溅染",
+      "music_cue": "密集板鼓+琵琶急扫弦+衣物剧烈摩擦声（激烈/失控）",
+      "shot_type": "中景手持",
+      "camera_move": "手持环绕跟拍→快速摇移→急推",
+      "pacing": "fast",
+      "color_palette": "暗红烛光+青黑阴影+墨色飞溅",
       "dialogue": [
         {
-          "speaker": "宋江",
-          "text": "……。",
-          "style": "classical",
-          "voice_dir": "无言·喘息",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "……。",
-          "timing_hint": "缓速+停顿2s"
+          "speaker": "阎婆惜",
+          "text": "少拿虚话哄我！明日我便去县衙击鼓鸣冤，看你如何收场！",
+          "style": "modern",
+          "voice_dir": "尖厉决绝，声线拔高破音边缘",
+          "emotion_mark": "挑衅/疯狂",
+          "subtext": "今日必须鱼死网破",
+          "timing_hint": "常速转急促，句尾拖长"
         }
       ],
-      "emotion": "绝望→冲动→空白",
-      "duration": 45,
+      "emotion": "失控",
+      "duration": 50,
       "performance_notes": [
-        "鲜血溅在书信上慢镜头",
-        "静帧1秒"
+        "阎婆惜指甲划破宋江手背，留下血痕",
+        "宋江青筋暴起，胸膛剧烈起伏，眼神由慌乱转为狠戾"
       ],
-      "camera_script": "静止+极慢推进 特写+慢镜 宋江一刀刺入阎婆惜胸膛，鲜血溅在梁山书信上，时间仿佛凝固",
+      "camera_script": "手持环绕跟拍6秒→快速摇移捕捉争夺焦点3秒→急推至两人交握的手部特写2秒，剪辑节奏配合鼓点加快",
       "end_credit": false
     },
     {
       "seq": 5,
       "shot_label": "镜05",
-      "act": "结局",
-      "scene": "书房 · 黎明",
-      "description": "宋江擦去血迹，收起梁山书信，晨光中露出复杂而沉重的表情",
+      "act": "对峙",
+      "scene": "书房内·死寂瞬间",
+      "description": "🎬【双人近景对称构图】争夺骤停。画面恢复对称稳定，冷色调占据主导。宋江右手已悄然探入腰间，握住压衣短刀的刀柄。阎婆惜察觉异样，笑容凝固，眼神由嚣张转为惊惧。光影将两人一分为二，中间仅隔一张散落信笺的书案，空气凝滞。",
       "timecode": {
-        "start": "03:00",
-        "end": "04:00"
+        "start": "03:10",
+        "end": "04:05"
       },
-      "music_cue": "晨光弦乐+渐强→余韵",
-      "shot_type": "中景→远景",
-      "camera_move": "缓缓拉远",
+      "music_cue": "所有环境音骤降→单音古琴“铮”然一声→极弱弦乐铺底（肃杀/临界）",
+      "shot_type": "近景对称",
+      "camera_move": "缓慢平移→横摇→静止",
       "pacing": "slow",
-      "color_palette": "晨光灰蓝",
+      "color_palette": "冷灰主调+局部高光+深黑背景",
+      "dialogue": [
+        {
+          "speaker": "宋江",
+          "text": "婆惜，你我往日情分，当真要断送于此？",
+          "style": "modern",
+          "voice_dir": "低沉沙哑，气息压抑至极限",
+          "emotion_mark": "最后通牒/悲悯",
+          "subtext": "这是最后一次机会",
+          "timing_hint": "极缓速，字字顿挫"
+        }
+      ],
+      "emotion": "肃杀",
+      "duration": 55,
+      "performance_notes": [
+        "宋江拇指抵住刀镡，指节因用力而惨白",
+        "阎婆惜嘴唇微张，呼吸急促，瞳孔剧烈收缩"
+      ],
+      "camera_script": "缓慢平移至宋江握刀手部特写5秒→横摇至阎婆惜惊恐面部5秒→双人同框静止构图8秒，镜头微呼吸感强化张力",
+      "end_credit": false
+    },
+    {
+      "seq": 6,
+      "shot_label": "镜06",
+      "act": "高潮",
+      "scene": "书房内·刀光血影",
+      "description": "🎬【特写转升格慢镜】极寒的刀锋破开暖黄烛光，划出一道凌厉的银白轨迹。时间骤然放慢，阎婆惜的惊呼被拉长扭曲，瞳孔中倒映出逼近的寒刃。短刀刺入的刹那，鲜血如红梅绽雪般溅射在火漆信笺上。画面色彩瞬间抽离为高对比度的黑白与刺目的暗红，构图极具视觉冲击。",
+      "timecode": {
+        "start": "04:05",
+        "end": "05:05"
+      },
+      "music_cue": "刀风呼啸高频音→全静音0.5秒→沉重低音大鼓“咚”+悲怆二胡滑音（惨烈/宿命）",
+      "shot_type": "特写+升格",
+      "camera_move": "极快推近→升格跟随→极慢推进",
+      "pacing": "slow",
+      "color_palette": "黑白高反差+刺目暗红+银白刀光",
+      "dialogue": [
+        {
+          "speaker": "宋江",
+          "text": "休怪宋江心狠……黄泉路上，好生走！",
+          "style": "classical",
+          "voice_dir": "嘶哑爆发后转虚无，喉音沉重",
+          "emotion_mark": "决绝/悲怆",
+          "subtext": "忠义难两全，只能斩断",
+          "timing_hint": "爆发后瞬间失力，尾音消散"
+        }
+      ],
+      "emotion": "惨烈",
+      "duration": 60,
+      "performance_notes": [
+        "宋江刺入瞬间面部肌肉紧绷后瞬间垮塌，眼神空洞",
+        "阎婆惜身体后仰，手指无力松开，信纸如落叶飘坠"
+      ],
+      "camera_script": "极快推近刀尖1秒→升格慢镜（120fps）跟随血滴轨迹8秒→固定机位极慢推进至染血信件，配合鼓点做静帧处理2秒",
+      "end_credit": false
+    },
+    {
+      "seq": 7,
+      "shot_label": "镜07",
+      "act": "结局",
+      "scene": "书房·破晓",
+      "description": "🎬【中景拉至大远景】晨曦的灰蓝色调自雕花木窗渗入，驱散室内血腥与阴霾。宋江立于案前，以素帕缓缓擦拭刀身，动作机械而迟缓。镜头自他佝偻的背影缓缓拉远，越过满地狼藉，推向窗外初醒的街巷与远山。晨光勾勒出他孤绝的轮廓，江湖路自此改写。",
+      "timecode": {
+        "start": "05:05",
+        "end": "06:05"
+      },
+      "music_cue": "晨风微响+箫声悠远苍凉→渐弱至无声（余韵/苍凉/宿命）",
+      "shot_type": "中景至大远景",
+      "camera_move": "缓慢拉远→升高俯拍",
+      "pacing": "slow",
+      "color_palette": "晨光灰蓝+木质暖褐+淡白雾气",
       "dialogue": [
         {
           "speaker": "宋江",
           "text": "这一步踏出……便再无回头路了。",
-          "style": "classical",
-          "voice_dir": "沉郁决断",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "这一步踏出……便再无回头路了。",
-          "timing_hint": "缓速+停顿2s"
+          "style": "modern",
+          "voice_dir": "沉郁气若游丝，不带哭腔的平静",
+          "emotion_mark": "决断/悲凉",
+          "subtext": "逼上梁山，宿命已成",
+          "timing_hint": "极缓速+长停顿3秒"
         }
       ],
-      "emotion": "悔恨→决断",
+      "emotion": "苍凉",
       "duration": 60,
-      "end_credit": "一封书信，一条人命，从此江湖多了一个「及时雨」宋江",
       "performance_notes": [
-        "宋江望着手中染血的书信",
-        "晨光透过窗棂"
+        "宋江将染血素帕折叠整齐收入袖中，动作一丝不苟",
+        "转身时步履沉重，目光空洞却逐渐聚焦于远方"
       ],
-      "camera_script": "缓缓拉远 中景→远景 宋江擦去血迹，收起梁山书信，晨光中露出复杂而沉重的表情"
+      "camera_script": "固定中景5秒→极缓慢拉远15秒→升高俯拍全景10秒，镜头平稳无抖动，配合箫声渐隐至黑场",
+      "end_credit": "一封书信断恩义，一刀血染逼上梁山。"
     }
   ],
   "李逵沂岭杀四虎": [
@@ -841,187 +1100,291 @@
       "seq": 1,
       "shot_label": "镜01",
       "act": "开场",
-      "scene": "沂岭山路",
-      "description": "李逵背着老娘走在沂岭山路上，烈日当空，娘说口渴",
+      "scene": "沂岭古道·正午",
+      "description": "🎬 【中景】烈日如熔金倾泻，逆光勾勒李逵虬结的脊背。老娘伏于其背，粗布衣衫被汗浸透。构图采用三分法，前景焦黄枯草，背景热浪扭曲。镜头缓慢前推，捕捉汗珠砸落尘土的瞬间。光影高反差，色调炽热焦灼。",
       "timecode": {
         "start": "00:00",
         "end": "00:50"
       },
-      "music_cue": "蝉鸣+轻笛",
+      "music_cue": "埙声低沉悠远（苍凉）+ 蝉鸣高频底噪（焦灼）",
       "shot_type": "中景·背跟",
-      "camera_move": "跟拍",
+      "camera_move": "缓推至特写",
       "pacing": "slow",
-      "color_palette": "烈日金黄",
+      "color_palette": "熔金+焦土褐+逆光剪影",
       "dialogue": [
         {
           "speaker": "李逵",
-          "text": "娘，您歇着，我去找水。",
+          "text": "娘，这日头毒得很，您先靠树歇歇，铁牛去前头寻口清泉。",
           "style": "modern",
-          "voice_dir": "温柔·反差",
-          "emotion_mark": "自然/真挚",
-          "subtext": "娘，您歇着，我去找水。",
-          "timing_hint": "常速"
+          "voice_dir": "粗粝中透着小心翼翼，气息微沉",
+          "emotion_mark": "关切/隐忍",
+          "subtext": "怕娘受罪，强压疲惫",
+          "timing_hint": "语速放缓，句尾微拖"
         },
         {
           "speaker": "老娘",
-          "text": "好，娘等你回来。",
+          "text": "好……铁牛慢些走，娘就在这儿等你。",
           "style": "modern",
-          "voice_dir": "慈祥",
-          "emotion_mark": "自然/真挚",
-          "subtext": "好，娘等你回来。",
-          "timing_hint": "常速"
+          "voice_dir": "气弱慈祥，带轻微喘息",
+          "emotion_mark": "依赖/安详",
+          "subtext": "不愿拖累儿子，强撑精神",
+          "timing_hint": "微喘+停顿2秒"
         }
       ],
-      "emotion": "孝顺→温柔",
+      "emotion": "孝顺→焦灼",
       "duration": 50,
       "performance_notes": [
-        "李逵小心放下老娘",
-        "用袖子擦汗"
+        "李逵用粗袖口抹去老娘额角汗渍，动作极轻",
+        "放下老娘时双膝微曲以减震，脚步刻意放稳"
       ],
-      "camera_script": "跟拍 中景·背跟 李逵背着老娘走在沂岭山路上，烈日当空，娘说口渴",
+      "camera_script": "远景定场3秒→慢推至中景背跟10秒→侧移展现老娘干裂嘴唇5秒→缓推至李逵面部特写7秒→固定机位凝视",
       "end_credit": false
     },
     {
       "seq": 2,
       "shot_label": "镜02",
       "act": "发展",
-      "scene": "山溪边",
-      "description": "李逵找到山溪舀水，远处传来低沉虎啸声",
+      "scene": "山涧幽谷·午后",
+      "description": "🎬 【全景】镜头俯拍，幽谷如裂，冷色调溪水与正午烈日形成强烈反差。李逵蹲于溪畔，水面倒映其紧绷面容。构图呈对称破局，水波碎光跳跃于手背。侧逆光切割水面，色调冷翠与暗岩灰交织。",
       "timecode": {
         "start": "00:50",
-        "end": "01:30"
+        "end": "01:40"
       },
-      "music_cue": "溪水声+远山虎啸",
-      "shot_type": "中景",
-      "camera_move": "跟拍",
+      "music_cue": "竹笛清冷泛音（潜伏）+ 流水潺潺（自然）+ 极低音频虎啸（不安）",
+      "shot_type": "全景→中景",
+      "camera_move": "俯摇→平移",
       "pacing": "normal",
-      "color_palette": "溪水翠绿",
+      "color_palette": "冷翠+暗岩灰+高光碎白",
       "dialogue": [
         {
           "speaker": "李逵",
-          "text": "什么声音？",
+          "text": "这水真凉……",
           "style": "modern",
-          "voice_dir": "警觉",
-          "emotion_mark": "自然/真挚",
-          "subtext": "什么声音？",
-          "timing_hint": "常速"
+          "voice_dir": "喃喃自语，气息松弛",
+          "emotion_mark": "稍慰/疲惫",
+          "subtext": "终于找到水源，紧绷神经暂松",
+          "timing_hint": "常速，气声收尾"
+        },
+        {
+          "speaker": "李逵",
+          "text": "嗯？什么动静？",
+          "style": "modern",
+          "voice_dir": "骤然警觉，喉结滚动",
+          "emotion_mark": "惊疑/戒备",
+          "subtext": "山林有异，本能防御",
+          "timing_hint": "语速加快，音调上扬"
         }
       ],
-      "emotion": "安心→警觉",
-      "duration": 40,
+      "emotion": "稍慰→警觉",
+      "duration": 50,
       "performance_notes": [
-        "水瓢停在半空",
-        "猛地回头"
+        "水瓢悬停半空，水珠滴落砸碎水面倒影",
+        "颈部肌肉瞬间绷紧，瞳孔微缩转向声源"
       ],
-      "camera_script": "跟拍 中景 李逵找到山溪舀水，远处传来低沉虎啸声",
+      "camera_script": "俯拍全景4秒→缓降平移至溪水中景8秒→手持微晃跟拍舀水动作5秒→骤停，镜头急推至李逵耳部特写3秒",
       "end_credit": false
     },
     {
       "seq": 3,
       "shot_label": "镜03",
-      "act": "冲突",
-      "scene": "沂岭 · 洞穴外",
-      "description": "回来发现老娘不见，地上血迹斑斑，李逵目眦欲裂",
+      "act": "转折",
+      "scene": "古松下·原地",
+      "description": "🎬 【近景】烈日被乌云遮蔽，光线骤暗。老娘原歇息处空无一人，唯留半截撕裂粗布与拖拽血痕。构图失衡，血痕呈对角线贯穿画面，视觉压迫感极强。阴郁灰蓝天光，惨白与暗红交织。",
       "timecode": {
-        "start": "01:30",
-        "end": "02:20"
+        "start": "01:40",
+        "end": "02:30"
       },
-      "music_cue": "寂静→心跳声→疯狂鼓点",
-      "shot_type": "特写+快速剪辑",
-      "camera_move": "手持晃动",
+      "music_cue": "弦乐拨奏（模拟心跳加速）→ 大提琴低频震颤（惊悚/窒息）+ 枯叶碎裂声",
+      "shot_type": "近景·手持",
+      "camera_move": "急推→环绕",
       "pacing": "fast",
-      "color_palette": "血红色+阴影黑",
+      "color_palette": "阴郁灰蓝+暗红血迹+惨白",
       "dialogue": [
         {
           "speaker": "李逵",
-          "text": "娘——！！！",
+          "text": "娘……！",
           "style": "classical",
-          "voice_dir": "撕心裂肺·爆发",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "娘——！！！",
-          "timing_hint": "缓速+停顿2s"
+          "voice_dir": "气音撕裂，破音边缘",
+          "emotion_mark": "骇然/恐惧",
+          "subtext": "认知崩塌，拒绝相信",
+          "timing_hint": "拖长音→骤断"
+        },
+        {
+          "speaker": "李逵",
+          "text": "人呢？！娘！你在哪儿！",
+          "style": "modern",
+          "voice_dir": "嘶吼，胸腔共鸣爆发",
+          "emotion_mark": "恐慌/崩溃",
+          "subtext": "彻底失控的寻母本能",
+          "timing_hint": "连呼两声，声调拔高"
         }
       ],
-      "emotion": "恐惧→暴怒",
+      "emotion": "骇然→崩溃",
       "duration": 50,
       "performance_notes": [
-        "李逵双膝跪地",
-        "手捧血土",
-        "双眼血红"
+        "双膝重重砸地，尘土飞扬",
+        "双手疯狂刨挖泥土，指甲翻裂渗血，呼吸紊乱"
       ],
-      "camera_script": "手持晃动 特写+快速剪辑 回来发现老娘不见，地上血迹斑斑，李逵目眦欲裂",
+      "camera_script": "快速摇入空镜3秒→急推至血痕特写5秒→手持环绕360度搜寻6秒→猛然定格于撕碎衣物，镜头震颤2秒",
       "end_credit": false
     },
     {
       "seq": 4,
       "shot_label": "镜04",
-      "act": "高潮",
-      "scene": "沂岭",
-      "description": "李逵双斧挥舞，连杀四虎，虎血染红衣衫，怒吼震山林",
+      "act": "冲突",
+      "scene": "虎穴洞口·阴翳",
+      "description": "🎬 【特写】幽暗洞口，冷风灌入。镜头聚焦地上散落的虎毛与半截人骨。采用伦勃朗光效，侧逆光打亮李逵半张脸，另半张隐于浓重阴影。封闭式框景构图，幽绿苔藓与暗褐岩壁挤压画面。",
       "timecode": {
-        "start": "02:20",
-        "end": "03:40"
+        "start": "02:30",
+        "end": "03:25"
       },
-      "music_cue": "鼓点炸裂+虎啸+怒吼",
-      "shot_type": "快速动作·多角度",
-      "camera_move": "摇镜+仰角+跟拍",
-      "pacing": "climax",
-      "color_palette": "血红+暗绿+剪影黑",
+      "music_cue": "战鼓闷击（压抑）+ 尺八凄厉滑音（悲愤/杀意）+ 闪回音效（老娘笑声扭曲变调）",
+      "shot_type": "特写→闪回快切",
+      "camera_move": "固定→快切推拉→慢镜",
+      "pacing": "climax_build",
+      "color_palette": "幽绿苔藓+暗褐+血红高光",
       "dialogue": [
         {
           "speaker": "李逵",
-          "text": "还我娘来！！",
+          "text": "畜生安敢……噬我生母！",
           "style": "classical",
-          "voice_dir": "狂怒震撼",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "还我娘来！！",
-          "timing_hint": "缓速+停顿2s"
+          "voice_dir": "齿缝挤字，声带紧绷如弓弦",
+          "emotion_mark": "怒极/悲怆",
+          "subtext": "孝道被毁，杀心顿起",
+          "timing_hint": "字字顿挫，气息下沉"
+        },
+        {
+          "speaker": "李逵",
+          "text": "今日不剁碎你们，我李逵枉披人皮！",
+          "style": "modern",
+          "voice_dir": "低沉咆哮，混着粗重喘息",
+          "emotion_mark": "决绝/暴戾",
+          "subtext": "以命相搏的血誓",
+          "timing_hint": "语速渐重，尾音砸落"
         }
       ],
-      "emotion": "狂怒→悲壮",
-      "duration": 80,
+      "emotion": "悲怆→暴怒",
+      "duration": 55,
       "performance_notes": [
-        "第一斧:劈开虎头",
-        "第二斧:横扫虎腰",
-        "连杀四虎的快速蒙太奇"
+        "瞳孔缩成针尖，面部肌肉不受控抽搐",
+        "反手抽板斧，金属摩擦声刺耳，指节因用力泛白"
       ],
-      "camera_script": "摇镜+仰角+跟拍 快速动作·多角度 李逵双斧挥舞，连杀四虎，虎血染红衣衫，怒吼震山林",
+      "camera_script": "固定特写骨殖4秒→闪回快切（老娘递水/血盆大口/李逵挥斧）0.5秒/帧×4组→镜头猛拉至中景6秒→慢镜捕捉李逵缓缓站起5秒",
       "end_credit": false
     },
     {
       "seq": 5,
       "shot_label": "镜05",
-      "act": "结局",
-      "scene": "沂岭 · 黄昏",
-      "description": "李逵跪在老娘失踪处，夕阳下拉长身影，默默收起染血的双斧",
+      "act": "对峙",
+      "scene": "洞口外林间·黄昏前",
+      "description": "🎬 【中远景】枯枝交错如网，两只猛虎伏于巨石之上，虎眼泛幽绿冷光。李逵立于画面下方中央，形成三角对峙构图。天光呈紫灰色，暴雨将至，风卷落叶。冷峻色调，光影切割强烈。",
       "timecode": {
-        "start": "03:40",
-        "end": "04:30"
+        "start": "03:25",
+        "end": "04:10"
       },
-      "music_cue": "悲怆弦乐+夕阳风声",
-      "shot_type": "远景",
-      "camera_move": "缓缓拉远",
-      "pacing": "slow",
-      "color_palette": "夕阳血红→暮色灰蓝",
+      "music_cue": "低音大鼓连击（压迫感）+ 铜钹轻擦（杀机暗涌）+ 风声呼啸（肃杀）",
+      "shot_type": "中远景·正反打",
+      "camera_move": "缓推→快速摇移",
+      "pacing": "tense",
+      "color_palette": "紫灰天光+墨绿林影+虎瞳幽绿",
       "dialogue": [
         {
           "speaker": "李逵",
-          "text": "娘，儿子给您报仇了……",
-          "style": "classical",
-          "voice_dir": "哽咽·铁汉柔情",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "娘，儿子给您报仇了……",
-          "timing_hint": "缓速+停顿2s"
+          "text": "来！",
+          "style": "modern",
+          "voice_dir": "短促暴喝，毫无畏惧",
+          "emotion_mark": "战意沸腾",
+          "subtext": "主动引战，蔑视兽威",
+          "timing_hint": "爆发式单音，干脆利落"
         }
       ],
-      "emotion": "悲痛→决绝",
-      "duration": 50,
-      "end_credit": "铁牛也有柔情处，四虎换不回一声娘。",
+      "emotion": "肃杀→战意",
+      "duration": 45,
       "performance_notes": [
-        "跪地三叩首",
-        "夕阳剪影"
+        "重心下沉呈马步，双斧交叉护胸",
+        "嘴角咧开似笑非笑，眼中血丝密布，呼吸平稳如常"
       ],
-      "camera_script": "缓缓拉远 远景 李逵跪在老娘失踪处，夕阳下拉长身影，默默收起染血的双斧"
+      "camera_script": "远景定场对峙4秒→正反打快速摇移（虎→李逵→虎）×3次共6秒→镜头急速前推至李逵面部3秒→切至虎扑瞬间慢放2秒",
+      "end_credit": false
+    },
+    {
+      "seq": 6,
+      "shot_label": "镜06",
+      "act": "高潮",
+      "scene": "林间空地·血战",
+      "description": "🎬 【全景→特写混剪】动态模糊背景，血珠在慢镜头中呈抛物线飞溅。李逵身形如黑色旋风，双斧化作残影。采用倾斜荷兰角构图增强失衡与狂乱感，暗红血雾弥漫，斧刃冷光划破暗调。",
+      "timecode": {
+        "start": "04:10",
+        "end": "05:10"
+      },
+      "music_cue": "太鼓密集连击（高潮）+ 唢呐撕裂高音（惨烈）+ 骨骼断裂/利刃入肉拟音（暴力/释放）",
+      "shot_type": "全景→快切→升格",
+      "camera_move": "环绕跟拍→手持震颤→升格慢镜",
+      "pacing": "climax",
+      "color_palette": "暗红血雾+斧刃冷光+焦土黑",
+      "dialogue": [
+        {
+          "speaker": "李逵",
+          "text": "还我娘命来！！",
+          "style": "modern",
+          "voice_dir": "泣血狂吼，声嘶力竭",
+          "emotion_mark": "悲狂/宣泄",
+          "subtext": "复仇的极致释放，理智与野性交融",
+          "timing_hint": "拖长尾音+破音，胸腔震动"
+        }
+      ],
+      "emotion": "狂怒→悲壮",
+      "duration": 60,
+      "performance_notes": [
+        "斧刃劈入虎骨时全身剧烈震颤，青筋暴起",
+        "抹去脸上血污后仰天狂笑，笑声渐转为喉头哽咽"
+      ],
+      "camera_script": "全景环绕跟拍劈砍6秒→快切三组（斧劈虎首/横扫虎腰/蹬踏虎背）0.3秒/镜×3→升格慢镜捕捉虎血喷溅李逵面颊5秒→急拉展现四虎伏尸8秒",
+      "end_credit": false
+    },
+    {
+      "seq": 7,
+      "shot_label": "镜07",
+      "act": "结局",
+      "scene": "沂岭·残阳如血",
+      "description": "🎬 【大远景】残阳如血浸透层云，将李逵孤影拉得极长。四具虎尸横陈于前，双斧拄地。画面留白极大，极简构图，天地苍茫。色彩由炽烈血红渐褪为冷峻暮蓝，晚风拂草。",
+      "timecode": {
+        "start": "05:10",
+        "end": "06:00"
+      },
+      "music_cue": "古琴泛音（空灵寂寥）+ 箫声呜咽（哀思/释然）+ 晚风拂草声（苍凉）",
+      "shot_type": "大远景·拉远",
+      "camera_move": "缓慢拉远→升格定格",
+      "pacing": "slow",
+      "color_palette": "暮蓝+残血红+孤影黑",
+      "dialogue": [
+        {
+          "speaker": "李逵",
+          "text": "娘……儿替您……杀干净了。",
+          "style": "classical",
+          "voice_dir": "气声干涩，喉头哽咽",
+          "emotion_mark": "悲怆/空茫",
+          "subtext": "大仇得报后的巨大虚无",
+          "timing_hint": "字句断续+长停顿3秒"
+        },
+        {
+          "speaker": "李逵",
+          "text": "咱们……回家吧。",
+          "style": "modern",
+          "voice_dir": "呢喃自语，声音极轻",
+          "emotion_mark": "绝望/眷恋",
+          "subtext": "明知无处可归，唯余执念",
+          "timing_hint": "声渐弱至无声"
+        }
+      ],
+      "emotion": "悲壮→空茫",
+      "duration": 50,
+      "performance_notes": [
+        "缓缓跪地，额头触地三叩，肩背剧烈起伏",
+        "颤抖着手将双斧收入鞘中，动作迟缓如老人"
+      ],
+      "camera_script": "中景跪地4秒→极缓拉远至大远景18秒→镜头微升展现苍茫山岭6秒→定格黑场2秒",
+      "end_credit": true
     }
   ],
   "智取生辰纲": [
@@ -1029,193 +1392,246 @@
       "seq": 1,
       "shot_label": "镜01",
       "act": "开场",
-      "scene": "聚义厅 · 烛光下",
-      "description": "吴用手持羽扇，烛光映照清瘦面容，展开地图低声策划",
+      "scene": "聚义厅偏室 · 夜",
+      "description": "🎬 【中景转特写】幽暗石室内，唯一一盏铜灯投下摇曳暖光，将吴用清瘦的侧影拉长于斑驳石壁。构图采用三分法，左侧留白压暗，右侧羽扇半掩面庞。镜头自全景缓慢推进至面部特写，尘埃在光柱中悬浮，光影冷暖对比强烈，氛围肃杀机密。",
       "timecode": {
         "start": "00:00",
-        "end": "01:00"
+        "end": "00:45"
       },
-      "music_cue": "烛火声+轻笛+密谋弦乐",
-      "shot_type": "内景·特写→中景",
-      "camera_move": "缓缓推进",
+      "music_cue": "古琴泛音起+低频大提琴铺底+烛火噼啪声，营造密谋与肃杀氛围",
+      "shot_type": "中景→特写",
+      "camera_move": "缓推",
       "pacing": "slow",
-      "color_palette": "烛光暖黄+暗角阴影",
+      "color_palette": "暖黄烛光+青灰石壁+浓重暗角",
+      "camera_script": "全景定帧3秒→缓推至中景5秒→环绕半圈捕捉羽扇开合→急停推至面部特写7秒→保持固定10秒",
+      "duration": 45,
+      "emotion": "肃杀→筹谋",
       "dialogue": [
         {
           "speaker": "吴用",
-          "text": "此番智取，不许动一兵一卒。",
+          "text": "梁中书十万贯金珠，皆乃民脂民膏。此番取之，不靠刀枪，全凭人心。",
           "style": "classical",
-          "voice_dir": "沉稳睿智",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "此番智取，不许动一兵一卒。",
-          "timing_hint": "缓速+停顿2s"
+          "voice_dir": "气声微沉，吐字如珠",
+          "emotion_mark": "隐忍/决断",
+          "subtext": "以智破力，方能立梁山威名",
+          "timing_hint": "缓速，句末拖音2秒"
         }
       ],
-      "emotion": "沉稳→机密",
-      "duration": 60,
       "performance_notes": [
-        "羽扇轻摇",
-        "手指在地图上划过"
+        "羽扇柄轻叩桌面三下，节奏暗合心跳",
+        "目光自地图移向虚空，瞳孔微缩"
       ],
-      "camera_script": "缓缓推进 内景·特写→中景 吴用手持羽扇，烛光映照清瘦面容，展开地图低声策划",
       "end_credit": false
     },
     {
       "seq": 2,
       "shot_label": "镜02",
       "act": "发展",
-      "scene": "黄泥岗山路",
-      "description": "吴用扮作枣贩，推车行于黄泥岗山路，烈日当空",
+      "scene": "黄泥岗 · 正午",
+      "description": "🎬 【大远景转全景】烈日炙烤下的黄土岗如沸腾熔炉，热浪扭曲地平线。七条汉子扮作贩枣客商，独轮车辙深陷干裂土路。低角度仰拍凸显人物疲惫轮廓，逆光勾勒金边。镜头随车队水平横移，展现漫长孤寂的官道，天气酷热难耐。",
       "timecode": {
-        "start": "01:00",
-        "end": "02:00"
+        "start": "00:45",
+        "end": "01:40"
       },
-      "music_cue": "蝉鸣+轻快笛声",
-      "shot_type": "远景→中景",
-      "camera_move": "跟拍",
+      "music_cue": "高频蝉鸣铺底+竹笛断续轻吹，夹杂沉重脚步与车轮碾土声，情绪焦躁压抑",
+      "shot_type": "大远景→全景",
+      "camera_move": "横移跟拍",
       "pacing": "normal",
-      "color_palette": "烈日金黄+土路棕褐",
+      "color_palette": "刺眼亮白+焦土赭黄+热浪扭曲感",
+      "camera_script": "低机位跟拍车轮10秒→镜头缓慢抬升拉出全景展现队伍全貌→水平横移跟随行进15秒→急摇定格前方树荫10秒",
+      "duration": 55,
+      "emotion": "焦灼→潜伏",
       "dialogue": [
         {
-          "speaker": "吴用",
-          "text": "按计划行事，各就其位。",
+          "speaker": "阮小七",
+          "text": "这鬼天气，铁打的汉子也熬不住，大哥，前面树荫歇口气吧。",
           "style": "modern",
-          "voice_dir": "低声指挥",
-          "emotion_mark": "自然/真挚",
-          "subtext": "按计划行事，各就其位。",
-          "timing_hint": "常速"
+          "voice_dir": "嗓音干哑，喘息粗重",
+          "emotion_mark": "焦渴/疲惫",
+          "subtext": "体力已达极限，急需掩护",
+          "timing_hint": "语速急促，伴随吞咽动作"
         }
       ],
-      "emotion": "伪装→警觉",
-      "duration": 60,
       "performance_notes": [
-        "众好汉各扮角色"
+        "阮小七扯开汗湿衣领，猛灌一口水囊",
+        "晁盖暗中使眼色，众人脚步微顿调整阵型"
       ],
-      "camera_script": "跟拍 远景→中景 吴用扮作枣贩，推车行于黄泥岗山路，烈日当空",
       "end_credit": false
     },
     {
       "seq": 3,
       "shot_label": "镜03",
-      "act": "冲突",
-      "scene": "黄泥岗",
-      "description": "押送队伍到达，吴用以掺药酒为计，表面争吵掩护",
+      "act": "转折",
+      "scene": "黄泥岗松林口",
+      "description": "🎬 【全景转中景】杨志押送生辰纲车队踉跄入画，军士们东倒西歪，刀枪拄地。白胜挑着酒桶从坡后转出，扁担吱呀作响。画面采用对角线构图，将官兵的颓败与酒贩的从容形成强烈对比。顶光直射，阴影短促锐利，氛围由静转动。",
       "timecode": {
-        "start": "02:00",
-        "end": "03:00"
+        "start": "01:40",
+        "end": "02:35"
       },
-      "music_cue": "紧张弦乐+争吵声",
-      "shot_type": "多机位切换",
-      "camera_move": "快速切换",
-      "pacing": "normal→fast",
-      "color_palette": "黄土岗暖色",
+      "music_cue": "沉闷堂鼓单点敲击+木质扁担摩擦声+隐约风铃，情绪由躁动转为警觉",
+      "shot_type": "全景→中景",
+      "camera_move": "俯拍→平摇",
+      "pacing": "normal",
+      "color_palette": "军服暗绿+酒桶原木色+刺目顶光",
+      "camera_script": "俯拍全景展现队伍溃散状态8秒→镜头快速下摇至白胜脚步5秒→水平平摇跟随白胜上肩动作→推至中景定格7秒",
+      "duration": 55,
+      "emotion": "试探→入局",
       "dialogue": [
         {
-          "speaker": "杨志",
-          "text": "这酒里莫非有药？",
-          "style": "modern",
-          "voice_dir": "怀疑",
-          "emotion_mark": "自然/真挚",
-          "subtext": "这酒里莫非有药？",
-          "timing_hint": "常速"
-        },
-        {
-          "speaker": "吴用",
-          "text": "这位军爷说的什么话，我们都是正经生意人。",
-          "style": "modern",
-          "voice_dir": "陪笑掩护",
-          "emotion_mark": "自然/真挚",
-          "subtext": "这位军爷说的什么话，我们都是正经生意人。",
-          "timing_hint": "常速"
-        },
-        {
           "speaker": "白胜",
-          "text": "来来来，天气热，喝碗酒解解渴。",
+          "text": "歇凉喽！上好的村酒，解渴消暑，走过路过莫错过！",
           "style": "modern",
-          "voice_dir": "吆喝",
-          "emotion_mark": "自然/真挚",
-          "subtext": "来来来，天气热，喝碗酒解解渴。",
-          "timing_hint": "常速"
+          "voice_dir": "市井吆喝，尾音上扬",
+          "emotion_mark": "伪装/热情",
+          "subtext": "饵已抛出，静待鱼儿咬钩",
+          "timing_hint": "中速，拉长尾音"
         }
       ],
-      "emotion": "紧张→博弈",
-      "duration": 60,
       "performance_notes": [
-        "吴用和白胜假装争吵",
-        "军士们放松警惕"
+        "白胜放下酒桶时故意让桶底磕地发出闷响",
+        "杨志握紧朴刀刀柄，指节泛白，目光死死盯住酒桶"
       ],
-      "camera_script": "快速切换 多机位切换 押送队伍到达，吴用以掺药酒为计，表面争吵掩护",
       "end_credit": false
     },
     {
       "seq": 4,
       "shot_label": "镜04",
-      "act": "高潮",
-      "scene": "黄泥岗",
-      "description": "吴用与众好汉假装抢酒喝，军士们纷纷倒地，计谋得逞",
+      "act": "冲突",
+      "scene": "黄泥岗 · 松林下",
+      "description": "🎬 【特写组接】杨志猛然拔刀半寸，刀锋冷光划破闷热空气。吴用急步上前挡在酒桶前，羽扇横拦。画面采用浅景深，背景虚化，焦点在刀尖与扇骨间来回跳跃。冷暖光对比：刀光冷蓝，扇面暖黄，氛围剑拔弩张。",
       "timecode": {
-        "start": "03:00",
-        "end": "03:50"
+        "start": "02:35",
+        "end": "03:30"
       },
-      "music_cue": "欢快节奏→得逞笑声",
-      "shot_type": "快速剪辑·反应镜头",
-      "camera_move": "环摇",
+      "music_cue": "琵琶轮指急促如雨+金属摩擦刺耳音效+心跳鼓点，情绪紧绷至临界",
+      "shot_type": "特写→近景快切",
+      "camera_move": "急推/快切",
       "pacing": "fast",
-      "color_palette": "胜利暖金",
+      "color_palette": "冷蓝刀光+暖黄扇面+高反差阴影",
+      "camera_script": "急推杨志拔刀特写3秒→硬切吴用羽扇格挡2秒→快速交叉剪辑两人面部表情（各1秒×4）→环绕镜头半周展现对峙张力8秒",
+      "duration": 55,
+      "emotion": "猜忌→交锋",
       "dialogue": [
         {
-          "speaker": "吴用",
-          "text": "成了！把车推走。",
-          "style": "classical",
-          "voice_dir": "暗喜从容",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "成了！把车推走。",
-          "timing_hint": "缓速+停顿2s"
+          "speaker": "杨志",
+          "text": "荒山野岭，哪来的好酒？你这厮，莫非在酒里下了蒙汗药！",
+          "style": "modern",
+          "voice_dir": "厉声断喝，气息急促",
+          "emotion_mark": "多疑/暴烈",
+          "subtext": "职业本能发作，宁错杀不放过",
+          "timing_hint": "语速极快，破音边缘"
         }
       ],
-      "emotion": "暗喜→胜利",
-      "duration": 50,
       "performance_notes": [
-        "军士们倒地",
-        "吴用羽扇一挥"
+        "杨志拔刀动作只出一半即被肌肉记忆强行克制",
+        "吴用嘴角微勾，眼中却无笑意，扇柄轻压刀背"
       ],
-      "camera_script": "环摇 快速剪辑·反应镜头 吴用与众好汉假装抢酒喝，军士们纷纷倒地，计谋得逞",
       "end_credit": false
     },
     {
       "seq": 5,
       "shot_label": "镜05",
-      "act": "结局",
-      "scene": "黄泥岗 · 夕阳",
-      "description": "吴用摇扇微笑，望着满载珠宝的车队消失在暮色中",
+      "act": "对峙",
+      "scene": "黄泥岗 · 酒桶旁",
+      "description": "🎬 【中景转全景】晁盖大步跨出，夺过酒瓢仰头痛饮，酒液顺下颌滴落。慢镜头捕捉酒珠飞溅，随后切入1秒聚义厅密谋的闪回画面，再切回正常速度。吴用暗中以指蘸药，指尖轻弹入另一桶。构图呈倒三角，重心稳固，侧逆光转为柔和漫反射，氛围由紧绷转向暗流涌动。",
       "timecode": {
-        "start": "03:50",
-        "end": "05:00"
+        "start": "03:30",
+        "end": "04:30"
       },
-      "music_cue": "胜利弦乐+渐弱",
-      "shot_type": "远景",
-      "camera_move": "缓缓拉远",
-      "pacing": "slow",
-      "color_palette": "夕阳橙金→暮色紫蓝",
+      "music_cue": "箫声悠长转入+水滴放大音效+弦乐渐强，情绪由紧绷转向释然与暗涌",
+      "shot_type": "中景→特写慢镜→全景",
+      "camera_move": "跟拍→慢镜→拉远",
+      "pacing": "slow→normal",
+      "color_palette": "琥珀酒色+汗湿肌肤高光+林间斑驳光影",
+      "camera_script": "中景跟拍晁盖夺瓢5秒→切入240fps慢镜头捕捉酒液滴落3秒→闪回切入密谋画面1秒→快切吴用指尖弹药特写1秒→镜头缓缓拉出全景展现众人反应10秒",
+      "duration": 60,
+      "emotion": "试探→瓦解",
+      "dialogue": [
+        {
+          "speaker": "晁盖",
+          "text": "军爷好生多心！这等烈日，若真有药，我弟兄七人岂不先倒？",
+          "style": "modern",
+          "voice_dir": "洪亮坦荡，掷地有声",
+          "emotion_mark": "豪迈/坦荡",
+          "subtext": "以身试毒，彻底瓦解戒心",
+          "timing_hint": "中速，重音落在‘先倒’"
+        }
+      ],
+      "performance_notes": [
+        "晁盖饮后抹嘴大笑，胸膛剧烈起伏",
+        "军士喉结上下滚动，眼神从警惕转为渴望"
+      ],
+      "end_credit": false
+    },
+    {
+      "seq": 6,
+      "shot_label": "镜06",
+      "act": "高潮",
+      "scene": "黄泥岗 · 松林深处",
+      "description": "🎬 【全景转特写快剪】军士们蜂拥抢酒，碗盏碰撞。白胜假意阻拦，吴用借机将药粉扫入桶中。慢镜头与正常速度交替：酒碗倾倒、军士仰头痛饮、瞳孔逐渐涣散、身躯如断线木偶般瘫软。光影骤然转暗，色调由暖金滑向冷青，氛围由狂乱急坠至死寂。",
+      "timecode": {
+        "start": "04:30",
+        "end": "05:20"
+      },
+      "music_cue": "急促打击乐爆发+陶埙低沉呜咽+衣物摩擦倒地声，情绪由狂喜急坠至掌控",
+      "shot_type": "全景→多机位快切→特写",
+      "camera_move": "手持晃动→俯冲→定格",
+      "pacing": "fast",
+      "color_palette": "暖金转冷青+高对比暗角+尘埃漂浮",
+      "camera_script": "全景手持跟拍抢酒混乱5秒→俯冲镜头捕捉吴用下药动作3秒→快速交叉剪辑三人倒地过程（各2秒）→急停定格于吴用合扇瞬间4秒",
+      "duration": 50,
+      "emotion": "狂乱→死寂→掌控",
       "dialogue": [
         {
           "speaker": "吴用",
-          "text": "不费一兵一卒，十万贯生辰纲，尽入我梁山之手。",
-          "style": "classical",
-          "voice_dir": "得意从容",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "不费一兵一卒，十万贯生辰纲，尽入我梁山之...",
-          "timing_hint": "缓速+停顿2s"
+          "text": "别怪吴某心狠，这世道逼人太甚，只能各凭本事了。",
+          "style": "modern",
+          "voice_dir": "冷峻低语，气息平稳",
+          "emotion_mark": "悲悯/冷酷",
+          "subtext": "替天行道，不问手段",
+          "timing_hint": "极缓，字字清晰"
         }
       ],
-      "emotion": "得意→从容",
-      "duration": 70,
-      "end_credit": "羽扇轻摇定乾坤，从此梁山多了一个「智多星」。",
       "performance_notes": [
-        "吴用摇扇远望",
-        "车队消失在暮色中"
+        "吴用收扇时手腕微转，动作干净利落",
+        "倒地军士手指痉挛抓地，随后彻底松弛"
       ],
-      "camera_script": "缓缓拉远 远景 吴用摇扇微笑，望着满载珠宝的车队消失在暮色中"
+      "end_credit": false
+    },
+    {
+      "seq": 7,
+      "shot_label": "镜07",
+      "act": "结局",
+      "scene": "黄泥岗 · 暮色",
+      "description": "🎬 【大远景】残阳如血，将黄泥岗染成暗紫与金红交织的画卷。七辆独轮车满载生辰纲，缓缓隐入蜿蜒官道。吴用独立坡顶，羽扇垂落，背影孤寂而挺拔。长镜头缓缓拉远，天地苍茫，人物渐成剪影，光影由暖转冷，氛围苍凉悠远。",
+      "timecode": {
+        "start": "05:20",
+        "end": "06:20"
+      },
+      "music_cue": "洞箫独奏渐起+大提琴长音铺底+风声掠过草叶，情绪苍凉悠远",
+      "shot_type": "远景→大远景",
+      "camera_move": "缓拉→升空",
+      "pacing": "slow",
+      "color_palette": "暗紫+金红+剪影黑",
+      "camera_script": "中景固定5秒展现车队远去→镜头匀速后拉升高15秒→穿越云层展现连绵山脉与蜿蜒车队→画面渐暗至黑屏10秒",
+      "duration": 60,
+      "emotion": "苍茫→余韵",
+      "dialogue": [
+        {
+          "speaker": "吴用",
+          "text": "十万贯金珠，不过换得梁山泊一夜秋风。智取，从来不在局内，而在局外。",
+          "style": "classical",
+          "voice_dir": "淡然超脱，声线渐远",
+          "emotion_mark": "释然/苍凉",
+          "subtext": "看透劫掠本质，江湖路远",
+          "timing_hint": "极缓，尾音随风消散"
+        }
+      ],
+      "performance_notes": [
+        "吴用微微仰头闭目，任晚风吹动衣摆",
+        "羽扇自然垂落，指尖松开扇柄微颤"
+      ],
+      "end_credit": "黑屏渐显字幕：羽扇轻摇定乾坤，从此梁山多了一个「智多星」。"
     }
   ],
   "_version_history": [
@@ -1243,6 +1659,168 @@
           "classical_pct": 52,
           "modern_pct": 48,
           "ratio_label": "⚔ 52% 古典 / 48% 现代"
+        }
+      }
+    },
+    {
+      "episode": "鲁提辖拳打镇关西",
+      "timestamp": "2026-05-03T09:52:02",
+      "feedback_type": "剧本质量",
+      "feedback_desc": "升级为07镜工业级分镜，电影级描述+voice_dir+镜头运动+终场字幕",
+      "shots_before": 5,
+      "shots_after": 7,
+      "changes": {
+        "shots_delta": 2,
+        "before_stats": {
+          "classical_chars": 74,
+          "modern_chars": 43,
+          "total_chars": 117,
+          "classical_pct": 63,
+          "modern_pct": 37,
+          "ratio_label": "⚔ 63% 古典 / 37% 现代"
+        },
+        "after_stats": {
+          "classical_chars": 80,
+          "modern_chars": 173,
+          "total_chars": 253,
+          "classical_pct": 32,
+          "modern_pct": 68,
+          "ratio_label": "⚔ 32% 古典 / 68% 现代"
+        }
+      }
+    },
+    {
+      "episode": "鲁提辖拳打镇关西",
+      "timestamp": "2026-05-03T09:53:33",
+      "feedback_type": "剧本质量",
+      "feedback_desc": "",
+      "shots_before": 5,
+      "shots_after": 7,
+      "changes": {
+        "shots_delta": 2,
+        "before_stats": {
+          "classical_chars": 74,
+          "modern_chars": 43,
+          "total_chars": 117,
+          "classical_pct": 63,
+          "modern_pct": 37,
+          "ratio_label": "⚔ 63% 古典 / 37% 现代"
+        },
+        "after_stats": {
+          "classical_chars": 110,
+          "modern_chars": 232,
+          "total_chars": 342,
+          "classical_pct": 32,
+          "modern_pct": 68,
+          "ratio_label": "⚔ 32% 古典 / 68% 现代"
+        }
+      }
+    },
+    {
+      "episode": "鲁智深倒拔垂杨柳",
+      "timestamp": "2026-05-03T10:00:29",
+      "feedback_type": "剧本质量",
+      "feedback_desc": "升级为07镜工业级分镜，电影级描述+voice_dir+镜头运动+终场字幕 [质量检查不通过:镜04 无对白] [质量检查不通过:镜04 无对白]",
+      "shots_before": 5,
+      "shots_after": 7,
+      "changes": {
+        "shots_delta": 2,
+        "before_stats": {
+          "classical_chars": 32,
+          "modern_chars": 36,
+          "total_chars": 68,
+          "classical_pct": 47,
+          "modern_pct": 53,
+          "ratio_label": "⚔ 47% 古典 / 53% 现代"
+        },
+        "after_stats": {
+          "classical_chars": 62,
+          "modern_chars": 94,
+          "total_chars": 156,
+          "classical_pct": 40,
+          "modern_pct": 60,
+          "ratio_label": "⚔ 40% 古典 / 60% 现代"
+        }
+      }
+    },
+    {
+      "episode": "宋江杀阎婆惜",
+      "timestamp": "2026-05-03T10:02:49",
+      "feedback_type": "剧本质量",
+      "feedback_desc": "升级为07镜工业级分镜，电影级描述+voice_dir+镜头运动+终场字幕 [质量检查不通过:镜04 无对白] [质量检查不通过:镜04 无对白]",
+      "shots_before": 5,
+      "shots_after": 7,
+      "changes": {
+        "shots_delta": 2,
+        "before_stats": {
+          "classical_chars": 28,
+          "modern_chars": 37,
+          "total_chars": 65,
+          "classical_pct": 43,
+          "modern_pct": 57,
+          "ratio_label": "⚔ 43% 古典 / 57% 现代"
+        },
+        "after_stats": {
+          "classical_chars": 50,
+          "modern_chars": 100,
+          "total_chars": 150,
+          "classical_pct": 33,
+          "modern_pct": 67,
+          "ratio_label": "⚔ 33% 古典 / 67% 现代"
+        }
+      }
+    },
+    {
+      "episode": "李逵沂岭杀四虎",
+      "timestamp": "2026-05-03T10:05:22",
+      "feedback_type": "剧本质量",
+      "feedback_desc": "升级为07镜工业级分镜，电影级描述+voice_dir+镜头运动+终场字幕 [质量检查不通过:镜04 无对白] [质量检查不通过:镜04 无对白]",
+      "shots_before": 5,
+      "shots_after": 7,
+      "changes": {
+        "shots_delta": 2,
+        "before_stats": {
+          "classical_chars": 23,
+          "modern_chars": 24,
+          "total_chars": 47,
+          "classical_pct": 49,
+          "modern_pct": 51,
+          "ratio_label": "⚔ 49% 古典 / 51% 现代"
+        },
+        "after_stats": {
+          "classical_chars": 28,
+          "modern_chars": 100,
+          "total_chars": 128,
+          "classical_pct": 22,
+          "modern_pct": 78,
+          "ratio_label": "⚔ 22% 古典 / 78% 现代"
+        }
+      }
+    },
+    {
+      "episode": "智取生辰纲",
+      "timestamp": "2026-05-03T10:08:39",
+      "feedback_type": "剧本质量",
+      "feedback_desc": "升级为07镜工业级分镜，电影级描述+voice_dir+镜头运动+终场字幕 [质量检查不通过:镜04 无对白] [质量检查不通过:镜04 无对白]",
+      "shots_before": 5,
+      "shots_after": 7,
+      "changes": {
+        "shots_delta": 2,
+        "before_stats": {
+          "classical_chars": 43,
+          "modern_chars": 54,
+          "total_chars": 97,
+          "classical_pct": 44,
+          "modern_pct": 56,
+          "ratio_label": "⚔ 44% 古典 / 56% 现代"
+        },
+        "after_stats": {
+          "classical_chars": 64,
+          "modern_chars": 126,
+          "total_chars": 190,
+          "classical_pct": 34,
+          "modern_pct": 66,
+          "ratio_label": "⚔ 34% 古典 / 66% 现代"
         }
       }
     }
