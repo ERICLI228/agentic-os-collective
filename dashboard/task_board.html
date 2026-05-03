@@ -1413,7 +1413,13 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
    var vcBanner = document.getElementById('version-check');
    var appTitle = document.getElementById('appTitle');
    if (envBadge) {
-     if (location.port === '5002' || location.port === '5005') {
+     if (location.port === '5005') {
+       envBadge.textContent = '（开发）';
+       envBadge.style.background = '#7c3aed';
+       envBadge.style.color = '#c4b5fd';
+       if (appTitle) appTitle.textContent = 'Agentic OS 指挥中心（开发）';
+       if (vcBanner) vcBanner.style.background = '#7c3aed';
+     } else if (location.port === '5002') {
        envBadge.textContent = '（测试）';
        envBadge.style.background = '#b45309';
        envBadge.style.color = '#fde68a';

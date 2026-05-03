@@ -9,21 +9,41 @@
 > **所有代码、PRD、Wiki、Obsidian 的修改必须在测试环境中进行。**
 > 正式环境仅供人工审核后的单向同步。此规则优先级高于一切任务描述。
 
-### AI 工作流
+### AI 工作流（三环境）
 
 ```
-用户指令 → /tmp/agentic-os-test (测试环境 :5002)
-                ↓
-        修改代码 + 更新测试PRD + 测试Wiki
-                ↓
-        自验通过 → bash scripts/ensure-sync.sh
-                ↓
-        呈现变更给用户 → 等待人工审核
-                ↓
-  ⛔ AI 在此停止 ⛔ ← 用户明确说"批准同步"
-                ↓
-   sync-test-to-prod.sh → 正式环境 :5001
+                           ┌───────────────────────┐
+用户指令 →                 │  DEV (:5005)          │
+                           │  /tmp/agentic-os-dev  │
+                           │  dev 分支              │  ← 大改造/审计项/实验
+                           │  （开发）标签 紫色     │
+                           └───────┬───────────────┘
+                                   │ bash scripts/dev-to-test.sh
+                                   ▼
+                           ┌───────────────────────┐
+                           │  TEST (:5002)         │
+                           │  /tmp/agentic-os-test │
+                           │  test 分支             │  ← 功能验证/小迭代
+                           │  （测试）标签 橙色     │
+                           └───────┬───────────────┘
+                                   │ 人工审核 ✓
+                                   │ bash scripts/sync-test-to-prod.sh
+                                   ▼
+                           ┌───────────────────────┐
+                           │  PROD (:5001)         │
+                           │  ~/agentic-os-collective│
+                           │  main 分支             │  ← 正式环境
+                           │  （正式）标签 绿色     │
+                           └───────────────────────┘
 ```
+
+### 环境速查
+
+| 环境 | 端口 | 目录 | Git分支 | 标签色 | 用途 |
+|------|:--:|------|---------|:--:|------|
+| 开发 | :5005 | /tmp/agentic-os-dev | dev | 🟣 紫 | 大改造、14项审计、架构变更 |
+| 测试 | :5002 | /tmp/agentic-os-test | test | 🟠 橙 | 功能迭代、验证 |
+| 正式 | :5001 | ~/agentic-os-collective | main | 🟢 绿 | 用户使用
 
 ### 允许操作（测试环境 /tmp/agentic-os-test/）
 - ✅ 修改 `dashboard/task_board.html`
@@ -55,11 +75,10 @@
 | 步骤 | 命令/操作 | 验证 |
 |------|----------|------|
 | **1. 标注 PRD** | 编辑 `reports/PRD-v3.7.21.md`，新增版本条目（版本号/日期/修订人/内容摘要/环境），更新标题版本号 | `grep v3.7.XX reports/PRD-v3.7.21.md` 能找到本次版本 |
-| **2. Git 推送** | `git add -A && git commit -m "v3.7.XX: <摘要>" && git push origin test` (测试分支) | `git log -1` 显示本次 commit |
-| | 仅在用户批准同步后: `git push origin main` | |
-| **4. Wiki** | 追加 `wiki/log.md` + 更新 `wiki/index.md`（total_pages/最近新增）| `tail -5 wiki/log.md` 显示本次条目 |
-| **5. 环境同步** | `bash scripts/ensure-sync.sh` (仅校验，不同步) | 输出 `✅ 全部 7 个文件已同步` |
-| | **不同步 → 人工审查后再执行 `sync-test-to-prod.sh`** | |
+| **2. Git 推送** | `git add -A && git commit -m "v3.7.XX: <摘要>" && git push origin dev` (开发分支) | `git log -1` |
+| | `bash scripts/dev-to-test.sh` 推送到 test 分支 | :5002 可验证 |
+| | 仅在用户批准后: `git push origin test` / `main` | |
+| **5. 环境同步** | `bash scripts/ensure-sync.sh --all` (三环境全量检查) | 三行全绿 |
 
 ### 协同规则 (OpenClaw ↔ OpenCode)
 - 双方**主动相互协助与验证测试**，任何一方完成修改后，另一方运行验证

@@ -1,11 +1,13 @@
 #!/bin/bash
-# ensure-sync.sh — 双向环境同步校验
-# 检查 /tmp/agentic-os-test 与 ~/agentic-os-collective 的关键文件是否一致
-# 用法: bash scripts/ensure-sync.sh
+# ensure-sync.sh — 三环境同步状态检查
+# check DEV↔TEST↔PROD 所有关键文件是否一致
+# 用法: bash scripts/ensure-sync.sh [--dev|--test|--prod|--all]
 
-PROD=~/agentic-os-collective
+set -e
+
+DEV=/tmp/agentic-os-dev
 TEST=/tmp/agentic-os-test
-DRIFT=0
+PROD=~/agentic-os-collective
 
 FILES=(
   dashboard/task_board.html
@@ -17,26 +19,46 @@ FILES=(
   shared/knowledge/wiki/index.md
 )
 
-for f in "${FILES[@]}"; do
-  p="$PROD/$f"
-  t="$TEST/$f"
-  if [ ! -f "$p" ]; then echo "  ⚠️  PROD missing: $f"; DRIFT=1; continue; fi
-  if [ ! -f "$t" ]; then echo "  ⚠️  TEST missing: $f"; DRIFT=1; continue; fi
-  p_md5=$(md5 -q "$p" 2>/dev/null)
-  t_md5=$(md5 -q "$t" 2>/dev/null)
-  if [ "$p_md5" != "$t_md5" ]; then
-    echo "  ❌ DRIFT: $f"
-    DRIFT=1
-  else
-    echo "  ✅ $f"
-  fi
-done
+check_pair() {
+  local A="$1" B="$2" label="$3" drift=0
+  for f in "${FILES[@]}"; do
+    local af="$A/$f" bf="$B/$f"
+    if [ ! -f "$af" ]; then echo "  ⚠️  MISSING $label-A: $f"; drift=1; continue; fi
+    if [ ! -f "$bf" ]; then echo "  ⚠️  MISSING $label-B: $f"; drift=1; continue; fi
+    local a_md5=$(md5 -q "$af" 2>/dev/null)
+    local b_md5=$(md5 -q "$bf" 2>/dev/null)
+    if [ "$a_md5" != "$b_md5" ]; then
+      echo "  ❌ DRIFT: $f"
+      drift=1
+    else
+      echo "  ✅ $f"
+    fi
+  done
+  return $drift
+}
 
-if [ $DRIFT -eq 0 ]; then
-  echo ""
-  echo "✅ 全部 ${#FILES[@]} 个文件已同步"
-else
-  echo ""
-  echo "❌ 存在不同步文件，请运行: cp ~/agentic-os-collective/<file> /tmp/agentic-os-test/<file>"
-  exit 1
-fi
+# Default: check test↔prod
+PAIR="${1:---prod}"
+case "$PAIR" in
+  --dev)
+    echo "🔧 DEV ↔ TEST 同步状态"
+    check_pair "$DEV" "$TEST" "DEV↔TEST" && echo "  ✅ 同步" || echo "  ❌ 不同步"
+    ;;
+  --test|--prod)
+    echo "🧪 TEST ↔ 🚀 PROD 同步状态"
+    check_pair "$TEST" "$PROD" "TEST↔PROD" && echo "  ✅ 同步" || echo "  ❌ 不同步"
+    ;;
+  --all)
+    echo "🔧 DEV ↔ TEST 同步状态"
+    check_pair "$DEV" "$TEST" "DEV↔TEST" && echo "  ✅ 同步" || echo "  ❌ 不同步"
+    echo ""
+    echo "🧪 TEST ↔ 🚀 PROD 同步状态"
+    check_pair "$TEST" "$PROD" "TEST↔PROD" && echo "  ✅ 同步" || echo "  ❌ 不同步"
+    ;;
+  *)
+    echo "用法: ensure-sync.sh [--dev|--test|--prod|--all]"
+    echo "  --dev  检查 DEV ↔ TEST"
+    echo "  --test 检查 TEST ↔ PROD (默认)"
+    echo "  --all  检查全链路 DEV↔TEST↔PROD"
+    ;;
+esac
