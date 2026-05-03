@@ -512,6 +512,18 @@ def rewrite_episode_to_json(ep_title, storyboard):
     return len(storyboard)
 
 
+def get_version_history(ep_title=None):
+    """v3.10: 读取 _version_history 版本变更记录"""
+    import json as _json
+    ep_data_path = Path(__file__).resolve().parent / "episode_templates.json"
+    if not ep_data_path.exists():
+        return []
+    data = _json.loads(ep_data_path.read_text(encoding="utf-8"))
+    history = data.get("_version_history", [])
+    if ep_title:
+        history = [h for h in history if h.get("episode") == ep_title]
+    return sorted(history, key=lambda h: h.get("timestamp", ""), reverse=True)
+
 
 def update_episode(ep_num, data):
     """更新单集剧本"""

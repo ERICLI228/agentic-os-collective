@@ -1900,6 +1900,7 @@ async function renderDM0(detail,ms){
         <span class="ep-actions">
           <button class="mini-btn" onclick="event.stopPropagation();downloadScript('${epNum}','txt')" title="导出TXT">TXT</button>
           <button class="mini-btn" onclick="event.stopPropagation();downloadScript('${epNum}','srt')" title="导出字幕">SRT</button>
+          <button class="mini-btn" onclick="event.stopPropagation();dm0ShowCompare('${epNum}')" title="版本对比" style="color:#f59e0b;border-color:#f59e0b">📊 对比</button>
         </span>
         <span class="ep-toggle">&#9654;</span>
       </div>
@@ -5582,6 +5583,68 @@ function dm0RatioRewrite(epListStr, targetPct) {
       setTimeout(pollStatus, 1000);
     })
     .catch(function(e){log('❌ 异常: '+e.message, '#ef4444');});
+}
+
+// ===== v3.10: DM-0 版本对比面板 =====
+async function dm0ShowCompare(epNum) {
+  var overlay = document.createElement('div');
+  overlay.id = 'dm0-compare-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center';
+  overlay.innerHTML = '<div style="background:#1a1d27;border:1px solid #334;border-radius:10px;padding:20px;width:90vw;max-width:1100px;max-height:90vh;overflow-y:auto">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">' +
+    '<span style="color:#e4e6eb;font-size:14px;font-weight:600">📊 EP' + epNum + ' 版本对比</span>' +
+    '<button class="btn btn-cancel" onclick="document.getElementById(\'dm0-compare-overlay\').remove()">✕ 关闭</button></div>' +
+    '<div id="dm0-compare-body" style="color:#888;text-align:center;padding:20px">⏳ 加载中...</div></div>';
+  document.body.appendChild(overlay);
+  var body = document.getElementById('dm0-compare-body');
+  try {
+    var [sr, vr] = await Promise.all([
+      fetch('/api/script/' + parseInt(epNum) + '/rich'),
+      fetch('/api/script/' + epNum + '/versions')
+    ]);
+    var sd = await sr.json();
+    var vd = await vr.json();
+    var shots = sd.storyboard || [];
+    var versions = vd.versions || [];
+    var html = '';
+    // Current version stats
+    var ds = sd.dialogue_stats || {};
+    html += '<div style="margin-bottom:12px"><span style="color:#93c5fd;font-size:12px">当前版本: ' + shots.length + '镜</span>' +
+      ' | <span style="color:#ef4444">古典' + (ds.classical_pct||0) + '%</span>' +
+      ' | <span style="color:#3b82f6">现代' + (ds.modern_pct||0) + '%</span></div>';
+    // Shot list with badges
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">';
+    shots.forEach(function(sh,si){
+      var actColors = {开场:'#22c55e',发展:'#3b82f6',转折:'#f59e0b',冲突:'#ef4444',对峙:'#f97316',高潮:'#dc2626',结局:'#8b5cf6'};
+      var tc = sh.timecode || {};
+      var music = sh.music_cue || '';
+      var classical = (sh.dialogue||[]).filter(function(d){return d.style==='classical';}).length;
+      var modern = (sh.dialogue||[]).filter(function(d){return d.style==='modern';}).length;
+      html += '<div style="background:#111827;border-left:3px solid '+(actColors[sh.act]||'#555')+';border-radius:4px;padding:8px">' +
+        '<div style="font-size:11px;font-weight:600;color:#e4e6eb;margin-bottom:2px">' + (sh.shot_label||'镜'+('0'+sh.seq).slice(-2)) + ' | <span style="color:'+(actColors[sh.act]||'#888')+'">' + (sh.act||'') + '</span></div>' +
+        '<div style="font-size:9px;color:#777;margin-bottom:2px">' + (tc.start||'00:00') + '→' + (tc.end||'01:00') + ' | ' + (sh.shot_type||'') + ' | ' + (sh.camera_move||'') + '</div>' +
+        '<div style="font-size:10px;color:#a5b4c4;margin:4px 0">' + (sh.description||sh.scene||'') + '</div>' +
+        '<div style="display:flex;gap:6px;font-size:8px"><span style="color:#ef4444">⚔classical:'+classical+'</span><span style="color:#3b82f6">💬modern:'+modern+'</span>' +
+        ((sh.dialogue||[]).every(function(d){return d.voice_dir;})?'<span style="color:#22c55e">✅voice_dir</span>':'<span style="color:#ef4444">⚠no voice</span>') + '</div>' +
+        '</div>';
+    });
+    html += '</div>';
+    // Version history
+    if (versions.length) {
+      html += '<div style="border-top:1px solid rgba(255,255,255,.06);padding-top:12px;margin-top:8px">' +
+        '<span style="color:#f59e0b;font-size:12px;font-weight:600">📋 版本历史 (' + versions.length + '次</span>)</div>';
+      versions.forEach(function(v,vi){
+        html += '<div style="background:#111827;border:1px solid #334;border-radius:4px;padding:8px;margin:6px 0">' +
+          '<div style="font-size:10px;color:#93c5fd;margin-bottom:2px">v'+(versions.length-vi)+' | '+v.timestamp+' | '+v.feedback_type+'</div>' +
+          '<div style="font-size:9px;color:#777">'+v.feedback_desc+'</div>' +
+          '<div style="font-size:9px;color:#22c55e;margin-top:2px">镜数: '+v.shots_before+'→'+v.shots_after+' ('+(v.shots_after-v.shots_before > 0 ? '+' : '')+(v.shots_after-v.shots_before)+')</div>' +
+          '</div>';
+      });
+    }
+    body.innerHTML = html || '<div style="color:#555">无数据</div>';
+  } catch(e) {
+    body.innerHTML = '<div style="color:#ef4444">加载失败: ' + e.message + '</div>';
+  }
 }
 
 // ================================================================

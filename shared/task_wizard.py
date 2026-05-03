@@ -703,6 +703,21 @@ def api_script_stats():
         return jsonify({"error": str(e)}), 500
 
 
+# ===== v3.10: /api/script/<ep>/versions — 版本变更历史 =====
+@app.route('/api/script/<ep_num>/versions', methods=['GET'])
+def api_script_versions(ep_num):
+    """v3.10: 版本变更历史 — 回流记录"""
+    try:
+        from script_manager import get_version_history, get_episode_detail
+        detail = get_episode_detail(str(ep_num).zfill(2))
+        if not detail:
+            return jsonify({"error": "Episode not found"}), 404
+        history = get_version_history(detail.get("title", ""))
+        return jsonify({"episode": detail["title"], "versions": history, "total": len(history)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/api/character/<char_name>', methods=['GET', 'POST'])
 def api_character_detail(char_name):
     """角色设计查看/修改 — 支持完整角色档案 (v3.6.7)"""
