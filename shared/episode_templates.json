@@ -356,280 +356,300 @@
       "seq": 1,
       "shot_label": "镜01",
       "act": "开场",
-      "scene": "沧州草料场外 · 黄昏",
-      "description": "大雪纷飞，林冲肩扛长枪，枪挑酒葫芦，在风雪中缩颈而行",
+      "scene": "沧州草料场外·黄昏",
+      "description": "🎬 【大远景】铅灰色天幕低垂，狂风卷起雪沫如刀割过荒原。林冲孤影立于草料场外，长枪斜挑酒葫芦，蓑衣积雪半融。镜头自远山缓推至人物中景，冷青色调中仅余枪缨暗红一点。",
       "timecode": {
         "start": "00:00",
-        "end": "00:45"
+        "end": "00:52"
       },
-      "music_cue": "风雪声+低沉弦乐渐入",
-      "shot_type": "远景",
-      "camera_move": "镜头推进",
+      "music_cue": "风雪呼啸底噪+低音大提琴持续音铺垫苍凉",
+      "shot_type": "大远景→中景",
+      "camera_move": "缓推→水平跟拍",
       "pacing": "slow",
-      "color_palette": "青灰冷调",
+      "color_palette": "青灰+暗银+枪缨朱红",
+      "camera_script": "大远景3秒建立空间→慢推12秒至中景→跟拍林冲踏雪前行8秒→镜头随其喘息微颤推至面部特写",
+      "duration": 52,
+      "emotion": "苍凉/隐忍",
       "dialogue": [
         {
           "speaker": "林冲",
-          "text": "想我林冲，空有一身武艺，却落得个脸上刺字、发配充军的下场……这天道，当真容不得一个良善之人吗？",
+          "text": "八十万禁军教头，如今倒成了个刺配沧州、看守草场的囚徒。",
           "style": "classical",
-          "voice_dir": "气声+胸腔共鸣",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "想我林冲，空有一身武艺，却落得个脸上刺字...",
-          "timing_hint": "缓速+停顿2s"
+          "voice_dir": "气声裹挟风雪，喉结微动",
+          "emotion_mark": "自嘲/悲怆",
+          "subtext": "昔日荣光尽碎，尊严被碾入泥雪",
+          "timing_hint": "缓速，字间留白2秒"
         },
         {
           "speaker": "老军",
-          "text": "林教头！这大雪天你往哪儿去？前面五里地有个酒馆，去打点酒暖暖身子吧。",
+          "text": "教头！前头五里地有处酒肆，打碗热酒暖暖身子再回吧！",
           "style": "modern",
-          "voice_dir": "日常语速",
-          "emotion_mark": "自然/真挚",
-          "subtext": "林教头！这大雪天你往哪儿去？前面五里地有...",
-          "timing_hint": "常速"
+          "voice_dir": "粗粝嗓门穿透风雪，带关切",
+          "emotion_mark": "质朴/担忧",
+          "subtext": "底层人对落魄者的本能同情",
+          "timing_hint": "中速，尾音上扬"
         }
       ],
-      "emotion": "沉郁→孤独",
-      "duration": 45,
       "performance_notes": [
-        "林冲回头看一眼草料场",
-        "老军离去，镜头留在林冲背影"
+        "林冲握枪指节因用力泛白，雪落眉梢不拂",
+        "转身时蓑衣下摆扫开积雪，留半道拖痕"
       ],
-      "camera_script": "镜头推进 远景 大雪纷飞，林冲肩扛长枪，枪挑酒葫芦，在风雪中缩颈而行",
       "end_credit": false
     },
     {
       "seq": 2,
       "shot_label": "镜02",
       "act": "发展",
-      "scene": "小酒馆内 · 夜",
-      "description": "林冲独坐角落饮酒。邻桌酒客低声议论陆谦来沧州的消息",
+      "scene": "野酒肆内·夜",
+      "description": "🎬 【中景】昏黄油灯摇曳，酒客围坐粗木桌旁。林冲独踞暗角，斗笠压眉。镜头自柜台摇至邻桌，暖黄光晕中酒客交头接耳，林冲半隐于阴影。",
       "timecode": {
-        "start": "00:45",
-        "end": "01:45"
+        "start": "00:52",
+        "end": "01:48"
       },
-      "music_cue": "杯盏声铺垫+不安弦乐",
-      "shot_type": "内景+特写",
-      "camera_move": "摇镜→推镜",
+      "music_cue": "粗瓷杯碰撞声+中阮拨弦制造不安节奏",
+      "shot_type": "中景→特写",
+      "camera_move": "横摇→推镜",
       "pacing": "normal",
-      "color_palette": "酒馆暖黄",
+      "color_palette": "暖黄灯光+暗影青灰",
+      "camera_script": "横摇6秒掠过酒客→推镜8秒至林冲握杯手部→快速切至邻桌酒客面部→回拉至林冲侧脸特写",
+      "duration": 56,
+      "emotion": "警觉→暗涌",
       "dialogue": [
         {
           "speaker": "酒客甲",
-          "text": "听说了吗？陆谦那厮也来沧州了。",
+          "text": "东京来的差官昨儿住进驿站，领头的姓陆！",
           "style": "modern",
-          "voice_dir": "压低声音",
-          "emotion_mark": "自然/真挚",
-          "subtext": "听说了吗？陆谦那厮也来沧州了。",
-          "timing_hint": "常速"
-        },
-        {
-          "speaker": "酒客乙",
-          "text": "他来做什么？莫不是……东京那边的事还没完？",
-          "style": "modern",
-          "voice_dir": "紧张",
-          "emotion_mark": "自然/真挚",
-          "subtext": "他来做什么？莫不是……东京那边的事还没完...",
-          "timing_hint": "常速"
+          "voice_dir": "压低嗓音，气息急促",
+          "emotion_mark": "神秘/紧张",
+          "subtext": "危险逼近的预兆",
+          "timing_hint": "快语速，尾音骤收"
         },
         {
           "speaker": "林冲",
-          "text": "掌柜的，借问一声，那陆谦……",
-          "style": "modern",
-          "voice_dir": "克制",
-          "emotion_mark": "自然/真挚",
-          "subtext": "掌柜的，借问一声，那陆谦……",
-          "timing_hint": "常速"
-        },
-        {
-          "speaker": "掌柜",
-          "text": "客官别问，小的什么都不知道。",
-          "style": "modern",
-          "voice_dir": "躲闪",
-          "emotion_mark": "自然/真挚",
-          "subtext": "客官别问，小的什么都不知道。",
-          "timing_hint": "常速"
+          "text": "陆……谦？",
+          "style": "classical",
+          "voice_dir": "气音骤紧，酒杯轻磕桌面",
+          "emotion_mark": "震惊/隐痛",
+          "subtext": "旧日兄弟成催命符",
+          "timing_hint": "一字一顿，停顿3秒"
         }
       ],
-      "emotion": "警觉→不安",
-      "duration": 60,
       "performance_notes": [
-        "林冲握杯的手顿住，指节发白",
-        "起身冲出风雪"
+        "林冲拇指无意识摩挲杯沿，酒液微漾",
+        "闻“陆”字时瞳孔骤缩，呼吸停滞半拍"
       ],
-      "camera_script": "摇镜→推镜 内景+特写 林冲独坐角落饮酒。邻桌酒客低声议论陆谦来沧州的消息",
       "end_credit": false
     },
     {
       "seq": 3,
       "shot_label": "镜03",
-      "act": "冲突",
-      "scene": "草料场小屋 · 深夜",
-      "description": "林冲回来发现小屋被大雪压塌，风雪中辨认方位，远处火光隐现",
+      "act": "转折",
+      "scene": "草料场小屋外·深夜",
+      "description": "🎬 【全景】雪暴肆虐，茅屋已被积雪压垮，断椽刺出如兽骨。林冲踉跄奔至废墟，镜头俯拍其跪地刨雪，忽远处地平线泛起诡谲橙光。",
       "timecode": {
-        "start": "01:45",
-        "end": "03:00"
+        "start": "01:48",
+        "end": "02:45"
       },
-      "music_cue": "风雪声加剧+低音鼓点渐密",
-      "shot_type": "外景+快速剪辑",
-      "camera_move": "环摇→推镜",
+      "music_cue": "风雪狂啸+定音鼓闷击模拟心跳",
+      "shot_type": "全景→特写",
+      "camera_move": "俯拍→急推→环摇",
       "pacing": "normal→fast",
-      "color_palette": "深黑+火光橙红",
+      "color_palette": "雪夜幽蓝+火光暗橙",
+      "camera_script": "俯拍废墟5秒→急推至林冲面部3秒→环摇8秒捕捉远处火光→快切2秒闪回东京府邸大火（0.5秒）→回摇至林冲起身",
+      "duration": 57,
+      "emotion": "绝望→惊疑",
       "dialogue": [
         {
           "speaker": "林冲",
-          "text": "这……老天爷是要绝我林冲的活路吗？",
+          "text": "天要亡我……连这破屋也不留！",
           "style": "classical",
-          "voice_dir": "气声+悲愤",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "这……老天爷是要绝我林冲的活路吗？",
-          "timing_hint": "缓速+停顿2s"
+          "voice_dir": "嘶哑破音，风雪灌喉",
+          "emotion_mark": "悲愤/苍凉",
+          "subtext": "最后退路被毁的崩溃",
+          "timing_hint": "语速渐快，尾音撕裂"
         },
         {
           "speaker": "林冲",
-          "text": "我记得来的路上有座山神庙，先到那里避一夜雪吧。",
+          "text": "山神庙……先去那儿捱过今夜。",
           "style": "modern",
-          "voice_dir": "自语",
-          "emotion_mark": "自然/真挚",
-          "subtext": "我记得来的路上有座山神庙，先到那里避一夜...",
-          "timing_hint": "常速"
+          "voice_dir": "咬牙自语，气息凝白",
+          "emotion_mark": "强压慌乱",
+          "subtext": "本能寻找避难所",
+          "timing_hint": "短促，无停顿"
         }
       ],
-      "emotion": "震惊→警觉",
-      "duration": 75,
       "performance_notes": [
-        "林冲在雪中辨认方位",
-        "捡拾散落行李",
-        "远处一点火光在草料场方向隐现"
+        "刨雪时指甲翻裂渗血，浑然不觉",
+        "望见火光时肩背骤然绷紧如弓"
       ],
-      "camera_script": "环摇→推镜 外景+快速剪辑 林冲回来发现小屋被大雪压塌，风雪中辨认方位，远处火光隐现",
       "end_credit": false
     },
     {
       "seq": 4,
       "shot_label": "镜04",
-      "act": "高潮",
-      "scene": "山神庙内 · 深夜→山神庙外 · 雪夜",
-      "description": "林冲在庙中避雪，听到陆谦等人在庙外密谋烧死自己，草料场大火冲天",
+      "act": "冲突",
+      "scene": "山神庙内·深夜",
+      "description": "🎬 【特写】破败神像垂目，香案积灰。林冲倚门而立，门缝漏进风雪与暗光。镜头自其颤抖的手部上摇至面部，冷光切割出半明半暗的轮廓。",
       "timecode": {
-        "start": "03:00",
-        "end": "04:30"
+        "start": "02:45",
+        "end": "03:42"
       },
-      "music_cue": "神庙肃穆空灵→门外风雪低吼→鼓点炸裂→宏大悲怆配乐",
-      "shot_type": "内景↔外景·主观镜头",
-      "camera_move": "推镜+反应镜头+快速横摇",
+      "music_cue": "古埙空灵长音+弦乐群渐强压迫",
+      "shot_type": "内景特写",
+      "camera_move": "缓推→反应镜头",
       "pacing": "slow→climax",
-      "color_palette": "深黑→火光橙红→高对比青白",
+      "color_palette": "冷青灰+门缝暖光",
+      "camera_script": "特写门缝光影5秒→缓推至林冲侧脸8秒→切门外黑影晃动（主观镜头）→快速回拉至全景",
+      "duration": 57,
+      "emotion": "惊骇→冰寒",
       "dialogue": [
         {
           "speaker": "陆谦",
-          "text": "这把火放得干净。林冲那厮就算不被烧死，这看守草料场的死罪也算坐实了。",
+          "text": "这场雪下得妙！烧了草场，罪名自然落在他头上。",
           "style": "modern",
-          "voice_dir": "得意阴冷",
-          "emotion_mark": "自然/真挚",
-          "subtext": "这把火放得干净。林冲那厮就算不被烧死，这...",
-          "timing_hint": "常速"
-        },
-        {
-          "speaker": "差拨A",
-          "text": "陆大人好计策！高太尉那边……",
-          "style": "modern",
-          "voice_dir": "谄媚",
-          "emotion_mark": "自然/真挚",
-          "subtext": "陆大人好计策！高太尉那边……",
-          "timing_hint": "常速"
-        },
-        {
-          "speaker": "陆谦",
-          "text": "骨头捡两块回去交差就行。",
-          "style": "modern",
-          "voice_dir": "轻蔑",
-          "emotion_mark": "自然/真挚",
-          "subtext": "骨头捡两块回去交差就行。",
-          "timing_hint": "常速"
+          "voice_dir": "阴冷带笑，气息平稳",
+          "emotion_mark": "得意/狠毒",
+          "subtext": "阴谋得逞的从容",
+          "timing_hint": "慢速，字字清晰"
         },
         {
           "speaker": "林冲",
-          "text": "好，好，好……原来这天，从来就没打算给我留一条活路。",
+          "text": "好……好得很。原来这世道，专挑老实人往死里逼。",
           "style": "classical",
-          "voice_dir": "气声+燃尽一切的温度",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "好，好，好……原来这天，从来就没打算给我...",
-          "timing_hint": "缓速+停顿2s"
+          "voice_dir": "气声转厉，齿间摩擦",
+          "emotion_mark": "悲极生怒",
+          "subtext": "彻底斩断退路的决绝",
+          "timing_hint": "缓速，每字如钉"
         }
       ],
-      "emotion": "震惊→愤怒→冰寒彻骨",
-      "duration": 90,
       "performance_notes": [
-        "林冲在门后，脸上肌肉抽搐",
-        "眼神：震惊→痛苦→冰寒彻骨",
-        "庙门被猛然踹开",
-        "提枪而出，背后漫天大雪与火光"
+        "林冲咬破下唇，血珠顺下颌滑落",
+        "手指缓缓收紧枪杆，青筋暴起"
       ],
-      "camera_script": "推镜+反应镜头+快速横摇 内景↔外景·主观镜头 林冲在庙中避雪，听到陆谦等人在庙外密谋烧死自己，草料场大火冲",
       "end_credit": false
     },
     {
       "seq": 5,
       "shot_label": "镜05",
-      "act": "结局",
-      "scene": "山神庙外 · 雪夜终局",
-      "description": "林冲挺枪杀出，一枪刺倒差拨，陆谦奔逃被搠，伫立风雪中提枪走入雪夜",
+      "act": "对峙",
+      "scene": "山神庙外·雪夜",
+      "description": "🎬 【中景】庙门轰然洞开，风雪倒卷。林冲踏出阴影，枪尖点地。镜头自低角度仰拍，火光映亮其半边脸，另半边隐于黑暗。",
       "timecode": {
-        "start": "04:30",
-        "end": "05:30"
+        "start": "03:42",
+        "end": "04:28"
       },
-      "music_cue": "全部音效收束→寂静→炸裂鼓点→宏大悲怆配乐起→渐弱",
-      "shot_type": "快速动作→静止远景",
-      "camera_move": "摇镜→定格→拉远",
-      "pacing": "climax→slow",
-      "color_palette": "火光橙红→青白→淡出",
+      "music_cue": "琵琶轮指急雨+大鼓重击",
+      "shot_type": "外景中景",
+      "camera_move": "横摇→跟拍",
+      "pacing": "fast",
+      "color_palette": "火光橙红+雪夜青白",
+      "camera_script": "低角度仰拍门开3秒→横摇跟拍林冲步出5秒→快切陆谦惊退面部2秒→拉回中景对峙",
+      "duration": 46,
+      "emotion": "对峙/杀机",
+      "dialogue": [
+        {
+          "speaker": "陆谦",
+          "text": "林教头！你听我解释，都是高太尉……",
+          "style": "modern",
+          "voice_dir": "声调拔高，气息紊乱",
+          "emotion_mark": "恐惧/狡辩",
+          "subtext": "垂死挣扎的推诿",
+          "timing_hint": "语速极快，破音"
+        },
+        {
+          "speaker": "林冲",
+          "text": "东京城里，你我为兄弟时，可曾想过今日？",
+          "style": "classical",
+          "voice_dir": "平静如冰，胸腔共鸣",
+          "emotion_mark": "悲凉/决断",
+          "subtext": "斩断最后一丝情义",
+          "timing_hint": "缓速，字字如铁"
+        }
+      ],
+      "performance_notes": [
+        "林冲枪尖微抬，雪落枪缨不坠",
+        "陆谦后退时踩碎冰壳，踉跄半步"
+      ],
+      "end_credit": false
+    },
+    {
+      "seq": 6,
+      "shot_label": "镜06",
+      "act": "高潮",
+      "scene": "雪夜·终局",
+      "description": "🎬 【特写→全景】枪花抖落寒星，林冲踏步突刺。镜头慢镜捕捉枪尖贯胸瞬间，随即快切陆谦倒地、差拨奔逃被搠。火光映雪，血染白地。",
+      "timecode": {
+        "start": "04:28",
+        "end": "05:15"
+      },
+      "music_cue": "所有乐器骤停→只余风雪→炸裂鼓点+悲怆弦乐",
+      "shot_type": "动作特写→全景",
+      "camera_move": "慢镜→快切→拉远",
+      "pacing": "climax",
+      "color_palette": "血红+青白+火光",
+      "camera_script": "慢镜3秒捕捉刺击→快切2镜（陆谦倒地/差拨奔逃）→拉远全景5秒定格",
+      "duration": 47,
+      "emotion": "爆发→肃杀",
       "dialogue": [
         {
           "speaker": "林冲",
-          "text": "陆——谦——！",
+          "text": "天不容我，我便逆了这天！",
           "style": "classical",
-          "voice_dir": "声震雪夜",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "陆——谦——！",
-          "timing_hint": "缓速+停顿2s"
-        },
-        {
-          "speaker": "林冲",
-          "text": "我林冲从不曾负过谁。东京城里，你是我把酒言欢的兄弟。今日方知——这世上最毒的不是风雪，是人心。",
-          "style": "classical",
-          "voice_dir": "悲怆而决绝",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "我林冲从不曾负过谁。东京城里，你是我把酒...",
-          "timing_hint": "缓速+停顿2s"
+          "voice_dir": "声震雪夜，破音不哑",
+          "emotion_mark": "决绝/新生",
+          "subtext": "彻底与旧我决裂",
+          "timing_hint": "怒吼，尾音拉长"
         },
         {
           "speaker": "陆谦",
-          "text": "林教头饶命！都是高太尉让我做的——",
+          "text": "饶命……饶命啊！",
           "style": "modern",
-          "voice_dir": "恐惧奔逃",
-          "emotion_mark": "自然/真挚",
-          "subtext": "林教头饶命！都是高太尉让我做的——",
-          "timing_hint": "常速"
-        },
-        {
-          "speaker": "林冲",
-          "text": "天不容我，我便逆了这天。人若负我……我便弃了这世间。",
-          "style": "classical",
-          "voice_dir": "决绝+胸腔共鸣",
-          "emotion_mark": "沧桑/悲怆/决绝",
-          "subtext": "天不容我，我便逆了这天。人若负我……我便...",
-          "timing_hint": "缓速+停顿2s"
+          "voice_dir": "气绝前嘶喊，断续",
+          "emotion_mark": "绝望",
+          "subtext": "生命最后一刻的恐惧",
+          "timing_hint": "破碎，渐弱"
         }
       ],
-      "emotion": "爆发→决绝→新生",
-      "duration": 60,
-      "end_credit": "逼上梁山者，并非贪生之辈，而是连死都不由自己做主的人。",
       "performance_notes": [
-        "枪花一抖→差拨倒地",
-        "陆谦奔逃",
-        "一枪搠出，画面静止",
-        "远景拉远：林冲提枪走入茫茫雪夜"
+        "林冲收枪时血珠顺刃滴落，不拭",
+        "伫立风雪，胸膛剧烈起伏后渐平"
       ],
-      "camera_script": "摇镜→定格→拉远 快速动作→静止远景 林冲挺枪杀出，一枪刺倒差拨，陆谦奔逃被搠，伫立风雪中提枪走入"
+      "end_credit": false
+    },
+    {
+      "seq": 7,
+      "shot_label": "镜07",
+      "act": "结局",
+      "scene": "茫茫雪野·黎明前",
+      "description": "🎬 【大远景】雪势渐歇，天际泛鱼肚白。林冲提枪独行，背影融入苍茫。镜头自高处缓缓拉远，人物渐小，唯余雪原无垠。",
+      "timecode": {
+        "start": "05:15",
+        "end": "05:45"
+      },
+      "music_cue": "所有音效收束→独奏箫声苍凉→渐弱至无声",
+      "shot_type": "大远景",
+      "camera_move": "缓拉→定格",
+      "pacing": "slow",
+      "color_palette": "青白→淡灰→留白",
+      "camera_script": "高处俯拍拉远8秒→定格人物剪影5秒→渐隐至黑场",
+      "duration": 30,
+      "emotion": "苍凉→新生",
+      "dialogue": [
+        {
+          "speaker": "林冲",
+          "text": "从此江湖路远，再无东京林教头。",
+          "style": "classical",
+          "voice_dir": "气声渐远，无悲无喜",
+          "emotion_mark": "释然/决绝",
+          "subtext": "旧身份彻底死亡",
+          "timing_hint": "缓速，随风消散"
+        }
+      ],
+      "performance_notes": [
+        "步伐由沉转稳，雪痕渐深",
+        "枪尖斜指地面，不再高举"
+      ],
+      "end_credit": true
     }
   ],
   "宋江杀阎婆惜": [
@@ -1196,6 +1216,35 @@
         "车队消失在暮色中"
       ],
       "camera_script": "缓缓拉远 远景 吴用摇扇微笑，望着满载珠宝的车队消失在暮色中"
+    }
+  ],
+  "_version_history": [
+    {
+      "episode": "林冲风雪山神庙",
+      "timestamp": "2026-05-03T09:35:42",
+      "feedback_type": "剧本质量",
+      "feedback_desc": "需要07镜工业级分镜，电影级描述",
+      "shots_before": 5,
+      "shots_after": 7,
+      "changes": {
+        "shots_delta": 2,
+        "before_stats": {
+          "classical_chars": 170,
+          "modern_chars": 198,
+          "total_chars": 368,
+          "classical_pct": 46,
+          "modern_pct": 54,
+          "ratio_label": "⚔ 46% 古典 / 54% 现代"
+        },
+        "after_stats": {
+          "classical_chars": 115,
+          "modern_chars": 105,
+          "total_chars": 220,
+          "classical_pct": 52,
+          "modern_pct": 48,
+          "ratio_label": "⚔ 52% 古典 / 48% 现代"
+        }
+      }
     }
   ]
 }

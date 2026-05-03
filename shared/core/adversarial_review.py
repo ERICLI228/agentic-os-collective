@@ -281,7 +281,7 @@ class LLMClient:
             "max_tokens": max_tokens,
         }
 
-        resp = requests.post(url, headers=headers, json=payload, timeout=120)
+        resp = requests.post(url, headers=headers, json=payload, timeout=300)
         resp.raise_for_status()
         data = resp.json()
         return data["choices"][0]["message"]["content"]

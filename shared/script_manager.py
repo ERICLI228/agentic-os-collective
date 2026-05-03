@@ -364,41 +364,91 @@ def get_all_dialogue_stats():
     return result
 
 def build_rewrite_prompt(original_storyboard, ep_title, feedback_type, feedback_desc, params=None):
-    """v3.9: Build AI rewrite prompt — inject original storyboard + feedback + output constraints"""
+    """v3.9: Build AI rewrite prompt matching user's example quality — 07 shot industrial script"""
     import json as _json
 
     sb_text = _json.dumps(original_storyboard, ensure_ascii=False, indent=2)
+    orig_len = len(original_storyboard)
 
     type_hints = {
-        "剧情节奏": "以下改写要点：\n1. 如果冲突段只有1镜，必须扩展为2-3镜，增加对峙层级\n2. 新增1镜'归途/心理转变'过渡段\n3. 新增1镜环境/气氛渲染，增强宿命感\n4. 总镜头数+2~3镜\n5. 冲突段占总时长40%以上，高潮段占25%以上",
-        "剧本质量": "以下改写要点：\n1. 每镜 dialogue 数组至少2条，包含 classical 和 modern 两种风格\n2. 所有 dialogue 必须附带 voice_dir\n3. description 必须有电影级画面感（光影/构图/色彩）\n4. music_cue 必须具体到乐器+情绪\n5. 添加 camera_script 字段，描述推拉摇移和剪辑节奏",
-        "角色形象": "以下改写要点：\n1. 强化主角语言风格一致性\n2. classical 风格台词需有文学性但不拗口\n3. 添加 performance_notes 描述微表情和小动作\n4. 配角台词需服务于主角弧光",
-        "逻辑一致性": "以下改写要点：\n1. 检查时间线连续性\n2. 检查空间逻辑一致\n3. 检查情节因果关系\n4. 修复不符合原著人物性格的对白",
-        "配音": "以下改写要点：\n1. 对白字数控制在每镜100-250字\n2. 每句对白不超过50字\n3. voice_dir 必须明确标注情绪和气声要求\n4. 对话节奏错落有致",
+        "剧情节奏": "以下改写要点：\n1. 原"+str(orig_len)+"镜必须扩展为"+str(orig_len+2)+"镜\n2. 新增1镜'归途/心理转变'过渡段（act='转折'）\n3. 新增1镜环境/气氛渲染（act='开幕'或'插入'）\n4. 冲突段扩展为2镜对峙+高潮，占总时长40%以上\n5. 每镜必须标注 camera_script（推/拉/摇/移/跟/闪回）",
+        "剧本质量": "以下改写要点：\n1. description 必须是电影级画面描述（光影/构图/色彩/镜头运动）\n2. music_cue 具体到乐器+情绪（如'风雪底噪+单簧管哀伤主题'）\n3. camera_script 必须有推拉摇移和剪辑节奏描述\n4. 至少1镜包含闪回/回忆/快剪\n5. 终场镜标注 end_credit:true 并附字幕文案",
+        "角色形象": "以下改写要点：\n1. 强化主角语言风格一致性（林冲=隐忍刚毅，鲁智深=豪迈粗犷）\n2. classical 风格台词需有文学性但不拗口\n3. 添加 performance_notes 描述微表情和小动作",
+        "逻辑一致性": "以下改写要点：\n1. 时间线必须连续无跳跃\n2. 空间逻辑一致\n3. 情节因果递进\n4. 修复不符合原著人物性格的对白",
+        "配音": "以下改写要点：\n1. voice_dir 必须明确标注情绪和气声要求\n2. timing_hint 标注停顿/节奏\n3. 对话节奏错落有致，避免连续长句堆砌",
         "其他": "请基于以下反馈进行全面优化：\n"
     }
 
     hint = type_hints.get(feedback_type, type_hints["其他"])
     desc_line = "\n具体要求: " + feedback_desc if feedback_desc else ""
 
-    system_prompt = """你是一位资深影视编剧和分镜导演，精通中国古典文学改编。你的任务是根据反馈意见重写《水浒传》短剧单集的故事板。你必须严格输出JSON格式，每个分镜包含完整的15字段工业级数据。对白风格：30%半文半白古典风 + 70%现代白话。所有中文输出。"""
+    system_prompt = """你是一位资深影视编剧和分镜导演，精通中国古典文学改编，尤其擅长《水浒传》人物塑造和戏剧冲突设计。
 
-    user_prompt = f"""请重写{ep_title}的故事板。
+你的任务是根据用户反馈，重写短剧单集的故事板分镜脚本，产出AI数字漫画短剧可直接使用的工业级脚本。
 
-【原始分镜】
+【核心风格指引】
+1. 对白比例：30%半文半白古典风(style='classical') + 70%现代白话(style='modern')
+2. 古典台词必须有文学质感但不拗口；现代台词需自然有力量
+3. description 必须是电影级画面描述——必须有光影、构图、色彩、镜头运动
+4. camera_script 必须详细描述推拉摇移跟、闪回、快切、慢镜等
+5. music_cue 必须具体到乐器、情绪和音效
+
+【输出格式】严格的 JSON，每个镜必须15字段齐全。"""
+
+    target_shots = 7 if orig_len <= 5 else (orig_len + 2)
+    target_dur = target_shots * 55
+
+    user_prompt = f"""请重写{ep_title}的工业级故事板分镜脚本。
+
+【原始分镜（{orig_len}镜）】
 {sb_text}
 
 【反馈意见】
 类型: {feedback_type}
 {hint}{desc_line}
 
-【输出要求】
-1. 输出严格的 JSON 对象: {{\"storyboard\": [...]}}
-2. storyboard 每个元素必须包含: seq, shot_label, act, scene, description, timecode, music_cue, shot_type, camera_move, camera_script, pacing, color_palette, duration, emotion, dialogue, performance_notes, end_credit
-3. dialogue 每个元素包含: speaker, text, style(classical|modern), voice_dir, emotion_mark, subtext, timing_hint
-4. 总时长控制在360秒以内，至少包含2条 classical 风格对白"""
+【必须遵守的输出规范】
+1. 总镜头数: {target_shots}镜，总时长控制在{target_dur}秒以内
+2. 结构必须包含: 开场→发展→转折→冲突→对峙→高潮→结局（每镜分配5-6个act标签之一）
+3. 每镜 description 必须包含:
+   - 🎬 景别标注: 如'【远景】''【中景】''【特写】''【大远景】'等
+   - 镜头运动方向: 如'镜头推进至中景''旋转镜头''俯拍→水平跟拍'
+   - 画面氛围: 光影/色调/天气/时间
+4. camera_script 必须描述本镜的所有摄影动作: 推/拉/摇/移/跟/闪回/快切/慢镜
+5. dialogue 每条必须包含:
+   - speaker: 角色名
+   - text: 对白文本（classical风格用半文半白，modern风格用自然白话）
+   - style: 'classical' 或 'modern'
+   - voice_dir: 演技指导，如'(沧桑气声，气息凝白)' '(拱手，真诚)' '(冷笑)' '(哽咽)'
+   - emotion_mark: 情感标签，如'悲怆' '怒极' '隐忍' '平静下的爆发'
+   - subtext: 潜台词
+   - timing_hint: '停顿3秒' '语速渐快' '声渐低'等节奏标注
+6. performance_notes 至少2条：微表情、小动作、走位
+7. 冲突段和高潮段必须各有独立完整的情绪弧线
+8. end_credit: 最后一镜设为true，包含黑屏字幕文案
+9. 至少包含2条 classical 风格对白，至少2条配音导向明确的 voice_dir
 
-    return {"system": system_prompt, "user": user_prompt, "original_sb_len": len(original_storyboard)}
+【输出JSON示例格式】
+{{\"storyboard\": [{{\"seq\":1, \"shot_label\":\"镜01\", \"act\":\"开场\",
+\"scene\":\"沧州草料场外·黄昏\",
+\"description\":\"🎬 【远景】落日沉入铅灰色云层，沧州大地银装素裹。风雪如刀...\",
+\"timecode\":{{\"start\":\"00:00\",\"end\":\"00:45\"}},
+\"music_cue\":\"风雪底噪+单簧管哀伤主题\",
+\"shot_type\":\"远景\", \"camera_move\":\"推→中景\", \"pacing\":\"slow\",
+\"color_palette\":\"铅灰+银白+暗金\",
+\"camera_script\":\"远景3秒→慢推至中景8秒→跟拍林冲行走→推至面部特写\",
+\"duration\":45, \"emotion\":\"苍凉\",
+\"dialogue\":[
+  {{\"speaker\":\"林冲\",\"text\":\"人道我林冲是八十万禁军教头，风光无限。\",\"style\":\"classical\",\"voice_dir\":\"沧桑气声，气息凝白\",\"emotion_mark\":\"自嘲/悲凉\",\"subtext\":\"外表风光，内里落魄\",\"timing_hint\":\"缓速\"}},
+  {{\"speaker\":\"林冲\",\"text\":\"却不知……这天地间，原无一处可容落魄之人。\",\"style\":\"classical\",\"voice_dir\":\"气声渐弱\",\"emotion_mark\":\"悲怆\",\"subtext\":\"看透自己命运\",\"timing_hint\":\"停顿3秒→声渐低\"}}
+],
+\"performance_notes\":[\"眯眼迎风时右肩微沉\",\"提枪换手时停顿半秒\"],
+\"end_credit\":false}}
+]}}
+
+直接输出JSON，不要markdown代码块。"""
+
+    return {"system": system_prompt, "user": user_prompt, "original_sb_len": orig_len}
 
 
 def parse_ai_storyboard(ai_response_text):
