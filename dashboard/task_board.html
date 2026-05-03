@@ -1369,7 +1369,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <body>
 <div id="toast-container"></div>
 <div id="version-check" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#10b981;color:#fff;text-align:center;padding:6px 12px;font-size:13px;font-family:monospace;letter-spacing:0.5px;cursor:pointer" onclick="this.remove()">
-  🔄 v3.7.29 — DM-0剧集多选决策 (复选框+全选+已选N/6集+按钮联动)，点击关闭
+  🔄 v3.7.30 — DM-0全量同步管线 (决策→流水线轮询→原稿同步→故事板同步→TB/SRT联动)，点击关闭
 </div>
 
 <div class="topbar">
@@ -1455,7 +1455,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <script>
 // v3.7.17: cache check — if URL has old version param, redirect
 (function(){
-   var v = '3.7.29';
+   var v = '3.7.30';
    var q = location.search;
    var lsVer = localStorage.getItem('_dash_v');
    if ((q && q.indexOf('v=') >= 0 && q.indexOf('v='+v) < 0) || (lsVer && lsVer !== v)) {
@@ -5134,9 +5134,8 @@ async function decideDM0(action, selectedEps){
     toastMsg('请先在下方剧集列表中勾选目标剧集', 3000);
     return;
   }
-  selectedEps = selectedEps || [];
   const labels = {approved:'批准',rework:'回流重写',reject:'驳回'};
-  // S4-4: Show feedback form on reject/rework
+  // Show feedback form on reject/rework
   if (action === 'reject' || action === 'rework') {
     var fbTypes = ['剧本质量','角色形象','配音','剧情节奏','逻辑一致性','其他'];
     var fbDiv = document.createElement('div');
@@ -5146,23 +5145,153 @@ async function decideDM0(action, selectedEps){
       fbTypes.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('') + '</select>' +
       '<textarea id="fb-desc" placeholder="详细描述..." style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:5px;border-radius:4px;font-size:10px;min-height:60px;margin-bottom:8px"></textarea>' +
       '<div style="display:flex;gap:6px">' +
-      '<button class="btn btn-s" onclick="this.parentElement.parentElement.remove();submitFeedback();toastMsg(\'反馈已记录\',1500)">发送反馈</button>' +
+      '<button class="btn btn-s" onclick="this.parentElement.parentElement.remove();submitFeedback()">发送反馈</button>' +
       '<button class="btn btn-cancel" onclick="this.parentElement.parentElement.remove()">跳过</button></div>';
     document.body.appendChild(fbDiv);
   }
+
+  // ===== P1: 全量同步覆盖层 (refresh + re-render all dependent views) =====
+  // (approved also triggers a full refresh, but rework/reject include sync feedback)
+  var doFullSync = (action === 'rework' || action === 'reject');
+
   if(!confirm('确认「'+labels[action]+'」EP' + selectedEps.join(',EP') + '？此操作将触发 Agent 自动执行。')) return;
-  toastMsg('决策提交中...',3000);
+
+  var syncOverlay = null, syncLog = null;
+  if (doFullSync) {
+    syncOverlay = document.createElement('div');
+    syncOverlay.id = 'dm0-sync-overlay';
+    syncOverlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center';
+    syncOverlay.innerHTML = '<div style="background:#1a2535;border:1px solid #3b82f6;border-radius:12px;padding:20px;min-width:380px;max-width:500px">' +
+      '<div style="font-size:14px;font-weight:700;color:#93c5fd;margin-bottom:4px">🔄 全量同步中</div>' +
+      '<div style="font-size:10px;color:#64748b;margin-bottom:12px">Agent 正在执行「' + labels[action] + '」，同步到所有视图...</div>' +
+      '<div id="dm0-sync-log" style="max-height:260px;overflow-y:auto;font-size:9px;font-family:monospace;color:#8899aa;line-height:1.6;margin-bottom:8px"></div>' +
+      '<div style="height:3px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden"><div id="dm0-sync-bar" style="height:100%;width:0;background:#3b82f6;transition:width .3s;border-radius:3px"></div></div>' +
+      '</div>';
+    document.body.appendChild(syncOverlay);
+    syncLog = document.getElementById('dm0-sync-log');
+  }
+
+  function log(msg, clr) { if (syncLog) syncLog.insertAdjacentHTML('beforeend','<div style="color:'+(clr||'#8899aa')+'">'+msg+'</div>'); syncLog && (syncLog.scrollTop = syncLog.scrollHeight); }
+  function setBar(pct) { var b=document.getElementById('dm0-sync-bar'); if(b) b.style.width=pct+'%'; }
+
+  var cm = {approved:'approved',rework:'modify',reject:'rejected'};
+  log('📤 提交决策: '+labels[action]+' EP'+selectedEps.join(',EP'), '#93c5fd');
+  setBar(10);
+
   try{
-    const actionMap = {approved:'approved',rework:'modify',reject:'rejected'};
-    const r = await fetch('/api/decision',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({task_id:'TK-DM-PREP',action:actionMap[action],
+    var r = await fetch('/api/decision',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({task_id:'TK-DM-PREP',action:cm[action],
         reason:'DM-0审核决策',milestone_id:'DM-0',
         episodes: selectedEps})});
-    if(!r.ok){toastMsg('决策失败: HTTP '+r.status,3000);return;}
-    const okLabels={approved:'✅ 审核通过，Agent 将进入下一阶段',rework:'🔄 已触发回流重写，审核将自动重新运行',reject:'❌ 已驳回，任务挂起'};
-    toastMsg(okLabels[action],3000);
-    setTimeout(refresh,1500);
-  }catch(e){toastMsg('决策提交失败: '+e.message,3000)}
+    if(!r.ok){ log('❌ 决策提交失败: HTTP '+r.status, '#ef4444'); toastMsg('决策失败: HTTP '+r.status); return; }
+    log('✅ 决策已记录', '#4ade80');
+    setBar(25);
+
+    if (doFullSync) {
+      log('⏳ 等待 Agent 流水线完成...', '#fbbf24');
+      setBar(30);
+      // Poll for completion — wait up to 30s
+      var pollCount = 0, maxPolls = 60;
+      var done = false;
+      while (pollCount < maxPolls && !done) {
+        await new Promise(function(res){setTimeout(res, 500)});
+        pollCount++;
+        setBar(30 + Math.min(pollCount, 30));
+        try {
+          var sr = await fetch('/api/status');
+          var sd = await sr.json();
+          // Check if DM-0 milestone status changed
+          var ms = (sd.milestones || []).find(function(m){return m.ms_id==='DM-0'});
+          if (ms && (ms.status === 'done' || ms.status === 'approved' || ms.status === 'completed')) {
+            done = true;
+            log('✅ Agent 流水线已完成', '#4ade80');
+          }
+        } catch(e) {}
+      }
+      if (!done) log('⚠️ 流水线超时，强制同步中...', '#f59e0b');
+      setBar(70);
+
+      // Force invalidate script cache by adding recache param
+      log('📜 刷新 原稿 视图...', '#60a5fa');
+      setBar(80);
+      // Reload DM-0 data (left panel scripts)
+      try {
+        var scriptBox = document.getElementById('dm0-script-content');
+        if (scriptBox) {
+          var r2 = await fetch('/api/script?_='+Date.now());
+          var eps = await r2.json();
+          var elist = Array.isArray(eps) ? eps : (eps.episodes || []);
+          var allHtml = '';
+          for (var i=0; i<elist.length; i++) {
+            var ep = elist[i];
+            var en = ep.ep || ep.episode || ep.num || (i+1);
+            var epNum = String(en).padStart(2,'0');
+            var title = ep.title || ep.name || ('第'+parseInt(epNum)+'集');
+            allHtml += '<div style="border-bottom:1px solid rgba(255,255,255,.06);padding:10px 0"><strong style="color:#93c5fd;font-size:13px">EP'+epNum+' ' + title + '</strong>';
+            try {
+              var sr2 = await fetch('/api/script/'+parseInt(en)+'?_='+Date.now());
+              var sd2 = await sr2.json();
+              var shots = sd2.shots || sd2.storyboard || [];
+              if (shots.length) {
+                shots.forEach(function(sh,si){
+                  allHtml += '<div style="margin:6px 0 6px 12px;font-size:10px;color:#e4e6eb;line-height:1.5"><span style="color:#f59e0b">镜' + String(si+1).padStart(2,'0') + '.</span> ';
+                  if (sh.scene||sh.description||sh.desc) allHtml += '<span style="color:#a5b4c4">' + (sh.scene||sh.description||sh.desc) + '</span> ';
+                  if (sh.dialogue||sh.lines) allHtml += '<span style="color:#60a5fa">「' + ((sh.dialogue||sh.lines).length>100?(sh.dialogue||sh.lines).substring(0,100)+'...':(sh.dialogue||sh.lines)) + '」</span> ';
+                  allHtml += '</div>';
+                });
+              } else { allHtml += '<div style="color:#555;font-size:10px;margin:4px 12px">暂无分镜数据</div>'; }
+            } catch(ex2) { allHtml += '<div style="color:#ef4444;font-size:10px;margin:4px 12px">EP'+epNum+' 加载失败</div>'; }
+            allHtml += '</div>';
+          }
+          scriptBox.innerHTML = allHtml;
+          log('✅ 原稿已同步 ('+elist.length+'集)', '#4ade80');
+        }
+      } catch(ex3) { log('⚠️ 原稿同步失败: '+ex3.message, '#f59e0b'); }
+      setBar(90);
+
+      log('📺 刷新 故事板 视图...', '#60a5fa');
+      // Re-render DM-0 episodes storyboard
+      try {
+        var epContainer = document.getElementById('dm0-episodes');
+        if (epContainer) {
+          var r3 = await fetch('/api/script?_='+Date.now());
+          var epList2 = await r3.json();
+          var eps2 = Array.isArray(epList2) ? epList2 : (epList2.episodes || []);
+          var epH2 = '';
+          eps2.forEach(function(ep2){
+            var epNum2 = String(ep2.ep||ep2.episode||ep2.num||'').padStart(2,'0');
+            var title2 = ep2.title||ep2.name||('第'+parseInt(epNum2)+'集');
+            epH2 += '<div class="ep-row" id="eprow-'+epNum2+'" onclick="toggleSB(\''+epNum2+'\')">' +
+              '<label style="margin-right:4px" onclick="event.stopPropagation()"><input type="checkbox" id="dm0-check-'+epNum2+'" onchange="updateDM0Selection()" style="cursor:pointer" title="选择此集进行决策"></label>' +
+              '<span class="ep-num">第'+parseInt(epNum2)+'集</span>' +
+              '<span class="ep-title">'+title2+'</span>' +
+              '<span class="ep-actions">' +
+              '<button class="mini-btn" onclick="event.stopPropagation();downloadScript(\''+epNum2+'\',\'txt\')" title="导出TXT">TXT</button>' +
+              '<button class="mini-btn" onclick="event.stopPropagation();downloadScript(\''+epNum2+'\',\'srt\')" title="导出字幕">SRT</button>' +
+              '</span>' +
+              '<span class="ep-toggle">▶</span></div>' +
+              '<div class="accordion-content" id="sb-section-'+epNum2+'" style="padding-left:8px">' +
+              '<div id="sb-'+epNum2+'"><span class="loading">加载分镜...</span></div></div>';
+          });
+          epContainer.innerHTML = epH2 || '<span style="font-size:10px;color:#555">无剧集数据</span>';
+          log('✅ 故事板已同步 ('+eps2.length+'集)', '#4ade80');
+        }
+      } catch(ex4) { log('⚠️ 故事板同步失败: '+ex4.message, '#f59e0b'); }
+
+      setBar(100);
+      log('✅ 全量同步完成 — 原稿 / 故事板 / 剧本浏览器已更新', '#4ade80');
+      setTimeout(function(){ if (syncOverlay) syncOverlay.remove(); toastMsg('✅ 所有视图已同步最新剧本', 3000); }, 600);
+    } else {
+      // Approved: quick refresh
+      toastMsg('✅ 审核通过，Agent 将进入下一阶段', 3000);
+      if (syncOverlay) syncOverlay.remove();
+    }
+    setTimeout(refresh, doFullSync ? 800 : 1500);
+  }catch(e){
+    log('❌ 同步异常: '+e.message, '#ef4444');
+    setTimeout(function(){ if (syncOverlay) syncOverlay.remove(); }, 2000);
+    toastMsg('决策提交失败: '+e.message, 3000);
+  }
 }
 
 // DM-0: Get selected episode numbers from checkboxes
