@@ -8,15 +8,15 @@
       "description": "🎬 【中景】斜阳穿透雕花木窗棂，在粗陶酒碗与油渍桌面上切割出明暗交错的几何光斑。镜头自窗外市井烟火缓缓横移入室，暖黄酒馆光与暗金轮廓交织，午后尘埃在逆光中悬浮，构图呈对角线分割。",
       "timecode": {
         "start": "00:00",
-        "end": "00:50"
+        "end": "00:55"
       },
       "music_cue": "三弦拨弄市井小调+远处隐约啜泣声+木质酒碗碰撞底噪，情绪：闲适渐转凝滞",
       "shot_type": "中景",
-      "camera_move": "横移跟拍",
+      "camera_move": "横移→缓推",
       "pacing": "slow",
       "color_palette": "暖黄酒馆光+暗金轮廓",
       "camera_script": "横移跟拍5秒→缓推至中景8秒→固定构图倾听10秒→微摇捕捉背景虚化酒客，剪辑节奏平稳留白。",
-      "duration": 50,
+      "duration": 55,
       "emotion": "疑惑→关注",
       "dialogue": [
         {
@@ -49,10 +49,10 @@
       "shot_label": "镜02",
       "act": "发展",
       "scene": "潘家酒楼雅座",
-      "description": "🎬 【近景】光线骤暗，烛火摇曳将鲁达面部轮廓刻出硬朗阴影。低角度仰拍构图凸显权力压迫感，冷暖光在桌面对撞暗喻阶级鸿沟，右侧留白暗示风暴将至。",
+      "description": "🎬 【近景】光线骤暗，烛火摇曳将鲁达面部轮廓刻出硬朗阴影。低角度仰拍构图凸显权力压迫感，冷暖光在桌面对撞暗喻阶级鸿沟，右侧留白暗示风暴将至。镜头由烛火缓慢推近至人物面部。",
       "timecode": {
-        "start": "00:50",
-        "end": "01:45"
+        "start": "00:55",
+        "end": "01:50"
       },
       "music_cue": "低音大提琴拨弦+压抑的埙声渐入，情绪：隐忍转向暗涌",
       "shot_type": "近景",
@@ -93,9 +93,9 @@
       "shot_label": "镜03",
       "act": "发展",
       "scene": "酒楼后门暗巷",
-      "description": "🎬 【全景转中景】暮色初临，青砖墙投下狭长阴影。镜头跟拍鲁达递出碎银，侧逆光勾勒其宽厚背影与金氏父女佝偻身姿的对比，冷灰蓝调中透出微暖人情。",
+      "description": "🎬 【全景转中景】暮色初临，青砖墙投下狭长阴影。镜头跟拍鲁达递出碎银，侧逆光勾勒其宽厚背影与金氏父女佝偻身姿的对比，冷灰蓝调中透出微暖人情。镜头沿巷道纵深缓缓前移。",
       "timecode": {
-        "start": "01:45",
+        "start": "01:50",
         "end": "02:40"
       },
       "music_cue": "古琴泛音+铜钱落地清脆声+微风穿巷，情绪：悲悯中透出决绝",
@@ -104,7 +104,7 @@
       "pacing": "normal",
       "color_palette": "冷灰蓝+侧逆微暖",
       "camera_script": "跟拍递银动作3秒→环绕半周展现三人站位4秒→微拉展现巷口光线5秒，剪辑连贯流畅。",
-      "duration": 55,
+      "duration": 50,
       "emotion": "悲悯→托付",
       "dialogue": [
         {
@@ -137,7 +137,7 @@
       "shot_label": "镜04",
       "act": "转折",
       "scene": "状元桥长街→肉铺外",
-      "description": "🎬 【全景】阴云蔽日，市井喧嚣骤降。镜头由长街急速跟拍鲁达大步流星，穿插0.5秒快剪闪回：契书血指印、店小二闭门、金女掩面。冷青色调主导，视觉压迫感陡增。",
+      "description": "🎬 【全景】阴云蔽日，市井喧嚣骤降。镜头由长街急速跟拍鲁达大步流星，穿插0.5秒快剪闪回：契书血指印、店小二闭门、金女掩面。冷青色调主导，视觉压迫感陡增。镜头自低角度仰拍跟随。",
       "timecode": {
         "start": "02:40",
         "end": "03:35"
@@ -181,7 +181,7 @@
       "shot_label": "镜05",
       "act": "冲突",
       "scene": "郑屠肉铺案板前",
-      "description": "🎬 【中景】肉铺腥气凝成灰绿色雾气。鲁达居高临下俯视，构图利用悬挂的肉钩与钢刀形成垂直压迫线，冷调青灰主导，前景虚化生肉块，后景聚焦两人对峙。",
+      "description": "🎬 【中景】肉铺腥气凝成灰绿色雾气。鲁达居高临下俯视，构图利用悬挂的肉钩与钢刀形成垂直压迫线，冷调青灰主导，前景虚化生肉块，后景聚焦两人对峙。镜头自房梁俯拍后快速下摇。",
       "timecode": {
         "start": "03:35",
         "end": "04:30"
@@ -225,10 +225,54 @@
       "shot_label": "镜06",
       "act": "冲突",
       "scene": "肉铺案板前",
-      "description": "🎬 【近景】郑屠终于掷刀怒骂，鲁达反手扣住其腕。侧逆光打入形成强烈明暗交界线，背景虚化围观百姓如剪影环伺，构图呈封闭三角，聚焦两人肢体角力。",
+      "description": "🎬 【特写转中景】刀光乱舞，肉屑飞溅。镜头紧贴案板边缘平移，捕捉郑屠急促剁肉的残影与鲁达冷眼旁观的侧脸。顶光打亮飞舞的肉尘，背景压暗形成视觉聚焦。镜头沿案板快速横移。",
       "timecode": {
         "start": "04:30",
         "end": "05:25"
+      },
+      "music_cue": "剁肉声加速+低频弦乐拨奏，情绪：焦躁与戏弄升级",
+      "shot_type": "特写转中景",
+      "camera_move": "平移跟拍→急推",
+      "pacing": "fast",
+      "color_palette": "昏黄顶光+暗褐背景",
+      "camera_script": "贴案板平移4秒→捕捉刀锋残影3秒→急推至鲁达冷笑面部2秒→固定镜头，节奏紧凑压迫。",
+      "duration": 55,
+      "emotion": "焦躁→临界",
+      "dialogue": [
+        {
+          "speaker": "郑屠",
+          "text": "提辖！这十斤肥肉切好了，还要切什么？小人实在切不动了！",
+          "style": "modern",
+          "voice_dir": "气喘吁吁，强压怒火",
+          "emotion_mark": "疲惫/濒临崩溃",
+          "subtext": "体力透支，尊严受挫",
+          "timing_hint": "语速加快+喘息"
+        },
+        {
+          "speaker": "鲁达",
+          "text": "再切十斤软骨臊子，不见半点精肥。洒家今日偏要耗你气力！",
+          "style": "classical",
+          "voice_dir": "语气平淡却暗藏杀机",
+          "emotion_mark": "掌控/戏弄",
+          "subtext": "彻底激怒对手，铺垫动手理由",
+          "timing_hint": "极缓+重音顿挫"
+        }
+      ],
+      "performance_notes": [
+        "郑屠额角青筋暴起，菜刀猛剁案板发出闷响",
+        "鲁达单手负背，另一只手随意把玩腰间刀鞘"
+      ],
+      "end_credit": false
+    },
+    {
+      "seq": 7,
+      "shot_label": "镜07",
+      "act": "对峙",
+      "scene": "肉铺空地",
+      "description": "🎬 【近景】郑屠掷刀怒骂，鲁达反手扣住其腕。侧逆光打入形成强烈明暗交界线，背景虚化围观百姓如剪影环伺，构图呈封闭三角，聚焦两人肢体角力。镜头自低角度仰拍并快速推近。",
+      "timecode": {
+        "start": "05:25",
+        "end": "06:15"
       },
       "music_cue": "堂鼓重击+金属摩擦尖啸，情绪：怒极将爆，一触即发",
       "shot_type": "近景",
@@ -236,8 +280,8 @@
       "pacing": "fast",
       "color_palette": "暗蓝灰+侧逆金边",
       "camera_script": "手持微晃跟拍3秒→快速推近至面部对峙2秒→慢速横移展现肌肉紧绷3秒→骤停，剪辑窒息。",
-      "duration": 55,
-      "emotion": "对峙→临界",
+      "duration": 50,
+      "emotion": "对峙→爆发前夜",
       "dialogue": [
         {
           "speaker": "郑屠",
@@ -250,8 +294,8 @@
         },
         {
           "speaker": "鲁达",
-          "text": "欺软怕硬的东西。今日这十斤软骨臊子，你若切不出，洒家便替你切！",
-          "style": "modern",
+          "text": "欺软怕硬的腌臜泼才！今日这十斤软骨臊子你若切不出，洒家便替你切！",
+          "style": "classical",
           "voice_dir": "低沉压迫，字字如铁",
           "emotion_mark": "平静下的爆发",
           "subtext": "彻底撕破伪装，准备动手",
@@ -259,20 +303,20 @@
         }
       ],
       "performance_notes": [
-        "郑屠额头青筋暴起，唾液飞溅",
-        "鲁达瞳孔收缩，手腕发力反压，呼吸粗重如风箱"
+        "郑屠额头汗珠滚落，瞳孔急剧收缩",
+        "鲁达手腕猛然发力反压，呼吸粗重如风箱"
       ],
       "end_credit": false
     },
     {
-      "seq": 7,
-      "shot_label": "镜07",
+      "seq": 8,
+      "shot_label": "镜08",
       "act": "对峙",
-      "scene": "肉铺空地",
-      "description": "🎬 【中全景】风卷尘土，光线骤暗。鲁达缓缓卷起袖口，镜头自其粗布绑腿缓缓上摇至紧握的钵盂大拳，冷蓝灰调中仅拳锋处有一抹暗红高光，杀机暗藏。",
+      "scene": "肉铺前院",
+      "description": "🎬 【中全景】风卷尘土，光线骤暗。鲁达缓缓卷起袖口，镜头自其粗布绑腿缓缓上摇至紧握的钵盂大拳，冷蓝灰调中仅拳锋处有一抹暗红高光，杀机暗藏。镜头沿人体中轴线缓慢上摇。",
       "timecode": {
-        "start": "05:25",
-        "end": "06:20"
+        "start": "06:15",
+        "end": "07:05"
       },
       "music_cue": "大管低沉长音+风声呼啸+皮革摩擦声，情绪：山雨欲来，杀机暗藏",
       "shot_type": "中全景",
@@ -280,7 +324,7 @@
       "pacing": "slow→fast",
       "color_palette": "冷蓝灰+暗红高光",
       "camera_script": "低角度仰拍3秒→缓慢上摇至拳部特写5秒→快速拉回双人全景2秒，剪辑节奏蓄势待发。",
-      "duration": 55,
+      "duration": 50,
       "emotion": "蓄力→杀机",
       "dialogue": [
         {
@@ -294,7 +338,7 @@
         },
         {
           "speaker": "鲁达",
-          "text": "洒家今日，偏要替天行道，看看你这身皮囊有多硬！",
+          "text": "洒家今日偏要替天行道，看看你这身皮囊有多硬！",
           "style": "classical",
           "voice_dir": "字正腔圆，杀气内敛",
           "emotion_mark": "审判/决绝",
@@ -309,31 +353,31 @@
       "end_credit": false
     },
     {
-      "seq": 8,
-      "shot_label": "镜08",
+      "seq": 9,
+      "shot_label": "镜09",
       "act": "高潮",
-      "scene": "肉铺前",
-      "description": "🎬 【特写转大远景】三拳连环。第一拳鼻骨碎裂，血雾逆光呈放射状；第二拳眼眶凹陷，慢镜捕捉瞳孔涣散；第三拳太阳穴重击，色彩瞬间抽离为血红与灰白。",
+      "scene": "肉铺案板前",
+      "description": "🎬 【特写转大远景】第一拳重击鼻梁。镜头以120帧慢动作捕捉拳风撕裂空气，软骨碎裂瞬间血雾逆光呈放射状扩散，色彩瞬间抽离为高对比黑白与猩红。镜头极近特写后急拉。",
       "timecode": {
-        "start": "06:20",
-        "end": "07:15"
+        "start": "07:05",
+        "end": "07:55"
       },
-      "music_cue": "战鼓炸裂→瞬间真空静音0.5秒→悲怆埙声与低频嗡鸣交织，情绪：暴烈宣泄转至苍凉",
+      "music_cue": "战鼓炸裂→瞬间真空静音0.5秒→低频嗡鸣交织，情绪：暴烈宣泄转至苍凉",
       "shot_type": "特写→大远景",
-      "camera_move": "慢镜+快切+急拉",
+      "camera_move": "极近特写→慢镜跟拍→快切",
       "pacing": "fast→slow",
       "color_palette": "血红+灰白抽离",
-      "camera_script": "极近特写1秒→120帧慢镜跟拍拳风轨迹4秒→快切三拳落点3秒→急拉至俯拍全景2秒，节奏重缓炸裂。",
-      "duration": 55,
-      "emotion": "爆发→空茫",
+      "camera_script": "极近特写1秒→120帧慢镜跟拍拳风轨迹4秒→快切落点3秒→急拉至俯拍全景，节奏重缓炸裂。",
+      "duration": 50,
+      "emotion": "爆发→震慑",
       "dialogue": [
         {
           "speaker": "鲁达",
-          "text": "你这腌臜泼才！装什么死？打杀了你，倒是脏了洒家的手！",
-          "style": "modern",
+          "text": "洒家始投老种经略相公门下，做到关西五路廉访使，也没唤做镇关西！你个卖肉的操刀屠户，也配叫镇关西！",
+          "style": "classical",
           "voice_dir": "爆发转冷冽，气息粗重",
-          "emotion_mark": "狂怒→骤冷",
-          "subtext": "意识到下手过重，但绝不退缩",
+          "emotion_mark": "狂怒/蔑视",
+          "subtext": "揭露身份落差，彻底剥夺对方尊严",
           "timing_hint": "爆发+骤停3秒"
         },
         {
@@ -348,19 +392,63 @@
       ],
       "performance_notes": [
         "鲁达拳锋带风，肩背肌肉贲张如弓",
+        "郑屠鼻骨塌陷，身躯后仰踉跄撞倒货架"
+      ],
+      "end_credit": false
+    },
+    {
+      "seq": 10,
+      "shot_label": "镜010",
+      "act": "高潮",
+      "scene": "肉铺前",
+      "description": "🎬 【近景】第二拳、第三拳连环。眼眶凹陷、太阳穴重击。镜头围绕两人急速旋转，动态模糊强化打击力度，郑屠身躯如断线木偶般颓然倒地。镜头环绕跟拍后急摇下俯。",
+      "timecode": {
+        "start": "07:55",
+        "end": "08:45"
+      },
+      "music_cue": "沉闷骨裂声+急促琵琶扫弦+人群惊呼混响，情绪：失控与宣泄",
+      "shot_type": "近景",
+      "camera_move": "环绕跟拍→急摇下俯",
+      "pacing": "fast",
+      "color_palette": "暗红浊调+冷灰阴影",
+      "camera_script": "环绕跟拍3秒→捕捉第二拳落点2秒→急摇下俯至倒地姿态3秒→固定镜头，剪辑凌厉连贯。",
+      "duration": 50,
+      "emotion": "狂怒→骤冷",
+      "dialogue": [
+        {
+          "speaker": "鲁达",
+          "text": "你这腌臜泼才！装什么死？打杀了你，倒是脏了洒家的手！",
+          "style": "modern",
+          "voice_dir": "余怒未消转清醒，喘息粗重",
+          "emotion_mark": "狂怒→骤冷",
+          "subtext": "意识到下手过重，但绝不退缩",
+          "timing_hint": "爆发+骤停2秒"
+        },
+        {
+          "speaker": "郑屠",
+          "text": "呃……提辖……饶命……",
+          "style": "modern",
+          "voice_dir": "气若游丝，含混不清",
+          "emotion_mark": "濒死/绝望",
+          "subtext": "生命流逝的最后挣扎",
+          "timing_hint": "断续+气声"
+        }
+      ],
+      "performance_notes": [
+        "鲁达拳风扫过扬起满地肉屑，眼神逐渐从赤红转为清明",
         "郑屠倒地后胸口微颤两下随即死寂，鲁达甩手抖血"
       ],
       "end_credit": false
     },
     {
-      "seq": 9,
-      "shot_label": "镜09",
+      "seq": 11,
+      "shot_label": "镜011",
       "act": "结局",
       "scene": "渭州长街·暮雪初降",
-      "description": "🎬 【大远景】暮色四合，青石板街染暗蓝灰色。镜头缓缓拉升，鲁达背影融入长街尽头，两侧飞檐压低形成视觉隧道，初雪飘落天地苍茫，留白处尽显宿命感。",
+      "description": "🎬 【大远景】暮色四合，青石板街染暗蓝灰色。镜头缓缓拉升，鲁达背影融入长街尽头，两侧飞檐压低形成视觉隧道，初雪飘落天地苍茫，留白处尽显宿命感。镜头自地面跟拍后升格拉远。",
       "timecode": {
-        "start": "07:15",
-        "end": "08:10"
+        "start": "08:45",
+        "end": "09:25"
       },
       "music_cue": "孤箫独奏渐弱+远处打更梆子声+初雪落地微响，情绪：孤绝、宿命、余韵",
       "shot_type": "大远景",
@@ -368,7 +456,7 @@
       "pacing": "slow",
       "color_palette": "暮色蓝灰+冷白",
       "camera_script": "低角度跟拍背影5秒→缓慢拉远至大远景8秒→升镜头俯瞰街道5秒→渐隐黑场，剪辑留白悠长。",
-      "duration": 55,
+      "duration": 40,
       "emotion": "冷静→孤绝",
       "dialogue": [
         {
@@ -641,37 +729,37 @@
       "shot_label": "镜01",
       "act": "开场",
       "scene": "沧州草料场外·黄昏",
-      "description": "🎬 【大远景】铅灰色天幕低垂，狂风卷起雪沫如刀割过荒原。林冲孤影立于草料场外，长枪斜挑酒葫芦，蓑衣积雪半融。镜头自远山缓推至人物中景，冷青色调中仅余枪缨暗红一点。",
+      "description": "🎬 【大远景】铅灰天幕低垂，狂风卷雪如刃切割荒原。冷青色调中采用三分法构图，林冲孤影偏居右下，长枪斜挑酒葫芦，蓑衣积雪半融。镜头自远山缓推至中景，黄昏残光仅勾勒人物冷硬轮廓，风雪弥漫营造肃杀氛围。",
       "timecode": {
         "start": "00:00",
-        "end": "00:52"
+        "end": "00:55"
       },
-      "music_cue": "风雪呼啸底噪+低音大提琴持续音铺垫苍凉",
+      "music_cue": "风雪呼啸底噪+低音大提琴持续音铺垫苍凉孤寂",
       "shot_type": "大远景→中景",
       "camera_move": "缓推→水平跟拍",
       "pacing": "slow",
       "color_palette": "青灰+暗银+枪缨朱红",
-      "camera_script": "大远景3秒建立空间→慢推12秒至中景→跟拍林冲踏雪前行8秒→镜头随其喘息微颤推至面部特写",
-      "duration": 52,
+      "camera_script": "远景3秒建立空间压抑感→慢推12秒至中景→水平跟拍8秒踏雪前行→微颤推至面部特写",
+      "duration": 55,
       "emotion": "苍凉/隐忍",
       "dialogue": [
         {
-          "speaker": "林冲",
-          "text": "八十万禁军教头，如今倒成了个刺配沧州、看守草场的囚徒。",
-          "style": "classical",
-          "voice_dir": "气声裹挟风雪，喉结微动",
-          "emotion_mark": "自嘲/悲怆",
-          "subtext": "昔日荣光尽碎，尊严被碾入泥雪",
-          "timing_hint": "缓速，字间留白2秒"
-        },
-        {
           "speaker": "老军",
-          "text": "教头！前头五里地有处酒肆，打碗热酒暖暖身子再回吧！",
+          "text": "教头，前头酒肆有热酒，喝口暖暖再回吧！",
           "style": "modern",
           "voice_dir": "粗粝嗓门穿透风雪，带关切",
           "emotion_mark": "质朴/担忧",
           "subtext": "底层人对落魄者的本能同情",
           "timing_hint": "中速，尾音上扬"
+        },
+        {
+          "speaker": "林冲",
+          "text": "八十万禁军教头，竟沦落至此。也罢，且去沽酒御寒。",
+          "style": "classical",
+          "voice_dir": "气声裹挟风雪，喉结微动",
+          "emotion_mark": "自嘲/悲凉",
+          "subtext": "昔日荣光尽碎，尊严被碾入泥雪",
+          "timing_hint": "缓速，字间留白2秒"
         }
       ],
       "performance_notes": [
@@ -685,23 +773,23 @@
       "shot_label": "镜02",
       "act": "发展",
       "scene": "野酒肆内·夜",
-      "description": "🎬 【中景】昏黄油灯摇曳，酒客围坐粗木桌旁。林冲独踞暗角，斗笠压眉。镜头自柜台摇至邻桌，暖黄光晕中酒客交头接耳，林冲半隐于阴影。",
+      "description": "🎬 【中景】昏黄油灯摇曳，粗木桌围坐酒客。暖黄光晕与暗影青灰交织，林冲独踞暗角，斗笠压眉。镜头自柜台横摇至邻桌，利用门框形成画中画构图，强化窥视与不安感。",
       "timecode": {
-        "start": "00:52",
-        "end": "01:48"
+        "start": "00:55",
+        "end": "01:47"
       },
       "music_cue": "粗瓷杯碰撞声+中阮拨弦制造不安节奏",
       "shot_type": "中景→特写",
       "camera_move": "横摇→推镜",
       "pacing": "normal",
       "color_palette": "暖黄灯光+暗影青灰",
-      "camera_script": "横摇6秒掠过酒客→推镜8秒至林冲握杯手部→快速切至邻桌酒客面部→回拉至林冲侧脸特写",
-      "duration": 56,
-      "emotion": "警觉→暗涌",
+      "camera_script": "横摇6秒掠过酒客面部→推镜8秒聚焦林冲握杯指节→快切邻桌侧影→回拉至林冲半脸特写",
+      "duration": 52,
+      "emotion": "警觉/暗涌",
       "dialogue": [
         {
           "speaker": "酒客甲",
-          "text": "东京来的差官昨儿住进驿站，领头的姓陆！",
+          "text": "东京来的差官昨儿住进驿站，领头的姓陆，带了把宝刀。",
           "style": "modern",
           "voice_dir": "压低嗓音，气息急促",
           "emotion_mark": "神秘/紧张",
@@ -710,8 +798,8 @@
         },
         {
           "speaker": "林冲",
-          "text": "陆……谦？",
-          "style": "classical",
+          "text": "陆谦？他怎么也追到沧州了。",
+          "style": "modern",
           "voice_dir": "气音骤紧，酒杯轻磕桌面",
           "emotion_mark": "震惊/隐痛",
           "subtext": "旧日兄弟成催命符",
@@ -727,26 +815,26 @@
     {
       "seq": 3,
       "shot_label": "镜03",
-      "act": "转折",
+      "act": "发展",
       "scene": "草料场小屋外·深夜",
-      "description": "🎬 【全景】雪暴肆虐，茅屋已被积雪压垮，断椽刺出如兽骨。林冲踉跄奔至废墟，镜头俯拍其跪地刨雪，忽远处地平线泛起诡谲橙光。",
+      "description": "🎬 【全景】雪暴肆虐，茅屋横梁断裂刺出如兽骨。幽蓝雪夜光中，林冲踉跄奔至废墟。俯拍构图将人物置于破碎几何中心，远处地平线泛起诡谲橙红暗光，冷光与暗火形成强烈对比。",
       "timecode": {
-        "start": "01:48",
+        "start": "01:47",
         "end": "02:45"
       },
-      "music_cue": "风雪狂啸+定音鼓闷击模拟心跳",
+      "music_cue": "狂风撕扯声+定音鼓闷击模拟心跳加速",
       "shot_type": "全景→特写",
       "camera_move": "俯拍→急推→环摇",
       "pacing": "normal→fast",
       "color_palette": "雪夜幽蓝+火光暗橙",
-      "camera_script": "俯拍废墟5秒→急推至林冲面部3秒→环摇8秒捕捉远处火光→快切2秒闪回东京府邸大火（0.5秒）→回摇至林冲起身",
-      "duration": 57,
-      "emotion": "绝望→惊疑",
+      "camera_script": "俯拍5秒展现废墟全貌→急推至林冲面部3秒→环摇8秒捕捉远处火光→快切0.5秒东京府邸大火闪回→回摇至人物起身",
+      "duration": 58,
+      "emotion": "绝望/惊疑",
       "dialogue": [
         {
           "speaker": "林冲",
-          "text": "天要亡我……连这破屋也不留！",
-          "style": "classical",
+          "text": "这鬼天气……连个落脚的破屋都不留！",
+          "style": "modern",
           "voice_dir": "嘶哑破音，风雪灌喉",
           "emotion_mark": "悲愤/苍凉",
           "subtext": "最后退路被毁的崩溃",
@@ -754,8 +842,8 @@
         },
         {
           "speaker": "林冲",
-          "text": "山神庙……先去那儿捱过今夜。",
-          "style": "modern",
+          "text": "罢了，且去山神庙暂避风雪，熬过今夜再说。",
+          "style": "classical",
           "voice_dir": "咬牙自语，气息凝白",
           "emotion_mark": "强压慌乱",
           "subtext": "本能寻找避难所",
@@ -771,25 +859,25 @@
     {
       "seq": 4,
       "shot_label": "镜04",
-      "act": "冲突",
+      "act": "转折",
       "scene": "山神庙内·深夜",
-      "description": "🎬 【特写】破败神像垂目，香案积灰。林冲倚门而立，门缝漏进风雪与暗光。镜头自其颤抖的手部上摇至面部，冷光切割出半明半暗的轮廓。",
+      "description": "🎬 【特写】破败神像垂目半隐于暗，香案积灰。冷青色侧光切割门缝，漏进风雪与暗光。林冲倚门而立，构图采用对角线分割明暗，突出其半明半暗的轮廓，暗示命运转折。",
       "timecode": {
         "start": "02:45",
-        "end": "03:42"
+        "end": "03:39"
       },
-      "music_cue": "古埙空灵长音+弦乐群渐强压迫",
+      "music_cue": "古埙空灵长音+弦乐群渐强制造压迫感",
       "shot_type": "内景特写",
       "camera_move": "缓推→反应镜头",
       "pacing": "slow→climax",
       "color_palette": "冷青灰+门缝暖光",
-      "camera_script": "特写门缝光影5秒→缓推至林冲侧脸8秒→切门外黑影晃动（主观镜头）→快速回拉至全景",
-      "duration": 57,
-      "emotion": "惊骇→冰寒",
+      "camera_script": "特写门缝光影5秒→缓推至林冲侧脸8秒→切门外黑影晃动主观镜头→快速拉回全景展现三人逼近",
+      "duration": 54,
+      "emotion": "惊骇/冰寒",
       "dialogue": [
         {
           "speaker": "陆谦",
-          "text": "这场雪下得妙！烧了草场，罪名自然落在他头上。",
+          "text": "这场雪下得真是时候！一把火烧干净，罪名全扣他头上，咱们回去领赏。",
           "style": "modern",
           "voice_dir": "阴冷带笑，气息平稳",
           "emotion_mark": "得意/狠毒",
@@ -797,13 +885,13 @@
           "timing_hint": "慢速，字字清晰"
         },
         {
-          "speaker": "林冲",
-          "text": "好……好得很。原来这世道，专挑老实人往死里逼。",
-          "style": "classical",
-          "voice_dir": "气声转厉，齿间摩擦",
-          "emotion_mark": "悲极生怒",
-          "subtext": "彻底斩断退路的决绝",
-          "timing_hint": "缓速，每字如钉"
+          "speaker": "差拨",
+          "text": "陆爷放心，那林冲早就成了瓮中之鳖，跑不了！",
+          "style": "modern",
+          "voice_dir": "谄媚压低声音，带狠劲",
+          "emotion_mark": "阴险/附和",
+          "subtext": "帮凶的残忍与贪婪",
+          "timing_hint": "语速偏快，咬字重"
         }
       ],
       "performance_notes": [
@@ -815,25 +903,25 @@
     {
       "seq": 5,
       "shot_label": "镜05",
-      "act": "对峙",
-      "scene": "山神庙外·雪夜",
-      "description": "🎬 【中景】庙门轰然洞开，风雪倒卷。林冲踏出阴影，枪尖点地。镜头自低角度仰拍，火光映亮其半边脸，另半边隐于黑暗。",
+      "act": "冲突",
+      "scene": "山神庙门槛处·深夜",
+      "description": "🎬 【中景】庙门轰然洞开，风雪倒卷入内。暖橙火光与冷白雪光激烈碰撞。林冲踏出阴影，枪尖点地。低角度仰拍构图拉长人物身形，压迫感极强，背景火焰跳动映照杀机。",
       "timecode": {
-        "start": "03:42",
-        "end": "04:28"
+        "start": "03:39",
+        "end": "04:29"
       },
-      "music_cue": "琵琶轮指急雨+大鼓重击",
+      "music_cue": "琵琶轮指急雨+大鼓重击营造肃杀氛围",
       "shot_type": "外景中景",
       "camera_move": "横摇→跟拍",
       "pacing": "fast",
       "color_palette": "火光橙红+雪夜青白",
-      "camera_script": "低角度仰拍门开3秒→横摇跟拍林冲步出5秒→快切陆谦惊退面部2秒→拉回中景对峙",
-      "duration": 46,
+      "camera_script": "低角度仰拍门开3秒→横摇跟拍林冲步出5秒→快切陆谦惊退面部2秒→拉回中景形成对峙三角构图",
+      "duration": 50,
       "emotion": "对峙/杀机",
       "dialogue": [
         {
           "speaker": "陆谦",
-          "text": "林教头！你听我解释，都是高太尉……",
+          "text": "林教头！你听我解释，都是高太尉逼我，我也是身不由己！",
           "style": "modern",
           "voice_dir": "声调拔高，气息紊乱",
           "emotion_mark": "恐惧/狡辩",
@@ -842,12 +930,12 @@
         },
         {
           "speaker": "林冲",
-          "text": "东京城里，你我为兄弟时，可曾想过今日？",
+          "text": "昔日东京城下把酒言欢，今日沧州雪夜赶尽杀绝。陆虞候，你这把刀，倒是磨得锋利。",
           "style": "classical",
           "voice_dir": "平静如冰，胸腔共鸣",
-          "emotion_mark": "悲凉/决断",
-          "subtext": "斩断最后一丝情义",
-          "timing_hint": "缓速，字字如铁"
+          "emotion_mark": "悲极生怒",
+          "subtext": "彻底斩断退路的决绝",
+          "timing_hint": "缓速，每字如钉"
         }
       ],
       "performance_notes": [
@@ -859,39 +947,83 @@
     {
       "seq": 6,
       "shot_label": "镜06",
-      "act": "高潮",
-      "scene": "雪夜·终局",
-      "description": "🎬 【特写→全景】枪花抖落寒星，林冲踏步突刺。镜头慢镜捕捉枪尖贯胸瞬间，随即快切陆谦倒地、差拨奔逃被搠。火光映雪，血染白地。",
+      "act": "对峙",
+      "scene": "山神庙外雪地·深夜",
+      "description": "🎬 【近景】风雪狂舞，三人呈品字形站位。火光映亮林冲半边脸，另半边沉入死寂暗影。构图紧凑，焦点在三人交错的视线与紧绷的肌肉线条上，冷调背景凸显一触即发的张力。",
       "timecode": {
-        "start": "04:28",
-        "end": "05:15"
+        "start": "04:29",
+        "end": "05:17"
       },
-      "music_cue": "所有乐器骤停→只余风雪→炸裂鼓点+悲怆弦乐",
+      "music_cue": "二胡凄厉滑音+低频环境音抽空呼吸声",
+      "shot_type": "近景",
+      "camera_move": "环绕→急推→跳切",
+      "pacing": "fast→climax",
+      "color_palette": "冷青灰+暖橙火光",
+      "camera_script": "环绕镜头360度慢移展现对峙张力→急推至陆谦颤抖的双眼→跳切差拨拔刀特写→回拉至全景蓄势",
+      "duration": 48,
+      "emotion": "爆发前夜/决裂",
+      "dialogue": [
+        {
+          "speaker": "差拨",
+          "text": "姓林的，别怪咱们兄弟心狠，要怪就怪你挡了高太尉的路！",
+          "style": "modern",
+          "voice_dir": "粗野嘶吼，带威胁",
+          "emotion_mark": "凶狠/虚张声势",
+          "subtext": "底层爪牙的残忍本能",
+          "timing_hint": "重音顿挫，语速快"
+        },
+        {
+          "speaker": "林冲",
+          "text": "路？这世道早就把老实人的路堵死了。既然你们不让我活，那就一起下地狱吧。",
+          "style": "modern",
+          "voice_dir": "低沉转厉，咬字极重",
+          "emotion_mark": "决绝/新生",
+          "subtext": "彻底与旧我决裂，接受命运反杀",
+          "timing_hint": "缓速起，尾音爆发"
+        }
+      ],
+      "performance_notes": [
+        "林冲下颌线紧绷，眼神由悲转寒",
+        "陆谦双手微颤，差拨拔刀时刀鞘磕碰腿甲"
+      ],
+      "end_credit": false
+    },
+    {
+      "seq": 7,
+      "shot_label": "镜07",
+      "act": "高潮",
+      "scene": "雪夜搏杀·瞬间",
+      "description": "🎬 【特写→全景】枪花抖落寒星，林冲踏步突刺。慢镜头捕捉枪尖贯胸瞬间，血珠在冷光中悬浮。随即快切陆谦倒地、差拨奔逃被搠。构图从极度混乱瞬间转为对称的死亡定格，红白对比刺目。",
+      "timecode": {
+        "start": "05:17",
+        "end": "06:09"
+      },
+      "music_cue": "所有乐器骤停→风雪呼啸→炸裂堂鼓+悲怆弦乐齐鸣",
       "shot_type": "动作特写→全景",
       "camera_move": "慢镜→快切→拉远",
       "pacing": "climax",
       "color_palette": "血红+青白+火光",
-      "camera_script": "慢镜3秒捕捉刺击→快切2镜（陆谦倒地/差拨奔逃）→拉远全景5秒定格",
-      "duration": 47,
-      "emotion": "爆发→肃杀",
+      "camera_script": "慢镜3秒捕捉刺击轨迹→快切2镜（陆谦倒地/差拨奔逃）→手持跟拍林冲收枪转身→拉远全景5秒定格血色雪原",
+      "duration": 52,
+      "emotion": "爆发/肃杀",
       "dialogue": [
         {
-          "speaker": "林冲",
-          "text": "天不容我，我便逆了这天！",
-          "style": "classical",
-          "voice_dir": "声震雪夜，破音不哑",
-          "emotion_mark": "决绝/新生",
-          "subtext": "彻底与旧我决裂",
-          "timing_hint": "怒吼，尾音拉长"
-        },
-        {
           "speaker": "陆谦",
-          "text": "饶命……饶命啊！",
+          "text": "饶……饶命……",
           "style": "modern",
-          "voice_dir": "气绝前嘶喊，断续",
+          "voice_dir": "气绝前嘶喊，断续微弱",
           "emotion_mark": "绝望",
           "subtext": "生命最后一刻的恐惧",
           "timing_hint": "破碎，渐弱"
+        },
+        {
+          "speaker": "林冲",
+          "text": "天若不公，我便替天行道！今日，血债血偿！",
+          "style": "classical",
+          "voice_dir": "声震雪夜，破音不哑",
+          "emotion_mark": "决绝/新生",
+          "subtext": "彻底与旧我决裂，完成人格重塑",
+          "timing_hint": "怒吼，尾音拉长"
         }
       ],
       "performance_notes": [
@@ -901,37 +1033,81 @@
       "end_credit": false
     },
     {
-      "seq": 7,
-      "shot_label": "镜07",
+      "seq": 8,
+      "shot_label": "镜08",
+      "act": "高潮",
+      "scene": "庙外废墟·雪夜",
+      "description": "🎬 【中景】尸体横陈，火光渐弱。林冲拄枪而立，胸膛剧烈起伏。冷青色调中，暖色火光仅余残烬。构图将人物置于画面中央，背景是燃烧的草料场与无垠雪夜，孤独感与肃杀感并存。",
+      "timecode": {
+        "start": "06:09",
+        "end": "07:05"
+      },
+      "music_cue": "悲怆大提琴独奏+风雪渐弱转为空灵回响",
+      "shot_type": "中景",
+      "camera_move": "缓推→微摇→拉远",
+      "pacing": "slow",
+      "color_palette": "冷青灰+暗红余烬",
+      "camera_script": "缓推至林冲面部特写8秒→微摇展现满地狼藉→拉远至中景，镜头随其呼吸微颤后趋于平稳",
+      "duration": 56,
+      "emotion": "释然/苍凉",
+      "dialogue": [
+        {
+          "speaker": "林冲",
+          "text": "八十万禁军的威风，教头的体面，今夜全埋在这雪地里了。",
+          "style": "modern",
+          "voice_dir": "低沉沙哑，气息绵长",
+          "emotion_mark": "悲怆/释怀",
+          "subtext": "与过去彻底割裂",
+          "timing_hint": "缓速，字间留白"
+        },
+        {
+          "speaker": "林冲",
+          "text": "从今往后，世上再无林教头，只有个杀人犯林冲。",
+          "style": "modern",
+          "voice_dir": "自嘲轻笑，转冷硬",
+          "emotion_mark": "自嘲/决绝",
+          "subtext": "接受身份坠落，拥抱草莽命运",
+          "timing_hint": "语速平稳，尾音下沉"
+        }
+      ],
+      "performance_notes": [
+        "缓缓闭眼再睁开，眼底最后一丝温情熄灭",
+        "将长枪重新负于背后，动作干脆利落"
+      ],
+      "end_credit": false
+    },
+    {
+      "seq": 9,
+      "shot_label": "镜09",
       "act": "结局",
       "scene": "茫茫雪野·黎明前",
-      "description": "🎬 【大远景】雪势渐歇，天际泛鱼肚白。林冲提枪独行，背影融入苍茫。镜头自高处缓缓拉远，人物渐小，唯余雪原无垠。",
+      "description": "🎬 【大远景】雪势渐歇，天际泛起鱼肚白。林冲提枪独行，背影融入苍茫。高角度俯拍构图，人物渐小，雪原无垠，留白处透出宿命感与新生之意。冷白调中透出微弱晨光。",
       "timecode": {
-        "start": "05:15",
-        "end": "05:45"
+        "start": "07:05",
+        "end": "07:50"
       },
-      "music_cue": "所有音效收束→独奏箫声苍凉→渐弱至无声",
+      "music_cue": "独奏洞箫苍凉悠远+风雪渐弱至无声",
       "shot_type": "大远景",
       "camera_move": "缓拉→定格",
       "pacing": "slow",
       "color_palette": "青白→淡灰→留白",
-      "camera_script": "高处俯拍拉远8秒→定格人物剪影5秒→渐隐至黑场",
-      "duration": 30,
+      "camera_script": "高处俯拍缓拉10秒→定格人物剪影5秒→渐隐至黑场",
+      "duration": 45,
       "emotion": "苍凉→新生",
       "dialogue": [
         {
           "speaker": "林冲",
-          "text": "从此江湖路远，再无东京林教头。",
+          "text": "风雪送客，江湖路远。此去经年，莫问归期。",
           "style": "classical",
           "voice_dir": "气声渐远，无悲无喜",
           "emotion_mark": "释然/决绝",
-          "subtext": "旧身份彻底死亡",
+          "subtext": "旧身份彻底死亡，踏上未知前路",
           "timing_hint": "缓速，随风消散"
         }
       ],
       "performance_notes": [
         "步伐由沉转稳，雪痕渐深",
-        "枪尖斜指地面，不再高举"
+        "枪尖斜指地面，不再高举，肩背微松"
       ],
       "end_credit": true
     }
@@ -1936,6 +2112,60 @@
           "classical_pct": 29,
           "modern_pct": 71,
           "ratio_label": "⚔ 29% 古典 / 71% 现代"
+        }
+      }
+    },
+    {
+      "episode": "鲁提辖拳打镇关西",
+      "timestamp": "2026-05-03T10:43:09",
+      "feedback_type": "测试管道",
+      "feedback_desc": "E2E管道健全性测试",
+      "shots_before": 9,
+      "shots_after": 11,
+      "changes": {
+        "shots_delta": 2,
+        "before_stats": {
+          "classical_chars": 122,
+          "modern_chars": 303,
+          "total_chars": 425,
+          "classical_pct": 29,
+          "modern_pct": 71,
+          "ratio_label": "⚔ 29% 古典 / 71% 现代"
+        },
+        "after_stats": {
+          "classical_chars": 228,
+          "modern_chars": 310,
+          "total_chars": 538,
+          "classical_pct": 42,
+          "modern_pct": 58,
+          "ratio_label": "⚔ 42% 古典 / 58% 现代"
+        }
+      }
+    },
+    {
+      "episode": "林冲风雪山神庙",
+      "timestamp": "2026-05-03T11:10:04",
+      "feedback_type": "剧本质量",
+      "feedback_desc": "对白比例调整: 目标30%古典 / 70%现代 (当前52%古典偏高)",
+      "shots_before": 7,
+      "shots_after": 9,
+      "changes": {
+        "shots_delta": 2,
+        "before_stats": {
+          "classical_chars": 115,
+          "modern_chars": 105,
+          "total_chars": 220,
+          "classical_pct": 52,
+          "modern_pct": 48,
+          "ratio_label": "⚔ 52% 古典 / 48% 现代"
+        },
+        "after_stats": {
+          "classical_chars": 122,
+          "modern_chars": 269,
+          "total_chars": 391,
+          "classical_pct": 31,
+          "modern_pct": 69,
+          "ratio_label": "⚔ 31% 古典 / 69% 现代"
         }
       }
     }

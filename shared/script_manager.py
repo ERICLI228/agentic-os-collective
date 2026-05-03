@@ -604,18 +604,31 @@ def _dialogue_to_text(dialogue):
 
 
 def _export_srt(detail):
-    """导出为 SRT 字幕格式"""
+    """v3.11.2: 导出为 SRT 字幕格式 — 每条对白独立时间码"""
     sb = detail.get("storyboard", [])
+    dialogue_entries = []
+    for shot_i, shot in enumerate(sb):
+        tc = shot.get("timecode", {})
+        start_str = tc.get("start", "00:00")
+        end_str = tc.get("end", "01:00")
+        dialogue_lines = shot.get("dialogue", [])
+        if isinstance(dialogue_lines, list):
+            for dl in dialogue_lines:
+                speaker = dl.get("speaker", "")
+                text = dl.get("text", "")
+                if text:
+                    dialogue_entries.append({
+                        "start": start_str,
+                        "end": end_str,
+                        "text": f"{speaker}: {text}" if speaker else text
+                    })
+        elif isinstance(dialogue_lines, str) and dialogue_lines.strip():
+            dialogue_entries.append({"start": start_str, "end": end_str, "text": dialogue_lines})
     lines = []
-    for i, scene in enumerate(sb, 1):
-        start_sec = sum(s.get("duration_sec", 5) for s in sb[:i-1])
-        end_sec = start_sec + scene.get("duration_sec", 5)
-        start_ts = f"00:00:{start_sec:02d},000"
-        end_ts = f"00:00:{end_sec:02d},000"
-        text = _dialogue_to_text(scene.get("dialogue", "")) or scene.get("description", "")
-        lines.append(f"{i}")
-        lines.append(f"{start_ts} --> {end_ts}")
-        lines.append(text)
+    for idx, entry in enumerate(dialogue_entries, 1):
+        lines.append(str(idx))
+        lines.append(f"{entry['start']},000 --> {entry['end']},000")
+        lines.append(entry['text'])
         lines.append("")
     return "\n".join(lines)
 
@@ -648,11 +661,24 @@ def _export_txt(detail):
     ])
     for sb in detail.get("storyboard", []):
         lines.append(f"")
-        lines.append(f"  镜{sb['seq']} [{sb['act']}] {sb['scene']} · {sb.get('duration','')}")
+        lines.append(f"  镜{sb['seq']} [{sb['act']}] {sb.get('shot_label','')} · {sb.get('duration','')}")
         lines.append(f"  {sb['description']}")
         lines.append(f"  情绪: {sb['emotion']}")
         if sb.get("dialogue"):
-            lines.append(f"  对白: {_dialogue_to_text(sb['dialogue'])}")
+            dia_lines = sb["dialogue"]
+            if isinstance(dia_lines, list):
+                for dl in dia_lines:
+                    speaker = dl.get("speaker", "")
+                    text = dl.get("text", "")
+                    style = dl.get("style", "")
+                    tag = "⚔" if style == "classical" else "💬"
+                    lines.append(f"  {tag} {speaker}: {text}")
+                    if dl.get("voice_dir"):
+                        lines.append(f"    🎤 voice: {dl['voice_dir']}")
+                    if dl.get("emotion_mark"):
+                        lines.append(f"    😶 emotion: {dl['emotion_mark']}")
+            else:
+                lines.append(f"  对白: {_dialogue_to_text(dia_lines)}")
 
     lines.extend([
         f"",

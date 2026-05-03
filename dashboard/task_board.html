@@ -2278,7 +2278,7 @@ function renderScriptBrowserDetail(epNum){
       h+='<div style=\"display:flex;gap:8px;margin-bottom:4px;align-items:baseline\"><span style=\"font-size:10px;color:'+accent+';font-weight:700\">\u955C'+(i+1)+'</span><span style=\"font-size:9px;color:#fbbf24\">'+(sc.act||'')+'</span><span style=\"font-size:9px;color:#666\">'+(sc.duration||'')+'</span></div>';
       h+='<div style=\"font-size:12px;color:#ccc;line-height:1.7\">'+(sc.description||'')+'</div>';
       if(tone)h+='<div style=\"font-size:9px;color:#888;margin-top:3px\">\u{1F3AD} '+tone+'</div>';
-      if(sc.dialogue)h+='<div style=\"font-size:10px;color:#aaa;font-style:italic;margin-top:3px;padding-left:8px\">\u201C'+sc.dialogue+'\u201D</div>';
+      if(sc.dialogue)h+=formatDialogueInline(sc.dialogue);
       h+='</div>';
     });
     content.innerHTML=h;
@@ -2359,7 +2359,7 @@ function showScriptDetail(epNum){
       html+='<div style="display:flex;gap:6px;margin-bottom:4px"><span style="font-size:9px;color:#60a5fa;font-weight:600;min-width:30px">#'+(sc.seq||'—')+'</span><span style="font-size:10px;color:#fbbf24;font-weight:600">'+(sc.act||'')+'</span><span style="font-size:9px;color:#555">'+(sc.duration||'')+'</span></div>';
       html+='<div style="font-size:10px;color:#ccc;margin-bottom:2px">'+(sc.description||'')+'</div>';
       if(sc.emotion) html+='<div style="font-size:9px;color:#888">情感: '+sc.emotion+'</div>';
-      if(sc.dialogue) html+='<div style="font-size:9px;color:#aaa;font-style:italic">对白: '+sc.dialogue+'</div>';
+      if(sc.dialogue) html+=formatDialogueInline(sc.dialogue);
       html+='</div>';
     });
     body.innerHTML=html||'<div style="text-align:center;padding:20px;color:#555">无分镜数据</div>';
@@ -2421,7 +2421,7 @@ function previewScriptHTML(epNum){
           h.push("<div style=\"display:flex;gap:8px;margin-bottom:4px\"><span style=\"font-size:10px;color:"+accentColor+";font-weight:700\">镜"+(i+1)+"</span><span style=\"font-size:10px;color:#fbbf24\">"+(sc.act||"")+"</span><span style=\"font-size:9px;color:#888\">"+(sc.duration||"")+"</span></div>");
           h.push("<div style=\"font-size:13px;color:#e0e0e0;line-height:1.7\">"+(sc.description||"")+"</div>");
           if(tone)h.push("<div style=\"font-size:10px;color:"+accentColor+";margin-top:4px\">"+(sc.emotion||"")+"</div>");
-          if(sc.dialogue)h.push("<div style=\"font-size:12px;color:#aaa;font-style:italic;margin-top:4px;padding-left:8px\">\u201C"+sc.dialogue+"\u201D</div>");
+          if(sc.dialogue)h.push(formatDialogueInline(sc.dialogue));
           h.push("</div>");
         });
       }
@@ -5625,7 +5625,7 @@ function dm0RatioRewrite(epListStr, targetPct) {
       log('✅ 任务已启动: '+d.task_id, '#4ade80');
       setBar(10);
       // Poll for completion
-      var polls = 0, maxPolls = 120;
+      var polls = 0, maxPolls = 360; // v3.11.2: 360×2s ≈ 12min max (covers slow AI calls)
       function pollStatus() {
         if (polls >= maxPolls) { log('⚠️ 轮询超时', '#f59e0b'); return; }
         polls++;
@@ -5737,6 +5737,32 @@ function dm0CompareClose() {
     });
     toastMsg('已刷新 ' + toRefresh.length + ' 个面板', 1500, 'info');
   }
+}
+
+// v3.11.2: Render dialogue (array or string) as colored inline HTML
+function formatDialogueInline(dialogue){
+  if (!dialogue) return '';
+  if (typeof dialogue === 'string') {
+    return '<div style="font-size:10px;color:#aaa;font-style:italic;margin-top:3px;padding-left:8px">\u201C'+escapeHtml(dialogue.length>200?dialogue.substring(0,200)+'...':dialogue)+'\u201D</div>';
+  }
+  if (!Array.isArray(dialogue) || !dialogue.length) return '';
+  var html = '<div style="margin-top:4px;display:flex;flex-direction:column;gap:2px">';
+  dialogue.forEach(function(d){
+    var isC = d.style === 'classical';
+    var dColor = isC ? '#fca5a5' : '#93c5fd';
+    var dBg = isC ? 'rgba(239,68,68,.08)' : 'rgba(59,130,246,.08)';
+    html += '<div style="background:'+dBg+';padding:3px 8px;border-radius:3px;border-left:2px solid '+dColor+'">';
+    html += '<span style="color:#fbbf24;font-size:9px;font-weight:600">'+(d.speaker||'')+'</span> ';
+    html += '<span style="color:'+dColor+';font-size:9px">'+(isC?'⚔':'💬')+' '+(d.text||'')+'</span>';
+    if (d.voice_dir) html += '<div style="color:#777;font-size:7px;font-style:italic;margin-top:1px">🎤 '+d.voice_dir+'</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function escapeHtml(str){
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ================================================================
