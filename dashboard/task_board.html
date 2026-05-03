@@ -1369,7 +1369,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <body>
 <div id="toast-container"></div>
 <div id="version-check" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#10b981;color:#fff;text-align:center;padding:6px 12px;font-size:13px;font-family:monospace;letter-spacing:0.5px;cursor:pointer" onclick="this.remove()">
-  🔄 v3.7.28 — P2-H剧集角色映射 + P2-N台词对照表 + P2-S本地渲染fallback，点击关闭
+  🔄 v3.7.29 — DM-0剧集多选决策 (复选框+全选+已选N/6集+按钮联动)，点击关闭
 </div>
 
 <div class="topbar">
@@ -1455,7 +1455,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <script>
 // v3.7.17: cache check — if URL has old version param, redirect
 (function(){
-   var v = '3.7.28';
+   var v = '3.7.29';
    var q = location.search;
    var lsVer = localStorage.getItem('_dash_v');
    if ((q && q.indexOf('v=') >= 0 && q.indexOf('v='+v) < 0) || (lsVer && lsVer !== v)) {
@@ -1729,12 +1729,14 @@ async function renderDM0(detail,ms){
     }
     decH += `</div></div>`; // close dm0-right-panel, dm0-side-by-side
     // Decision buttons below the side-by-side
+    var selEpIds = ['dm0-check-1','dm0-check-2','dm0-check-3','dm0-check-4','dm0-check-5','dm0-check-6'];
     decH += `<div style="margin:12px 0;">`;
-    decH += `<div style="font-size:10px;color:#888;margin-bottom:6px;">&#9889; 你的决策 (选择后 Agent 自动执行):</div>`;
-    decH += `<div style="display:flex;gap:8px;flex-wrap:wrap;">`;
-    decH += `<button class="btn btn-s" onclick="decideDM0('approved')">&#10003; 通过</button>`;
-    decH += `<button class="btn btn-w" onclick="decideDM0('rework')">&#9998; 回流重写</button>`;
-    decH += `<button class="btn btn-d" onclick="decideDM0('reject')">&#10007; 驳回</button>`;
+    decH += `<div style="font-size:10px;color:#888;margin-bottom:6px;">&#9889; 你的决策 — 在下方剧集列表中 <span style="color:#fbbf24">勾选目标剧集</span>，然后选择操作：</div>`;
+    decH += `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">`;
+    decH += `<span id="dm0-sel-count" style="font-size:10px;color:#fbbf24;min-width:60px">已选 0/6 集</span>`;
+    decH += `<button class="btn btn-s" id="dm0-btn-approve" onclick="decideDM0(\'approved\',getDM0Selected())" disabled>✓ 通过</button>`;
+    decH += `<button class="btn btn-w" id="dm0-btn-rework" onclick="decideDM0(\'rework\',getDM0Selected())" disabled>✎ 回流重写</button>`;
+    decH += `<button class="btn btn-d" id="dm0-btn-reject" onclick="decideDM0(\'reject\',getDM0Selected())" disabled>✗ 驳回</button>`;
     decH += `<button class="btn btn-rerun" id="dm0-rerun-btn" onclick="reReviewDM0()" style="margin-left:auto">&#128260; 重新 LLM 审核</button>`;
     decH += `</div></div>`;
     decH += `<div style="font-size:10px;color:#666;">&#9432; CODING 免费额度 · 上次审核耗时 ~87s · 点击按钮后自动执行</div>`;
@@ -1807,6 +1809,7 @@ async function renderDM0(detail,ms){
   }
 
   let sec=`<div class="sec" id="dm0-sec"><h3>&#128214; 6集完整故事板</h3>`;
+  sec+=`<div style="display:flex;align-items:center;gap:12px;padding:4px 8px;margin-bottom:4px;border-bottom:1px solid rgba(255,255,255,.04)"><label style="font-size:10px;color:#888;cursor:pointer"><input type="checkbox" id="dm0-check-all" onchange="toggleDM0All(this)" style="margin-right:4px;cursor:pointer">全选/取消</label><span style="font-size:9px;color:#555">下方勾选剧集 → 上方选择通过/驳回/回流</span></div>`;
   sec+=`<div id="dm0-episodes"><span class="loading">加载剧集列表...</span></div>`;
   sec+=`</div>`;
   detailEl.insertAdjacentHTML('beforeend',sec);
@@ -1821,6 +1824,7 @@ async function renderDM0(detail,ms){
       const epNum=String(ep.ep||ep.episode||ep.num||'').padStart(2,'0');
       const title=ep.title||ep.name||('第'+parseInt(epNum)+'集');
       epH+=`<div class="ep-row" id="eprow-${epNum}" onclick="toggleSB('${epNum}')">
+        <label style="margin-right:4px" onclick="event.stopPropagation()"><input type="checkbox" id="dm0-check-${epNum}" onchange="updateDM0Selection()" style="cursor:pointer" title="选择此集进行决策"></label>
         <span class="ep-num">第${parseInt(epNum)}集</span>
         <span class="ep-title">${title}</span>
         <span class="ep-actions">
@@ -5125,14 +5129,19 @@ async function submitFeedback() {
   } catch(e) {}
 }
 
-async function decideDM0(action){
+async function decideDM0(action, selectedEps){
+  if (!selectedEps || !selectedEps.length) {
+    toastMsg('请先在下方剧集列表中勾选目标剧集', 3000);
+    return;
+  }
+  selectedEps = selectedEps || [];
   const labels = {approved:'批准',rework:'回流重写',reject:'驳回'};
   // S4-4: Show feedback form on reject/rework
   if (action === 'reject' || action === 'rework') {
     var fbTypes = ['剧本质量','角色形象','配音','剧情节奏','逻辑一致性','其他'];
     var fbDiv = document.createElement('div');
     fbDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1d27;border:1px solid #f59e0b;border-radius:8px;padding:16px;z-index:500;width:350px;box-shadow:0 8px 32px rgba(0,0,0,.5)';
-    fbDiv.innerHTML = '<div style="font-size:13px;font-weight:600;margin-bottom:8px">✍️ 请描述问题 (可选)</div>' +
+    fbDiv.innerHTML = '<div style="font-size:13px;font-weight:600;margin-bottom:8px">✍️ 请描述问题 (可选) — 涉及 EP' + selectedEps.join(',EP') + '</div>' +
       '<select id="fb-type" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:5px;border-radius:4px;font-size:11px;margin-bottom:6px">' +
       fbTypes.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('') + '</select>' +
       '<textarea id="fb-desc" placeholder="详细描述..." style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:5px;border-radius:4px;font-size:10px;min-height:60px;margin-bottom:8px"></textarea>' +
@@ -5141,17 +5150,55 @@ async function decideDM0(action){
       '<button class="btn btn-cancel" onclick="this.parentElement.parentElement.remove()">跳过</button></div>';
     document.body.appendChild(fbDiv);
   }
-  if(!confirm('确认「'+labels[action]+'」？此操作将触发 Agent 自动执行。')) return;
+  if(!confirm('确认「'+labels[action]+'」EP' + selectedEps.join(',EP') + '？此操作将触发 Agent 自动执行。')) return;
   toastMsg('决策提交中...',3000);
   try{
     const actionMap = {approved:'approved',rework:'modify',reject:'rejected'};
     const r = await fetch('/api/decision',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({task_id:'TK-DM-PREP',action:actionMap[action],reason:'DM-0审核决策',milestone_id:'DM-0'})});
+      body:JSON.stringify({task_id:'TK-DM-PREP',action:actionMap[action],
+        reason:'DM-0审核决策',milestone_id:'DM-0',
+        episodes: selectedEps})});
     if(!r.ok){toastMsg('决策失败: HTTP '+r.status,3000);return;}
     const okLabels={approved:'✅ 审核通过，Agent 将进入下一阶段',rework:'🔄 已触发回流重写，审核将自动重新运行',reject:'❌ 已驳回，任务挂起'};
     toastMsg(okLabels[action],3000);
     setTimeout(refresh,1500);
   }catch(e){toastMsg('决策提交失败: '+e.message,3000)}
+}
+
+// DM-0: Get selected episode numbers from checkboxes
+function getDM0Selected() {
+  var sel = [];
+  for (var i = 1; i <= 6; i++) {
+    var cb = document.getElementById('dm0-check-' + i);
+    if (cb && cb.checked) sel.push(i);
+  }
+  return sel;
+}
+// DM-0: Update selection count and button states
+function updateDM0Selection() {
+  var sel = getDM0Selected();
+  var cnt = document.getElementById('dm0-sel-count');
+  if (cnt) cnt.textContent = '已选 ' + sel.length + '/6 集';
+  ['approve','rework','reject'].forEach(function(a) {
+    var btn = document.getElementById('dm0-btn-' + a);
+    if (btn) btn.disabled = sel.length === 0;
+  });
+  // Also toggle select-all checkbox
+  var sa = document.getElementById('dm0-check-all');
+  if (sa) {
+    if (sel.length === 6) { sa.checked = true; sa.indeterminate = false; }
+    else if (sel.length > 0) { sa.checked = false; sa.indeterminate = true; }
+    else { sa.checked = false; sa.indeterminate = false; }
+  }
+}
+// DM-0: Toggle all checkboxes
+function toggleDM0All(src) {
+  var on = src.checked;
+  for (var i = 1; i <= 6; i++) {
+    var cb = document.getElementById('dm0-check-' + i);
+    if (cb) { cb.checked = on; cb.dispatchEvent(new Event('change')); }
+  }
+  updateDM0Selection();
 }
 
 // ================================================================
@@ -10271,8 +10318,12 @@ function renderFourDimReview(reviewData) {
 // ================================================================
 // v3.7.8: triggerReReview with SSE ReadableStream real-time logs
 async function reReviewDM0(){
+  // Check selected episodes
+  var selEps = getDM0Selected();
+  if (selEps.length === 0) selEps = [1,2,3,4,5,6]; // default: all
+  
   const btn=document.getElementById('dm0-rerun-btn');
-  if(btn){btn.disabled=true;btn.textContent='⏳ 审核中...';}
+  if(btn){btn.disabled=true;btn.textContent='⏳ 审核 EP' + selEps.map(function(e){return String(e).padStart(2,'0')}).join(',') + '...';}
   var logPanel=document.getElementById('review-log-panel');
   if(!logPanel){
     logPanel=document.createElement('div');
@@ -10286,7 +10337,8 @@ async function reReviewDM0(){
   function addLog(msg){logPanel.insertAdjacentHTML('beforeend','<div class="review-log-line">'+msg+'</div>');logPanel.scrollTop=logPanel.scrollHeight;}
   try{
     // v3.7.8: Use SSE ReadableStream for real-time logs
-    var r=await fetch('/api/review/trigger/ep01/stream');
+    var epToReview = selEps[0];
+    var r=await fetch('/api/review/trigger/ep' + String(epToReview).padStart(2,'0') + '/stream');
     var reader=r.body.getReader();
     var decoder=new TextDecoder();
     var buffer='';
