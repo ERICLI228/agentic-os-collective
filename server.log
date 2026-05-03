@@ -3,6 +3,3 @@
 [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
  * Running on http://127.0.0.1:5005
 [33mPress CTRL+C to quit[0m
-127.0.0.1 - - [03/May/2026 06:20:13] "GET / HTTP/1.1" 200 -
-127.0.0.1 - - [03/May/2026 06:20:17] "GET /api/video/1 HTTP/1.1" 200 -
-127.0.0.1 - - [03/May/2026 06:20:22] "GET /api/dashboard HTTP/1.1" 200 -

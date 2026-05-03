@@ -925,6 +925,17 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 .dm6-video-player-wrap video{width:100%;max-height:360px;display:block;background:#000}
 .dm6-video-error{padding:24px;text-align:center;color:#c66;font-size:11px}
 .dm6-video-status{text-align:center;padding:6px;font-size:10px;color:#666}
+/* P0-A: DM-0 side-by-side 原稿 vs AI评审 */
+.dm0-side-by-side{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.dm0-left-panel,.dm0-right-panel{background:rgba(15,23,32,.5);border:1px solid rgba(90,150,200,.08);border-radius:8px;overflow:hidden}
+.dm0-panel-header{padding:8px 14px;font-size:12px;font-weight:700;word-break:keep-all;background:rgba(30,50,70,.4)}
+.dm0-left-panel .dm0-panel-header{color:#93c5fd;border-bottom:1px solid rgba(59,130,246,.1)}
+.dm0-right-panel .dm0-panel-header{color:#fbbf24;border-bottom:1px solid rgba(245,158,11,.1)}
+.dm0-left-panel{padding:0;max-height:70vh;overflow-y:auto}
+.dm0-right-panel{padding:10px 14px}
+.dm0-findings{margin-top:12px}
+.dm0-finding-item{font-size:11px;color:#cbd5e1;line-height:1.6;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+@media(max-width:800px){.dm0-side-by-side{grid-template-columns:1fr}}
 /* Issue cards */
 .dm6-issue-card{display:flex;gap:12px;padding:14px;margin-bottom:12px;border-radius:8px;background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.12);border-left:4px solid #f59e0b}
 .dm6-issue-icon{font-size:22px;flex-shrink:0;line-height:1}
@@ -1327,7 +1338,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <body>
 <div id="toast-container"></div>
 <div id="version-check" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#10b981;color:#fff;text-align:center;padding:6px 12px;font-size:13px;font-family:monospace;letter-spacing:0.5px;cursor:pointer" onclick="this.remove()">
-  🔄 v3.7.23 — P0-V DM-6/7视频播放器 + /api/video端点，点击关闭
+  🔄 v3.7.24 — P0-A DM-0原稿与AI评审左右分栏对照，点击关闭
 </div>
 
 <div class="topbar">
@@ -1412,7 +1423,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <script>
 // v3.7.17: cache check — if URL has old version param, redirect
 (function(){
-   var v = '3.7.23';
+   var v = '3.7.24';
    var q = location.search;
    var lsVer = localStorage.getItem('_dash_v');
    if ((q && q.indexOf('v=') >= 0 && q.indexOf('v='+v) < 0) || (lsVer && lsVer !== v)) {
@@ -1671,10 +1682,21 @@ async function renderDM0(detail,ms){
     let decH = `<div class="sec" id="dm0-decision-sec" style="border-left:3px solid ${scoreColor}">`;
     decH += `<h3>&#129302; AI 对抗审核结果 (CODING 自动运行)</h3>`;
     decH += `<div style="font-size:14px;font-weight:700;color:${scoreColor};margin:8px 0;">${scoreIcon} 综合评分: ${score} / 10 &mdash; ${decisionText}</div>`;
+    // P0-A: 左右分栏对照 — 原稿 (左) vs AI评审 (右)
+    decH += `<div class="dm0-side-by-side">`;
+    decH += `<div class="dm0-left-panel"><div class="dm0-panel-header">&#128214; 原稿</div><div id="dm0-script-content"><span class="loading">加载剧本中...</span></div></div>`;
+    decH += `<div class="dm0-right-panel"><div class="dm0-panel-header">&#129302; AI 评审意见</div>`;
     decH += dimCards;
-    // v3.7.17: 完整剧本展示 — 用户可以看到审核依据
-    decH += `<div class="accordion-section" style="margin:12px 0"><div class="accordion-header" onclick="toggleSection('dm0-script-sec')"><span>&#128214; 完整剧本 (审核依据) — 点击展开</span></div>`;
-    decH += `<div class="accordion-content" id="dm0-script-sec" style="display:none"><div id="dm0-script-content"><span class="loading">加载剧本中...</span></div></div></div>`;
+    // Show detailed findings
+    if (findings.length) {
+      decH += '<div class="dm0-findings">';
+      findings.forEach(function(f) {
+        decH += '<div class="dm0-finding-item">' + f + '</div>';
+      });
+      decH += '</div>';
+    }
+    decH += `</div></div>`; // close dm0-right-panel, dm0-side-by-side
+    // Decision buttons below the side-by-side
     decH += `<div style="margin:12px 0;">`;
     decH += `<div style="font-size:10px;color:#888;margin-bottom:6px;">&#9889; 你的决策 (选择后 Agent 自动执行):</div>`;
     decH += `<div style="display:flex;gap:8px;flex-wrap:wrap;">`;
