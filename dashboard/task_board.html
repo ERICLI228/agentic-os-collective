@@ -1464,7 +1464,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <script>
 // v3.7.17: cache check — if URL has old version param, redirect
 (function(){
-   var v = '3.10.0';
+   var v = '3.11.3';
    var q = location.search;
    var lsVer = localStorage.getItem('_dash_v');
    if ((q && q.indexOf('v=') >= 0 && q.indexOf('v='+v) < 0) || (lsVer && lsVer !== v)) {
@@ -5580,7 +5580,6 @@ function dm0ApplyRatio() {
   var target = parseInt(slider.value);
   var classicalPct = target;
   var modernPct = 100 - target;
-  if (!confirm('确认按 ' + classicalPct + '%古典 / ' + modernPct + '%现代 比例重写全部6集？\n\n此操作将触发 AI 回流重写。')) return;
   var epList = [];
   var allCbs = document.querySelectorAll('#dm0-episodes input[type=checkbox][id^="dm0-check-"]');
   allCbs.forEach(function(cb){
@@ -5588,66 +5587,94 @@ function dm0ApplyRatio() {
     if (epNum !== 'all') epList.push(epNum);
   });
   if (!epList.length) epList = ['1','2','3','4','5','6'];
-  var fbDiv = document.createElement('div');
-  fbDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1d27;border:1px solid #f59e0b;border-radius:8px;padding:16px;z-index:500;width:350px;box-shadow:0 8px 32px rgba(0,0,0,.5)';
-  fbDiv.innerHTML = '<div style="font-size:13px;font-weight:600;margin-bottom:8px">🔄 按 ' + classicalPct + '%古典 / ' + modernPct + '%现代 重写 EP' + epList.join(',EP') + '</div>' +
-    '<select id="ratio-fb-type" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:5px;border-radius:4px;font-size:11px;margin-bottom:6px">' +
-    ['剧本质量','剧情节奏','角色形象','逻辑一致性','配音','其他'].map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('') + '</select>' +
-    '<textarea id="ratio-fb-desc" placeholder="额外描述（可选）..." style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:5px;border-radius:4px;font-size:10px;min-height:50px;margin-bottom:8px"></textarea>' +
-    '<div style="display:flex;gap:6px">' +
-    '<button class="btn btn-s" onclick="dm0RatioRewrite(\'' + epList.join(',') + '\',\'' + classicalPct + '\')">发送重写</button>' +
-    '<button class="btn btn-cancel" onclick="this.parentElement.parentElement.remove()">取消</button></div>';
-  document.body.appendChild(fbDiv);
+  
+  // v3.11.3: Show inline progress directly (skip extra popup step)
+  dm0RatioRewrite(epList.join(','), classicalPct);
 }
 
 function dm0RatioRewrite(epListStr, targetPct) {
-  var fbType = document.getElementById('ratio-fb-type')?.value || '剧本质量';
-  var fbDesc = document.getElementById('ratio-fb-desc')?.value || ('对白比例调整为' + targetPct + '%古典');
   var eps = epListStr.split(',');
-  var popup = document.querySelector('#ratio-fb-desc')?.parentElement?.parentElement;
-  if (popup) popup.remove();
+  var fbType = '剧本质量';
+  var fbDesc = '对白比例调整为' + targetPct + '%古典 / ' + (100-Number(targetPct)) + '%现代';
+  
+  if (!confirm('确认按 ' + targetPct + '%古典 比例重写 EP' + epListStr + '？此操作触发 AI 回流重写，约需 2-5 分钟/集。')) return;
+  
   var overlay = document.createElement('div');
   overlay.id = 'dm0-sync-overlay';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center';
-  overlay.innerHTML = '<div style="background:#1a2535;border:1px solid #3b82f6;border-radius:12px;padding:20px;min-width:380px"><div style="font-size:14px;font-weight:700;color:#93c5fd;margin-bottom:4px">🔄 按比例重写中</div><div style="font-size:10px;color:#64748b;margin-bottom:12px">目标: ' + targetPct + '%古典 / ' + (100-targetPct) + '%现代 · EP' + eps.join(',EP') + '</div><div id="dm0-sync-log" style="max-height:260px;overflow-y:auto;font-size:9px;font-family:monospace;color:#8899aa;line-height:1.6;margin-bottom:8px"></div><div style="height:3px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden"><div id="dm0-sync-bar" style="height:100%;width:0;background:#3b82f6;transition:width .3s;border-radius:3px"></div></div></div>';
+  overlay.innerHTML = '<div style="background:#1a2535;border:1px solid #3b82f6;border-radius:12px;padding:24px;min-width:420px;max-width:600px">' +
+    '<div style="font-size:15px;font-weight:700;color:#93c5fd;margin-bottom:6px">🔄 按比例重写中</div>' +
+    '<div style="font-size:10px;color:#64748b;margin-bottom:16px">目标: ' + targetPct + '%古典 / ' + (100-Number(targetPct)) + '%现代 · EP' + eps.join(',EP') + '</div>' +
+    '<div id="dm0-sync-log" style="max-height:300px;overflow-y:auto;font-size:9px;font-family:monospace;color:#8899aa;line-height:1.6;margin-bottom:10px;min-height:80px"></div>' +
+    '<div style="height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;margin-bottom:6px">' +
+      '<div id="dm0-sync-bar" style="height:100%;width:0;background:linear-gradient(90deg,#3b82f6,#60a5fa);border-radius:3px;transition:width .5s"></div></div>' +
+    '<div style="font-size:8px;color:#555;text-align:right">后台轮询中，请勿关闭页面</div></div>';
   document.body.appendChild(overlay);
+  
   var logEl = document.getElementById('dm0-sync-log');
   var barEl = document.getElementById('dm0-sync-bar');
-  function log(msg, c) { logEl.insertAdjacentHTML('beforeend','<div style="color:'+(c||'#8899aa')+'">'+msg+'</div>'); logEl.scrollTop = logEl.scrollHeight; }
+  function log(msg, c) { 
+    if (!logEl) return;
+    logEl.insertAdjacentHTML('beforeend','<div style="color:'+(c||'#8899aa')+'">'+msg+'</div>'); 
+    logEl.scrollTop = logEl.scrollHeight; 
+  }
   function setBar(p) { if(barEl) barEl.style.width = p+'%'; }
-  log('🤖 提交异步重写任务...', '#a78bfa');
-  setBar(5);
+  
+  log('🚀 提交重写任务...', '#a78bfa');
+  setBar(3);
+  
   fetch('/api/rewrite',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({episodes:eps.map(Number),feedback_type:fbType,feedback_desc:fbDesc+' (目标:'+targetPct+'%古典)'})})
+    body:JSON.stringify({episodes:eps.map(Number),feedback_type:fbType,feedback_desc:fbDesc})})
     .then(function(r){return r.json();})
     .then(function(d){
-      if (!d.task_id) { log('❌ 启动失败: '+JSON.stringify(d), '#ef4444'); return; }
-      log('✅ 任务已启动: '+d.task_id, '#4ade80');
-      setBar(10);
-      // Poll for completion
-      var polls = 0, maxPolls = 360; // v3.11.2: 360×2s ≈ 12min max (covers slow AI calls)
+      if (!d.task_id) { log('❌ 启动失败: '+JSON.stringify(d), '#ef4444'); setBar(0); return; }
+      log('✅ 任务已启动: ' + d.task_id.substring(0,12) + '...', '#4ade80');
+      setBar(5);
+      
+      var polls = 0, maxPolls = 600; // v3.11.3: 600×3s ≈ 30min (covers 6 episodes)
       function pollStatus() {
-        if (polls >= maxPolls) { log('⚠️ 轮询超时', '#f59e0b'); return; }
+        if (polls >= maxPolls) { 
+          log('⏱ 轮询已达上限。任务可能仍在后台运行，刷新查看结果。', '#f59e0b');
+          log('🔄 10秒后自动刷新...', '#93c5fd');
+          setTimeout(function(){location.reload();}, 10000);
+          return; 
+        }
         polls++;
-        setBar(10 + Math.min(polls, 80));
-        fetch('/api/rewrite/status?task_id=' + d.task_id)
-          .then(function(r){return r.json();})
-          .then(function(sd){
-            if (sd.status === 'completed') {
-              setBar(100);
-              var results = sd.results || [];
-              results.forEach(function(rs){
-                if (rs.status === 'done') { log('✅ EP'+rs.episode+': '+rs.shots+'镜 | '+rs.classical_pct+'%古典/'+rs.modern_pct+'%现代', '#4ade80'); }
-                else { log('⚠️ EP'+rs.episode+': '+(rs.note||rs.error||'失败'), '#f59e0b'); }
-              });
-              log('📜 重写完成，刷新页面查看结果...', '#93c5fd');
-              setTimeout(function(){location.reload();}, 2000);
-            } else {
-              setTimeout(pollStatus, 1500);
-            }
-          }).catch(function(){setTimeout(pollStatus, 2000);});
+        setBar(5 + Math.min(polls * 0.15, 93));
+        setTimeout(function(){
+          fetch('/api/rewrite/status?task_id=' + d.task_id)
+            .then(function(r){return r.json();})
+            .then(function(sd){
+              if (sd.status === 'completed') {
+                setBar(100);
+                var results = sd.results || [];
+                var done = 0, fail = 0;
+                results.forEach(function(rs){
+                  if (rs.status === 'done') { 
+                    done++;
+                    log('✅ EP'+rs.episode+': '+rs.shots+'镜 | '+rs.classical_pct+'%古典/'+rs.modern_pct+'%现代 | '+ (rs.total_chars||'') + '字', '#4ade80'); 
+                  } else { 
+                    fail++;
+                    log('⚠️ EP'+rs.episode+': ' + ((rs.note||rs.error)||'失败'), '#f59e0b'); 
+                  }
+                });
+                log('📜 完成: '+done+'/'+results.length+' 集 | 3秒后刷新页面', '#93c5fd');
+                setTimeout(function(){location.reload();}, 3000);
+              } else if (sd.status === 'running') {
+                if (polls % 10 === 0) {
+                  log('⏳ 正在处理: ' + (sd.episode_current || '...'), '#64748b');
+                }
+                pollStatus();
+              } else {
+                pollStatus();
+              }
+            }).catch(function(e){
+              log('⚠️ 轮询网络错误, 重试中...', '#f59e0b');
+              pollStatus();
+            });
+        }, 3000);
       }
-      setTimeout(pollStatus, 1000);
+      pollStatus();
     })
     .catch(function(e){log('❌ 异常: '+e.message, '#ef4444');});
 }

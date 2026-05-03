@@ -858,7 +858,7 @@ def api_audio_serve(subpath):
 
 @app.route('/api/character/<char_name>/generate', methods=['POST'])
 def api_character_generate(char_name):
-    """AI 生成/刷新角色档案 (v3.6.8)"""
+    """AI 生成/刷新角色档案 (v3.11.2: 修复写入格式 — 直接写入顶层字段)"""
     try:
         from script_manager import CHARACTER_ID_MAP, ROLE_OVERVIEW
         from character_profile_generator import generate_character_profile, KNOWN_PROFILES
@@ -866,14 +866,11 @@ def api_character_generate(char_name):
         REVERSE_ID_MAP = {v: k for k, v in CHARACTER_ID_MAP.items()}
         cn_name = REVERSE_ID_MAP.get(char_name, char_name)
 
-        # Get title from role overview
         role = ROLE_OVERVIEW.get(cn_name, {})
         title = role.get("title", "")
 
-        # Generate profile (uses KNOWN_PROFILES fallback if AI fails)
         profile = generate_character_profile(cn_name, title)
 
-        # Merge into visual_bible.json
         bible_path = Path.home() / ".agentic-os" / "character_designs" / "visual_bible.json"
         bible = {}
         if bible_path.exists():
@@ -885,17 +882,13 @@ def api_character_generate(char_name):
         if char_id not in chars:
             chars[char_id] = {"name": cn_name, "id": char_id}
 
-        # Deep merge profile sections
+        # v3.11.2: Write directly to top-level keys (not nested in .profile)
         for section in ["personality", "appearance", "voice"]:
             if section in profile:
-                existing = chars[char_id].get("profile", {}).get(section, {})
-                existing.update(profile[section])
-                if "profile" not in chars[char_id]:
-                    chars[char_id]["profile"] = {}
-                chars[char_id]["profile"][section] = existing
+                chars[char_id][section] = profile[section]
 
-        chars[char_id]["profile"]["_updated_at"] = datetime.now().isoformat()
-        chars[char_id]["profile"]["_generated_by"] = "ai_profile_generator"
+        chars[char_id]["_updated_at"] = datetime.now().isoformat()
+        chars[char_id]["_generated_by"] = "ai_profile_generator"
 
         with open(bible_path, "w", encoding="utf-8") as f:
             json.dump(bible, f, ensure_ascii=False, indent=2)
