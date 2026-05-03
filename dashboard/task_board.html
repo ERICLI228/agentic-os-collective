@@ -962,6 +962,11 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 .dm2-rel-line{color:#555;font-size:9px}
 .dm2-rel-to{color:#fbbf24;font-weight:600;min-width:45px}
 .dm2-rel-note{color:#64748b;font-size:9px;margin-left:auto}
+/* P2-H: Episode-character mapping cards */
+.dm2-ep-card{background:rgba(15,23,35,.5);border:1px solid rgba(59,130,246,.08);border-radius:8px;padding:10px;text-align:center}
+.dm2-ep-num{font-size:13px;font-weight:700;color:#93c5fd;margin-bottom:4px}
+.dm2-ep-chars{font-size:10px;color:#a5b4c4;margin-bottom:3px}
+.dm2-ep-title{font-size:9px;color:#64748b}
 /* Issue cards */
 .dm6-issue-card{display:flex;gap:12px;padding:14px;margin-bottom:12px;border-radius:8px;background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.12);border-left:4px solid #f59e0b}
 .dm6-issue-icon{font-size:22px;flex-shrink:0;line-height:1}
@@ -1364,7 +1369,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <body>
 <div id="toast-container"></div>
 <div id="version-check" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#10b981;color:#fff;text-align:center;padding:6px 12px;font-size:13px;font-family:monospace;letter-spacing:0.5px;cursor:pointer" onclick="this.remove()">
-  🔄 v3.7.27 — P2-K镜头参数 + P2-G人物关系图 + P2-W排播扩展EP01~06，点击关闭
+  🔄 v3.7.28 — P2-H剧集角色映射 + P2-N台词对照表 + P2-S本地渲染fallback，点击关闭
 </div>
 
 <div class="topbar">
@@ -1450,7 +1455,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <script>
 // v3.7.17: cache check — if URL has old version param, redirect
 (function(){
-   var v = '3.7.27';
+   var v = '3.7.28';
    var q = location.search;
    var lsVer = localStorage.getItem('_dash_v');
    if ((q && q.indexOf('v=') >= 0 && q.indexOf('v='+v) < 0) || (lsVer && lsVer !== v)) {
@@ -7151,6 +7156,68 @@ async function renderDM2(detail, ms) {
     '</div>'
   );
 
+  // P2-H: Episode-character mapping
+  detailEl.insertAdjacentHTML('beforeend',
+    '<div class="info-card collapsible">' +
+    '  <div class="info-card-header" onclick="toggleInfoCard(this)">' +
+    '    <span>📺 剧集-角色映射</span><span class="toggle-icon">▼</span>' +
+    '  </div>' +
+    '  <div class="info-card-body" style="display:none">' +
+    '    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">' +
+    '      <div class="dm2-ep-card"><div class="dm2-ep-num">EP01</div><div class="dm2-ep-chars">鲁智深 · 金翠莲 · 郑屠</div><div class="dm2-ep-title">鲁提辖拳打镇关西</div></div>' +
+    '      <div class="dm2-ep-card"><div class="dm2-ep-num">EP02</div><div class="dm2-ep-chars">鲁智深 · 林冲 · 泼皮</div><div class="dm2-ep-title">倒拔垂杨柳</div></div>' +
+    '      <div class="dm2-ep-card"><div class="dm2-ep-num">EP03</div><div class="dm2-ep-chars">林冲 · 高俅 · 鲁智深</div><div class="dm2-ep-title">风雪山神庙</div></div>' +
+    '      <div class="dm2-ep-card"><div class="dm2-ep-num">EP04</div><div class="dm2-ep-chars">宋江 · 阎婆惜</div><div class="dm2-ep-title">怒杀阎婆惜</div></div>' +
+    '      <div class="dm2-ep-card"><div class="dm2-ep-num">EP05</div><div class="dm2-ep-chars">李逵 · 宋江</div><div class="dm2-ep-title">黑旋风劫法场</div></div>' +
+    '      <div class="dm2-ep-card"><div class="dm2-ep-num">EP06</div><div class="dm2-ep-chars">吴用 · 晁盖 · 公孙胜</div><div class="dm2-ep-title">智取生辰纲</div></div>' +
+    '    </div>' +
+    '    <div style="font-size:9px;color:#555;margin-top:8px">6集 × 核心角色对应关系 · 点击角色名跳转细分镜卡</div>' +
+    '  </div>' +
+    '</div>'
+  );
+
+  // P2-N: Dialogue comparison table (async load from API)
+  var dlTableId = 'dm2-dialogue-table';
+  detailEl.insertAdjacentHTML('beforeend',
+    '<div class="info-card collapsible">' +
+    '  <div class="info-card-header" onclick="toggleInfoCard(this)">' +
+    '    <span>💬 台词对照表</span><span class="toggle-icon">▼</span>' +
+    '  </div>' +
+    '  <div class="info-card-body" style="display:none" id="' + dlTableId + '">' +
+    '    <span class="loading">加载台词数据...</span>' +
+    '  </div>' +
+    '</div>'
+  );
+  (async function loadDialogueTable() {
+    var box = document.getElementById(dlTableId);
+    if (!box) return;
+    try {
+      var rows = '';
+      for (var ei = 1; ei <= 6; ei++) {
+        var epNum = String(ei).padStart(2, '0');
+        try {
+          var r = await fetch('/api/script/' + ei);
+          var d = await r.json();
+          var shots = d.shots || d.storyboard || [];
+          var dialCount = 0;
+          shots.forEach(function(s) {
+            var dia = s.dialogue || s.lines || '';
+            if (dia && dia.length > 2) {
+              dialCount++;
+              rows += '<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:10px">' +
+                '<span style="color:#93c5fd;min-width:40px;font-weight:600">EP' + epNum + '</span>' +
+                '<span style="color:#f59e0b;min-width:30px">镜' + String(s.shot_number || (shots.indexOf(s)+1)).padStart(2,'0') + '</span>' +
+                '<span style="color:#e4e6eb;flex:1">「' + (dia.length > 80 ? dia.substring(0,80) + '...' : dia) + '」</span>' +
+                '</div>';
+            }
+          });
+          if (dialCount === 0) rows += '<div style="font-size:10px;color:#555;padding:2px">EP' + epNum + ' 暂无台词数据</div>';
+        } catch(epErr) { rows += '<div style="font-size:10px;color:#c66;padding:2px">EP' + epNum + ' 加载失败</div>'; }
+      }
+      box.innerHTML = rows || '<div style="color:#555">暂无台词数据</div>';
+    } catch(e) { box.innerHTML = '<div style="color:#ef4444">加载失败: ' + e.message + '</div>'; }
+  })();
+
   // Step 5: Render Panel 3 - Statistics Tag Clouds
   detailEl.insertAdjacentHTML('beforeend', _renderDM2Stats(stats));
 
@@ -8124,10 +8191,27 @@ function switchToRenderer(mode) {
 
 // DM-4 helper: switch to ComfyUI pipeline
 function switchToComfyUI() {
-  var banner = document.getElementById('version-check');
-  if (banner) banner.textContent = '✅ ComfyUI 渲染模式已激活';
-  toastMsg('✅ 已切换到 ComfyUI 静态角色画面 — 本地免费方案就绪', 4000, 'success');
+  alert('ComfyUI 升级: 请在本地启动 ComfyUI 实例，然后将工作流 JSON 导入角色画面管线。\n\n步骤:\n1. 终端运行: comfyui --port 8188\n2. 浏览器打开 http://localhost:8188\n3. 导入 AI_Short_Drama_Pipeline/workflows/character_portrait.json\n4. DM-4 将检测 ComfyUI 并自动切换管线');
 }
+
+// P2-S: Local Pillow fallback for AI video generation
+function switchToLocalFallback() {
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:10000;display:flex;align-items:center;justify-content:center';
+  overlay.innerHTML = '<div style="background:#1a2535;border:1px solid #3b82f6;border-radius:12px;padding:24px;max-width:420px"><h3 style="color:#93c5fd;margin:0 0 12px">📺 本地Pillow渲染</h3><p style="color:#a5b4c4;font-size:11px">使用Python Pillow生成PNG字幕帧 → ffmpeg合并MP4<br><br>⚠️ 画质较低(2/10)，但无需付费/网络<br>✅ 适合快速验证 · 约30秒/集</p><div style="display:flex;gap:8px;margin-top:16px"><button class="btn-primary" onclick="doLocalRender(this)" style="padding:6px 14px">⚡ 立即生成本地视频</button><button class="btn-secondary" onclick="this.closest(\'div\').parentElement.remove()" style="padding:6px 14px">取消</button></div></div>';
+  document.body.appendChild(overlay);
+}
+async function doLocalRender(btn) {
+  btn.textContent = '⏳ 生成中...'; btn.disabled = true;
+  try {
+    var r = await fetch('/api/render/local-fallback', { method: 'POST',
+      headers: {'Content-Type':'application/json'}, body: JSON.stringify({episode:1}) });
+    var d = await r.json();
+    btn.textContent = d.status === 'ok' ? '✅ 完成!' : '❌ 失败';
+    if (d.status === 'ok') alert('本地渲染完成: ' + (d.file||'final.mp4'));
+  } catch(e) { btn.textContent = '❌ 网络错误'; }
+}
+
 
 // DM-5 helper: go to Kling with loading feedback
 function goToKling(btn) {
@@ -8990,6 +9074,7 @@ async function renderDM5(detail, ms) {
     '  <span style="font-size:11px;color:#888;flex:1">' + (blocked ? '❌ AI视频生成阻塞 — 以下是可用方案：' : '✅ AI视频生成就绪，选择方案启动：') + '</span>' +
     '  <button class="btn-primary btn-lg" onclick="window.open(\'https://kling.kuaishou.com\')">⭐ 前往 Kling (¥15/6集 · 推荐)</button>' +
     '  <button class="btn-secondary" onclick="switchToComfyUI()">🖥️ 用 ComfyUI 免费生成</button>' +
+    '  <button class="btn-secondary" onclick="switchToLocalFallback()">📺 本地Pillow渲染 (离线可用)</button>' +
     '  <button class="btn-secondary" onclick="triggerReReview(\'DM-5\')">重新检查</button>' +
     '</div>'
   );

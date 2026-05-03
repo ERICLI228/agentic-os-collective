@@ -1803,6 +1803,72 @@ def localize_review():
         return jsonify({"error": f"Localization review failed: {str(e)}"}), 500
 
 
+# P2-S: /api/render/local-fallback — local Pillow rendering fallback
+@app.route('/api/render/local-fallback', methods=['POST'])
+def local_fallback_render():
+    """Quick local render using Pillow → ffmpeg when AI video unavailable."""
+    data = request.get_json() or {}
+    ep_num = int(data.get('episode', 1))
+    ep_str = f"{ep_num:02d}"
+    ep_dir = Path.home() / f".agentic-os/episode_{ep_str}"
+    video_dir = ep_dir / "video"
+    video_dir.mkdir(parents=True, exist_ok=True)
+
+    # Find existing merged/final video — if found, return it as fallback
+    candidates = [
+        video_dir / f"episode_{ep_str}_merged.mp4",
+        ep_dir / "final_with_sfx.mp4",
+        ep_dir / "final.mp4",
+        ep_dir / "final_silent.mp4",
+        ep_dir / "final_pillow.mp4",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return jsonify({
+                "status": "ok", "source": "existing",
+                "file": str(candidate),
+                "size": candidate.stat().st_size,
+                "episode": ep_num
+            })
+
+    # No existing video — try generating a simple Pillow text frame → ffmpeg
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+        frame_file = video_dir / "_pillow_fallback_frame.png"
+        img = Image.new("RGB", (1080, 1920), (20, 20, 40))
+        draw = ImageDraw.Draw(img)
+        # Draw text
+        lines = [f"数字短剧 EP{ep_str}", "Pillow本地渲染", "AI管线不可用时使用", f"生成时间: {__import__('datetime').datetime.now().strftime('%H:%M')}"]
+        for i, line in enumerate(lines):
+            draw.text((540, 600 + i*80), line, fill=(200,200,240), anchor="mt",
+                      font=ImageFont.load_default())
+        img.save(str(frame_file))
+
+        output = video_dir / "_pillow_fallback.mp4"
+        import subprocess
+        ffmpeg = _find_binary("ffmpeg") or "ffmpeg"
+        result = subprocess.run([
+            ffmpeg, "-y", "-loop", "1", "-i", str(frame_file),
+            "-c:v", "libx264", "-t", "5", "-pix_fmt", "yuv420p",
+            "-vf", "scale=1080:1920", str(output)
+        ], capture_output=True, text=True, timeout=30)
+        if result.returncode == 0:
+            return jsonify({
+                "status": "ok", "source": "generated",
+                "file": str(output),
+                "size": output.stat().st_size,
+                "episode": ep_num,
+                "note": "Pillow文字帧 → ffmpeg 5秒预览"
+            })
+        return jsonify({"status": "error", "message": f"ffmpeg error: {result.stderr[-200:]}"}), 500
+    except ImportError:
+        return jsonify({"status": "error", "message": "PIL/Pillow not installed; install via: pip3 install Pillow"}), 500
+    except subprocess.TimeoutExpired:
+        return jsonify({"status": "error", "message": "ffmpeg timed out after 30s"}), 504
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
 if __name__ == '__main__':
     import sys, os
     sys.path.insert(0, str(Path(__file__).parent.parent))
