@@ -123,6 +123,6 @@ bash scripts/generate-sync-report.sh
 
 ## 📝 版本信息
 - 创建时间：2026-05-03 00:03 PDT
-- 基于 PRD-v3.7.8 拆分后架构
+- 基于 PRD-v3.7.21 架构
 - 生产目录：`~/agentic-os-collective/`
 - 测试目录：`/tmp/agentic-os-test`
