@@ -5297,13 +5297,22 @@ async function decideDM0(action, selectedEps){
 // DM-0: Get selected episode numbers from checkboxes
 function getDM0Selected() {
   var sel = [];
-  for (var i = 1; i <= 6; i++) {
-    var cb = document.getElementById('dm0-check-' + i);
-    if (cb && cb.checked) sel.push(i);
+  var cbs = document.querySelectorAll('#dm0-episodes input[type=checkbox]');
+  if (cbs.length === 0) {
+    for (var i = 1; i <= 6; i++) {
+      var cb = document.getElementById('dm0-check-' + i);
+      if (cb && cb.checked) sel.push(i);
+    }
+    return sel;
   }
+  cbs.forEach(function(cb) {
+    if (cb.checked) {
+      var m = (cb.id || '').match(/dm0-check-(\d+)/);
+      if (m) sel.push(parseInt(m[1]));
+    }
+  });
   return sel;
 }
-// DM-0: Update selection count and button states
 function updateDM0Selection() {
   var sel = getDM0Selected();
   var cnt = document.getElementById('dm0-sel-count');
@@ -5312,7 +5321,6 @@ function updateDM0Selection() {
     var btn = document.getElementById('dm0-btn-' + a);
     if (btn) btn.disabled = sel.length === 0;
   });
-  // Also toggle select-all checkbox
   var sa = document.getElementById('dm0-check-all');
   if (sa) {
     if (sel.length === 6) { sa.checked = true; sa.indeterminate = false; }
@@ -5323,11 +5331,23 @@ function updateDM0Selection() {
 // DM-0: Toggle all checkboxes
 function toggleDM0All(src) {
   var on = src.checked;
-  for (var i = 1; i <= 6; i++) {
-    var cb = document.getElementById('dm0-check-' + i);
-    if (cb) { cb.checked = on; cb.dispatchEvent(new Event('change')); }
+  var found = 0;
+  // Use querySelectorAll to find checkboxes inside episode container (async-safe)
+  var eps = document.querySelectorAll('#dm0-episodes input[type=checkbox]');
+  eps.forEach(function(cb) { cb.checked = on; found++; });
+  // Also check standalone checkboxes with IDs dm0-check-1..6 (for sync after first render)
+  if (found === 0) {
+    for (var i = 1; i <= 6; i++) {
+      var cb = document.getElementById('dm0-check-' + i);
+      if (cb) { cb.checked = on; found++; }
+    }
   }
   updateDM0Selection();
+  // Ensure button states update after toggling
+  ['approve','rework','reject'].forEach(function(a) {
+    var btn = document.getElementById('dm0-btn-' + a);
+    if (btn) btn.disabled = !on || found === 0;
+  });
 }
 
 // ================================================================
