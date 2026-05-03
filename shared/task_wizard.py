@@ -1243,41 +1243,62 @@ def api_detail(ms_id):
 
 @app.route('/api/characters/all', methods=['GET'])
 def api_characters_all():
-    """一次性返回所有角色的精简数据，避免108次单请求压垮单线程Flask"""
+    """v3.11.3: 返回全部108位角色的完整档案数据"""
     import sys
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     try:
-        from script_manager import CHARACTER_ID_MAP, _get_render_dir
+        from script_manager import CHARACTER_ID_MAP, ROLE_OVERVIEW, _get_render_dir
     except Exception:
         CHARACTER_ID_MAP = {}
+        ROLE_OVERVIEW = {}
+        _get_render_dir = lambda n: Path("/dev/null")
+
     bible_path = Path.home() / ".agentic-os" / "character_designs" / "visual_bible.json"
     bible = {}
     if bible_path.exists():
         with open(bible_path, encoding="utf-8") as f:
             bible = json.load(f)
-    chars = bible.get("characters", {})
+    bible_chars = bible.get("characters", {})
+
     results = []
-    for fid, ch in chars.items():
-        rd = _get_render_dir(ch.get("name", fid))
+    # v3.11.3: Iterate ALL 108 characters from CHARACTER_ID_MAP
+    for cn_name, eng_id in sorted(CHARACTER_ID_MAP.items()):
+        ch = bible_chars.get(eng_id, {})
+        role = ROLE_OVERVIEW.get(cn_name, {})
+
+        # Render files — check both Chinese and English directories
+        rd = _get_render_dir(cn_name)
         renders = []
         if rd.exists():
-            for p in sorted(rd.glob("*.png"))[:5]:
-                renders.append(f"/api/render/{fid}/{p.name}")
+            for p in sorted(rd.glob("*.png"))[:10]:
+                renders.append(f"/api/render/{eng_id}/{p.name}")
+
+        # Merge profile data — handle both nested and flat formats
+        profile = ch.get("profile", {})
+        personality = profile.get("personality") or ch.get("personality", {})
+        appearance = profile.get("appearance") or ch.get("appearance", {})
+        voice = profile.get("voice") or ch.get("voice", {})
+        basic_info = profile.get("basic_info") or ch.get("basic_info", {})
+
+        # If bible has old-format data, convert
+        if isinstance(personality, str):
+            personality = {"core_traits": [personality]}
+
         results.append({
-            "name": ch.get("name", fid),
-            "pinyin": fid,
-            "title": ch.get("title", ""),
-            "star_rank": ch.get("star_rank"),
-            "star_name": ch.get("star_name", ""),
+            "name": cn_name,
+            "pinyin": eng_id,
+            "title": ch.get("title") or role.get("title", ""),
+            "star_rank": ch.get("star_rank") or role.get("star_rank", ""),
+            "star_name": ch.get("star_name") or role.get("star_name", ""),
             "actor": ch.get("actor", ""),
             "prompt_en": ch.get("prompt_en", ""),
-            "basic_info": ch.get("basic_info", {}),
-            "personality": ch.get("personality", {}),
-            "appearance": ch.get("appearance", {}),
-            "voice": ch.get("voice", {}),
+            "basic_info": basic_info,
+            "personality": personality,
+            "appearance": appearance,
+            "voice": voice,
             "renders": renders,
             "video_prompts": ch.get("video_prompts", {}),
-            "has_video_prompts": "video_prompts" in ch and ch.get("video_prompts") and isinstance(ch.get("video_prompts"), dict),
+            "has_video_prompts": bool(ch.get("video_prompts") and isinstance(ch.get("video_prompts"), dict)),
         })
     return jsonify({"characters": results, "total": len(results)})
 
