@@ -1200,7 +1200,9 @@ async function renderDM0(detail,ms){
           techH+='<div class="script-file-meta">14集原著改编 · 6集当前计划 · 来源: 袁无涯本120回</div>';
           techH+='</div>';
           techH+='<div class="script-file-actions">';
-          techH+='<button class="btn btn-p" onclick="openScriptBrowser()" style="font-size:11px;padding:5px 14px">\u{1F4D6} \u6D4F\u89C8\u5267\u672C</button>';
+          techH+='<button onclick="showScriptSummary()">\ud83d\udccb \u6458\u8981</button>';
+          techH+='<button onclick="showScriptDetail(1)">\ud83d\udd0d \u8be6\u60c5</button>';
+          techH+='<button onclick="previewScriptHTML(1)">\ud83d\udce5 \u9884\u89c8</button>';
           techH+='</div></div>';
 
         // 完整性检查 — 进度条
@@ -1369,139 +1371,6 @@ async function loadStoryboard(epNum){
   }
 }
 
-// v3.7.8: Unified script browser — side drawer: ep pills + storyboard + preview toggle
-function openScriptBrowser(){
-  var existing=document.getElementById('script-browser-drawer');
-  if(existing){closeScriptBrowser();existing=null;}
-  var backdrop=document.createElement('div');
-  backdrop.id='script-browser-backdrop';
-  backdrop.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:999';
-  backdrop.onclick=function(){closeScriptBrowser();};
-  document.body.appendChild(backdrop);
-  var drawer=document.createElement('div');
-  drawer.id='script-browser-drawer';
-  drawer.style.cssText='position:fixed;top:0;right:0;bottom:0;width:65%;max-width:900px;background:#0f1018;z-index:1000;transform:translateX(100%);transition:transform .3s ease;display:flex;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.5)';
-  var h='<div style=\"flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#1a1d27;border-bottom:1px solid rgba(59,130,246,.2)\">';
-  h+='<div style=\"display:flex;align-items:center;gap:10px\">';
-  h+='<span style=\"font-size:15px;font-weight:700;color:#e4e6eb\">\u{1F4D6} \u5267\u672C\u6D4F\u89C8</span>';
-  h+='<label style=\"display:flex;align-items:center;gap:4px;font-size:9px;color:#888;cursor:pointer;user-select:none\">';
-  h+='<input type=\"checkbox\" id=\"script-preview-toggle\" onchange=\"toggleScriptBrowserMode()\" style=\"cursor:pointer;margin:0\"> \u9884\u89C8\u6A21\u5F0F</label>';
-  h+='</div>';
-  h+='<span onclick=\"closeScriptBrowser()\" style=\"cursor:pointer;font-size:22px;color:#555;line-height:1\">&times;</span>';
-  h+='</div>';
-  h+='<div id=\"script-browser-pills\" style=\"flex:0 0 auto;display:flex;gap:6px;padding:10px 16px;overflow-x:auto;border-bottom:1px solid #1e2130\"><span class=\"loading\">\u52A0\u8F7D\u5267\u96C6...</span></div>';
-  h+='<div id=\"script-browser-content\" style=\"flex:1;overflow-y:auto;padding:16px 20px\"><div style=\"text-align:center;padding:40px;color:#888\">\u52A0\u8F7D\u4E2D...</div></div>';
-  drawer.innerHTML=h;
-  document.body.appendChild(drawer);
-  requestAnimationFrame(function(){drawer.style.transform='translateX(0)';});
-  fetch('/api/script').then(function(r){return r.json();}).then(function(d){
-    var eps=d.episodes||d||[];
-    if(!Array.isArray(eps))eps=Object.values(eps);
-    window._scriptBrowserEps=eps;
-    renderScriptBrowserPills(eps);
-    if(eps.length>0){
-      var firstEp=eps[0].episode||eps[0].ep||1;
-      selectScriptBrowserEp(firstEp);
-    }
-  }).catch(function(e){
-    var pills=document.getElementById('script-browser-pills');
-    if(pills)pills.innerHTML='<span style=\"color:#ef4444;font-size:10px\">\u52A0\u8F7D\u5931\u8D25</span>';
-  });
-}
-function closeScriptBrowser(){
-  var d=document.getElementById('script-browser-drawer');
-  var b=document.getElementById('script-browser-backdrop');
-  if(d)d.style.transform='translateX(100%)';
-  if(b)b.style.opacity='0';
-  setTimeout(function(){if(d)d.remove();if(b)b.remove();},300);
-}
-function renderScriptBrowserPills(eps){
-  var pills=document.getElementById('script-browser-pills');
-  if(!pills)return;
-  var h='';
-  eps.forEach(function(ep,i){
-    var epNum=ep.episode||ep.ep||(i+1);
-    var title=ep.title||'EP'+String(epNum).padStart(2,'0');
-    var score=ep.score||'';
-    h+='<span class=\"script-ep-pill\" data-ep=\"'+epNum+'\" onclick=\"selectScriptBrowserEp('+epNum+')\" style=\"display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:16px;font-size:10px;cursor:pointer;white-space:nowrap;background:rgba(255,255,255,.04);color:#888;border:1px solid transparent;transition:all .15s\">'+title+(score?' <span style=\"font-size:8px;color:#fbbf24\">'+score+'\u5206</span>':'')+'</span>';
-  });
-  pills.innerHTML=h;
-}
-function selectScriptBrowserEp(epNum){
-  window._scriptBrowserEp=epNum;
-  var pills=document.getElementById('script-browser-pills');
-  if(pills){
-    var all=pills.querySelectorAll('.script-ep-pill');
-    for(var i=0;i<all.length;i++){
-      var match=all[i].dataset.ep==epNum;
-      all[i].style.background=match?'rgba(59,130,246,.15)':'rgba(255,255,255,.04)';
-      all[i].style.color=match?'#60a5fa':'#888';
-      all[i].style.borderColor=match?'rgba(59,130,246,.3)':'transparent';
-    }
-  }
-  var previewToggle=document.getElementById('script-preview-toggle');
-  if(previewToggle&&previewToggle.checked){
-    renderScriptBrowserPreview(epNum);
-  }else{
-    renderScriptBrowserDetail(epNum);
-  }
-}
-function toggleScriptBrowserMode(){
-  var epNum=window._scriptBrowserEp||1;
-  selectScriptBrowserEp(epNum);
-}
-function renderScriptBrowserDetail(epNum){
-  var content=document.getElementById('script-browser-content');
-  if(!content)return;
-  var epId=String(epNum).padStart(2,'0');
-  content.innerHTML='<div style=\"text-align:center;padding:40px;color:#888\"><span class=\"loading\">\u52A0\u8F7D\u5206\u955C...</span></div>';
-  fetch('/api/script/'+epId).then(function(r){return r.json();}).then(function(data){
-    var sb=data.storyboard||[];
-    var title=data.title||'EP'+epId;
-    var score=data.score||'';
-    var tags=(data.tags||[]).join(' \u00B7 ')||'';
-    var ch=data.main_character||'';
-    var scenes=data.scene_count||sb.length||0;
-    var h='';
-    h+='<h2 style=\"margin:0 0 4px;color:#e4e6eb;font-size:16px\">'+title+'</h2>';
-    h+='<div style=\"margin-bottom:16px;font-size:10px;color:#888\">\u{1F464} '+ch+' \u00B7 \u2B50 '+score+'\u5206 \u00B7 \u{1F4CB} '+scenes+'\u573A\u666F \u00B7 '+tags+'</div>';
-    if(!sb.length){h+='<div style=\"text-align:center;padding:40px;color:#555\">\u6682\u65E0\u5206\u955C\u6570\u636E</div>';}
-    sb.forEach(function(sc,i){
-      var tone=sc.emotion||'';
-      var accent='#3b82f6';
-      if(/爆|怒|杀|打|冲|愤|激烈/.test(tone))accent='#ff6b6b';
-      else if(/悲|哭|哀|伤|泪/.test(tone))accent='#a78bfa';
-      else if(/爱|情|温|柔|甜/.test(tone))accent='#fb7185';
-      else if(/恐|惊|怕|慌|逃|急/.test(tone))accent='#fbbf24';
-      else if(/静|冷|孤|沉|思|默/.test(tone))accent='#94a3b8';
-      h+='<div style=\"margin-bottom:8px;padding:10px 14px;border-radius:8px;background:rgba(255,255,255,.02);border-left:3px solid '+accent+'\">';
-      h+='<div style=\"display:flex;gap:8px;margin-bottom:4px;align-items:baseline\"><span style=\"font-size:10px;color:'+accent+';font-weight:700\">\u955C'+(i+1)+'</span><span style=\"font-size:9px;color:#fbbf24\">'+(sc.act||'')+'</span><span style=\"font-size:9px;color:#666\">'+(sc.duration||'')+'</span></div>';
-      h+='<div style=\"font-size:12px;color:#ccc;line-height:1.7\">'+(sc.description||'')+'</div>';
-      if(tone)h+='<div style=\"font-size:9px;color:#888;margin-top:3px\">\u{1F3AD} '+tone+'</div>';
-      if(sc.dialogue)h+='<div style=\"font-size:10px;color:#aaa;font-style:italic;margin-top:3px;padding-left:8px\">\u201C'+sc.dialogue+'\u201D</div>';
-      h+='</div>';
-    });
-    content.innerHTML=h;
-  }).catch(function(e){
-    content.innerHTML='<div style=\"color:#ef4444;text-align:center;padding:40px\">\u52A0\u8F7D\u5931\u8D25: '+e.message+'</div>';
-  });
-}
-function renderScriptBrowserPreview(epNum){
-  var content=document.getElementById('script-browser-content');
-  if(!content)return;
-  var epId=String(epNum).padStart(2,'0');
-  content.innerHTML='<div style=\"text-align:center;padding:40px;color:#888\"><span class=\"loading\">\u52A0\u8F7D\u9884\u89C8...</span></div>';
-  fetch('/api/script/'+epId+'/export?format=html').then(function(r){return r.text();}).then(function(html){
-    var ifr=document.createElement('iframe');
-    ifr.style.cssText='width:100%;height:100%;min-height:600px;border:none;background:#fff;border-radius:4px';
-    content.innerHTML='';
-    content.appendChild(ifr);
-    var doc=ifr.contentDocument||ifr.contentWindow.document;
-    doc.open();doc.write(html);doc.close();
-  }).catch(function(e){
-    content.innerHTML='<div style=\"color:#ef4444;text-align:center;padding:40px\">\u9884\u89C8\u52A0\u8F7D\u5931\u8D25</div>';
-  });
-}
 // v3.7.8: 剧本摘要列表、详情、预览函数
 function showScriptSummary(){
   var existing=document.getElementById('script-summary-dlg');
@@ -1576,13 +1445,13 @@ function previewScriptHTML(epNum){
   var dlg=document.createElement("div");
   dlg.id="script-preview-dlg";
   dlg.style.cssText="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:1000;display:flex;flex-direction:column";
-  dlg.innerHTML=["<div style=\"flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#1a1d27;border-bottom:1px solid rgba(59,130,246,.3)\">",
-    "<div style=\"font-size:14px;font-weight:600;color:#e4e6eb\">📥 EP"+epId+" HTML预览</div>",
-    "<div>",
-    "<button class=\"mini-btn\" id=\"dl-dlbtn\">⬇ 下载</button>",
-    "<span onclick=\"this.closest('#script-preview-dlg').remove()\" style=\"cursor:pointer;font-size:20px;color:#555;margin-left:8px\">&times;</span>",
-    "</div></div>",
-    "<div id=\"script-preview-body\" style=\"flex:1;overflow:hidden;background:#fff\"><span class=\"loading\">渲染HTML...</span></div>"].join("");
+  dlg.innerHTML=["<div style=\x22flex:0 0 auto;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#1a1d27;border-bottom:1px solid rgba(59,130,246,.3)\x22>",
+    "\x3Cdiv style=\x22font-size:14px;font-weight:600;color:#e4e6eb\x22\x3E\xF0\x9F\x93\xA5 EP"+epId+" HTML\xE9\xA2\x84\xE8\xA7\x88\x3C/div\x3E",
+    "\x3Cdiv\x3E",
+    "\x3Cbutton class=\x22mini-btn\x22 id=\x22dl-dlbtn\x22\x3E\xE2\xAC\x87 \xE4\xB8\x8B\xE8\xBD\xBD\x3C/button\x3E",
+    "\x3Cspan onclick=\x22this.closest('#script-preview-dlg').remove()\x22 style=\x22cursor:pointer;font-size:20px;color:#555;margin-left:8px\x22\x3E\x26times;\x3C/span\x3E",
+    "\x3C/div\x3E\x3C/div\x3E",
+    "\x3Cdiv id=\x22script-preview-body\x22 style=\x22flex:1;overflow:hidden;background:#fff\x22\x3E\x3Cspan class=\x22loading\x22\x3E\xE6\xB8\xB2\xE6\x9F\x93HTML...\x3C/span\x3E\x3C/div\x3E"].join("");
   document.body.appendChild(dlg);
   setTimeout(function(){var b=document.getElementById("dl-dlbtn");if(b)b.onclick=function(){window.open("/api/script/"+epId+"/export?format=html")};},0);
   fetch("/api/script/"+epId+"/export?format=html").then(function(r){return r.text();}).then(function(html){
@@ -1603,11 +1472,11 @@ function previewScriptHTML(epNum){
       var score=data.score||"";
       var tags=(data.tags||[]).join(", ")||"";
       var ch=data.main_character||"";
-      var h=["<div style=\"font-family:PingFang SC,serif;padding:24px;color:#1a1a2e;max-width:800px;margin:0 auto\">",
-        "<h1 style=\"text-align:center;color:#e94560;border-bottom:2px solid #e94560;padding-bottom:10px;margin-bottom:8px\">"+title+"</h1>",
-        "<div style=\"text-align:center;color:#888;font-size:12px;margin-bottom:20px\">"+ch+(score?" \u00B7 "+score+"\u5206":"")+(tags?" \u00B7 "+tags:"")+"</div>"];
+      var h=["\x3Cdiv style=\x22font-family:PingFang SC,serif;padding:24px;color:#1a1a2e;max-width:800px;margin:0 auto\x22\x3E",
+        "\x3Ch1 style=\x22text-align:center;color:#e94560;border-bottom:2px solid #e94560;padding-bottom:10px;margin-bottom:8px\x22\x3E"+title+"\x3C/h1\x3E",
+        "\x3Cdiv style=\x22text-align:center;color:#888;font-size:12px;margin-bottom:20px\x22\x3E"+ch+(score?" \u00B7 "+score+"\u5206":"")+(tags?" \u00B7 "+tags:"")+"\x3C/div\x3E"];
       if(sb.length){
-        h.push("<h3 style=\"color:#e94560;border-left:3px solid #e94560;padding-left:10px\">分镜脚本</h3>");
+        h.push("\x3Ch3 style=\x22color:#e94560;border-left:3px solid #e94560;padding-left:10px\x22\x3E\xE5\x88\x86\xE9\x95\x9C\xE8\x84\x9A\xE6\x9C\xAC\x3C/h3\x3E");
         sb.forEach(function(sc,i){
           var tone=sc.emotion||"";
           var toneColor="#16213e";var accentColor="#00d2ff";
@@ -1617,24 +1486,24 @@ function previewScriptHTML(epNum){
           else if(/恐|惊|怕|慌|逃|急/.test(tone)){toneColor="#2d1b1e";accentColor="#fbbf24";}
           else if(/静|冷|孤|沉|思|默/.test(tone)){toneColor="#1a1e2d";accentColor="#94a3b8";}
           else if(/疑|问|谜/.test(tone)){toneColor="#1e1e2d";accentColor="#a78bfa";}
-          h.push("<div style=\"background:"+toneColor+"!important;border-radius:8px;padding:12px;margin-bottom:8px;border-left:4px solid "+accentColor+"\">");
-          h.push("<div style=\"display:flex;gap:8px;margin-bottom:4px\"><span style=\"font-size:10px;color:"+accentColor+";font-weight:700\">镜"+(i+1)+"</span><span style=\"font-size:10px;color:#fbbf24\">"+(sc.act||"")+"</span><span style=\"font-size:9px;color:#888\">"+(sc.duration||"")+"</span></div>");
-          h.push("<div style=\"font-size:13px;color:#e0e0e0;line-height:1.7\">"+(sc.description||"")+"</div>");
-          if(tone)h.push("<div style=\"font-size:10px;color:"+accentColor+";margin-top:4px\">"+(sc.emotion||"")+"</div>");
-          if(sc.dialogue)h.push("<div style=\"font-size:12px;color:#aaa;font-style:italic;margin-top:4px;padding-left:8px\">\u201C"+sc.dialogue+"\u201D</div>");
-          h.push("</div>");
+          h.push("\x3Cdiv style=\x22background:"+toneColor+"!important;border-radius:8px;padding:12px;margin-bottom:8px;border-left:4px solid "+accentColor+"\x22\x3E");
+          h.push("\x3Cdiv style=\x22display:flex;gap:8px;margin-bottom:4px\x22\x3E\x3Cspan style=\x22font-size:10px;color:"+accentColor+";font-weight:700\x22\x3E\xE9\x95\x9C"+(i+1)+"\x3C/span\x3E\x3Cspan style=\x22font-size:10px;color:#fbbf24\x22\x3E"+(sc.act||"")+"\x3C/span\x3E\x3Cspan style=\x22font-size:9px;color:#888\x22\x3E"+(sc.duration||"")+"\x3C/span\x3E\x3C/div\x3E");
+          h.push("\x3Cdiv style=\x22font-size:13px;color:#e0e0e0;line-height:1.7\x22\x3E"+(sc.description||"")+"\x3C/div\x3E");
+          if(tone)h.push("\x3Cdiv style=\x22font-size:10px;color:"+accentColor+";margin-top:4px\x22\x3E"+(sc.emotion||"")+"\x3C/div\x3E");
+          if(sc.dialogue)h.push("\x3Cdiv style=\x22font-size:12px;color:#aaa;font-style:italic;margin-top:4px;padding-left:8px\x22\x3E\xE2\x80\x9C"+sc.dialogue+"\xE2\x80\x9D\x3C/div\x3E");
+          h.push("\x3C/div\x3E");
         });
       }
-      h.push("<div style=\"text-align:center;padding:20px;color:#888;font-size:10px\">Agentic OS v3.7 \u00B7 水浒传AI短剧</div>");
-      h.push("</div>");
+      h.push("\x3Cdiv style=\x22text-align:center;padding:20px;color:#888;font-size:10px\x22\x3EAgentic OS v3.7 \u00B7 \xE6\xB0\xB4\xE6\xB5\x92\xE4\xBC\xA0AI\xE7\x9F\xAD\xE5\x89\xA7\x3C/div\x3E");
+      h.push("\x3C/div\x3E");
       body.innerHTML=h.join("");
       var downloadBtn=document.getElementById("dl-dlbtn");
       if(downloadBtn)downloadBtn.onclick=function(){
-        var blob=new Blob(["<html><head><meta charset=utf-8><title>"+title+"</title></head><body>"+h.join("")+"</body></html>"],{type:"text/html"});
+        var blob=new Blob(["\x3Chtml\x3E\x3Chead\x3E\x3Cmeta charset=utf-8\x3E\x3Ctitle\x3E"+title+"\x3C/title\x3E\x3C/head\x3E\x3Cbody\x3E"+h.join("")+"\x3C/body\x3E\x3C/html\x3E"],{type:"text/html"});
         var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ep"+epId+"-preview.html";a.click();
       };
     }).catch(function(e2){
-      if(body)body.innerHTML=["<div style=\"color:#ef4444;text-align:center;padding:40px\">","预览失败","</div>"].join("");
+      if(body)body.innerHTML=["\x3Cdiv style=\x22color:#ef4444;text-align:center;padding:40px\x22\x3E","\xE9\xA2\x84\xE8\xA7\x88\xE5\xA4\xB1\xE8\xB4\xA5","\x3C/div\x3E"].join("");
     });
   });
 }
@@ -4420,146 +4289,83 @@ function renderDefault(detail){
     detail.sections.forEach(s=>{
       const st=s.source||'mock';
       var sTitle=s.title||'';
-      // v3.7.8g: DM-1 一致性检查仪表盘 (must check before 角色设计 to avoid false match)
-      if(sTitle.indexOf('一致性检查')>=0||sTitle.indexOf('一致性')>=0){
-        h+='<div class="sec"><h3>'+sTitle+' <span class="src-tag src-'+st+'">['+st+']</span></h3>';
-        h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin:8px 0">';
-        (s.items||[]).forEach(function(it){
-          var label=it.label||'';
-          var val=it.value||'';
-          var note=it.note||'';
-          var isPass=val.indexOf('✅')>=0||val.indexOf('通过')>=0||val.indexOf('统一')>=0;
-          var isWarn=val.indexOf('⚠️')>=0||val.indexOf('冲突')>=0||val.indexOf('复用')>=0;
-          var icon=isPass?'\u2705':isWarn?'\u26A0\uFE0F':'\u{1F4CB}';
-          var statusText=isPass?'\u901A\u8FC7':isWarn?'\u9700\u5173\u6CE8':'';
-          // Strip emoji/icon prefixes for clean description
-          var cleanVal=val.replace(/[\u2705\u26A0\uFE0F\u{26A0}]\s*/gu,'').trim();
-          // Color conflict blocks
-          var extraHTML='';
-          if(label.indexOf('配色')>=0||label.indexOf('颜色')>=0){
-            var colors=['#8b0000','#1a1a2e','#0a0a0a'];
-            var names=['林冲','武松','李逵'];
-            extraHTML='<div style="display:flex;gap:6px;align-items:center;margin-top:6px">';
-            colors.forEach(function(c,i){
-              extraHTML+='<div style="display:flex;align-items:center;gap:3px"><span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:'+c+';border:2px solid rgba(255,255,255,.15)"></span><span style="font-size:8px;color:#888">'+names[i]+'</span></div>';
-            });
-            extraHTML+='</div>';
-          }
-          if(label.indexOf('音色')>=0||label.indexOf('配音')>=0){
-            extraHTML='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;font-size:9px"><span style="background:rgba(59,130,246,.12);color:#60a5fa;border-radius:4px;padding:3px 8px">zhiming \u2192 \u6B66\u677E/\u9C81\u667A\u6DF1</span><span style="background:rgba(34,197,94,.12);color:#34d399;border-radius:4px;padding:3px 8px">zhilun \u2192 \u6797\u51B2/\u5B8B\u6C5F/\u5434\u7528</span></div>';
-          }
-          h+='<div class="check-item-card'+(isWarn?' warning':'')+'" style="margin-bottom:0;border-left:3px solid '+(isWarn?'#f59e0b':'#22c55e')+'">';
-          h+='<div class="check-item-header"><span class="check-item-icon">'+icon+'</span><span class="check-item-name">'+label+'</span><span class="check-item-status '+(isPass?'pass':'warn')+'">'+(isPass?'\u2714 \u901A\u8FC7':isWarn?'\u26A0 \u9700\u5173\u6CE8':'')+'</span></div>';
-          h+='<div class="check-item-body">';
-          if(cleanVal)h+='<div style="font-size:10px;color:#888;margin-bottom:4px">'+cleanVal+'</div>';
-          if(extraHTML)h+=extraHTML;
-          if(note)h+='<div style="font-size:9px;color:#555;margin-top:2px">\u{1F4AC} '+note+'</div>';
-          h+='</div></div>';
-        });
-        h+='</div></div>';
-        return;
-      }
-      // v3.7.8g: 分镜质量评估 — 可视化仪表盘 (镜头语言/光影设计/情绪覆盖)
-      if(sTitle.indexOf('分镜质量')>=0||sTitle.indexOf('质量评估')>=0){
-        var emoColors={'愤怒':'#ef4444','力量':'#22c55e','悲壮':'#f59e0b','恐惧':'#dc2626','复仇':'#f97316','胜利':'#06b6d4','紧张':'#eab308','豪迈':'#3b82f6','绝望':'#7c3aed'};
-        var camIcons={'中景':'🎯','特写':'🔍','全景':'🏞️ ','仰角':'📐','俯角':'🪂','跟随':'🚶','广角':'🌐','双人':'👥'};
-        var lightIcons={'月光':'🌙','火光':'🔥','烛光':'🕯️','晨曦':'🌅','逆光':'☀️','伦勃朗':'🎨','烈日':'💥','moody':'🌫️','剪影':'🧍'};
-        h+='<div class="sec"><h3>'+sTitle+' <span class="src-tag src-'+st+'">['+st+']</span></h3>';
-        h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin:8px 0">';
-        (s.items||[]).forEach(function(it){
-          var label=it.label||'';
-          var val=it.value||'';
-          var note=it.note||'';
-          var isWarn=it.status==='warn';
-          var accent=isWarn?'#f59e0b':'#22c55e';
-          var icon=isWarn?'\u26A0\uFE0F':'\u2705';
-          // Parse name:count pairs from value
-          var parts=val.split('\u00B7').map(function(p){return p.trim();}).filter(function(p){return p;});
-          var bars='';
-          var totalCount=0;
-          var entries=[];
-          parts.forEach(function(p){
-            var m=p.match(/^(\D+?)(\d+)$/);
-            if(m){entries.push({name:m[1].trim(),count:parseInt(m[2])});totalCount+=parseInt(m[2]);}
-          });
-          var maxCount=entries.reduce(function(m,e){return Math.max(m,e.count);},1);
-          entries.forEach(function(e){
-            var pct=Math.round(e.count/maxCount*100);
-            var bg=emoColors[e.name]||(isWarn?'rgba(245,158,11,.2)':'rgba(59,130,246,.2)');
-            var barColor=emoColors[e.name]||(isWarn?'#fbbf24':'#60a5fa');
-            var ico='';
-            if(label.indexOf('镜头')>=0)ico=camIcons[e.name]||'';
-            else if(label.indexOf('光影')>=0)ico=lightIcons[e.name]||'';
-            else if(label.indexOf('情绪')>=0)ico=emoColors[e.name]?'\u{1F3A8}':'\u{1F4CA}';
-            bars+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">';
-            if(ico)bars+='<span style="font-size:11px;width:18px;text-align:center">'+ico+'</span>';
-            bars+='<span style="font-size:9px;color:#aaa;min-width:40px">'+e.name+'</span>';
-            bars+='<span style="font-size:8px;color:#666;min-width:20px;text-align:right">'+e.count+'</span>';
-            bars+='<div style="flex:1;height:8px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+barColor+';border-radius:4px;transition:width .3s"></div></div>';
-            bars+='</div>';
-          });
-          var warnStyle=isWarn?'border-left:3px solid #f59e0b;':'border-left:3px solid #22c55e;';
-          h+='<div class="check-item-card'+(isWarn?' warning':'')+'" style="margin-bottom:0;'+warnStyle+'">';
-          h+='<div class="check-item-header"><span class="check-item-icon">'+icon+'</span><span class="check-item-name">'+label+'</span><span class="check-item-status '+(isWarn?'warn':'pass')+'">'+(isWarn?'\u26A0 \u9700\u5173\u6CE8':'\u2714 \u5408\u683C')+'</span></div>';
-          h+='<div class="check-item-body">';
-          if(bars)h+='<div style="margin-bottom:6px">'+bars+'</div>';
-          if(note)h+='<div style="font-size:9px;color:'+(isWarn?'#fbbf24':'#888')+';margin-top:2px"><span style="margin-right:4px">\u{1F4AC}</span>'+note+'</div>';
-          h+='</div></div>';
-        });
-        h+='</div></div>';
-        return;
-      }
-      // v3.7.8g: DM-1 角色卡片网格 — only for specific section titles
-      var isCharSection=sTitle.indexOf('视觉设计')>=0||(sTitle.indexOf('角色')>=0&&sTitle.indexOf('一致性')<0);
-      if((s.items||[]).length>0&&isCharSection){
-        // Detect if items are character names (have traits data in value) or generic entries
-        var hasCharData=(s.items||[]).some(function(it){var v=it.value||'';return v.indexOf('\u00B7')>=0||v.indexOf('cm')>=0;});
-        if(hasCharData){
+      // v3.7.8g: DM-1 角色卡片网格 — 视觉设计 section
+      if(sTitle.indexOf('视觉设计')>=0||sTitle.indexOf('角色设计')>=0){
         h+='<div class="sec"><h3>'+sTitle+' <span class="src-tag src-'+st+'">['+st+']</span></h3>';
         h+='<div class="dm-char-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin:8px 0">';
         (s.items||[]).forEach(function(it){
           var name=it.label||'';
           var val=it.value||'';
           var fid=(CHAR_MAP[name]||name||'').toLowerCase();
-          // Parse traits from value
-          var parts=val.split('\u00B7');
-          var traitItems=parts.map(function(p){return p.trim();}).filter(function(p){return p.length>0;});
+          // Try to find character traits from backend data
+          var height='', build='', face='';
+          var parts=val.split('·');
+          if(parts.length>=3){height=parts[0].trim();build=parts[1].trim();face=parts[2].replace(/\.+$/,'').trim();}
           var voiceInfo=CHARACTER_VOICES[fid]||{};
+          var refText=voiceInfo.prompt||'';
           var colors=['#4a3728','#1a1a2e','#8b0000','#0a0a0a','#2d5016','#1e3a5f','#5c4033','#3d2b1f'];
           var colorIdx=Math.abs((name.charCodeAt(0)||0))%colors.length;
-          h+='<div class="dm-char-card" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;overflow:hidden;transition:all .2s">';
-          // Portrait area
-          h+='<div style="position:relative;width:100%;height:180px;background:#0f1018;overflow:hidden">';
-          var q=String.fromCharCode(39);
-          h+='<img src="/api/render/'+fid+'/portrait_0.png" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='+q+'none'+q+';this.nextElementSibling.style.display='+q+'flex'+q+'" />';
-          h+='<div class="char-fallback" style="display:none;position:absolute;top:0;left:0;right:0;bottom:0;flex-direction:column;align-items:center;justify-content:center;background:#0f1018;color:#555;font-size:40px">\u{1F3AD}</div>';
-          // Name overlay
-          h+='<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.85));padding:20px 10px 8px">';
-          h+='<div style="font-size:14px;font-weight:700;color:#fff;letter-spacing:1px">'+name+'</div>';
-          h+='<div style="font-size:9px;color:#aaa;margin-top:1px">\u2728 '+(CHAR_ROLES[name]||'')+'</div>';
+          h+='<div class="dm-char-card" style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;overflow:hidden;transition:all .15s">';
+          h+='<div style="position:relative;width:100%;height:200px;background:#111;overflow:hidden">';
+          h+='<img src="/api/render/'+fid+'/portrait_0.png" loading="lazy" style="width:100%;height:100%;object-fit:contain" onerror="this.parentElement.innerHTML='<div style=text-align:center;color:#555;padding:60px 0;font-size:30px>\U0001f464</div>'" />';
+          h+='<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:8px 10px">';
+          h+='<div style="font-size:13px;font-weight:700;color:#fff">'+name+'</div>';
+          h+='<div style="font-size:9px;color:#aaa">'+CHAR_ROLES[name]||''+'</div>';
           h+='</div></div>';
-          // Trait tags
-          h+='<div style="padding:8px 10px 4px">';
+          h+='<div style="padding:8px 10px">';
+          // 属性标签行
           h+='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">';
-          traitItems.forEach(function(t){
-            var isNum=/\d/.test(t);
-            h+='<span style="font-size:8px;padding:2px 7px;border-radius:10px;background:rgba(59,130,246,.1);color:#60a5fa">'+t.substring(0,15)+'</span>';
-          });
+          if(height)h+='<span style="font-size:8px;padding:2px 6px;border-radius:8px;background:rgba(59,130,246,.12);color:#60a5fa">'+height+'</span>';
+          if(build)h+='<span style="font-size:8px;padding:2px 6px;border-radius:8px;background:rgba(34,197,94,.12);color:#34d399">'+build+'</span>';
+          if(face)h+='<span style="font-size:8px;padding:2px 6px;border-radius:8px;background:rgba(245,158,11,.12);color:#fbbf24">'+face.substring(0,8)+'</span>';
           h+='</div>';
-          // Voice info + color dot
-          h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:9px;color:#888">';
-          h+='<span>\u{1F3A4} '+(voiceInfo.ref?'\u5DF2\u914D\u7F6E':'\u672A\u914D\u7F6E')+'</span>';
-          h+='<span title="色标" style="display:inline-block;width:14px;height:14px;border-radius:50%;background:'+colors[colorIdx]+';border:2px solid rgba(255,255,255,.12)"></span>';
+          // 音色+配色
+          h+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:9px;color:#888">';
+          h+='<span>\U0001f3a4 '+(voiceInfo.ref?'已配置':'未配置')+'</span>';
+          h+='<span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:'+colors[colorIdx]+';border:1px solid rgba(255,255,255,.1)"></span>';
           h+='</div>';
-          // Actions
-          h+='<div style="display:flex;gap:4px;padding-bottom:8px">';
-          h+='<button class="mini-btn" onclick="toggleCharBibleEdit(\''+fid+'\')" style="font-size:9px">\u{1F4DD} \u7F16\u8F91</button>';
-          h+='<button class="mini-btn" onclick="auditionVoice(\''+fid+'\',this)" style="font-size:9px">\u{1F50A} \u8BD5\u542C</button>';
+          // 操作按钮
+          h+='<div style="display:flex;gap:4px">';
+          h+='<button class="mini-btn" onclick="toggleCharBibleEdit(''+fid+'')">\U0001f4dd 编辑属性</button>';
+          h+='<button class="mini-btn" onclick="auditionVoice(''+fid+'');this.textContent='\U0001f50a 播放中...'">\U0001f50a 试听</button>';
+          h+='<button class="mini-btn" onclick="reRenderConfirm(''+fid+'')">\U0001f3a8 重渲染</button>';
           h+='</div></div></div>';
         });
         h+='</div></div>';
         return;
-        } // hasCharData
+      }
+      // v3.7.8g: DM-1 一致性检查仪表盘
+      if(sTitle.indexOf('一致性')>=0||sTitle.indexOf('一致性检查')>=0){
+        h+='<div class="sec"><h3>'+sTitle+' <span class="src-tag src-'+st+'">['+st+']</span></h3>';
+        h+='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:8px 0">';
+        (s.items||[]).forEach(function(it){
+          var label=it.label||'';
+          var val=it.value||'';
+          var note=it.note||'';
+          var isPass=val.indexOf('✅')>=0||val.indexOf('通过')>=0||val.indexOf('统一')>=0;
+          var isWarn=val.indexOf('⚠️')>=0||val.indexOf('冲突')>=0||val.indexOf('复用')>=0;
+          var icon=isPass?'✅':isWarn?'⚠️':'\U0001f4cb';
+          var statusText=isPass?'通过':isWarn?'需关注':'';
+          var statusCls=isPass?'pass':'warn';
+          // 配色冲突 — special handling with color blocks
+          var extraHTML='';
+          if(label.indexOf('配色')>=0||label.indexOf('颜色')>=0){
+            extraHTML='<div style="display:flex;gap:4px;margin-top:4px"><span style="display:inline-block;width:24px;height:24px;border-radius:4px;background:#8b0000;border:1px solid #555" title="林冲"></span><span style="display:inline-block;width:24px;height:24px;border-radius:4px;background:#1a1a2e;border:1px solid #555" title="武松"></span><span style="display:inline-block;width:24px;height:24px;border-radius:4px;background:#0a0a0a;border:1px solid #555" title="李逵"></span></div>';
+          }
+          // 音色分配 — special table
+          if(label.indexOf('音色')>=0||label.indexOf('配音')>=0){
+            extraHTML='<div style="display:flex;gap:8px;margin-top:4px;font-size:9px"><div style="background:rgba(59,130,246,.1);border-radius:4px;padding:4px 8px"><span style="color:#60a5fa">zhiming</span>: 武松/鲁智深</div><div style="background:rgba(34,197,94,.1);border-radius:4px;padding:4px 8px"><span style="color:#34d399">zhilun</span>: 林冲/宋江/吴用</div></div>';
+          }
+          h+='<div class="check-item-card'+(isWarn?' warning':'')+'" style="margin-bottom:0">';
+          h+='<div class="check-item-header"><span class="check-item-icon">'+icon+'</span><span class="check-item-name">'+label+'</span><span class="check-item-status '+statusCls+'">'+statusText+'</span></div>';
+          h+='<div class="check-item-body">';
+          h+='<div style="font-size:10px;color:#888">'+val.replace(/✅|⚠️/g,'').trim()+'</div>';
+          if(extraHTML)h+=extraHTML;
+          if(note)h+='<div style="font-size:9px;color:#555;margin-top:2px">'+note+'</div>';
+          h+='</div></div>';
+        });
+        h+='</div></div>';
+        return;
       }
       const secId = 'sec-'+s.title.replace(/[^a-zA-Z0-9一-鿿]/g,'');
       // P0-1: Summary line always visible, body collapsible
@@ -4794,16 +4600,7 @@ async function renderTKDetail(detail, ms) {
 function toggleCharBibleEdit(fid) {
   const sectionId='char-edit-section-'+fid;
   const el=document.getElementById('cbedit-'+fid);
-  if(!el){
-    var scHel=document.getElementById(sectionId);
-    if(!scHel){
-      // Fallback: switch to TK tab and try to expand character bible
-      toastMsg('\u2728 \u89D2\u8272\u7F16\u8F91\u5728\u89D2\u8272\u5723\u7ECF\u4E2D\uFF0C\u8BF7\u5C55\u5F00\u89D2\u8272\u9762\u677F', 3000);
-      return;
-    }
-    toggleSection(sectionId);
-    return;
-  }
+  if(!el){toggleSection(sectionId);return;}
   el.classList.toggle('show');
 }
 
@@ -5168,12 +4965,10 @@ function refreshVoiceButtons(fid) {
 
 async function auditionVoice(fid) {
   const ch = CHARACTER_VOICES[fid];
+  const cfgVoiceEl = document.getElementById('cfg-voice-' + fid);
   const cfgRefEl = document.getElementById('cfg-reftext-' + fid);
-  var refText = (cfgRefEl && cfgRefEl.value || '').trim() || (document.getElementById('vc-ref-' + fid) || {}).textContent || '';
-  if (!refText || refText === '\u2014') {
-    refText = ch ? ch.prompt : '';
-    if (!refText) { toastMsg('\u26A0\uFE0F \u8BF7\u5148\u914D\u7F6E\u53C2\u8003\u6587\u672C', 2000, 'warn'); return; }
-  }
+  const refText = cfgRefEl?.value?.trim() || document.getElementById('vc-ref-' + fid)?.textContent || '';
+  if (!refText || refText === '—') { toastMsg('⚠️ 请先配置参考文本', 2000, 'warn'); return; }
   
   const banner = document.getElementById('version-check');
   const audBtn = document.getElementById('audbtn-' + fid);
