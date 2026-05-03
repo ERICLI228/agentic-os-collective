@@ -1441,6 +1441,26 @@ def serve_shot_thumb(ep_num, filename):
     return jsonify({"error": "Thumbnail not found"}), 404
 
 
+# P0-V: /api/video/<ep_num> — serve merged/final video for episode preview
+@app.route('/api/video/<ep_num>', methods=['GET'])
+def serve_episode_video(ep_num):
+    """Serve the best available video for an episode (merged or final)."""
+    ep_dir = Path.home() / f".agentic-os/episode_{int(ep_num):02d}"
+    candidates = [
+        ep_dir / "video" / f"episode_{int(ep_num):02d}_merged.mp4",
+        ep_dir / "final_with_sfx.mp4",
+        ep_dir / "final.mp4",
+        ep_dir / "final_silent_ai.mp4",
+        ep_dir / "final_silent.mp4",
+        ep_dir / "final_pillow.mp4",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return send_file(str(candidate), mimetype="video/mp4",
+                             conditional=True, max_age=3600)
+    return jsonify({"error": "No video found for episode " + str(ep_num)}), 404
+
+
 # ================================================================
 # S3-1: /api/merge — merge video shots via ffmpeg concat
 # ================================================================

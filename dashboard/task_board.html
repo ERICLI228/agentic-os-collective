@@ -918,6 +918,13 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 .dm7-file-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
 .dm7-file-tag{font-size:9px;padding:3px 10px;border-radius:5px;background:rgba(59,130,246,.08);color:#60a5fa;font-weight:600;border:1px solid rgba(59,130,246,.1)}
 .dm7-file-path{font-size:9px;color:#444;font-family:monospace;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* P0-V: DM-6/7 video player */
+.dm6-video-card{background:#0a0f14;border:1px solid #1e2a3a;border-radius:8px;margin-top:10px;overflow:hidden}
+.dm6-video-header{background:#1a2535;padding:8px 14px;font-size:11px;color:#6a8aaa;font-weight:600;letter-spacing:0.5px}
+.dm6-video-player-wrap{position:relative;background:#000}
+.dm6-video-player-wrap video{width:100%;max-height:360px;display:block;background:#000}
+.dm6-video-error{padding:24px;text-align:center;color:#c66;font-size:11px}
+.dm6-video-status{text-align:center;padding:6px;font-size:10px;color:#666}
 /* Issue cards */
 .dm6-issue-card{display:flex;gap:12px;padding:14px;margin-bottom:12px;border-radius:8px;background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.12);border-left:4px solid #f59e0b}
 .dm6-issue-icon{font-size:22px;flex-shrink:0;line-height:1}
@@ -1320,7 +1327,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <body>
 <div id="toast-container"></div>
 <div id="version-check" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#10b981;color:#fff;text-align:center;padding:6px 12px;font-size:13px;font-family:monospace;letter-spacing:0.5px;cursor:pointer" onclick="this.remove()">
-  🔄 v3.7.22 — P0-Z mock/real数据标识统一，点击关闭
+  🔄 v3.7.23 — P0-V DM-6/7视频播放器 + /api/video端点，点击关闭
 </div>
 
 <div class="topbar">
@@ -1405,7 +1412,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <script>
 // v3.7.17: cache check — if URL has old version param, redirect
 (function(){
-   var v = '3.7.22';
+   var v = '3.7.23';
    var q = location.search;
    var lsVer = localStorage.getItem('_dash_v');
    if ((q && q.indexOf('v=') >= 0 && q.indexOf('v='+v) < 0) || (lsVer && lsVer !== v)) {
@@ -2850,6 +2857,22 @@ function toggleMockSections() {
     }
   });
   if (badge) { badge.dataset.showing = showing ? '0' : '1'; badge.textContent = (showing ? badge.textContent.replace('🔍','') : '🔍 '+badge.textContent); }
+}
+
+// P0-V: Video player handlers
+function dm6VideoError(playerId) {
+  var card = document.getElementById(playerId);
+  if (!card) return;
+  var wrap = card.querySelector('.dm6-video-player-wrap');
+  var status = card.querySelector('.dm6-video-status');
+  if (wrap) { wrap.style.display = 'none'; }
+  if (status) { status.textContent = '📂 视频文件不存在或暂未生成'; status.style.color = '#c66'; }
+}
+function dm6VideoLoaded(playerId) {
+  var card = document.getElementById(playerId);
+  if (!card) return;
+  var status = card.querySelector('.dm6-video-status');
+  if (status) { status.textContent = '✅ 视频加载成功'; status.style.color = '#4ade80'; }
 }
 
 // ================================================================
@@ -8895,6 +8918,23 @@ async function renderDM6(msId, detail, ms) {
     '</div>' +
     '</div>';
   el.insertAdjacentHTML('beforeend', fileHtml);
+
+  // ===== P0-V: Video player card =====
+  var videoUrl = '/api/video/' + epNum;
+  var videoPlayerId = 'dm6-video-' + msId.replace('-','') + '-' + epNum;
+  el.insertAdjacentHTML('beforeend',
+    '<div class="dm6-video-card" id="' + videoPlayerId + '">' +
+    '  <div class="dm6-video-header"><span>▶</span> 成品预览 · EP' + String(epNum).padStart(2,'0') + '</div>' +
+    '  <div class="dm6-video-player-wrap">' +
+    '    <video controls crossorigin="anonymous" preload="metadata" ' +
+    '      poster="" onerror="dm6VideoError(\'' + videoPlayerId + '\')" ' +
+    '      onloadedmetadata="dm6VideoLoaded(\'' + videoPlayerId + '\')">' +
+    '      <source src="' + videoUrl + '" type="video/mp4">' +
+    '    </video>' +
+    '  </div>' +
+    '  <div class="dm6-video-status" id="' + videoPlayerId + '-status">⏳ 加载中...</div>' +
+    '</div>'
+  );
 
   // ===== Panel 4: Duration warning card (always when fileDur << scriptDur) =====
   var hasDurIssue = scriptDur && fileDur && parseInt(fileDur) < parseInt(scriptDur) * 0.7;
