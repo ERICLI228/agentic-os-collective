@@ -223,6 +223,10 @@ class LLMClient:
             "url": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
             "key_env": "DASHSCOPE_API_KEY",
         },
+        "silicon": {
+            "url": "https://api.siliconflow.cn/v1/chat/completions",
+            "key_env": "DASHSCOPE_API_KEY",
+        },
     }
 
     def __init__(self, model: str = "coding/qwen3.6-plus"):
