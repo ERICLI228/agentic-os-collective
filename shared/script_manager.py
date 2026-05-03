@@ -363,6 +363,104 @@ def get_all_dialogue_stats():
         })
     return result
 
+def build_rewrite_prompt(original_storyboard, ep_title, feedback_type, feedback_desc, params=None):
+    """v3.9: Build AI rewrite prompt — inject original storyboard + feedback + output constraints"""
+    import json as _json
+
+    sb_text = _json.dumps(original_storyboard, ensure_ascii=False, indent=2)
+
+    type_hints = {
+        "剧情节奏": "以下改写要点：\n1. 如果冲突段只有1镜，必须扩展为2-3镜，增加对峙层级\n2. 新增1镜'归途/心理转变'过渡段\n3. 新增1镜环境/气氛渲染，增强宿命感\n4. 总镜头数+2~3镜\n5. 冲突段占总时长40%以上，高潮段占25%以上",
+        "剧本质量": "以下改写要点：\n1. 每镜 dialogue 数组至少2条，包含 classical 和 modern 两种风格\n2. 所有 dialogue 必须附带 voice_dir\n3. description 必须有电影级画面感（光影/构图/色彩）\n4. music_cue 必须具体到乐器+情绪\n5. 添加 camera_script 字段，描述推拉摇移和剪辑节奏",
+        "角色形象": "以下改写要点：\n1. 强化主角语言风格一致性\n2. classical 风格台词需有文学性但不拗口\n3. 添加 performance_notes 描述微表情和小动作\n4. 配角台词需服务于主角弧光",
+        "逻辑一致性": "以下改写要点：\n1. 检查时间线连续性\n2. 检查空间逻辑一致\n3. 检查情节因果关系\n4. 修复不符合原著人物性格的对白",
+        "配音": "以下改写要点：\n1. 对白字数控制在每镜100-250字\n2. 每句对白不超过50字\n3. voice_dir 必须明确标注情绪和气声要求\n4. 对话节奏错落有致",
+        "其他": "请基于以下反馈进行全面优化：\n"
+    }
+
+    hint = type_hints.get(feedback_type, type_hints["其他"])
+    desc_line = "\n具体要求: " + feedback_desc if feedback_desc else ""
+
+    system_prompt = """你是一位资深影视编剧和分镜导演，精通中国古典文学改编。你的任务是根据反馈意见重写《水浒传》短剧单集的故事板。你必须严格输出JSON格式，每个分镜包含完整的15字段工业级数据。对白风格：30%半文半白古典风 + 70%现代白话。所有中文输出。"""
+
+    user_prompt = f"""请重写{ep_title}的故事板。
+
+【原始分镜】
+{sb_text}
+
+【反馈意见】
+类型: {feedback_type}
+{hint}{desc_line}
+
+【输出要求】
+1. 输出严格的 JSON 对象: {{\"storyboard\": [...]}}
+2. storyboard 每个元素必须包含: seq, shot_label, act, scene, description, timecode, music_cue, shot_type, camera_move, camera_script, pacing, color_palette, duration, emotion, dialogue, performance_notes, end_credit
+3. dialogue 每个元素包含: speaker, text, style(classical|modern), voice_dir, emotion_mark, subtext, timing_hint
+4. 总时长控制在360秒以内，至少包含2条 classical 风格对白"""
+
+    return {"system": system_prompt, "user": user_prompt, "original_sb_len": len(original_storyboard)}
+
+
+def parse_ai_storyboard(ai_response_text):
+    """v3.9: Parse AI response JSON, validate 15 fields per shot"""
+    import json as _json
+
+    text = ai_response_text.strip()
+    for marker in ("```json", "```"):
+        if marker in text:
+            parts = text.split(marker)
+            text = parts[1].split("```")[0].strip() if len(parts) > 1 else text
+
+    data = _json.loads(text)
+    storyboard = data.get("storyboard", data if isinstance(data, list) else [])
+
+    required_fields = ["seq", "shot_label", "act", "scene", "description",
+                       "timecode", "music_cue", "shot_type", "camera_move",
+                       "pacing", "color_palette", "duration", "emotion",
+                       "dialogue", "performance_notes"]
+
+    validated = []
+    errors = []
+    for i, shot in enumerate(storyboard):
+        missing = [f for f in required_fields if f not in shot]
+        if missing:
+            errors.append("Shot " + str(i+1) + " missing: " + str(missing))
+            continue
+        if not isinstance(shot.get("dialogue"), list):
+            shot["dialogue"] = []
+        if not isinstance(shot.get("performance_notes"), list):
+            shot["performance_notes"] = []
+        tc = shot.get("timecode", {})
+        if not isinstance(tc, dict) or "start" not in tc or "end" not in tc:
+            shot["timecode"] = {"start": "00:00", "end": "01:00"}
+        if not shot.get("camera_script"):
+            shot["camera_script"] = shot.get("camera_move", "") + " 中景"
+        for d in shot.get("dialogue", []):
+            d.setdefault("emotion_mark", "")
+            d.setdefault("subtext", "")
+            d.setdefault("timing_hint", "")
+        shot.setdefault("end_credit", False)
+        validated.append(shot)
+
+    return {"storyboard": validated, "errors": errors}
+
+
+def rewrite_episode_to_json(ep_title, storyboard):
+    """v3.9: Write AI rewrite result back to episode_templates.json"""
+    import json as _json
+
+    ep_data_path = Path(__file__).resolve().parent / "episode_templates.json"
+    templates = {}
+    if ep_data_path.exists():
+        templates = _json.loads(ep_data_path.read_text(encoding="utf-8"))
+
+    if not isinstance(storyboard, list):
+        storyboard = storyboard.get("storyboard", [])
+
+    templates[ep_title] = storyboard
+    ep_data_path.write_text(_json.dumps(templates, ensure_ascii=False, indent=2), encoding="utf-8")
+    return len(storyboard)
+
 
 
 def update_episode(ep_num, data):
@@ -431,6 +529,18 @@ def export_episode(ep_num, format="txt"):
     return (content, "text/plain; charset=utf-8", filename)
 
 
+def _dialogue_to_text(dialogue):
+    """v3.9: 兼容 string 和 array 两种 dialogue 格式"""
+    if isinstance(dialogue, list):
+        return " ".join(
+            f"{d.get('speaker','')}: {d.get('text','')}"
+            for d in dialogue
+        )
+    if isinstance(dialogue, str):
+        return dialogue
+    return ""
+
+
 def _export_srt(detail):
     """导出为 SRT 字幕格式"""
     sb = detail.get("storyboard", [])
@@ -440,7 +550,7 @@ def _export_srt(detail):
         end_sec = start_sec + scene.get("duration_sec", 5)
         start_ts = f"00:00:{start_sec:02d},000"
         end_ts = f"00:00:{end_sec:02d},000"
-        text = scene.get("dialogue") or scene.get("description", "")
+        text = _dialogue_to_text(scene.get("dialogue", "")) or scene.get("description", "")
         lines.append(f"{i}")
         lines.append(f"{start_ts} --> {end_ts}")
         lines.append(text)
@@ -480,7 +590,7 @@ def _export_txt(detail):
         lines.append(f"  {sb['description']}")
         lines.append(f"  情绪: {sb['emotion']}")
         if sb.get("dialogue"):
-            lines.append(f"  对白: {sb['dialogue']}")
+            lines.append(f"  对白: {_dialogue_to_text(sb['dialogue'])}")
 
     lines.extend([
         f"",
@@ -511,7 +621,7 @@ def _export_html(detail):
         <div class='storyboard-card'>
             <h4>镜{sb['seq']} [{sb['act']}] {sb['scene']} <small>{sb.get('duration','')}</small></h4>
             <p>{sb['description']}</p>
-            <div class='meta'>情绪: {sb['emotion']}{' · 对白: ' + sb['dialogue'] if sb.get('dialogue') else ''}</div>
+            <div class='meta'>情绪: {sb['emotion']}{' · 对白: ' + _dialogue_to_text(sb['dialogue']) if sb.get('dialogue') else ''}</div>
         </div>
         """
 

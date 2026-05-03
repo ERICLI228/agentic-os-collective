@@ -1767,34 +1767,104 @@ async function renderDM0(detail,ms){
         var elist = Array.isArray(eps) ? eps : (eps.episodes || []);
         if(!elist.length){ scriptBox.innerHTML='<div style="color:#555;font-size:11px;padding:12px">无剧本数据</div>'; return; }
         var allHtml = '';
+        var allClassical=0, allModern=0;
         for (var i=0; i<elist.length; i++) {
           var ep = elist[i];
           var en = ep.ep || ep.episode || ep.num || (i+1);
           var epNum = String(en).padStart(2,'0');
           var title = ep.title || ep.name || ('第'+parseInt(epNum)+'集');
-          allHtml += '<div style="border-bottom:1px solid rgba(255,255,255,.06);padding:10px 0"><strong style="color:#93c5fd;font-size:13px">EP'+epNum+' ' + title + '</strong>';
+          var epClassical=0, epModern=0;
+          allHtml += '<div style="border-bottom:1px solid rgba(255,255,255,.06);padding:8px 0"><strong style="color:#93c5fd;font-size:12px">EP'+epNum+' ' + title + '</strong>';
           try {
             var sr = await fetch('/api/script/'+parseInt(en));
             var sd = await sr.json();
             var shots = sd.shots || sd.storyboard || [];
             if (shots.length) {
+              // B2: show technical header per shot
+              allHtml += '<div style="margin:2px 0;font-size:9px;color:#555;display:flex;gap:18px;padding:0 4px">\
+                <span>⏱ 时间码</span><span>🎵 配乐</span><span>🎬 镜头</span><span>⚡ 节奏</span></div>';
               shots.forEach(function(sh,si){
-                var scene = sh.scene || sh.description || sh.desc || '';
-                var dia = sh.dialogue || sh.lines || '';
-                var note = sh.note || sh.director_note || '';
-                allHtml += '<div style="margin:6px 0 6px 12px;font-size:10px;color:#e4e6eb;line-height:1.5"><span style="color:#f59e0b">镜' + String(si+1).padStart(2,'0') + '.</span> ';
-                if (scene) allHtml += '<span style="color:#a5b4c4">' + scene + '</span> ';
-                if (dia) allHtml += '<span style="color:#60a5fa">「' + (dia.length>100?dia.substring(0,100)+'...':dia) + '」</span> ';
-                if (note) allHtml += '<span style="color:#888;font-style:italic">' + note + '</span>';
+                var tc = sh.timecode || {};
+                var timeStr = (tc.start||'00:00') + '→' + (tc.end||'01:00');
+                var music = sh.music_cue || '';
+                var shotType = sh.shot_type || '';
+                var camMove = sh.camera_move || '';
+                var pacing = sh.pacing || '';
+                var palette = sh.color_palette || '';
+                var desc = sh.scene || sh.description || sh.desc || '';
+                // B3: shot type + camera badges
+                var badges = '';
+                if (shotType) badges += '<span style="background:#1e40af;color:#93c5fd;padding:1px 6px;border-radius:3px;font-size:9px;margin-right:4px">' + shotType + '</span>';
+                if (camMove) badges += '<span style="background:#2e1065;color:#c4b5fd;padding:1px 6px;border-radius:3px;font-size:9px;margin-right:4px">' + camMove + '</span>';
+                if (pacing) badges += '<span style="background:#14532d;color:#86efac;padding:1px 6px;border-radius:3px;font-size:9px;margin-right:4px">' + pacing + '</span>';
+                if (palette) badges += '<span style="background:#713f12;color:#fde047;padding:1px 6px;border-radius:3px;font-size:9px">🎨 ' + palette + '</span>';
+                allHtml += '<div style="margin:4px 0 2px 12px;font-size:10px;color:#e4e6eb;line-height:1.5">\
+                <span style="color:#f59e0b;font-weight:600">镜' + String(si+1).padStart(2,'0') + '.</span>\
+                <span style="color:#777;font-size:9px;margin:0 6px">' + timeStr + '</span>' + badges;
+                if (music) allHtml += ' <span style="color:#a78bfa;font-size:9px">🎵' + music + '</span>';
+                if (desc) allHtml += '<div style="color:#a5b4c4;margin:2px 0">' + desc + '</div>';
+                // B4+B5: dialogue with color coding
+                var dia = sh.dialogue;
+                if (Array.isArray(dia)) {
+                  dia.forEach(function(d){
+                    var dStyle = d.style || '';
+                    var isClassical = dStyle === 'classical';
+                    var dColor = isClassical ? '#fca5a5' : '#93c5fd';
+                    var dBg = isClassical ? '#3b1010' : '#0c1d3d';
+                    var dLabel = isClassical ? '⚔' : '💬';
+                    allHtml += '<div style="margin:3px 0 3px 8px;background:' + dBg + ';padding:3px 8px;border-radius:4px;border-left:3px solid ' + dColor + '">\
+                    <span style="color:#fbbf24;font-size:10px;font-weight:600">' + (d.speaker||'') + '</span>\
+                    <span style="color:' + dColor + ';font-size:10px"> ' + dLabel + ' ' + (d.text||'') + '</span>\
+                    ' + (d.voice_dir ? '<div style="color:#888;font-size:8px;font-style:italic;margin-top:2px">🎤 ' + d.voice_dir + '</div>' : '') + '</div>';
+                    if (isClassical) { epClassical += (d.text||'').replace(/\s/g,'').length; }
+                    else { epModern += (d.text||'').replace(/\s/g,'').length; }
+                  });
+                } else if (dia) {
+                  allHtml += '<span style="color:#60a5fa">「' + (dia.length>100?dia.substring(0,100)+'...':dia) + '」</span> ';
+                }
+                var notes = sh.performance_notes;
+                if (Array.isArray(notes) && notes.length) {
+                  allHtml += '<div style="color:#888;font-size:9px;margin:2px 0 2px 8px">📋 ' + notes.join(' · ') + '</div>';
+                }
                 allHtml += '</div>';
               });
             } else {
               allHtml += '<div style="color:#555;font-size:10px;margin:4px 12px">暂无分镜数据</div>';
             }
-          } catch(ex){ allHtml += '<div style="color:#ef4444;font-size:10px;margin:4px 12px">加载失败</div>'; }
+          } catch(ex){ allHtml += '<div style="color:#ef4444;font-size:10px;margin:4px 12px">加载失败: '+ex.message+'</div>'; }
+          // B1: per-episode ratio bar
+          var epTotal = epClassical + epModern;
+          if (epTotal > 0) { allClassical += epClassical; allModern += epModern; }
+          var cPct = epTotal > 0 ? Math.round(epClassical/epTotal*100) : 0;
+          var mPct = epTotal > 0 ? Math.round(epModern/epTotal*100) : 0;
+          allHtml += '<div style="margin:4px 0;height:6px;display:flex;border-radius:3px;overflow:hidden">\
+            <div style="width:'+cPct+'%;background:#ef4444;min-width:2px;border-radius:3px 0 0 3px" title="古典 ' + epClassical + '字"></div>\
+            <div style="width:'+mPct+'%;background:#3b82f6;min-width:2px;border-radius:0 3px 3px 0" title="现代 ' + epModern + '字"></div>\
+          </div><div style="font-size:8px;color:#666;text-align:right">⚔' + cPct + '% / 💬' + mPct + '%</div>';
           allHtml += '</div>';
         }
-        scriptBox.innerHTML = allHtml;
+        // B1: global ratio card
+        var gTotal = allClassical + allModern;
+         var gCPct = gTotal > 0 ? Math.round(allClassical/gTotal*100) : 0;
+         var gMPct = gTotal > 0 ? Math.round(allModern/gTotal*100) : 0;
+         var ratioCard = '<div class="dm0-ratio-card" style="background:linear-gradient(135deg,#1a1118,#111827);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px 14px;margin-bottom:12px">\
+           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">\
+             <span style="color:#e4e6eb;font-size:13px;font-weight:600">📊 对白比例分析</span>\
+             <span style="color:#888;font-size:9px">全6集统计</span></div>\
+           <div style="height:16px;display:flex;border-radius:8px;overflow:hidden;margin-bottom:8px">\
+             <div style="width:'+gCPct+'%;background:linear-gradient(90deg,#991b1b,#ef4444);min-width:2px;border-radius:8px 0 0 8px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:600;transition:width .3s">⚔ 古典 ' + gCPct + '%</div>\
+             <div style="width:'+gMPct+'%;background:linear-gradient(90deg,#3b82f6,#1d4ed8);min-width:2px;border-radius:0 8px 8px 0;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:600;transition:width .3s">💬 现代 ' + gMPct + '%</div></div>\
+           <div style="position:relative;margin-bottom:6px">\
+             <input type="range" id="dm0-ratio-slider" min="10" max="90" value="' + gCPct + '" \
+               style="width:100%;height:6px;-webkit-appearance:none;appearance:none;background:linear-gradient(to right,#ef4444 ' + gCPct + '%,#3b82f6 ' + gCPct + '%);border-radius:3px;outline:none;cursor:pointer" \
+               oninput="dm0RatioChange(this.value)">\
+             <div id="dm0-ratio-target" style="position:absolute;top:-20px;left:' + gCPct + '%;transform:translateX(-50%);background:#1a2535;border:1px solid #f59e0b;border-radius:4px;padding:2px 8px;font-size:9px;color:#fbbf24;white-space:nowrap;pointer-events:none;transition:left .1s">\
+               🎯 目标:' + gCPct + '% 古典</div></div>\
+           <div style="display:flex;justify-content:space-between;align-items:center">\
+             <div style="display:flex;gap:12px;font-size:9px;color:#666">\
+               <span>古典对白 ' + allClassical + ' 字</span><span>现代对白 ' + allModern + ' 字</span></div>\
+             <button class="mini-btn" onclick="dm0ApplyRatio()" style="font-size:9px;padding:3px 10px;color:#fbbf24;border-color:#f59e0b">🔄 按比例重写</button></div></div>';
+         scriptBox.innerHTML = ratioCard + allHtml;
       } catch(e) { scriptBox.innerHTML = '<div style="color:#ef4444;font-size:11px;padding:12px">剧本加载失败: '+e.message+'</div>'; }
     })();
   } else {
@@ -5175,19 +5245,65 @@ async function decideDM0(action, selectedEps){
   function setBar(pct) { var b=document.getElementById('dm0-sync-bar'); if(b) b.style.width=pct+'%'; }
 
   var cm = {approved:'approved',rework:'modify',reject:'rejected'};
+  var fbType = document.getElementById('fb-type')?.value || '';
+  var fbDesc = document.getElementById('fb-desc')?.value || '';
   log('📤 提交决策: '+labels[action]+' EP'+selectedEps.join(',EP'), '#93c5fd');
+  if (fbType) log('📋 反馈类型: '+fbType, '#fbbf24');
+  if (fbDesc) log('📝 反馈描述: '+fbDesc, '#fbbf24');
   setBar(10);
 
   try{
+    var decBody = {task_id:'TK-DM-REWRITE',action:cm[action],
+      reason: (fbType||'DM-0审核') + (fbDesc?': '+fbDesc:''),
+      milestone_id:'DM-0', episodes: selectedEps};
+    if (fbType) decBody.feedback_type = fbType;
+    if (fbDesc) decBody.feedback_desc = fbDesc;
     var r = await fetch('/api/decision',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({task_id:'TK-DM-PREP',action:cm[action],
-        reason:'DM-0审核决策',milestone_id:'DM-0',
-        episodes: selectedEps})});
+      body:JSON.stringify(decBody)});
     if(!r.ok){ log('❌ 决策提交失败: HTTP '+r.status, '#ef4444'); toastMsg('决策失败: HTTP '+r.status); return; }
     log('✅ 决策已记录', '#4ade80');
     setBar(25);
 
-    if (doFullSync) {
+    // ===== P0: async rewrite via background process =====
+    if ((action === 'rework' || action === 'reject') && fbType) {
+      log('🤖 提交异步重写任务...', '#a78bfa');
+      setBar(30);
+      try {
+        var rr = await fetch('/api/rewrite', {method:'POST', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({episodes:selectedEps,feedback_type:fbType,feedback_desc:fbDesc||''})});
+        var rwd = await rr.json();
+        if (rwd.task_id) {
+          log('✅ 任务已启动: ' + rwd.task_id, '#4ade80');
+          setBar(33);
+          // Poll for completion
+          var rwPolls = 0, rwMax = 90;
+          var rwDone = false;
+          while (rwPolls < rwMax && !rwDone) {
+            await new Promise(function(res){setTimeout(res, 1500)});
+            rwPolls++;
+            setBar(33 + Math.min(rwPolls, 30));
+            try {
+              var rsr = await fetch('/api/rewrite/status?task_id=' + rwd.task_id);
+              var rsd = await rsr.json();
+              if (rsd.status === 'completed') {
+                rwDone = true;
+                var results = rsd.results || [];
+                results.forEach(function(rs){
+                  if (rs.status === 'done') { log('✅ EP'+rs.episode+': '+rs.shots+'镜 | '+rs.classical_pct+'%古典', '#4ade80'); }
+                  else { log('⚠️ EP'+rs.episode+': '+(rs.note||rs.error||'失败'), '#f59e0b'); }
+                });
+              }
+            } catch(e) {}
+          }
+          if (!rwDone) log('⚠️ 重写轮询超时', '#f59e0b');
+          setBar(35);
+        } else {
+          log('⚠️ 启动失败: ' + JSON.stringify(rwd), '#f59e0b');
+        }
+      } catch(re){ log('❌ 重写异常: '+re.message, '#ef4444'); }
+    }
+
+     if (doFullSync) {
       log('⏳ 等待 Agent 流水线完成...', '#fbbf24');
       setBar(30);
       // Poll for completion — wait up to 30s
@@ -5231,15 +5347,42 @@ async function decideDM0(action, selectedEps){
             try {
               var sr2 = await fetch('/api/script/'+parseInt(en)+'?_='+Date.now());
               var sd2 = await sr2.json();
-              var shots = sd2.shots || sd2.storyboard || [];
-              if (shots.length) {
-                shots.forEach(function(sh,si){
-                  allHtml += '<div style="margin:6px 0 6px 12px;font-size:10px;color:#e4e6eb;line-height:1.5"><span style="color:#f59e0b">镜' + String(si+1).padStart(2,'0') + '.</span> ';
-                  if (sh.scene||sh.description||sh.desc) allHtml += '<span style="color:#a5b4c4">' + (sh.scene||sh.description||sh.desc) + '</span> ';
-                  if (sh.dialogue||sh.lines) allHtml += '<span style="color:#60a5fa">「' + ((sh.dialogue||sh.lines).length>100?(sh.dialogue||sh.lines).substring(0,100)+'...':(sh.dialogue||sh.lines)) + '」</span> ';
-                  allHtml += '</div>';
-                });
-              } else { allHtml += '<div style="color:#555;font-size:10px;margin:4px 12px">暂无分镜数据</div>'; }
+               var shots = sd2.shots || sd2.storyboard || [];
+               if (shots.length) {
+                 // v3.9: Industrial format with timecode + badges + colored dialogue
+                 allHtml += '<div style="margin:2px 0;font-size:9px;color:#555;display:flex;gap:18px;padding:0 4px">\
+                   <span>⏱ 时间码</span><span>🎵 配乐</span><span>🎬 镜头</span><span>⚡ 节奏</span></div>';
+                 shots.forEach(function(sh,si){
+                   var tc = sh.timecode || {};
+                   var timeStr = (tc.start||'00:00') + '→' + (tc.end||'01:00');
+                   var music = sh.music_cue || '';
+                   var shotType = sh.shot_type || '';
+                   var camMove = sh.camera_move || '';
+                   var pacing = sh.pacing || '';
+                   var palette = sh.color_palette || '';
+                   var desc = sh.scene || sh.description || sh.desc || '';
+                   var badges = '';
+                   if (shotType) badges += '<span style="background:#1e40af;color:#93c5fd;padding:1px 6px;border-radius:3px;font-size:9px;margin-right:4px">' + shotType + '</span>';
+                   if (camMove) badges += '<span style="background:#2e1065;color:#c4b5fd;padding:1px 6px;border-radius:3px;font-size:9px;margin-right:4px">' + camMove + '</span>';
+                   if (pacing) badges += '<span style="background:#14532d;color:#86efac;padding:1px 6px;border-radius:3px;font-size:9px;margin-right:4px">' + pacing + '</span>';
+                   allHtml += '<div style="margin:4px 0 2px 12px;font-size:10px;color:#e4e6eb;line-height:1.5"><span style="color:#f59e0b;font-weight:600">镜' + String(si+1).padStart(2,'0') + '.</span><span style="color:#777;font-size:9px;margin:0 6px">' + timeStr + '</span>' + badges;
+                   if (music) allHtml += ' <span style="color:#a78bfa;font-size:9px">🎵' + music + '</span>';
+                   if (desc) allHtml += '<div style="color:#a5b4c4;margin:2px 0">' + desc + '</div>';
+                   var dia = sh.dialogue;
+                   if (Array.isArray(dia)) {
+                     dia.forEach(function(d){
+                       var dStyle = d.style || '';
+                       var isClassical = dStyle === 'classical';
+                       var dColor = isClassical ? '#fca5a5' : '#93c5fd';
+                       var dBg = isClassical ? '#3b1010' : '#0c1d3d';
+                       allHtml += '<div style="margin:3px 0 3px 8px;background:' + dBg + ';padding:3px 8px;border-radius:4px;border-left:3px solid ' + dColor + '"><span style="color:#fbbf24;font-size:10px;font-weight:600">' + (d.speaker||'') + '</span><span style="color:' + dColor + ';font-size:10px"> ' + (isClassical?'⚔':'💬') + ' ' + (d.text||'') + '</span>' + (d.voice_dir ? '<div style="color:#888;font-size:8px;font-style:italic;margin-top:2px">🎤 ' + d.voice_dir + '</div>' : '') + '</div>';
+                     });
+                   } else if (dia) {
+                     allHtml += '<span style="color:#60a5fa;font-size:10px">「' + (dia.length>100?dia.substring(0,100)+'...':dia) + '」</span> ';
+                   }
+                   allHtml += '</div>';
+                 });
+               } else { allHtml += '<div style="color:#555;font-size:10px;margin:4px 12px">暂无分镜数据</div>'; }
             } catch(ex2) { allHtml += '<div style="color:#ef4444;font-size:10px;margin:4px 12px">EP'+epNum+' 加载失败</div>'; }
             allHtml += '</div>';
           }
@@ -5348,6 +5491,97 @@ function toggleDM0All(src) {
     var btn = document.getElementById('dm0-btn-' + a);
     if (btn) btn.disabled = !on || found === 0;
   });
+}
+
+// ===== v3.9: DM-0 对白比例滑块 =====
+function dm0RatioChange(val) {
+  var target = document.getElementById('dm0-ratio-target');
+  if (target) {
+    target.style.left = val + '%';
+    target.textContent = '🎯 目标:' + val + '% 古典';
+  }
+  var slider = document.getElementById('dm0-ratio-slider');
+  if (slider) {
+    slider.style.background = 'linear-gradient(to right,#ef4444 ' + val + '%,#3b82f6 ' + val + '%)';
+  }
+}
+
+function dm0ApplyRatio() {
+  var slider = document.getElementById('dm0-ratio-slider');
+  if (!slider) return;
+  var target = parseInt(slider.value);
+  var classicalPct = target;
+  var modernPct = 100 - target;
+  if (!confirm('确认按 ' + classicalPct + '%古典 / ' + modernPct + '%现代 比例重写全部6集？\n\n此操作将触发 AI 回流重写。')) return;
+  var epList = [];
+  var allCbs = document.querySelectorAll('#dm0-episodes input[type=checkbox][id^="dm0-check-"]');
+  allCbs.forEach(function(cb){
+    var epNum = cb.id.replace('dm0-check-','');
+    if (epNum !== 'all') epList.push(epNum);
+  });
+  if (!epList.length) epList = ['1','2','3','4','5','6'];
+  var fbDiv = document.createElement('div');
+  fbDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1d27;border:1px solid #f59e0b;border-radius:8px;padding:16px;z-index:500;width:350px;box-shadow:0 8px 32px rgba(0,0,0,.5)';
+  fbDiv.innerHTML = '<div style="font-size:13px;font-weight:600;margin-bottom:8px">🔄 按 ' + classicalPct + '%古典 / ' + modernPct + '%现代 重写 EP' + epList.join(',EP') + '</div>' +
+    '<select id="ratio-fb-type" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:5px;border-radius:4px;font-size:11px;margin-bottom:6px">' +
+    ['剧本质量','剧情节奏','角色形象','逻辑一致性','配音','其他'].map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('') + '</select>' +
+    '<textarea id="ratio-fb-desc" placeholder="额外描述（可选）..." style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:5px;border-radius:4px;font-size:10px;min-height:50px;margin-bottom:8px"></textarea>' +
+    '<div style="display:flex;gap:6px">' +
+    '<button class="btn btn-s" onclick="dm0RatioRewrite(\'' + epList.join(',') + '\',\'' + classicalPct + '\')">发送重写</button>' +
+    '<button class="btn btn-cancel" onclick="this.parentElement.parentElement.remove()">取消</button></div>';
+  document.body.appendChild(fbDiv);
+}
+
+function dm0RatioRewrite(epListStr, targetPct) {
+  var fbType = document.getElementById('ratio-fb-type')?.value || '剧本质量';
+  var fbDesc = document.getElementById('ratio-fb-desc')?.value || ('对白比例调整为' + targetPct + '%古典');
+  var eps = epListStr.split(',');
+  var popup = document.querySelector('#ratio-fb-desc')?.parentElement?.parentElement;
+  if (popup) popup.remove();
+  var overlay = document.createElement('div');
+  overlay.id = 'dm0-sync-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center';
+  overlay.innerHTML = '<div style="background:#1a2535;border:1px solid #3b82f6;border-radius:12px;padding:20px;min-width:380px"><div style="font-size:14px;font-weight:700;color:#93c5fd;margin-bottom:4px">🔄 按比例重写中</div><div style="font-size:10px;color:#64748b;margin-bottom:12px">目标: ' + targetPct + '%古典 / ' + (100-targetPct) + '%现代 · EP' + eps.join(',EP') + '</div><div id="dm0-sync-log" style="max-height:260px;overflow-y:auto;font-size:9px;font-family:monospace;color:#8899aa;line-height:1.6;margin-bottom:8px"></div><div style="height:3px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden"><div id="dm0-sync-bar" style="height:100%;width:0;background:#3b82f6;transition:width .3s;border-radius:3px"></div></div></div>';
+  document.body.appendChild(overlay);
+  var logEl = document.getElementById('dm0-sync-log');
+  var barEl = document.getElementById('dm0-sync-bar');
+  function log(msg, c) { logEl.insertAdjacentHTML('beforeend','<div style="color:'+(c||'#8899aa')+'">'+msg+'</div>'); logEl.scrollTop = logEl.scrollHeight; }
+  function setBar(p) { if(barEl) barEl.style.width = p+'%'; }
+  log('🤖 提交异步重写任务...', '#a78bfa');
+  setBar(5);
+  fetch('/api/rewrite',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({episodes:eps.map(Number),feedback_type:fbType,feedback_desc:fbDesc+' (目标:'+targetPct+'%古典)'})})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if (!d.task_id) { log('❌ 启动失败: '+JSON.stringify(d), '#ef4444'); return; }
+      log('✅ 任务已启动: '+d.task_id, '#4ade80');
+      setBar(10);
+      // Poll for completion
+      var polls = 0, maxPolls = 120;
+      function pollStatus() {
+        if (polls >= maxPolls) { log('⚠️ 轮询超时', '#f59e0b'); return; }
+        polls++;
+        setBar(10 + Math.min(polls, 80));
+        fetch('/api/rewrite/status?task_id=' + d.task_id)
+          .then(function(r){return r.json();})
+          .then(function(sd){
+            if (sd.status === 'completed') {
+              setBar(100);
+              var results = sd.results || [];
+              results.forEach(function(rs){
+                if (rs.status === 'done') { log('✅ EP'+rs.episode+': '+rs.shots+'镜 | '+rs.classical_pct+'%古典/'+rs.modern_pct+'%现代', '#4ade80'); }
+                else { log('⚠️ EP'+rs.episode+': '+(rs.note||rs.error||'失败'), '#f59e0b'); }
+              });
+              log('📜 重写完成，刷新页面查看结果...', '#93c5fd');
+              setTimeout(function(){location.reload();}, 2000);
+            } else {
+              setTimeout(pollStatus, 1500);
+            }
+          }).catch(function(){setTimeout(pollStatus, 2000);});
+      }
+      setTimeout(pollStatus, 1000);
+    })
+    .catch(function(e){log('❌ 异常: '+e.message, '#ef4444');});
 }
 
 // ================================================================

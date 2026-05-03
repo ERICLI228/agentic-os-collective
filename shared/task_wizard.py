@@ -467,6 +467,13 @@ def api_decision():
     task['decision_reason'] = reason
     task['decision_by'] = 'human'
 
+    if 'feedback_type' in data:
+        task['feedback_type'] = data['feedback_type']
+    if 'feedback_desc' in data:
+        task['feedback_desc'] = data['feedback_desc']
+    if 'episodes' in data:
+        task['episodes'] = data['episodes']
+
     with open(task_file, 'w') as f:
         json.dump(task, f, ensure_ascii=False, indent=2)
 
@@ -488,6 +495,60 @@ def api_decision():
         'human_approved': task.get('human_approved'),
         'timestamp': datetime.now().isoformat()
     })
+
+
+# ===== v3.9: /api/rewrite — AI回流重写端点 (异步模式) =====
+@app.route('/api/rewrite', methods=['POST'])
+def api_rewrite():
+    """v3.9: AI 回流重写 — 异步模式，立即返回 task_id，子进程后台执行"""
+    data = request.get_json()
+    episodes = data.get('episodes', [])
+    feedback_type = data.get('feedback_type', '')
+    feedback_desc = data.get('feedback_desc', '')
+
+    if not episodes:
+        return jsonify({"error": "需要 episodes 参数"}), 400
+
+    # Generate a unique task ID and write task file
+    import uuid, subprocess as _sp
+    task_id = str(uuid.uuid4())[:8]
+    task_file = Path.home() / ".agentic-os" / "rewrite_tasks" / f"{task_id}.json"
+    task_file.parent.mkdir(parents=True, exist_ok=True)
+
+    task_data = {
+        "task_id": task_id,
+        "episodes": episodes,
+        "feedback_type": feedback_type,
+        "feedback_desc": feedback_desc,
+        "status": "pending",
+        "created_at": datetime.now().isoformat()
+    }
+    with open(task_file, "w") as f:
+        json.dump(task_data, f, ensure_ascii=False)
+
+    # Launch background process
+    runner_script = Path(__file__).resolve().parent / "rewrite_runner.py"
+    _sp.Popen([
+        sys.executable, str(runner_script),
+        "--task-id", task_id,
+        "--episodes", ",".join(str(e) for e in episodes),
+        "--feedback-type", feedback_type,
+        "--feedback-desc", feedback_desc or ""
+    ], stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'))
+
+    return jsonify({"status": "started", "task_id": task_id, "message": "后台重写已启动，请轮询 /api/rewrite?task_id=" + task_id})
+
+
+@app.route('/api/rewrite/status', methods=['GET'])
+def api_rewrite_status():
+    """v3.9: 查询重写任务状态"""
+    task_id = request.args.get('task_id', '')
+    task_file = Path.home() / ".agentic-os" / "rewrite_tasks" / f"{task_id}.json"
+    if not task_file.exists():
+        return jsonify({"error": "task not found"}), 404
+    with open(task_file) as f:
+        data = json.load(f)
+    return jsonify(data)
 
 
 # 兼容旧版 task_wizard 入口
@@ -1910,4 +1971,4 @@ if __name__ == '__main__':
     except ImportError:
         host = os.environ.get("API_HOST", "127.0.0.1")
         port = int(os.environ.get("API_PORT", "5001"))
-    app.run(host=host, port=port, debug=False)
+    app.run(host=host, port=port, debug=False, threaded=True)

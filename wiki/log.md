@@ -51,3 +51,12 @@
 
 ## 2026-05-02 及之前
 参见 reports/PRD-v3.7.21.md
+### v3.8.0 — 2026-05-03 08:04 — Sprint A: 工业级分镜数据模型
+- _build_storyboard() 重写: 从 episode_templates.json 加载 6集×5镜 15字段工业数据
+- 新增: timecode, music_cue, dialogue[], shot_type, camera_move, pacing, color_palette, performance_notes
+- compute_dialogue_stats() — 古典vs现代对白比例自动计算
+- /api/script/<ep>/rich 端点 — 完整工业级分镜+对白统计
+- /api/script/stats 端点 — 全剧集对白比例查询
+- EP03林冲风雪山神庙为金标准(46%古典/54%现代)
+- 新增 episode_templates.json: 6集 30镜 15字段/镜
+- DEV→TEST 同步通过
