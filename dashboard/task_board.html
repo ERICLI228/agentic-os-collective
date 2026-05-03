@@ -955,6 +955,13 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 .ov-banner h2{font-size:18px;font-weight:700;color:#e4e6eb;margin:0 0 4px 0}
 .ov-banner .ov-subtitle{font-size:11px;color:#64748b}
 .ov-section-title{font-size:13px;font-weight:700;color:#e4e6eb;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.06)}
+/* P2-G: Character relation graph in DM-2 */
+.dm2-rel-graph{display:flex;flex-direction:column;gap:6px}
+.dm2-rel-row{display:flex;align-items:center;gap:8px;padding:6px 8px;background:rgba(15,23,35,.4);border-radius:6px;font-size:10px}
+.dm2-rel-from{color:#93c5fd;font-weight:600;min-width:45px}
+.dm2-rel-line{color:#555;font-size:9px}
+.dm2-rel-to{color:#fbbf24;font-weight:600;min-width:45px}
+.dm2-rel-note{color:#64748b;font-size:9px;margin-left:auto}
 /* Issue cards */
 .dm6-issue-card{display:flex;gap:12px;padding:14px;margin-bottom:12px;border-radius:8px;background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.12);border-left:4px solid #f59e0b}
 .dm6-issue-icon{font-size:22px;flex-shrink:0;line-height:1}
@@ -1357,7 +1364,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <body>
 <div id="toast-container"></div>
 <div id="version-check" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#10b981;color:#fff;text-align:center;padding:6px 12px;font-size:13px;font-family:monospace;letter-spacing:0.5px;cursor:pointer" onclick="this.remove()">
-  🔄 v3.7.26 — P1-D/L/I/P: charMap动态加载+剧集过滤+mock警告+渲染队列，点击关闭
+  🔄 v3.7.27 — P2-K镜头参数 + P2-G人物关系图 + P2-W排播扩展EP01~06，点击关闭
 </div>
 
 <div class="topbar">
@@ -1443,7 +1450,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <script>
 // v3.7.17: cache check — if URL has old version param, redirect
 (function(){
-   var v = '3.7.26';
+   var v = '3.7.27';
    var q = location.search;
    var lsVer = localStorage.getItem('_dash_v');
    if ((q && q.indexOf('v=') >= 0 && q.indexOf('v='+v) < 0) || (lsVer && lsVer !== v)) {
@@ -7124,6 +7131,26 @@ async function renderDM2(detail, ms) {
   // Step 4: Render Panel 2 - Shot Card Grid
   detailEl.insertAdjacentHTML('beforeend', _renderDM2ShotGrid(shots));
 
+  // P2-G: Character relationship graph
+  detailEl.insertAdjacentHTML('beforeend',
+    '<div class="info-card collapsible">' +
+    '  <div class="info-card-header" onclick="toggleInfoCard(this)">' +
+    '    <span>👥 人物关系图</span><span class="toggle-icon">▼</span>' +
+    '  </div>' +
+    '  <div class="info-card-body" style="display:none">' +
+    '    <div class="dm2-rel-graph">' +
+    '      <div class="dm2-rel-row"><span class="dm2-rel-from">鲁智深</span><span class="dm2-rel-line">—师徒→</span><span class="dm2-rel-to">林冲</span><span class="dm2-rel-note">野猪林救难</span></div>' +
+    '      <div class="dm2-rel-row"><span class="dm2-rel-from">武松</span><span class="dm2-rel-line">—结拜→</span><span class="dm2-rel-to">宋江</span><span class="dm2-rel-note">柴进庄结义</span></div>' +
+    '      <div class="dm2-rel-row"><span class="dm2-rel-from">李逵</span><span class="dm2-rel-line">—效忠→</span><span class="dm2-rel-to">宋江</span><span class="dm2-rel-note">江州劫法场</span></div>' +
+    '      <div class="dm2-rel-row"><span class="dm2-rel-from">吴用</span><span class="dm2-rel-line">—军师→</span><span class="dm2-rel-to">晁盖</span><span class="dm2-rel-note">智取生辰纲</span></div>' +
+    '      <div class="dm2-rel-row"><span class="dm2-rel-from">林冲</span><span class="dm2-rel-line">—仇敌→</span><span class="dm2-rel-to">高俅</span><span class="dm2-rel-note">白虎堂诬陷</span></div>' +
+    '      <div class="dm2-rel-row"><span class="dm2-rel-from">鲁智深</span><span class="dm2-rel-line">—拳杀→</span><span class="dm2-rel-to">郑屠</span><span class="dm2-rel-note">三拳镇关西</span></div>' +
+    '    </div>' +
+    '    <div style="font-size:9px;color:#555;margin-top:8px">核心角色关系图谱 — 含6条关键戏剧冲突线</div>' +
+    '  </div>' +
+    '</div>'
+  );
+
   // Step 5: Render Panel 3 - Statistics Tag Clouds
   detailEl.insertAdjacentHTML('beforeend', _renderDM2Stats(stats));
 
@@ -7303,10 +7330,15 @@ function _renderDM2ShotGrid(shots) {
         </div>
         <div class="sb-card-footer">
           <button class="sb-card-expand" onclick="_toggleShotPrompt(this, '${char}-镜${shotNum}')">📋 Prompt</button>
+          <button class="sb-card-expand" onclick="_toggleShotSpecs(this)">📷 镜头参数</button>
           <button class="sb-card-expand" onclick="switchToTab('drama');setTimeout(function(){select('DM-1')},200)" title="编辑角色档案">📝 编辑</button>
           <button class="sb-card-expand" onclick="auditionVoice('${CHAR_MAP[char] || 'wusong'}')" title="试听配音">🔊 试听</button>
         </div>
         <div id="shot-prompt-${char}-镜${shotNum}" style="display:none;padding:8px 10px;font-size:9px;color:#6b8aad;background:rgba(0,0,0,.2);border-top:1px solid #222;white-space:pre-wrap;max-height:150px;overflow-y:auto">${prompt}</div>
+        <div class="shot-specs" style="display:none;padding:6px 10px;font-size:9px;color:#8899aa;background:rgba(0,0,0,.15);border-top:1px solid #222">
+          <div>📐 景别: ${st} · 🎥 运镜: ${mv} · 💡 光影: ${(s.lighting||'—')}</div>
+          <div>📷 机位: ${s.camera_position||'常规视角'} · 🔭 焦距: ${s.focal_length||'50mm'} · 🎬 时长: ${dur}s</div>
+        </div>
       </div>`;
     });
   });
@@ -8577,6 +8609,12 @@ function generateAllDubVoices() {
   genNext();
 }
 
+// P2-K: Toggle shot specs display
+function _toggleShotSpecs(btn) {
+  var specs = btn.closest('.sb-card').querySelector('.shot-specs');
+  if (specs) specs.style.display = specs.style.display === 'none' ? 'block' : 'none';
+}
+
 // ================================================================
 // v3.7.12: DM-4 升级路径决策看板 (可视化重构)
 // ================================================================
@@ -9110,22 +9148,36 @@ async function renderDM6(msId, detail, ms) {
     );
   }
 
-  // ===== Panel 4b: DM-7 专属排播风险卡片 =====
+  // ===== P2-W: DM-7 排播风险卡片 (扩展到全部剧集) =====
   if (msId === 'DM-7') {
     var schRiskId = 'dm7-risk-' + epNum;
-    el.insertAdjacentHTML('beforeend',
-      '<div class="publish-check-card warn" id="' + schRiskId + '">' +
-      '  <div class="check-card-header"><span class="check-card-icon">⚠️</span><span class="check-card-title">排播风险：连续两集鲁智深</span></div>' +
-      '  <div class="check-card-detail">' +
-      '    EP01(鲁提辖拳打镇关西) + EP02(倒拔垂杨柳) 主角都是鲁智深<br>' +
-      '    建议：在两集之间插入一集其他角色的剧集（如 EP03 林冲），避免观众审美疲劳' +
-      '  </div>' +
-      '  <div class="check-card-action">' +
-      '    <button class="pc-card-action primary" onclick="switchToTab(\'DM-8\')">跳转到 EP03 林冲 (DM-8)</button>' +
-      '    <button class="pc-card-action secondary" onclick="dismissRisk(\'' + schRiskId + '\')">忽略此风险</button>' +
-      '  </div>' +
-      '</div>'
-    );
+    // Map episode → main character and previous episode's main character
+    var epChars = {1:['鲁智深','金翠莲'], 2:['鲁智深','林冲'], 3:['林冲','高俅'],
+                   4:['宋江','阎婆惜'], 5:['李逵','宋江'], 6:['吴用','晁盖']};
+    var epTitles = {1:'鲁提辖拳打镇关西',2:'倒拔垂杨柳',3:'林冲风雪山神庙',4:'宋江怒杀阎婆惜',5:'黑旋风劫法场',6:'智取生辰纲'};
+    var thisChars = epChars[epNum] || [];
+    var prevChars = epChars[epNum - 1] || [];
+    // Check character overlap with previous episode
+    var overlap = thisChars.filter(function(c) { return prevChars.indexOf(c) >= 0; });
+    if (overlap.length > 0) {
+      var prevMain = prevChars[0] || '?';
+      var nextEp = epNum + 1;
+      var alt = nextEp <= 6 ? ('EP' + String(nextEp).padStart(2,'0') + ' ' + (epTitles[nextEp]||'') + ' (DM-' + (5+nextEp) + ')') : '其他业务线';
+      el.insertAdjacentHTML('beforeend',
+        '<div class="publish-check-card warn" id="' + schRiskId + '">' +
+        '  <div class="check-card-header"><span class="check-card-icon">⚠️</span><span class="check-card-title">排播风险：连续两集角色重复 (' + overlap.join('/') + ')</span></div>' +
+        '  <div class="check-card-detail">' +
+        '    EP' + String(epNum-1).padStart(2,'0') + '(' + prevMain + ') + EP' + String(epNum).padStart(2,'0') +
+        '(' + (epTitles[epNum]||'') + ') 主角有重叠<br>' +
+        '    建议：插入一集不同角色的剧集（如 ' + alt + '），避免观众审美疲劳' +
+        '  </div>' +
+        '  <div class="check-card-action">' +
+        (nextEp <= 6 ? '    <button class="pc-card-action primary" onclick="switchToTab(\'DM-' + (5+nextEp) + '\')">跳转到 ' + alt + '</button>' : '') +
+        '    <button class="pc-card-action secondary" onclick="dismissRisk(\'' + schRiskId + '\')">忽略此风险</button>' +
+        '  </div>' +
+        '</div>'
+      );
+    }
   }
 
   // ===== Panel 5: Collapsible video preview (reuse renderDMEpisode logic) =====
