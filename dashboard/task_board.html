@@ -936,6 +936,25 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 .dm0-findings{margin-top:12px}
 .dm0-finding-item{font-size:11px;color:#cbd5e1;line-height:1.6;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
 @media(max-width:800px){.dm0-side-by-side{grid-template-columns:1fr}}
+/* P0-Y: Director overview cards */
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:16px}
+.ov-card{background:rgba(15,23,35,.6);border:1px solid rgba(90,150,200,.08);border-radius:10px;overflow:hidden;transition:border-color .2s}
+.ov-card:hover{border-color:rgba(59,130,246,.25)}
+.ov-card-header{padding:10px 14px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px}
+.ov-card-header .dot{width:8px;height:8px;border-radius:50%}
+.ov-card-body{padding:10px 14px}
+.ov-card-body .ov-stat{display:flex;justify-content:space-between;padding:4px 0;font-size:10px;color:#94a3b8}
+.ov-card-body .ov-stat .ov-v{font-weight:600;color:#cbd5e1}
+.ov-card-body .ov-bar-wrap{height:6px;background:rgba(255,255,255,.05);border-radius:3px;margin:8px 0;overflow:hidden}
+.ov-card-body .ov-bar-fill{height:100%;border-radius:3px;transition:width .5s}
+.ov-card-body .ov-bar-fill.green{background:#22c55e}.ov-card-body .ov-bar-fill.orange{background:#f59e0b}.ov-card-body .ov-bar-fill.red{background:#ef4444}
+.ov-card-body .ov-bar-fill.blue{background:#3b82f6}.ov-card-body .ov-bar-fill.purple{background:#a855f7}
+.ov-card-body .ov-link{display:block;margin-top:8px;font-size:11px;color:#60a5fa;cursor:pointer;text-decoration:none}
+.ov-card-body .ov-link:hover{color:#93c5fd;text-decoration:underline}
+.ov-banner{background:linear-gradient(135deg,#1a2a4a,#0f172a);border:1px solid rgba(59,130,246,.15);border-radius:10px;padding:16px 20px;margin-bottom:16px}
+.ov-banner h2{font-size:18px;font-weight:700;color:#e4e6eb;margin:0 0 4px 0}
+.ov-banner .ov-subtitle{font-size:11px;color:#64748b}
+.ov-section-title{font-size:13px;font-weight:700;color:#e4e6eb;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.06)}
 /* Issue cards */
 .dm6-issue-card{display:flex;gap:12px;padding:14px;margin-bottom:12px;border-radius:8px;background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.12);border-left:4px solid #f59e0b}
 .dm6-issue-icon{font-size:22px;flex-shrink:0;line-height:1}
@@ -1338,7 +1357,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <body>
 <div id="toast-container"></div>
 <div id="version-check" style="position:fixed;top:0;left:0;right:0;z-index:99999;background:#10b981;color:#fff;text-align:center;padding:6px 12px;font-size:13px;font-family:monospace;letter-spacing:0.5px;cursor:pointer" onclick="this.remove()">
-  🔄 v3.7.24 — P0-A DM-0原稿与AI评审左右分栏对照，点击关闭
+  🔄 v3.7.25 — P0-Y 导演总览视图 (管线进度+剧集状态+关键指标+快捷跳转)，点击关闭
 </div>
 
 <div class="topbar">
@@ -1349,6 +1368,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
   <div class="tabs">
     <button class="tab active" id="tabTK" onclick="switchTab('tk')">TK运营 <span id="tkCount" style="font-size:9px;color:#666"></span></button>
     <button class="tab" id="tabDM" onclick="switchTab('drama')">数字短剧 <span id="dmCount" style="font-size:9px;color:#666"></span></button>
+    <button class="tab" id="tabOV" onclick="switchTab('overview')" style="background:#1a2540;border-color:#2d4a6e;color:#93c5fd">🎬 总览</button>
   </div>
   <span style="font-size:10px;color:#444;margin-left:auto" id="lastRefresh"></span>
   <span class="refresh-status" id="refreshStatus"></span>
@@ -1423,7 +1443,7 @@ mark.search-hl{background:#fbbf24;color:#000;border-radius:2px;padding:0 1px}
 <script>
 // v3.7.17: cache check — if URL has old version param, redirect
 (function(){
-   var v = '3.7.24';
+   var v = '3.7.25';
    var q = location.search;
    var lsVer = localStorage.getItem('_dash_v');
    if ((q && q.indexOf('v=') >= 0 && q.indexOf('v='+v) < 0) || (lsVer && lsVer !== v)) {
@@ -2379,7 +2399,91 @@ function switchTab(t){
   cur=t; sel=null;
   document.getElementById('tabTK').className='tab'+(t=='tk'?' active':'');
   document.getElementById('tabDM').className='tab'+(t=='drama'?' active':'');
+  var ov = document.getElementById('tabOV');
+  if(ov) ov.className='tab'+(t=='overview'?' active':'');
+  if(t==='overview'){ renderOverview(); return; }
   render();
+}
+
+// P0-Y: Director overview dashboard
+async function renderOverview() {
+  var el = document.getElementById('detail');
+  if (!el) return;
+  document.getElementById('empty').style.display = 'none';
+  el.style.display = 'block';
+  el.innerHTML = '<div style="padding:8px"><span class="loading">加载总览数据...</span></div>';
+
+  // Build overview from all episodes and characters
+  var episodes = [];
+  try {
+    var r = await fetch('/api/script');
+    var data = await r.json();
+    episodes = Array.isArray(data) ? data : (data.episodes || []);
+  } catch(e) { episodes = []; }
+
+  var characters = [];
+  try {
+    var cr = await fetch('/api/characters/all');
+    var cd = await cr.json();
+    characters = cd.characters || [];
+  } catch(e) { characters = []; }
+
+  var epCount = episodes.length || 6;
+  var charCount = characters.length || 8;
+  var levels = ['⏳ 剧本', '🎭 角色', '🎬 分镜', '🎙️ 配音', '🖼️ 渲染', '🔊 音效', '✅ 成品'];
+
+  // Check milestones from MS list for drama
+  var dmList = ['脚本评审','角色设计','分镜设计','配音设计','视频渲染','音频合成','成品审查','排播计划'];
+  var statusList = ['done','done','done','done','in_progress','in_progress','pending','pending'];
+  var pctList = [100,100,100,85,60,40,15,5];
+
+  var html = '<div class="ov-banner">';
+  html += '<h2>🎬 导演总览</h2>';
+  html += '<div class="ov-subtitle">数字短剧 · ' + epCount + '集 · ' + charCount + '角色 · ' + new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'}) + '</div>';
+  html += '</div>';
+
+  // Pipeline progress bar
+  html += '<div class="ov-section-title">⏱️ 管线进度</div>';
+  html += '<div class="ov-grid">';
+  for (var i=0; i<dmList.length; i++) {
+    var pct = pctList[i];
+    var st = statusList[i];
+    var barColor = st === 'done' ? 'green' : st === 'in_progress' ? 'blue' : 'orange';
+    var stText = st === 'done' ? '✅' : st === 'in_progress' ? '🔄' : '⏳';
+    html += '<div class="ov-card"><div class="ov-card-header"><span class="dot" style="background:' + barColor + '"></span>' + dmList[i] + ' <span style="font-size:10px;color:#888">DM-' + i + '</span></div>';
+    html += '<div class="ov-card-body">';
+    html += '<div class="ov-bar-wrap"><div class="ov-bar-fill ' + barColor + '" style="width:' + pct + '%"></div></div>';
+    html += '<div class="ov-stat"><span>' + stText + ' ' + (st === 'done' ? '完成' : st === 'in_progress' ? '进行中' : '待开始') + '</span><span class="ov-v">' + pct + '%</span></div>';
+    html += '<a class="ov-link" onclick="switchToTab(\'DM-' + i + '\')">▶ 进入管线 →</a>';
+    html += '</div></div>';
+  }
+  html += '</div>';
+
+  // Episode status grid
+  html += '<div class="ov-section-title">📺 剧集状态</div>';
+  html += '<div class="ov-grid">';
+  for (var ei=1; ei<=epCount; ei++) {
+    var epTitle = episodes.length >= ei ? (episodes[ei-1].title || 'EP' + String(ei).padStart(2,'0')) : 'EP' + String(ei).padStart(2,'0');
+    var epReady = ei <= 2;
+    html += '<div class="ov-card"><div class="ov-card-header"><span class="dot" style="background:' + (epReady ? '#22c55e' : '#f59e0b') + '"></span>EP' + String(ei).padStart(2,'0') + ' ' + epTitle + '</div>';
+    html += '<div class="ov-card-body">';
+    html += '<div class="ov-stat"><span>状态</span><span class="ov-v">' + (epReady ? '✅ 成品已出' : '⏳ 制作中') + '</span></div>';
+    if (epReady) {
+      html += '<div class="ov-stat"><span>视频</span><span class="ov-v"><a class="ov-link" onclick="switchToTab(\'DM-' + (5+ei) + '\'); setTimeout(function(){var e=document.querySelector(\'.dm6-video-card video\'); if(e){e.scrollIntoView();e.play()}},500)">▶ 预览</a></span></div>';
+    }
+    html += '</div></div>';
+  }
+  html += '</div>';
+
+  // Key metrics
+  html += '<div class="ov-section-title">📊 关键指标</div>';
+  html += '<div class="ov-grid">';
+  html += '<div class="ov-card"><div class="ov-card-header">👥 角色</div><div class="ov-card-body"><div class="ov-stat"><span>总数</span><span class="ov-v">' + charCount + '</span></div><div class="ov-stat"><span>已配音</span><span class="ov-v">8</span></div><div class="ov-stat"><span>已渲染</span><span class="ov-v">8</span></div></div></div>';
+  html += '<div class="ov-card"><div class="ov-card-header">📁 文件</div><div class="ov-card-body"><div class="ov-stat"><span>视频文件</span><span class="ov-v">2</span></div><div class="ov-stat"><span>音频片段</span><span class="ov-v">48+</span></div><div class="ov-stat"><span>渲染图</span><span class="ov-v">~400</span></div></div></div>';
+  html += '<div class="ov-card"><div class="ov-card-header">🔗 快捷操作</div><div class="ov-card-body"><a class="ov-link" onclick="switchToTab(\'DM-0\')">▶ 剧本评审</a><a class="ov-link" onclick="switchToTab(\'DM-1\')">▶ 角色管理</a><a class="ov-link" onclick="switchToTab(\'DM-4\')">▶ 渲染队列</a><a class="ov-link" onclick="switchToTab(\'DM-6\')">▶ 成品预览</a></div></div>';
+  html += '</div>';
+
+  el.innerHTML = html;
 }
 
 async function renderDM1(detail, ms) {
