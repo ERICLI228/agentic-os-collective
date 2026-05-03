@@ -21,17 +21,18 @@
 > **任何任务完成后，必须按以下顺序执行全部 4 步，遗漏任一步 = 任务未完成。不得跳过。**
 
 ```
-任务完成 → [1] 标注 PRD → [2] git commit+push → [3] Obsidian 同步 → [4] wiki/index/log 更新
+任务完成 → [1] 标注 PRD → [2] git commit+push → [3] Obsidian 同步 → [4] wiki/index/log 更新 → **[5] bash scripts/ensure-sync.sh**
                                                                               ↓
                                                                     任务才算真正完成
 ```
 
 | 步骤 | 命令/操作 | 验证 |
 |------|----------|------|
-| **1. 标注 PRD** | 编辑 `reports/PRD-v3.6.md`，新增版本条目（版本号/日期/修订人/内容摘要），更新标题版本号 | `grep v3.6.XX reports/PRD-v3.6.md` 能找到本次版本 |
-| **2. Git 推送** | `git add -A && git commit -m "v3.6.XX: <摘要>" && git push origin main`<br>`rsync -a --exclude='.git' ~/agentic-os-collective/ ~/Backups/agentic-os-$(date +%Y%m%d_%H%M)/` (本地快照) | `git log -1` 显示本次 commit |
+| **1. 标注 PRD** | 编辑 `reports/PRD-v3.7.21.md`，新增版本条目（版本号/日期/修订人/内容摘要/环境），更新标题版本号 | `grep v3.7.XX reports/PRD-v3.7.21.md` 能找到本次版本 |
+| **2. Git 推送** | `git add -A && git commit -m "v3.6.XX: <摘要>" && git push origin main && git push origin test` | `git log -1` 显示本次 commit |
 | **3. Obsidian** | `python3 ~/.openclaw/workspace/knowledge-base/sync_tasks_to_obsidian.py` | 输出 `✅ 同步完成` |
 | **4. Wiki** | 追加 `wiki/log.md` + 更新 `wiki/index.md`（total_pages/最近新增） | `tail -5 wiki/log.md` 显示本次条目 |
+| **5. 环境同步** | `bash scripts/ensure-sync.sh` | 输出 `✅ 全部 7 个文件已同步` |
 
 ### 协同规则 (OpenClaw ↔ OpenCode)
 - 双方**主动相互协助与验证测试**，任何一方完成修改后，另一方运行验证
