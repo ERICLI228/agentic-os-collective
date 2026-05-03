@@ -110,6 +110,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#0f1117;
 .sb-edit{font-size:9px;color:#555;cursor:pointer;text-decoration:none;margin-left:4px;user-select:none}
 .sb-edit:hover{color:#3b82f6}
 
+/* v3.11.1: Timecode progress bar animation */
+.tc-bar{height:3px;background:#1e2130;border-radius:3px;margin:6px 0 10px;overflow:hidden}
+.tc-bar-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa,#f59e0b);border-radius:3px;width:0}
+.tc-bar-fill.anim{animation:tc-progress 2s ease-in-out forwards}
+@keyframes tc-progress{0%{width:0}60%{width:90%}100%{width:100%}}
+
+/* v3.11.1: Industrial shot card in DM-0 */
+.sb-card .sb-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+
 /* v3.6: Episode row */
 .ep-row{display:flex;align-items:center;padding:8px 10px;background:#14161d;border-radius:4px;margin:4px 0;cursor:pointer;gap:8px;transition:background .15s}
 .ep-row:hover{background:#1e2130}
@@ -2036,69 +2045,127 @@ async function toggleSB(epNum){
 async function loadStoryboard(epNum){
   const scenesEl=document.getElementById('sb-'+epNum);
   if(!scenesEl)return;
+  scenesEl.innerHTML='<div style="text-align:center;padding:20px;color:#555"><div class="tc-bar"><div class="tc-bar-fill anim"></div></div>加载工业级分镜...</div>';
   try{
-    const r=await fetch('/api/script/'+parseInt(epNum));
+    const r=await fetch('/api/script/'+parseInt(epNum)+'/rich?_='+Date.now());
     const data=await r.json();
-    const scenes=data.scenes||data.storyboard||[];
-    if(!scenes.length){scenesEl.innerHTML='<span style="font-size:10px;color:#555;">无分镜数据</span>';return;}
-    let sbH='';
-    // v3.7.8 Sprint 2-D: In-page video player + download bar
-    sbH+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap">
-      <video controls width="100%" poster="" preload="none" style="max-width:400px;border-radius:4px;background:#000">
-        <source src="/api/download?name=ep${epNum}.mp4" type="video/mp4">
-        浏览器不支持视频播放
-      </video>
-      <div style="display:flex;gap:3px;flex-wrap:wrap">
-        <button class="mini-btn" onclick="window.open('/api/download?name=ep${epNum}.mp4')" title="下载MP4">🎬 MP4</button>
-        <button class="mini-btn" onclick="window.open('/api/download?name=ep${epNum}.txt')" title="下载TXT">📄 TXT</button>
-        <button class="mini-btn" onclick="window.open('/api/download?name=ep${epNum}.srt')" title="下载SRT">📝 SRT</button>
-        <button class="mini-btn" onclick="previewScriptInline(${epNum})">📖 页内预览</button>
-      </div>
-    </div>`;
-    sbH+=`<div id="inline-script-${epNum}" class="accordion-content" style="margin-bottom:8px">
-      <textarea id="script-editor-${epNum}" style="width:100%;min-height:200px;background:#111;border:1px solid #333;color:#e4e6eb;font-size:11px;padding:8px;border-radius:4px;font-family:monospace" placeholder="加载剧本中..."></textarea>
-      <div style="margin-top:4px;display:flex;gap:4px">
-        <button class="mini-btn" onclick="reReviewAfterEdit(${epNum})">💾 保存</button>
-        <button class="mini-btn" style="color:#f59e0b" onclick="reReviewAfterEdit(${epNum})">🔄 保存并重新审核</button>
-      </div>
-    </div>`;
-    scenes.forEach(sc=>{
-      const seq=sc.seq||sc.sequence||sc.num||'';
-      const act=sc.act||'';
-      const name=sc.name||sc.scene||'';
-      const desc=sc.description||sc.desc||'';
-      const emotion=sc.emotion||'';
-      const dialogue=sc.dialogue||'';
-      const imgs=sc.images||sc.renders||[];
-      sbH+=`<div class="sb-card">
-        <div class="sb-seq">${seq}</div>
-        <div class="sb-body">
-          ${act?`<div class="sb-act">${act}</div>`:''}
-          ${name?`<div class="sb-name">${name}</div>`:''}
-          ${desc?`<div class="sb-desc">${desc}</div>`:''}
-          ${emotion?`<div class="sb-emotion">情感: ${emotion}</div>`:''}
-          ${dialogue?`<div class="sb-dialogue">对白: ${dialogue}</div>`:''}
-          <a class="sb-edit" href="javascript:void(0)" onclick="editSB('${epNum}','${seq}')">&#9998; 编辑</a>
-          <div class="inline-edit" id="edit-${epNum}-${seq}">
-            <textarea id="desc-${epNum}-${seq}">${desc.replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
-            <div class="edit-btns">
-              <button class="mini-btn" onclick="saveSBEdit('${epNum}','${seq}')">保存</button>
-              <button class="mini-btn" onclick="cancelSBEdit('${epNum}','${seq}')">取消</button>
-            </div>
-          </div>`;
-      if(imgs.length>0){
-        sbH+=`<div class="img-gallery">`;
-        imgs.forEach(img=>{
-          const url=typeof img==='string'?img:(img.url||img.src||'');
-          if(url)sbH+=`<div class="img-card" onclick="event.stopPropagation();zoomImg('${url}')"><img src="${url}" loading="lazy" onerror="this.style.display='none'"/><span class="img-label">渲染</span></div>`;
+    const shots=data.storyboard||[];
+    if(!shots.length){scenesEl.innerHTML='<span style="font-size:10px;color:#555;">无分镜数据</span>';return;}
+    const ds=data.dialogue_stats||{};
+    var sbH='';
+
+    // v3.11.1: Per-episode stat bar
+    var classicalTotal=0, modernTotal=0, voiceOk=0, camOk=0;
+    shots.forEach(function(sh){
+      (sh.dialogue||[]).forEach(function(d){
+        if(d.style==='classical')classicalTotal++; else modernTotal++;
+        if(d.voice_dir)voiceOk++;
+      });
+      if(sh.camera_script&&sh.camera_script.length>10)camOk++;
+    });
+    var totalDia=classicalTotal+modernTotal;
+    var cPct=totalDia>0?Math.round(classicalTotal/totalDia*100):0;
+    var mPct=totalDia>0?Math.round(modernTotal/totalDia*100):0;
+
+    sbH+='<div style="margin:4px 0 8px;padding:8px 12px;background:#111827;border-radius:8px;border:1px solid rgba(255,255,255,.04)">';
+    sbH+='<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px">';
+    sbH+='<span style="color:#e4e6eb;font-size:11px;font-weight:600">' + shots.length + '镜 · ' + totalDia + '条对白</span>';
+    sbH+='<span style="font-size:9px;color:'+(voiceOk===totalDia?'#22c55e':'#ef4444')+'">🎤 voice_dir: ' + voiceOk + '/' + totalDia + '</span>';
+    sbH+='<span style="font-size:9px;color:'+(camOk===shots.length?'#22c55e':'#ef4444')+'">🎬 cam_script: ' + camOk + '/' + shots.length + '</span>';
+    sbH+='</div>';
+    sbH+='<div style="height:6px;display:flex;border-radius:3px;overflow:hidden;margin-bottom:4px">';
+    sbH+='<div style="width:'+cPct+'%;background:linear-gradient(90deg,#991b1b,#ef4444);min-width:2px;border-radius:3px 0 0 3px" title="古典 '+classicalTotal+'条"></div>';
+    sbH+='<div style="width:'+mPct+'%;background:linear-gradient(90deg,#3b82f6,#1d4ed8);min-width:2px;border-radius:0 3px 3px 0" title="现代 '+modernTotal+'条"></div></div>';
+    sbH+='<div style="display:flex;justify-content:space-between;font-size:8px;color:#666">';
+    sbH+='<span>⚔ 古典: '+classicalTotal+'条 ('+cPct+'%)</span><span>💬 现代: '+modernTotal+'条 ('+mPct+'%)</span></div>';
+    sbH+='</div>';
+
+    // v3.11.1: Timecode progress bar
+    sbH+='<div class="tc-bar"><div class="tc-bar-fill" style="animation:tc-progress 3s ease-in-out forwards"></div></div>';
+
+    // v3.11.1/2: Industrial format shot cards with colored dialogue
+    var actColors = {开幕:'#15803d',开场:'#22c55e',发展:'#3b82f6',转折:'#f59e0b',冲突:'#ef4444',对峙:'#f97316',高潮:'#dc2626',结局:'#8b5cf6'};
+
+    shots.forEach(function(sh,si){
+      var act=sh.act||'';
+      var label=sh.shot_label||('镜'+('0'+(sh.seq||si+1)).slice(-2));
+      var tc=sh.timecode||{};
+      var timeStr=(tc.start||'00:00')+'→'+(tc.end||'01:00');
+      var desc=sh.description||sh.scene||sh.desc||'';
+      var music=sh.music_cue||'';
+      var shotType=sh.shot_type||'';
+      var camMove=sh.camera_move||'';
+      var pacing=sh.pacing||'';
+      var palette=sh.color_palette||'';
+      var camScript=sh.camera_script||'';
+      var emotion=sh.emotion||'';
+      var notes=sh.performance_notes||[];
+      var endCredit=sh.end_credit||'';
+
+      var badges='';
+      if(shotType)badges+='<span style="background:#1e40af;color:#93c5fd;padding:1px 6px;border-radius:3px;font-size:9px;margin-right:4px">'+shotType+'</span>';
+      if(camMove)badges+='<span style="background:#2e1065;color:#c4b5fd;padding:1px 6px;border-radius:3px;font-size:9px;margin-right:4px">'+camMove+'</span>';
+      if(pacing)badges+='<span style="background:#14532d;color:#86efac;padding:1px 6px;border-radius:3px;font-size:9px;margin-right:4px">'+pacing+'</span>';
+      if(palette)badges+='<span style="background:#713f12;color:#fde047;padding:1px 6px;border-radius:3px;font-size:9px">🎨 '+palette+'</span>';
+
+      sbH+='<div class="sb-card" style="border-left:3px solid '+(actColors[act]||'#3b82f6')+'">';
+      sbH+='<div class="sb-seq" style="background:'+(actColors[act]||'#3b82f6')+'">'+(sh.seq||si+1)+'</div>';
+      sbH+='<div class="sb-body">';
+      sbH+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">';
+      sbH+='<span style="color:#f59e0b;font-weight:600;font-size:11px">'+label+'</span>';
+      if(act)sbH+='<span style="background:'+(actColors[act]||'#555')+';color:#fff;padding:1px 8px;border-radius:10px;font-size:9px;font-weight:600">'+act+'</span>';
+      sbH+='<span style="color:#777;font-size:9px">'+timeStr+'</span>';
+      sbH+='</div>';
+      if(music)sbH+='<div style="color:#a78bfa;font-size:9px;margin-bottom:2px">🎵 '+music+'</div>';
+      if(badges)sbH+='<div style="margin-bottom:4px">'+badges+'</div>';
+      if(desc)sbH+='<div class="sb-desc" style="color:#a5b4c4">'+desc+'</div>';
+      if(camScript)sbH+='<div style="color:#888;font-size:9px;margin:3px 0;padding:3px 8px;background:rgba(59,130,246,.06);border-radius:3px;border-left:2px solid #3b82f6">🎬 '+camScript+'</div>';
+      if(emotion)sbH+='<div class="sb-emotion">情感: '+emotion+'</div>';
+
+      // v3.11.1: 🔴🔵 Inline colored dialogue
+      var dia=sh.dialogue;
+      if(Array.isArray(dia)&&dia.length){
+        sbH+='<div style="margin-top:4px">';
+        dia.forEach(function(d){
+          var isC=d.style==='classical';
+          var dColor=isC?'#fca5a5':'#93c5fd';
+          var dBg=isC?'#3b1010':'#0c1d3d';
+          var dIcon=isC?'⚔':'💬';
+          sbH+='<div style="margin:3px 0;background:'+dBg+';padding:4px 10px;border-radius:4px;border-left:3px solid '+dColor+'">';
+          sbH+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;flex-wrap:wrap">';
+          sbH+='<span style="color:#fbbf24;font-size:10px;font-weight:600">'+(d.speaker||'')+'</span>';
+          sbH+='<span style="color:'+dColor+';font-size:10px;line-height:1.4">'+dIcon+' '+(d.text||'')+'</span>';
+          if(d.emotion_mark)sbH+='<span style="color:#f59e0b;font-size:8px;padding:0 6px;background:rgba(245,158,11,.1);border-radius:8px">'+d.emotion_mark+'</span>';
+          sbH+='</div>';
+          if(d.voice_dir)sbH+='<div style="color:#888;font-size:8px;font-style:italic;margin-top:2px">🎤 '+d.voice_dir+'</div>';
+          if(d.subtext)sbH+='<div style="color:#666;font-size:8px;margin-top:1px">💭 '+d.subtext+'</div>';
+          if(d.timing_hint)sbH+='<div style="color:#555;font-size:7px;margin-top:1px">⏱ '+d.timing_hint+'</div>';
+          sbH+='</div>';
         });
-        sbH+=`</div>`;
+        sbH+='</div>';
+      }else if(typeof dia==='string'&&dia){
+        sbH+='<div class="sb-dialogue">对白: '+dia+'</div>';
       }
-      sbH+=`</div></div>`;
+
+      if(Array.isArray(notes)&&notes.length){
+        sbH+='<div style="color:#888;font-size:9px;margin:4px 0 0 4px">📋 '+notes.join(' · ')+'</div>';
+      }
+      if(endCredit)sbH+='<div style="color:#8b5cf6;font-size:9px;margin:4px 0 0 4px;padding:3px 8px;background:rgba(139,92,246,.06);border-radius:3px">🎭 '+endCredit+'</div>';
+
+      // v3.7.8: Edit button
+      sbH+='<a class="sb-edit" href="javascript:void(0)" onclick="editSB(\''+epNum+'\',\''+(sh.seq||si+1)+'\')" style="margin-top:6px">&#9998; 编辑</a>';
+      sbH+='<div class="inline-edit" id="edit-'+epNum+'-'+(sh.seq||si+1)+'">';
+      sbH+='<textarea id="desc-'+epNum+'-'+(sh.seq||si+1)+'">'+desc.replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</textarea>';
+      sbH+='<div class="edit-btns">';
+      sbH+='<button class="mini-btn" onclick="saveSBEdit(\''+epNum+'\',\''+(sh.seq||si+1)+'\')">保存</button>';
+      sbH+='<button class="mini-btn" onclick="cancelSBEdit(\''+epNum+'\',\''+(sh.seq||si+1)+'\')">取消</button>';
+      sbH+='</div></div>';
+
+      sbH+='</div></div>';
     });
     scenesEl.innerHTML=sbH;
   }catch(e){
-    scenesEl.innerHTML=`<span style="font-size:10px;color:#ef4444;">加载失败: ${e.message}</span>`;
+    scenesEl.innerHTML='<span style="font-size:10px;color:#ef4444;">加载失败: '+e.message+'</span>';
   }
 }
 
@@ -5589,11 +5656,12 @@ function dm0RatioRewrite(epListStr, targetPct) {
 async function dm0ShowCompare(epNum) {
   var overlay = document.createElement('div');
   overlay.id = 'dm0-compare-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center';
-  overlay.innerHTML = '<div style="background:#1a1d27;border:1px solid #334;border-radius:10px;padding:20px;width:90vw;max-width:1100px;max-height:90vh;overflow-y:auto">' +
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;cursor:pointer';
+  overlay.onclick = function(e){ if(e.target===overlay) dm0CompareClose(); };
+  overlay.innerHTML = '<div onclick="event.stopPropagation()" style="background:#1a1d27;border:1px solid #334;border-radius:10px;padding:20px;width:90vw;max-width:1100px;max-height:90vh;overflow-y:auto">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">' +
     '<span style="color:#e4e6eb;font-size:14px;font-weight:600">📊 EP' + epNum + ' 版本对比</span>' +
-    '<button class="btn btn-cancel" onclick="document.getElementById(\'dm0-compare-overlay\').remove()">✕ 关闭</button></div>' +
+    '<button class="btn btn-cancel" onclick="dm0CompareClose()">✕ 关闭</button></div>' +
     '<div id="dm0-compare-body" style="color:#888;text-align:center;padding:20px">⏳ 加载中...</div></div>';
   document.body.appendChild(overlay);
   var body = document.getElementById('dm0-compare-body');
@@ -5644,6 +5712,30 @@ async function dm0ShowCompare(epNum) {
     body.innerHTML = html || '<div style="color:#555">无数据</div>';
   } catch(e) {
     body.innerHTML = '<div style="color:#ef4444">加载失败: ' + e.message + '</div>';
+  }
+}
+// v3.11.1: Close compare overlay + auto-refresh DM-0 panels
+function dm0CompareClose() {
+  var overlay = document.getElementById('dm0-compare-overlay');
+  if (overlay) overlay.remove();
+  // Auto-refresh any open episode accordion panels
+  var epRows = document.querySelectorAll('.ep-row.open');
+  var toRefresh = [];
+  for (var i = 0; i < epRows.length; i++) {
+    var id = epRows[i].id || '';
+    var epNum = id.replace('eprow-', '');
+    if (epNum) toRefresh.push(epNum);
+  }
+  if (toRefresh.length) {
+    // Re-load each open storyboard
+    toRefresh.forEach(function(en) {
+      var el = document.getElementById('sb-' + en);
+      if (el && !el.querySelector('.loading')) {
+        el.innerHTML = '<div style="text-align:center;padding:10px;color:#555">🔄 自动刷新中...</div>';
+        loadStoryboard(en);
+      }
+    });
+    toastMsg('已刷新 ' + toRefresh.length + ' 个面板', 1500, 'info');
   }
 }
 
