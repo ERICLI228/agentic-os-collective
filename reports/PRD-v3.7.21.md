@@ -1,7 +1,7 @@
 # 🎬 Agentic OS v3.7.21 产品需求文档 (PRD)
 
 > **文档类型**: 产品需求文档 (Product Requirements Document)
-> **版本**: v3.7.23-dev (2026-05-04 10:30)
+> **版本**: v3.7.24-dev (2026-05-04 10:45)
 > **日期**: 2026 年 5 月 3 日
 > **产品名称**: Agentic OS v3.7 用户体验升级版
 > **产品愿景**: 一个指令启动 → 全程自动执行 → **关键节点等你决策** → 输出可发布成果
@@ -727,3 +727,14 @@ curl /api/detail/DM-0                ✓ 故事板展开 · DM-1 角色画廊
 - **新增**: S0-C 浏览器验收脚本 — `tests/browser_check.py`（21 函数 + 重复定义检查）
 - **新增**: CSS 补全 — `.cb-voice-config-form.accordion-expanded` 角色音色配置展开
 - **修改**: 16 个 JS 文件 + `task_board.html` + `task_wizard.py`
+
+### v3.11.8 (2026-05-04) — 0-2 编辑器局部刷新 + 0-5 轮询安全状态检查
+- **修复 0-2**: `saveCharBible` 保存后不再调用 `select('DM-1')` 全量刷新，改为关闭编辑面板保留页面上下文
+- **修复 0-5**: `refresh()` 轮询增加三项安全检查 — 用户正在编辑(INPUT/TEXTAREA/contentEditable)、模态框打开、拖拽排序进行中时跳过本轮轮询
+- **修改**: `dashboard/js/dm1_characters.js` — saveCharBible 局部刷新
+- **修改**: `dashboard/js/core.js` — refresh() 安全状态检查
+
+### v3.11.7 (2026-05-04) — PRD 变更日志同步 + 0-4 门禁加固
+- **修复 0-4**: pre-commit 钩子增加 8000 行红线 — 单体 task_board.html 超 8000 行禁止提交
+- **修改**: `.git/hooks/pre-commit` — 行数上限 + JS 总行数统计
+- **确认 0-3**: Whisper 字幕编码 — 后端 `open(w, encoding='utf-8')` + `read_text(encoding='utf-8')` 均正确
