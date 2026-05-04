@@ -1,4 +1,10 @@
 // === tk.js — Auto-generated from task_board.html (S1-A, 2026-05-03) ===
+var _tkProductImages = [
+  { id: 'phone_case_main', label: '主图 (800×800)', desc: '白底主图 · 占画面80%+' },
+  { id: 'phone_case_material', label: '材质细节', desc: '产品材质特写' },
+  { id: 'phone_case_size', label: '尺寸参考', desc: '尺寸对比图' },
+  { id: 'phone_case_worn', label: '佩戴效果', desc: '实际佩戴展示' }
+];
 
 // @@FUNC: onTKSearch
 function onTKSearch(val) {
