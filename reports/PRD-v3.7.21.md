@@ -1,17 +1,44 @@
 # 🎬 Agentic OS v3.7.21 产品需求文档 (PRD)
 
 > **文档类型**: 产品需求文档 (Product Requirements Document)
-> **版本**: v3.7.21 (2026-05-03 06:00)
+> **版本**: v3.7.23-dev (2026-05-04 10:30)
 > **日期**: 2026 年 5 月 3 日
 > **产品名称**: Agentic OS v3.7 用户体验升级版
 > **产品愿景**: 一个指令启动 → 全程自动执行 → **关键节点等你决策** → 输出可发布成果
 > **目标用户**: TK 跨境电商运营人员、AI短剧创作者、技术开发团队
-> **文档状态**: ✅ v3.7.21 — 环境分离体系(正式/测试双标签+GitHub双分支+PRD环境列) + 删图/重绘API路由修复
 > **前置版本**: v3.7.20 (2026-05-03)
 
 ---
 
-## ✅ 当前可用（2026-05-03 05:30 实锤）
+## 🌐 三环境统筹表
+
+| 环境 | Git 分支 | 部署位置 | 用途 | 当前版本 | 审核状态 |
+|------|---------|---------|------|---------|:--:|
+| **🟢 正式** | `main` | ~/agentic-os-collective/ | 用户实际使用的生产环境 | v3.7.21 | ✅ 已同步 |
+| **🟡 测试** | `test` | /tmp/agentic-os-test/ | 产品经理/QA验证新功能 | v3.7.21 | ✅ flask :5002 |
+| **🔵 开发** | `dev` / opencode worktrees | /tmp/agentic-os-dev/ | 开发中的功能 | v3.7.21 | ✅ flask :5005 |
+
+> **核心原则**: 正式环境 = `main` 分支 = PM2 服务端口 = 用户看到的内容。测试/开发环境的新功能在 `test` 分支验证通过后，合并到 `main` 发布。
+
+### 三环境功能覆盖 (2026-05-03)
+
+| 功能/修复 | 开发 | 测试 | 正式 | 说明 |
+|----------|:--:|:--:|:--:|------|
+| DM-1 角色档案系统 | ✅ | ✅ | ✅ | 109角色·436张定妆照·多角度一致性 |
+| DM-0 四维审核评分 | ✅ | ✅ | ✅ | 对抗审核·雷达图·决策按钮 |
+| DM-0 评分fallback review_dimensions | ✅ | ❌ | ❌ | **本轮新增**: findings不足时自动从review_dimensions补全 |
+| DM-6/7 质量评分条形图 | ✅ | ✅ | ✅ | 配音/画面/合成三色条 |
+| ⚡ 一键生成配音 按钮修复 | ✅ | ❌ | ❌ | **本轮新增**: URL `ep` 前缀修正 |
+| reReviewDM0 SSE超时+POST回退 | ✅ | ❌ | ❌ | **本轮新增**: 120s超时保护 |
+| DM-1 +新增角色 按钮 | ✅ | ❌ | ❌ | **本轮新增**: 前端表单+后端创建API |
+| 对抗审核明细(issues/suggestions+AI修复按钮) | ✅ | ❌ | ❌ | **本轮新增**: renderFourDimReview重写 |
+| 字幕 Whisper 乱码对齐剧本 | 🔲 | 🔲 | 🔲 | **待改进**: pipeline后端功能 |
+
+> - ✅ = 已实现 | ❌ = 待同步 | 🔲 = 未开始
+
+---
+
+## ✅ 正式环境当前可用（v3.7.21, main分支）
 
 | 能力 | 状态 | 验证 |
 |------|------|------|
@@ -37,23 +64,21 @@
 
 ## 📜 版本修订历史（仅保留大版本）
 
-| 版本 | 日期 | 修订人 | 核心变化 | 环境 |
-|------|------|--------|---------|:--:|
-| v0.1~v1.0 | 04-09 ~ 04-23 | CEO + 工程经理 + Claude | 初始架构 → 双业务线分离 → 安全审查 → 正式定稿 | 🚀 |
-| v3.3 | 04-24 | 阿牛 | 诚实修订: 完成度85%→35%，止血优先，GSTACK搁置 | 🚀 |
-| v3.4 | 04-28 ~ 04-29 | 阿牛 + 外部评审 | 对抗审核增强 → 感知控制优先: 重建决策节点架构 | 🚀 |
-| **v3.5** | **04-29** | **阿牛 + OpenClaw** | **Sprint 1.5完成: NLS/3-Agent/SQLite/6角色圣经/10模块覆盖 · 交互驾驶舱v2 · 决策节点** | 🚀 |
-| **v3.6** | **04-30** | **阿牛 + OpenClaw + OpenCode** | **细节展开系统: 实体数据(非状态标签) · QA 80/80 · 脚本/角色/商品API · 6集管线全通 · 27→30端点** | 🚀 |
-| **v3.7.0** | **05-01** | **阿牛 + OpenClaw + OpenCode** | **四大WBS冲刺: 管线监控/资产面板/分镜/剪辑合成/导演模式/反馈闭环/436定妆照** | 🚀 |
-| v3.7.1 | 05-01 | OpenCode + 阿牛 | Dashboard JS全量语法修复(~274处) + 2xReferenceError+SyntaxError | 🚀 |
-| v3.7.2 | 05-01 | OpenCode + 阿牛 | DM-1角色档案面板恢复(268行) + 缺失函数还原(applyDM1Filter等) | 🚀 |
-| v3.7.3 | 05-01 | OpenCode + 阿牛 | MS-0门禁JS语法修复 + 跨业务线路由修复 + MS-2.3商品图工作台初版 | 🚀 |
-| v3.7.4 | 05-02 | OpenCode + 阿牛 | MS-2.3工具箱重构(4张真实商品图卡片) · MS-5日报3按钮全通 + /api/publish · /api/l10n/retranslate/ · 面板15/15全量测试 · 重复id清零 | 🚀 |
-| v3.7.5 | 05-02 | OpenCode + 阿牛 | pipeline_runs/shop_health表填充 · Vite :5173启动 · git remote token净化 · VERSION同步 · worktree同步 | 🚀 |
-| v3.7.18 | 05-03 | OpenCode + 阿牛 | DM-6/7 质量评分条形图(配音🟢/画面🟡/合成🟠) + 文件规格卡(2列网格) · 管线日志替代裸文本(📦文件/🎤音频/🖼️渲染/🎬FFmpeg/⭐质量分类卡片) · DM-7排播风险检测(连续集鲁智深) · DM-3 SFX时间线 + 本地化审查按钮 · 版本缓存强制刷新 | 🚀 |
-| v3.7.19 | 05-03 | OpenCode + 阿牛 | 📝编辑按钮→DM-1角色圣经自动展开编辑表单(身高/体型/面相/性格/配色/音色) · 🎤已配置→可点击跳转 · 语音→DM-3配音设计(正确管线节点) · 管线审计全面梳理(14项发现: P0=4/P1=4/P2=6) | 🚀 |
-| v3.7.20 | 05-03 | OpenCode + 阿牛 | DM-1渲染图管理: ✕删除不良角度(DELETE /api/render) + ⚠️多角度一致性风险提示 + 🔁重新生成(POST /api/render/regenerate) · 3个后端API新增 · SAFETY_RULES.md(环境隔离+精准编辑+同步审批)注入CLAUDE.md · CLAUDE.md新增强制铁则#0.5 | 🚀 |
-| v3.7.21 | 05-03 | OpenCode + 阿牛 | 删图/重绘API路由修复(regenerate抢占→调整注册顺序) + 环境标签(正式/测试) + GitHub test分支 | 🚀 |
+| 版本 | 日期 | 修订人 | 核心变化 | 正式 | 测试 | 开发 |
+|------|------|--------|---------|:--:|:--:|:--:|
+| v0.1~v1.0 | 04-09 ~ 04-23 | CEO + 工程经理 + Claude | 初始架构 → 双业务线分离 → 安全审查 → 正式定稿 | ✅ | ✅ | ✅ |
+| v3.3 | 04-24 | 阿牛 | 诚实修订: 完成度85%→35%，止血优先，GSTACK搁置 | ✅ | ✅ | ✅ |
+| v3.4 | 04-28 ~ 04-29 | 阿牛 + 外部评审 | 对抗审核增强 → 感知控制优先: 重建决策节点架构 | ✅ | ✅ | ✅ |
+| **v3.5** | **04-29** | **阿牛 + OpenClaw** | **Sprint 1.5完成: NLS/3-Agent/SQLite/6角色圣经/10模块覆盖** | ✅ | ✅ | ✅ |
+| **v3.6** | **04-30** | **阿牛 + OpenClaw + OpenCode** | **细节展开系统: 实体数据(非状态标签) · QA 80/80 · 6集管线全通** | ✅ | ✅ | ✅ |
+| **v3.7.0** | **05-01** | **阿牛 + OpenClaw + OpenCode** | **四大WBS冲刺: 管线监控/资产面板/分镜/导演模式/436定妆照** | ✅ | ✅ | ✅ |
+| v3.7.1~v3.7.5 | 05-01~02 | OpenCode + 阿牛 | JS修复·DM-1恢复·路由修复·MS-2.3·MS-5·SQLite填充 | ✅ | ✅ | ✅ |
+| v3.7.8 | 05-02 | OpenCode + 阿牛 | **统一剧本浏览器(侧边抽屉)** · 分镜质量仪表盘 | ✅ | ✅ | ✅ |
+| v3.7.18 | 05-03 | OpenCode + 阿牛 | DM-6/7质量评分·管线日志·DM-7排播·DM-3 SFX时间线 | ✅ | ✅ | ✅ |
+| v3.7.19 | 05-03 | OpenCode + 阿牛 | DM-1编辑自动展开·配音→DM-3串联·14项管线审计 | ✅ | ✅ | ✅ |
+| v3.7.20 | 05-03 | OpenCode + 阿牛 | 删图/重绘API·多角度一致性·3个后端API·SAFETY_RULES | ✅ | ✅ | ✅ |
+| v3.7.21 | 05-03 | OpenCode + 阿牛 | API路由修复·环境标签·GitHub test分支 | ✅ | ✅ | ✅ |
+| **v3.7.22-dev** | **05-03** | **OpenCode + 阿牛** | **🆕 DM-0 AI智能化(review_dimensions持久化/auto-fix/auto-polish/rewrite/apply/review/fix 5端点) · 展开折叠修复 · reReviewDM0双面板更新 · VERSION+wiki三环境同步 · Obsidian同步** | ✅ | ✅ | ✅ |
 
 > 完整子版本详见表后附录（PHASE 1-5、QA报告、GAP清单）
 
@@ -627,6 +652,9 @@ curl /api/detail/DM-0                ✓ 故事板展开 · DM-1 角色画廊
 | ~~Dashboard空白修复~~ | ✅ 已修复 | 语法错误(61b34c8) + 孤儿代码泄漏(6d8d618) + 跨业务线路由修复 |
 | ~~DM-1跨业务线路由修复~~ | ✅ 已修复 | renderDetail() TK分支清理 |
 | Pollo AI / Kling API 集成视频预览 | ⏳ | S2-2预览动态按钮已放mock，需API Key |
+| **字幕 Whisper 乱码对齐剧本** | 🆕 | DM-6 EP01 字幕(鲁梯霞→鲁智深/正關係→镇关西)全是同音错误 · 需pipeline改: 用原始剧本替代Whisper转录，或增加对齐步骤 |
+| **DM-1 编辑状态保护** | 🆕 | saveCharBible 成功后调用 `renderDetail()` 全量刷新 → 编辑态丢失 · 需改为局部DOM更新或状态保持 |
+| **30s 全局轮询阻塞** | 🆕 | `setInterval(refresh, 30000)` 在按钮操作期间仍然触发 re-render · 需增加操作锁 |
 
 ### 阻塞项（⛔ BLOCKED）
 | 任务 | 阻因 |
@@ -670,3 +698,32 @@ curl /api/detail/DM-0                ✓ 故事板展开 · DM-1 角色画廊
 | — | ✅ 108 音色克隆管线 | NLS ref + GPT-SoVITS s2Gv3.pth |
 | — | ✅ 视频提示词三方案 | visual_bible.json + 仪表盘渲染 |
 | — | ✅ 109 AI人物小传 | personality/appearance/background/voice |
+
+---
+
+## 📝 变更日志
+
+### v3.11.6 (2026-05-04) — `dlPanelOpen` 定义补全 + `init.js` 恢复
+- **修复**: `dlPanelOpen is not defined` — 下载面板切换按钮崩溃
+- **恢复**: `init.js` 自执行初始化脚本（DEV缺少该文件导致Dashboard无自动刷新）
+- **修改**: `dashboard/js/core.js` — 新增 `var dlPanelOpen=false`
+
+### v3.11.5 (2026-05-04) — 遗漏全局变量补全
+- **修复**: `TIANGANG_COUNT is not defined` — `dm1_characters.js` 补全 `const TIANGANG_COUNT=36`
+- **修复**: `DM1_TOP10 is not defined` — `dm1_characters.js` 补全 `const DM1_TOP10=10`
+- **修复**: `currentDM1Filter is not defined` — `dm1_characters.js` 补全 `let currentDM1Filter={query:'',category:''}`
+- **修复**: `_tkProductImages is not defined` — `tk.js` 补全 4 张商品图片定义（主图/材质/尺寸/佩戴）
+- **修复**: `QUALITY_KB is not defined` — `pipeline.js` 补全 6 条质量反馈知识库条目
+- **修改**: `dashboard/js/dm1_characters.js`, `dashboard/js/tk.js`, `dashboard/js/pipeline.js`
+
+### v3.11.4 (2026-05-04) — JS 拆分遗留修复
+- **修复**: `renderChartPanel()` 从未被调用 → `renderSummary()` 末尾 `setTimeout` 调用，4 图表恢复
+- **修复**: DM-0 版本对比面板 — 从 git `d1aedc6` 恢复 `dm0ShowCompare(epNum)` 全局函数
+- **修复**: `epochStr()` 缺失 → `dm6789.js` 补全，字幕生成恢复
+- **修复**: S0-A onerror 语法 — `core.js:227` 使用 `String.fromCharCode(39)` 安全转义
+- **新增**: SFX 音效 API — `/api/sfx/<ep>` + `/api/audio/sfx/<ep>/<filename>` 播放路由
+- **新增**: 版本对比 API — `/api/script/<ep>/rich` + `/api/script/<ep>/versions`
+- **新增**: S0-B pre-commit 钩子 — 自动备份 + 行数检查（<5000 行拦截）
+- **新增**: S0-C 浏览器验收脚本 — `tests/browser_check.py`（21 函数 + 重复定义检查）
+- **新增**: CSS 补全 — `.cb-voice-config-form.accordion-expanded` 角色音色配置展开
+- **修改**: 16 个 JS 文件 + `task_board.html` + `task_wizard.py`
