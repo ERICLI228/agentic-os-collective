@@ -31,6 +31,16 @@ async function fetchVersion(){
 // @@FUNC: refresh
 async function refresh(){
   if (_dashOpLock) { console.log('[refresh] skipped (operation in progress)'); return; }
+  // 0-5: 安全状态检查 — 用户正在编辑/模态框打开/拖拽排序时跳过轮询
+  var activeEl = document.activeElement;
+  if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable)) {
+    console.log('[refresh] skipped (user is editing)'); return;
+  }
+  if (document.querySelector('.modal.show, .popup-overlay, [style*="display:block"].modal')) {
+    console.log('[refresh] skipped (modal open)'); return;
+  }
+  var dragEl = document.querySelector('[data-dragging="true"], .dragging, .sortable-dragging');
+  if (dragEl) { console.log('[refresh] skipped (dragging)'); return; }
   showLoading();
   try{
     const r=await fetch('/api/dashboard'); lastData=await r.json();

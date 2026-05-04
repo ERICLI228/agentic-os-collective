@@ -600,8 +600,11 @@ async function saveCharBible(fid) {
     if (res.rerender && res.rerender.need_rerender) {
       toastMsg('⚡ ' + res.rerender.reason + ' — 建议重新渲染', 4000, 'warn');
     }
-    // Refresh DM-1 only (not full re-render, preserves edit state)
-    setTimeout(function() { select('DM-1'); }, 500);
+    // 0-2: 关闭编辑面板，保持页面上下文 — 不触发全量刷新
+    var cb = document.getElementById('charbible-' + fid);
+    if (cb && cb.classList.contains('editing')) cb.classList.remove('editing');
+    var editForm = document.getElementById('edit-form-' + fid);
+    if (editForm) editForm.style.display = 'none';
   } catch (e) {
     toastMsg('❌ 保存失败: ' + e.message, 3000, 'error');
   }
