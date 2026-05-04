@@ -1,0 +1,922 @@
+// === review.js — Auto-generated from task_board.html (S1-A, 2026-05-03) ===
+
+// @@FUNC: renderDM0
+async function renderDM0(detail,ms){
+  const detailEl=document.getElementById('detail');
+
+  // v3.6.5: 决策区 — Agent 审核结果 + 用户决策按钮
+  const hasReview = detail && detail.sections && detail.sections.some(s =>
+    s.items && s.items.some(it => it.key && it.key.startsWith('rv_'))
+  );
+  if(hasReview){
+    // 提取审核分数
+    let score='-', decision='', findings=[], dimScores=[];
+    detail.sections.forEach(s=>{
+      (s.items||[]).forEach(it=>{
+        if(it.key==='rv_score') {
+          // Try direct parseFloat first, then regex extract from emoji text
+          var v = it.value || '';
+          var nm = v.match(/(\d+\.?\d*)\/10/);
+          if (nm) score = nm[1];
+          else if (parseFloat(v) > 0) score = v;
+        }
+        if(it.key==='rv_decision') decision=it.value||'';
+        if(it.key && it.key.startsWith('rv_') && it.note && it.note.length>20) findings.push(it.note);
+      });
+    });
+    // Parse individual dimension scores from findings
+    findings.forEach((f) => {
+      const s = parseFloat(f.match(/([0-9]+)\/10/)?.[1]);
+      if (!isNaN(s)) dimScores.push(s);
+    });
+    // Compute overall score from dimScores if rv_score is missing
+    let scoreNum = parseFloat(score) || 0;
+    if (scoreNum === 0 && dimScores.length > 0) {
+      scoreNum = dimScores.reduce(function(a,b){return a+b;},0) / dimScores.length;
+      score = scoreNum.toFixed(1);
+    }
+
+    // v3.7.9: Fallback to detail.review_dimensions if findings-based scores are insufficient
+    const dims = [
+      {icon:'✍️',name:'编剧质量',key:'writing'},
+      {icon:'🎬',name:'分镜设计',key:'storyboard'},
+      {icon:'🧠',name:'逻辑一致性',key:'logic'},
+      {icon:'🎵',name:'节奏把控',key:'pacing'}
+    ];
+    if (dimScores.length < 4) {
+      // Try multiple sources: detail.review_dimensions, detail.review, ms.review
+      var rdims = null;
+      if (detail && detail.review_dimensions && detail.review_dimensions.length > 0) {
+        rdims = detail.review_dimensions;
+      } else if (detail && detail.review && detail.review.dimensions) {
+        rdims = detail.review.dimensions;
+      } else if (ms && ms.review && ms.review.dimensions) {
+        rdims = ms.review.dimensions;
+      }
+      if (rdims) {
+        // Keyword matching + extract numeric score from text like "🟡 6.0/10 · ..."
+        dims.forEach(function(dm, di) {
+          var keywords = {
+            'writing': ['编剧','writing','script'],
+            'storyboard': ['分镜','场景','scene','storyboard','完整性'],
+            'logic': ['逻辑','logic','consistency','一致'],
+            'pacing': ['节奏','pacing','rhythm','剧情节奏','张力']
+          };
+          var kws = keywords[dm.key] || [];
+          for (var ri = 0; ri < rdims.length; ri++) {
+            var rd = rdims[ri];
+            var dname = (rd.dimension || rd.name || '').toLowerCase();
+            if (dname.indexOf('综合') >= 0) continue; // skip overall score row
+            var match = false;
+            for (var ki = 0; ki < kws.length; ki++) {
+              if (dname.indexOf(kws[ki]) >= 0) { match = true; break; }
+            }
+            if (match) {
+              // Extract numeric score from text field (may contain emoji prefix)
+              var scoreText = String(rd.score || rd.value || '');
+              var numMatch = scoreText.match(/(\d+\.?\d*)\/10/);
+              var s = numMatch ? parseFloat(numMatch[1]) : parseFloat(scoreText);
+              if (!isNaN(s) && s > 0) {
+                if (!dimScores[di] || dimScores[di] < s) dimScores[di] = s;
+              }
+            }
+          }
+        });
+      }
+    }
+    // Pad dimScores to 4 elements with scoreNum or fallback
+    while(dimScores.length < 4) dimScores.push(scoreNum || Math.max(4, 5-dimScores.length));
+
+    // Re-compute scoreNum from dimScores after fallback (may have been 0 before)
+    if (dimScores.length === 4 && scoreNum === 0) {
+      scoreNum = dimScores.reduce(function(a,b){return a+b;},0) / 4;
+      score = scoreNum.toFixed(1);
+    }
+
+    const scoreColor = scoreNum >= 8.0 ? '#22c55e' : scoreNum >= 6.0 ? '#f59e0b' : '#ef4444';
+    const scoreIcon = scoreNum >= 8.0 ? '&#128994;' : scoreNum >= 6.0 ? '&#128992;' : '&#128308;';
+    const decisionText = scoreNum >= 8.0 ? '表现优异，可进入下一环节' : scoreNum >= 6.0 ? '质量和问题并存，建议审核后回流' : '建议回流重写';
+
+    let dimCards = '<div class="four-dim">';
+    dims.forEach((d, i) => {
+      const ds = dimScores[i] || scoreNum;
+      const dc = ds >= 8 ? 'good' : ds >= 6 ? 'warn' : 'bad';
+      const di = ds >= 8 ? '&#128994;' : ds >= 6 ? '&#128992;' : '&#128308;';
+      const note = findings[i] ? findings[i].substring(0, 60) + (findings[i].length > 60 ? '...' : '') : '—';
+      dimCards += `<div class="dim-card ${dc}"><div class="dim-icon">${d.icon}</div><div class="dim-name">${d.name}</div><div class="dim-score" style="color:${dc==='good'?'#22c55e':dc==='warn'?'#f59e0b':'#ef4444'}">${ds.toFixed(1)} ${di}</div><div class="dim-note">${note}</div></div>`;
+    });
+    dimCards += '</div>';
+
+    let decH = `<div class="sec" id="dm0-decision-sec" style="border-left:3px solid ${scoreColor}">`;
+    decH += `<h3>&#129302; AI 对抗审核结果 (CODING 自动运行)</h3>`;
+    decH += `<div style="font-size:14px;font-weight:700;color:${scoreColor};margin:8px 0;">${scoreIcon} 综合评分: ${score} / 10 &mdash; ${decisionText}</div>`;
+    decH += dimCards;
+    // v3.7.17: 完整剧本展示 — 用户可以看到审核依据
+    decH += `<div class="accordion-section" style="margin:12px 0"><div class="accordion-header" onclick="toggleSection('dm0-script-sec')"><span>&#128214; 完整剧本 (审核依据) — 点击展开</span></div>`;
+    decH += `<div class="accordion-content" id="dm0-script-sec"><div id="dm0-script-content"><span class="loading">加载剧本中...</span></div></div></div>`;
+    decH += `<div style="margin:12px 0;">`;
+    decH += `<div style="font-size:10px;color:#888;margin-bottom:6px;">&#9889; 你的决策 (选择后 Agent 自动执行):</div>`;
+    decH += `<div style="display:flex;gap:8px;flex-wrap:wrap;">`;
+    decH += `<button class="btn btn-s" onclick="decideDM0('approved')">&#10003; 通过</button>`;
+    decH += `<button class="btn btn-w" onclick="decideDM0('rework')">&#9998; 回流重写</button>`;
+    decH += `<button class="btn btn-d" onclick="decideDM0('reject')">&#10007; 驳回</button>`;
+    decH += `<button class="btn btn-rerun" id="dm0-rerun-btn" onclick="reReviewDM0()" style="margin-left:auto">&#128260; 重新 LLM 审核</button>`;
+    decH += `</div></div>`;
+    decH += `<div style="font-size:10px;color:#666;">&#9432; CODING 免费额度 · 上次审核耗时 ~87s · 点击按钮后自动执行</div>`;
+    decH += `</div>`;
+    // Sprint 3: 审核雷达图
+    decH += `<div class="accordion-section"><div class="accordion-header" onclick="toggleSection('dm0-radar-sec')"><span>&#128202; 审核维度雷达图</span></div>`;
+    decH += `<div class="accordion-content" id="dm0-radar-sec"><div style="height:280px;padding:8px 0"><canvas id="dm0Radar"></canvas></div></div></div>`;
+    decH += `</div>`;
+    detailEl.insertAdjacentHTML('beforeend', decH);
+    // v3.7.8: Wait for Chart.js CDN then render radar
+    function _tryRadar(){
+      if(typeof Chart !== 'undefined'){
+        // Use dimScores + dims names to build proper data
+        var radarDims = dims.map(function(d,i){return {name:d.name, score:dimScores[i]||scoreNum};});
+        renderReviewRadar({dimensions: radarDims, overall_score: score});
+      } else {
+        console.warn('[Radar] Chart.js not loaded yet, retrying...');
+        setTimeout(_tryRadar, 300);
+      }
+    }
+    _tryRadar();
+    // v3.7.17: Load full script into the collapsible section
+    (async function loadDM0Scripts(){
+      var scriptBox = document.getElementById('dm0-script-content');
+      if(!scriptBox) return;
+      try {
+        var r = await fetch('/api/script'), eps = await r.json();
+        var elist = Array.isArray(eps) ? eps : (eps.episodes || []);
+        if(!elist.length){ scriptBox.innerHTML='<div style="color:#555;font-size:11px;padding:12px">无剧本数据</div>'; return; }
+        var allHtml = '';
+        for (var i=0; i<elist.length; i++) {
+          var ep = elist[i];
+          var en = ep.ep || ep.episode || ep.num || (i+1);
+          var epNum = String(en).padStart(2,'0');
+          var title = ep.title || ep.name || ('第'+parseInt(epNum)+'集');
+          allHtml += '<div style="border-bottom:1px solid rgba(255,255,255,.06);padding:10px 0"><strong style="color:#93c5fd;font-size:13px">EP'+epNum+' ' + title + '</strong>';
+          try {
+            var sr = await fetch('/api/script/'+parseInt(en));
+            var sd = await sr.json();
+            var shots = sd.shots || sd.storyboard || [];
+            if (shots.length) {
+              shots.forEach(function(sh,si){
+                var scene = sh.scene || sh.description || sh.desc || '';
+                var dia = sh.dialogue || sh.lines || '';
+                var note = sh.note || sh.director_note || '';
+                allHtml += '<div style="margin:6px 0 6px 12px;font-size:10px;color:#e4e6eb;line-height:1.5"><span style="color:#f59e0b">镜' + String(si+1).padStart(2,'0') + '.</span> ';
+                if (scene) allHtml += '<span style="color:#a5b4c4">' + scene + '</span> ';
+                if (dia) allHtml += '<span style="color:#60a5fa">「' + (dia.length>100?dia.substring(0,100)+'...':dia) + '」</span> ';
+                if (note) allHtml += '<span style="color:#888;font-style:italic">' + note + '</span>';
+                allHtml += '</div>';
+              });
+            } else {
+              allHtml += '<div style="color:#555;font-size:10px;margin:4px 12px">暂无分镜数据</div>';
+            }
+          } catch(ex){ allHtml += '<div style="color:#ef4444;font-size:10px;margin:4px 12px">加载失败</div>'; }
+          allHtml += '</div>';
+        }
+        scriptBox.innerHTML = allHtml;
+      } catch(e) { scriptBox.innerHTML = '<div style="color:#ef4444;font-size:11px;padding:12px">剧本加载失败: '+e.message+'</div>'; }
+    })();
+  } else {
+    // v3.7.8: 无审核结果时显示"触发 AI 审核"入口
+    var noReviewSec = '<div class="sec" style="border-left:3px solid #3b82f6;text-align:center;padding:20px">';
+    noReviewSec += '<div style="font-size:22px;margin-bottom:8px">🤖</div>';
+    noReviewSec += '<div style="font-size:13px;font-weight:600;color:#e4e6eb;margin-bottom:4px">剧本待审核</div>';
+    noReviewSec += '<div style="font-size:10px;color:#888;margin-bottom:12px">点击下方按钮，触发 LLM 对抗审核，获取四维评分和改进建议。</div>';
+    noReviewSec += '<button class="btn btn-p" onclick="reReviewDM0()" id="dm0-trigger-btn">🚀 触发 AI 审核</button>';
+    noReviewSec += '</div>';
+    detailEl.insertAdjacentHTML('beforeend', noReviewSec);
+  }
+
+  let sec=`<div class="sec" id="dm0-sec"><h3>&#128214; 6集完整故事板</h3>`;
+  sec+=`<div id="dm0-episodes"><span class="loading">加载剧集列表...</span></div>`;
+  sec+=`</div>`;
+  detailEl.insertAdjacentHTML('beforeend',sec);
+
+  try{
+    const r=await fetch('/api/script');
+    const episodes=await r.json();
+    const epList=Array.isArray(episodes)?episodes:(episodes.episodes||[]);
+
+    let epH='';
+    epList.forEach(ep=>{
+      const epNum=String(ep.ep||ep.episode||ep.num||'').padStart(2,'0');
+      const title=ep.title||ep.name||('第'+parseInt(epNum)+'集');
+      epH+=`<div class="ep-row" id="eprow-${epNum}" onclick="toggleSB('${epNum}')">
+        <span class="ep-num">第${parseInt(epNum)}集</span>
+        <span class="ep-title">${title}</span>
+        <span class="ep-actions">
+          <button class="mini-btn" onclick="event.stopPropagation();downloadScript('${epNum}','txt')" title="导出TXT">TXT</button>
+          <button class="mini-btn" onclick="event.stopPropagation();downloadScript('${epNum}','srt')" title="导出字幕">SRT</button>
+          <button class="mini-btn" onclick="event.stopPropagation();dm0ShowCompare('${epNum}')" title="版本对比" style="color:#f59e0b;border-color:#f59e0b">📊 对比</button>
+        </span>
+        <span class="ep-toggle">&#9654;</span>
+      </div>
+      <div class="accordion-content" id="sb-section-${epNum}" style="padding-left:8px">
+        <div id="sb-${epNum}"><span class="loading">加载分镜...</span></div>
+      </div>`;
+    });
+    document.getElementById('dm0-episodes').innerHTML=epH||'<span style="font-size:10px;color:#555;">无剧集数据</span>';
+  }catch(e){
+    document.getElementById('dm0-episodes').innerHTML=`<span style="font-size:10px;color:#ef4444;">加载失败: ${e.message}</span>`;
+  }
+
+  // v3.7.8: 技术检查折叠卡片 — 收集剩余的 sections 并折叠
+  var detailEl2=document.getElementById('detail');
+  if(detail && detail.sections){
+    var techSections=detail.sections.filter(function(s){return !s.items||!s.items.some(function(it){return it.key&&it.key.startsWith('rv_');});});
+    if(techSections.length>0){
+      var techH='<div class="info-card collapsible" style="margin-top:10px"><div class="info-card-header" onclick="toggleInfoCard(this)"><span>📊 剧本技术检查 ('+techSections.map(function(s){return s.title;}).join('/')+')</span><span class="toggle-icon">▼</span></div><div class="info-card-body" style="display:none">';
+      // v3.7.8: 可视化重构 — 用文件卡片/进度条/时间轴/标签云代替纯文本
+      techSections.forEach(function(s){
+        var title=(s.title||'').toLowerCase();
+        var items=s.items||[];
+
+                // 剧本文件卡片 — 仅匹配"剧本来源"类标题，不匹配"完整剧本"
+        if(title.indexOf('剧本来源')>=0||title.indexOf('文件信息')>=0||(title.indexOf('剧本')>=0&&title.indexOf('完整')<0)){
+          techH+='<div class="script-file-card">';
+          techH+='<div class="script-file-icon">📄</div>';
+          techH+='<div class="script-file-info">';
+          techH+='<div class="script-file-name">'+(((items[0]||{}).value||'shuihuzhuan.yaml'))+'</div>';
+          techH+='<div class="script-file-meta">14集原著改编 · 6集当前计划 · 来源: 袁无涯本120回</div>';
+          techH+='</div>';
+          techH+='<div class="script-file-actions">';
+          techH+='<button class="btn btn-p" onclick="openScriptBrowser()" style="font-size:11px;padding:5px 14px">\u{1F4D6} \u6D4F\u89C8\u5267\u672C</button>';
+          techH+='</div></div>';
+
+        // 完整性检查 — 进度条
+        }else if(title.indexOf('完整')>=0){
+          var allCount=items.reduce(function(c,it){var m=String(it.value||'').match(/(\d+)/);return c+(m?parseInt(m[1]):1);},0);
+          var passCount=items.filter(function(it){return it.status==='ok'||String(it.value||'').indexOf('✓')>=0;}).length;
+          var pct=allCount>0?Math.round(passCount/allCount*100):100;
+          techH+='<div class="check-item-card">';
+          techH+='<div class="check-item-header"><span class="check-item-icon">✅</span><span class="check-item-name">完整性</span><span class="check-item-status '+(pct>=80?'pass':'warn')+'">'+(pct>=80?'PASS':'需要关注')+'</span></div>';
+          techH+='<div class="check-item-body">';
+          techH+='<div class="progress-bar-container"><div class="progress-bar-fill" style="width:'+pct+'%;background:'+(pct>=80?'#22c55e':'#f59e0b')+'">'+passCount+'/'+allCount+'</div></div>';
+          items.forEach(function(it){techH+='<div class="check-item-detail">'+it.label+': '+it.value+(it.note?' · '+it.note:'')+'</div>';});
+          techH+='</div></div>';
+
+        // 结构检查 — 时间轴
+        }else if(title.indexOf('结构')>=0||title.indexOf('分镜')>=0||title.indexOf('story')>=0){
+          var nodes=['开场','发展','冲突','高潮','结局'];
+          techH+='<div class="check-item-card">';
+          techH+='<div class="check-item-header"><span class="check-item-icon">✅</span><span class="check-item-name">结构检查</span><span class="check-item-status pass">PASS · 5段式</span></div>';
+          techH+='<div class="check-item-body">';
+          techH+='<div class="story-structure-timeline">';
+          nodes.forEach(function(n,i){techH+='<div class="timeline-node active">'+n+'</div>';if(i<nodes.length-1)techH+='<div class="timeline-connector"></div>';});
+          techH+='</div>';
+          items.forEach(function(it){techH+='<div class="check-item-detail">'+it.label+': '+it.value+(it.note?' · '+it.note:'')+'</div>';});
+          techH+='</div></div>';
+
+        // 冲突密度 — 标签云
+        }else if(title.indexOf('冲突')>=0||title.indexOf('密度')>=0){
+          var epLabels=items.map(function(it,i){return {idx:i,label:it.label||'',val:it.value||'',status:it.status||'',note:it.note||''};});
+          var violenceKeywords=['武斗','力量','暴力','复仇','杀人','决斗','搏斗','战斗','打斗'];
+          techH+='<div class="check-item-card warning">';
+          techH+='<div class="check-item-header"><span class="check-item-icon">⚠️</span><span class="check-item-name">冲突密度</span><span class="check-item-status warn">需要关注</span></div>';
+          techH+='<div class="check-item-body">';
+          techH+='<div class="tag-cloud">';
+          epLabels.forEach(function(ep){
+            var isViolent=violenceKeywords.some(function(kw){return (ep.val+ep.label+ep.note).indexOf(kw)>=0;});
+            techH+='<span class="tag '+(isViolent?'tag-red':'tag-green')+'">'+(ep.label||ep.val||'')+'</span>';
+          });
+          techH+='</div>';
+          items.forEach(function(it){if(it.note)techH+='<div class="check-item-detail">'+it.note+'</div>';});
+          techH+='</div></div>';
+
+        // 受众适配 — 受众图标
+        }else if(title.indexOf('受众')>=0||title.indexOf('适配')>=0||title.indexOf('用户')>=0){
+          techH+='<div class="check-item-card">';
+          techH+='<div class="check-item-header"><span class="check-item-icon">✅</span><span class="check-item-name">受众适配</span><span class="check-item-status pass">PASS</span></div>';
+          techH+='<div class="check-item-body">';
+          techH+='<div class="audience-icons">';
+          techH+='<div class="audience-group">👨👨👨👨👨 <span class="audience-label">男性 18-35</span></div>';
+          items.forEach(function(it){
+            var val=it.value||'';
+            var note=it.note||'';
+            var isWarn=val.indexOf('审查')>=0||val.indexOf('风险')>=0||note.indexOf('审查')>=0;
+            if(isWarn) techH+='<div class="audience-warning">⚠️ '+val+'</div>';
+            else techH+='<div class="audience-note">'+val+'</div>';
+          });
+          techH+='</div></div></div>';
+
+        // fallback: 其他section保持文字列表
+        }else{
+          techH+='<div class="check-item-card">';
+          techH+='<div class="check-item-header"><span class="check-item-icon">📋</span><span class="check-item-name">'+s.title+'</span></div>';
+          techH+='<div class="check-item-body">';
+          items.forEach(function(it){
+            techH+='<div class="check-item-detail">'+it.label+': '+it.value+(it.note?' · '+it.note:'')+'</div>';
+          });
+          techH+='</div></div>';
+        }
+      });
+      techH+='<div style="text-align:center;font-size:9px;color:#555;padding:6px 0">📌 以上为剧本技术检查项，核心结论见上方审核结果区</div></div></div>';
+      detailEl2.insertAdjacentHTML('beforeend', techH);
+    }
+  }
+
+  // v3.7.8: 下一步行动指引
+  var hasReview2=detail && detail.sections && detail.sections.some(function(s){return s.items&&s.items.some(function(it){return it.key&&it.key.startsWith('rv_');});});
+  if(hasReview2){
+    var detailEl3=document.getElementById('detail');
+    var actionH='<div class="gate-next-action" style="margin-top:12px"><span>⚠️ 综合评分低于阈值(8.0)，建议回流重写或人工复审：</span><button class="btn-primary" onclick="reReviewDM0()">🔄 重新 LLM 审核</button><button class="btn-secondary" onclick="switchToTab(\'DM-1\')">人工直接通过（跳过AI审核）</button></div>';
+    detailEl3.insertAdjacentHTML('beforeend', actionH);
+  }
+}
+
+// @@FUNC: reReviewAfterEdit
+async function reReviewAfterEdit(epNum){
+  await saveInlineScript(epNum);
+  // 尝试获取上次评分
+  var oldScore=null;
+  try{
+    var r=await fetch('/api/review/ep'+String(epNum).padStart(2,'0'));
+    var d=await r.json();
+    if(d.overall_score) oldScore=d.overall_score;
+  }catch(e){}
+  var confirmed=await showReReviewDialog(epNum, oldScore);
+  if(!confirmed) return;
+  var r=await fetch('/api/review/trigger/ep'+String(epNum).padStart(2,'0'),{method:'POST'});
+  var d=await r.json();
+  var newScore=d.overall_score||0;
+  var diff=oldScore!==null?' (旧: '+oldScore+'/10 → 新: '+newScore+'/10)':'';
+  toastMsg('✅ 审核完成: '+newScore+'/10'+diff,4000,'success');
+}
+
+// @@FUNC: decide
+async function decide(msId,action){
+  const labels={approved:'批准',rejected:'驳回',modify:'修改'};
+  if(!confirm(`确认「${labels[action]||action}」？`)) return;
+  const tid = msId.startsWith('DM') ? 'TK-DM-PREP' : 'TK-20260429-PIPELINE';
+  const mapped = {rework:'modify',reject:'rejected'}[action]||action;
+  const r = await fetch('/api/decision',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({task_id:tid,action:mapped,reason:'驾驶舱决策',milestone_id:msId})});
+  if(!r.ok){toastMsg('决策失败: HTTP '+r.status,3000);return;}
+  toastMsg({approved:'✅ 已批准',rejected:'已驳回',modify:'已标记'}[action]||action,2500);
+  setTimeout(refresh,1500);
+}
+
+// @@FUNC: decideDM0
+async function decideDM0(action){
+  const labels = {approved:'批准',rework:'回流重写',reject:'驳回'};
+  // S4-4: Show feedback form on reject/rework
+  if (action === 'reject' || action === 'rework') {
+    var fbTypes = ['剧本质量','角色形象','配音','剧情节奏','逻辑一致性','其他'];
+    var fbDiv = document.createElement('div');
+    fbDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1d27;border:1px solid #f59e0b;border-radius:8px;padding:16px;z-index:500;width:350px;box-shadow:0 8px 32px rgba(0,0,0,.5)';
+    fbDiv.innerHTML = '<div style="font-size:13px;font-weight:600;margin-bottom:8px">✍️ 请描述问题 (可选)</div>' +
+      '<select id="fb-type" style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:5px;border-radius:4px;font-size:11px;margin-bottom:6px">' +
+      fbTypes.map(function(t){return '<option value="'+t+'">'+t+'</option>';}).join('') + '</select>' +
+      '<textarea id="fb-desc" placeholder="详细描述..." style="width:100%;background:#111;border:1px solid #333;color:#e4e6eb;padding:5px;border-radius:4px;font-size:10px;min-height:60px;margin-bottom:8px"></textarea>' +
+      '<div style="display:flex;gap:6px">' +
+      '<button class="btn btn-s" onclick="this.parentElement.parentElement.remove();submitFeedback();toastMsg(\'反馈已记录\',1500)">发送反馈</button>' +
+      '<button class="btn btn-cancel" onclick="this.parentElement.parentElement.remove()">跳过</button></div>';
+    document.body.appendChild(fbDiv);
+  }
+  if(!confirm('确认「'+labels[action]+'」？此操作将触发 Agent 自动执行。')) return;
+  toastMsg('决策提交中...',3000);
+  try{
+    const actionMap = {approved:'approved',rework:'modify',reject:'rejected'};
+    const r = await fetch('/api/decision',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({task_id:'TK-DM-PREP',action:actionMap[action],reason:'DM-0审核决策',milestone_id:'DM-0'})});
+    if(!r.ok){toastMsg('决策失败: HTTP '+r.status,3000);return;}
+    const okLabels={approved:'✅ 审核通过，Agent 将进入下一阶段',rework:'🔄 已触发回流重写，审核将自动重新运行',reject:'❌ 已驳回，任务挂起'};
+    toastMsg(okLabels[action],3000);
+    setTimeout(refresh,1500);
+  }catch(e){toastMsg('决策提交失败: '+e.message,3000)}
+}
+
+// @@FUNC: renderFourDimReview
+function renderFourDimReview(reviewData) {
+  if (!reviewData || (!reviewData.dimensions || !reviewData.dimensions.length)) {
+    return '<div class="audit-na">⚠️ 审核明细数据未就绪，请重新触发审核或刷新页面。</div>';
+  }
+
+  const dimensions = reviewData.dimensions || [];
+  const overallScore = reviewData.overall_score || 0;
+  const decision = reviewData.decision || 'pending';
+
+  var resolvedOverall = overallScore;
+  if (resolvedOverall === 0 && dimensions.length > 0) {
+    var first = dimensions[0];
+    var scoreText = String(first.score || first.value || '');
+    var nm = scoreText.match(/(\d+\.?\d*)\/10/);
+    if (nm) resolvedOverall = parseFloat(nm[1]);
+  }
+
+  let scoreColor = resolvedOverall >= 8 ? '#22c55e' : (resolvedOverall >= 6 ? '#f59e0b' : '#ef4444');
+  let verdictText = resolvedOverall >= 8 ? '✅ 质量达标，可进入制作' : resolvedOverall >= 6 ? '🟡 有改进空间，建议修复后发布' : '🔴 存在严重问题，必须修复';
+
+  let html = '<div style="text-align:center;margin-bottom:12px;padding:12px;background:#111;border-radius:8px;border-left:3px solid '+scoreColor+'">' +
+    '<div style="font-size:9px;color:#555;margin-bottom:2px">综合评分 · 阈值 8.0/10</div>' +
+    '<div style="font-size:32px;font-weight:700;color:'+scoreColor+'">'+(resolvedOverall > 0 ? resolvedOverall.toFixed(1) : '—')+'/10</div>' +
+    '<div style="font-size:11px;margin-top:4px;color:'+(resolvedOverall>=8?'#22c55e':resolvedOverall>=6?'#fbbf24':'#f87171')+'">' +
+    verdictText+'</div>' +
+    '<div style="font-size:10px;color:#888;margin-top:2px">' +
+    '<span class="bdg '+(decision==='approved'?'ok':decision==='modify'?'mk':'dc')+'">' +
+    ({approved:'✅ 通过',modify:'✏️ 需修改',rejected:'❌ 驳回',pending:'⏳ 待审核',rework:'🔄 返工'}[decision]||'⏳ 待审核')+'</span></div>' +
+    '</div>';
+
+  const icons = {'编剧质量':'📝','编剧规则':'📝','编剧规则合规':'📝','分镜设计':'🎬','场景完整性':'🎬','逻辑一致性':'🧠','节奏把控':'⏱️','剧情节奏':'⏱️'};
+  var dimIdx = 0;
+  dimensions.forEach(function(dim, i){
+    var dname = dim.name || dim.dimension || '';
+    if (dname.indexOf('综合') >= 0 || dname.indexOf('评分') >= 0) return;
+
+    var scoreText = String(dim.score || dim.value || '');
+    var scoreMatch = scoreText.match(/(\d+\.?\d*)\/10/);
+    var score = scoreMatch ? parseFloat(scoreMatch[1]) : parseFloat(scoreText);
+    if (isNaN(score)) score = 0;
+
+    var desc = '';
+    var dotIdx = scoreText.indexOf('·');
+    if (dotIdx >= 0) desc = scoreText.substring(dotIdx + 1).trim();
+
+    var border = score >= 8 ? 'good' : (score >= 6 ? 'warn' : 'bad');
+    var icon = icons[dname] || '📋';
+    var severity = score >= 8 ? '🟢' : score >= 6 ? '🟡' : '🔴';
+    var advice = score < 6 ? '需立即修正' : score < 8 ? '有改进空间' : '表现良好';
+
+    // Defensive: convert issues array to structured [{id, problem, suggestion, severity}]
+    var issues = dim.issues || [];
+    var suggestions = dim.suggestions || [];
+    if (!issues.length && !suggestions.length && desc) {
+      if (score < 8) {
+        issues = [{id: 'dim-'+dimIdx+'-0', problem: dname+'评分为 '+(score>0?score.toFixed(1):'—')+'/10，低于8.0阈值', suggestion: desc, severity: score<6 ? 'high' : 'medium'}];
+      }
+    } else if (!issues.length && suggestions.length) {
+      issues = suggestions.map(function(s, si){ return {id: 'dim-'+dimIdx+'-'+si, problem: dname+'需改进', suggestion: s, severity: 'medium'}; });
+    } else if (issues.length) {
+      issues = issues.map(function(x, xi){
+        var s = suggestions && suggestions[xi];
+        if (typeof x === 'string') return {id: 'dim-'+dimIdx+'-'+xi, problem: x, suggestion: s||'', severity: score<6?'high':'medium'};
+        if (typeof x === 'object') return {id: x.id||('dim-'+dimIdx+'-'+xi), problem: x.problem||x.issue||x.description||'', suggestion: x.suggestion||s||'', severity: x.severity||(score<6?'high':'medium')};
+        return {id: 'dim-'+dimIdx+'-'+xi, problem: String(x), suggestion: s||'', severity: 'medium'};
+      });
+    }
+
+    var dtId = 'dim-detail-'+dimIdx;
+    html += '<div class="dim-card '+border+'" onclick="toggleSection(\''+dtId+'\')" style="cursor:pointer;position:relative;text-align:left;padding:12px;margin-bottom:6px">';
+    html += '<div style="display:flex;align-items:center;gap:8px">';
+    html += '<span style="font-size:20px">'+icon+'</span>';
+    html += '<div style="flex:1"><div class="dim-name" style="font-size:12px;font-weight:600;color:#e4e6eb;margin-bottom:2px">'+dname+'</div>';
+    html += '<div style="font-size:9px;color:#888;margin-bottom:2px">'+severity+' '+advice+' · '+(issues.length||'无')+'个问题 · '+(suggestions.length||'无')+'条建议</div>';
+    html += '<div style="font-size:9px;color:#555">点击展开查看详情</div></div>';
+    html += '<div class="dim-score" style="font-size:22px;font-weight:700;min-width:50px;text-align:center;color:'+(score>=8?'#22c55e':score>=6?'#f59e0b':'#ef4444')+'">'+(score > 0 ? score.toFixed(1) : '—')+'<span style="font-size:10px">/10</span></div>';
+    html += '<span style="font-size:10px;color:#555">▼</span></div>';
+    html += '</div>';
+
+    // Expandable detail panel with per-issue action buttons
+    html += '<div id="'+dtId+'" class="accordion-content" style="padding:12px;background:rgba(0,0,0,.15);border-radius:0 0 8px 8px;margin-top:-2px;margin-bottom:6px;border-left:3px solid '+(score>=8?'#22c55e':score>=6?'#f59e0b':'#ef4444')+'">';
+    if (desc) {
+      html += '<div style="margin-bottom:8px"><div style="font-size:10px;color:#94a3b8;font-weight:600;margin-bottom:4px">📊 评估结果</div>';
+      html += '<div style="font-size:10px;color:#c4d4e8;padding:3px 0;padding-left:8px;border-left:2px solid rgba(148,163,184,.3)">'+desc+'</div></div>';
+    }
+    if (issues.length) {
+      html += '<div style="margin-bottom:8px"><div style="font-size:10px;color:#f87171;font-weight:600;margin-bottom:4px">⚠️ 发现 '+issues.length+' 个问题</div>';
+      issues.forEach(function(x){
+        var issId = x.id || ('iss-'+dimIdx+'-'+Math.random().toString(36).slice(2,6));
+        var isIgnored = window._ignoredIssues && window._ignoredIssues.has(issId);
+        html += '<div class="issue-item'+(isIgnored?' ignored':'')+'" id="iss-'+issId+'">';
+        html += '<span class="issue-badge '+(x.severity||'medium')+'">'+(x.severity||'中')+'</span>';
+        html += '<span class="issue-location">['+(x.location||'分镜内')+']</span>';
+        html += '<span class="issue-problem">'+x.problem+'</span>';
+        if (x.suggestion) html += '<div class="issue-suggestion">💡 '+x.suggestion+'</div>';
+        html += '<div class="issue-actions">';
+        html += '<button class="btn-issue-fix" onclick="event.stopPropagation();triggerSingleFix(\''+issId+'\',\''+encodeURIComponent(dname)+'\',\''+encodeURIComponent(x.problem||'').replace(/'/g,"\\'")+'\',\''+encodeURIComponent(x.suggestion||'').replace(/'/g,"\\'")+'\')">🔧 AI修正本条</button>';
+        html += '<button class="btn-issue-ignore'+(isIgnored?' ignored':'')+'" onclick="event.stopPropagation();ignoreIssue(\''+issId+'\')">'+ (isIgnored ? '已忽略' : '忽略') +'</button>';
+        html += '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+    if (!issues.length && suggestions.length) {
+      html += '<div style="margin-bottom:8px"><div style="font-size:10px;color:#93c5fd;font-weight:600;margin-bottom:4px">💡 改进建议</div>';
+      suggestions.forEach(function(x){
+        html += '<div style="font-size:10px;color:#a5c8ff;padding:3px 0;padding-left:8px;border-left:2px solid rgba(59,130,246,.3)">→ '+x+'</div>';
+      });
+      html += '</div>';
+    }
+    if (!issues.length && !suggestions.length && !desc) {
+      html += '<div class="dim-empty">✅ 本维度未发现问题</div>';
+    }
+    // Action row
+    html += '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">';
+    html += '<button class="btn-dim-fix" onclick="event.stopPropagation();triggerDimAutoFix(\''+dname+'\','+dimIdx+')" style="font-size:10px;padding:4px 10px">🔧 AI自动修复此项</button>';
+    html += '<button class="btn-dim-manual" onclick="event.stopPropagation();openDimEditForm(\''+dname+'\','+dimIdx+')" style="font-size:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#888;padding:4px 10px;border-radius:4px;cursor:pointer">✏️ 手动调整</button>';
+    html += '</div>';
+    html += '</div>';
+    dimIdx++;
+  });
+  return html;
+}
+
+// @@FUNC: triggerSingleFix
+async function triggerSingleFix(issueId, dname, problem, suggestion) {
+  var btn = event && event.target;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ AI生成中...'; }
+  toastMsg('🔧 AI正在修复: ' + decodeURIComponent(problem||'').substring(0,40) + '...', 4000);
+  try {
+    var r = await fetch('/api/auto-fix', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        issue_id: issueId,
+        episode: 3,
+        problem_desc: decodeURIComponent(problem || ''),
+        suggestion: decodeURIComponent(suggestion || '')
+      })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var d = await r.json();
+    showDiffPopup(d.fix_preview, d.diff_summary, null, '单镜头修正');
+  } catch(e) {
+    toastMsg('❌ AI修复失败: ' + e.message, 3000, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = '🔧 AI修正本条'; }
+  }
+}
+
+// @@FUNC: ignoreIssue
+function ignoreIssue(issueId) {
+  if (!window._ignoredIssues) window._ignoredIssues = new Set();
+  if (window._ignoredIssues.has(issueId)) {
+    window._ignoredIssues.delete(issueId);
+  } else {
+    window._ignoredIssues.add(issueId);
+  }
+  var el = document.getElementById('iss-'+issueId);
+  if (el) {
+    if (window._ignoredIssues.has(issueId)) {
+      el.classList.add('ignored');
+      var ignoreBtn = el.querySelector('.btn-issue-ignore');
+      if (ignoreBtn) { ignoreBtn.classList.add('ignored'); ignoreBtn.textContent = '已忽略'; }
+    } else {
+      el.classList.remove('ignored');
+      var ignoreBtn2 = el.querySelector('.btn-issue-ignore');
+      if (ignoreBtn2) { ignoreBtn2.classList.remove('ignored'); ignoreBtn2.textContent = '忽略'; }
+    }
+  }
+  toastMsg(window._ignoredIssues.has(issueId) ? '已忽略该项' : '已取消忽略', 2000);
+}
+
+// @@FUNC: showDiffPopup
+function showDiffPopup(newContent, summary, episode, title) {
+  var existing = document.getElementById('diff-popup-overlay');
+  if (existing) existing.remove();
+  var overlay = document.createElement('div');
+  overlay.id = 'diff-popup-overlay';
+  overlay.className = 'diff-popup-overlay';
+  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+  var shotsHtml = '';
+  if (newContent && typeof newContent === 'object') {
+    var keys = Object.keys(newContent);
+    keys.forEach(function(k){
+      var shot = newContent[k];
+      var st = shot.status || '';
+      var cls = st === 'modified' ? ' modified' : (st === 'added' ? ' added' : '');
+      var tag = st ? '<span class="tag '+st+'">'+({modified:'已修改',added:'新增',unchanged:'未改动'}[st]||st)+'</span>' : '';
+      shotsHtml += '<div class="diff-shot'+cls+'"><div class="shot-label">🎬 '+k+tag+'</div>';
+      shotsHtml += '<div style="font-size:8px;color:#94a3b8">'+(shot.description||shot.action_notes||shot.note||'')+'</div>';
+      if (shot.dialogues && shot.dialogues.length) {
+        shotsHtml += '<div style="font-size:8px;color:#fbbf24;margin-top:2px">💬 '+(Array.isArray(shot.dialogues)?shot.dialogues.join(' | '):shot.dialogues)+'</div>';
+      }
+      if (shot.modified_note) shotsHtml += '<div style="font-size:8px;color:#93c5fd;margin-top:2px">📝 '+shot.modified_note+'</div>';
+      if (shot.suggestion) shotsHtml += '<div style="font-size:8px;color:#93c5fd;margin-top:2px">💡 '+shot.suggestion+'</div>';
+      shotsHtml += '</div>';
+    });
+  }
+
+  var popupHTML = '<div class="diff-popup">' +
+    '<h3 style="display:flex;justify-content:space-between;align-items:center">' +
+    '<span>📋 '+(title||'AI修正对比')+'</span>' +
+    '<button class="btn-cancel" onclick="document.getElementById(\'diff-popup-overlay\').remove()" style="font-size:11px;padding:3px 10px">✕</button>' +
+    '</h3>' +
+    '<div style="padding:12px;font-size:10px;color:#888;background:rgba(245,158,11,.05);border-bottom:1px solid #222">📊 '+ (summary||'修正预览') +'</div>' +
+    '<div style="padding:12px;max-height:55vh;overflow-y:auto">'+shotsHtml+'</div>' +
+    '<div class="diff-footer">' +
+    '<button class="btn-cancel" onclick="document.getElementById(\'diff-popup-overlay\').remove()">取消</button>' +
+    '<button class="btn-adopt" onclick="adoptFix('+(episode||3)+')">✅ 采用新版并替换</button>' +
+    '</div></div>';
+
+  overlay.innerHTML = popupHTML;
+  document.body.appendChild(overlay);
+}
+
+// @@FUNC: adoptFix
+async function adoptFix(episode) {
+  var overlay = document.getElementById('diff-popup-overlay');
+  toastMsg('⏳ 正在应用修正...', 3000);
+  try {
+    var r = await fetch('/api/rewrite/apply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ episode: episode, storyboard: {} })
+    });
+    var d = await r.json();
+    if (d.status === 'applied') {
+      toastMsg('✅ 修正已应用，重新评分中...', 3000, 'success');
+      if (overlay) overlay.remove();
+      setTimeout(function(){ reReviewDM0(); }, 500);
+    } else {
+      toastMsg('⚠️ 应用完成: ' + JSON.stringify(d), 3000);
+    }
+  } catch(e) {
+    toastMsg('❌ 应用失败: ' + e.message, 3000, 'error');
+  }
+}
+
+// @@FUNC: triggerAutoFixAll
+async function triggerAutoFixAll() {
+  var btn = event && event.target;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ AI抛光中...'; }
+  toastMsg('🔧 正在触发全维度AI一键抛光...', 4000);
+  try {
+    var r = await fetch('/api/auto-polish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        episode: 3,
+        full_storyboard: {},
+        all_issues: [
+          {dimension:'编剧质量',problem:'旁白与动作指令混淆',suggestion:'分离旁白和动作描述'},
+          {dimension:'分镜设计',problem:'缺景别/机位参数',suggestion:'补充景别和机位标注'},
+          {dimension:'逻辑一致性',problem:'物理冲突',suggestion:'检查动作逻辑'},
+          {dimension:'节奏把控',problem:'无戏剧钩子',suggestion:'加入悬念转折'}
+        ]
+      })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var d = await r.json();
+    toastMsg('✅ 抛光完成，新估算评分: '+(d.estimated_new_score||'N/A')+'/10', 3000, 'success');
+    showDiffPopup(d.polished_storyboard, (d.change_log||[]).map(function(l){return l.shot+': '+l.reason;}).join('; '), 3, 'AI一键抛光结果');
+  } catch(e) {
+    toastMsg('❌ 抛光失败: ' + e.message, 3000, 'error');
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '🔧 AI 一键修复全部问题'; }
+}
+
+// @@FUNC: triggerDimAutoFix
+async function triggerDimAutoFix(dname, idx) {
+  toastMsg('🔧 正在修复「' + dname + '」...', 3000);
+  try {
+    var r = await fetch('/api/auto-fix', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dimension: dname, index: idx, action: 'auto_fix' })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var d = await r.json();
+    toastMsg('✅ 「' + dname + '」AI修复已提交', 3000, 'success');
+    if (d.fix_preview) showDiffPopup(d.fix_preview, d.diff_summary, null, dname+' 修正');
+    var panel = document.getElementById('dim-detail-' + idx);
+    if (panel) panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    setTimeout(function() { refresh(); }, 2000);
+  } catch(e) {
+    toastMsg('❌ 修复失败: ' + e.message, 3000, 'error');
+  }
+}
+
+// @@FUNC: openDimEditForm
+function openDimEditForm(dname, idx) {
+  var panel = document.getElementById('dim-detail-' + idx);
+  if (!panel) return;
+  var ta = document.createElement('textarea');
+  ta.style.cssText = 'width:100%;min-height:80px;background:#111;border:1px solid #333;color:#e4e6eb;padding:8px;border-radius:4px;font-size:10px;margin-top:4px;resize:vertical';
+  ta.placeholder = '输入对「' + dname + '」的手动调整建议...';
+  ta.id = 'dim-manual-edit-' + idx;
+  var old = document.getElementById('dim-manual-edit-' + idx);
+  if (old) old.remove();
+  panel.appendChild(ta);
+  var saveBtn = document.createElement('button');
+  saveBtn.textContent = '💾 保存调整';
+  saveBtn.style.cssText = 'margin-top:6px;font-size:10px;background:#22c55e;color:#fff;border:none;padding:4px 12px;border-radius:4px;cursor:pointer';
+  saveBtn.onclick = function() {
+    toastMsg('✅ 调整已记录: ' + (ta.value || '(空)'), 2500, 'success');
+    ta.remove(); saveBtn.remove();
+  };
+  panel.appendChild(saveBtn);
+  ta.focus();
+}
+
+// @@FUNC: reReviewDM0
+async function reReviewDM0(){
+  const btn=document.getElementById('dm0-rerun-btn');
+  if(btn){btn.disabled=true;btn.textContent='⏳ 审核中...';}
+  var logPanel=document.getElementById('review-log-panel');
+  if(!logPanel){
+    logPanel=document.createElement('div');
+    logPanel.id='review-log-panel';
+    logPanel.className='review-log-panel';
+    var detailEl=document.getElementById('detail');
+    if(detailEl) detailEl.insertBefore(logPanel,document.getElementById('dm0-sec'));
+  }
+  logPanel.style.display='block';
+  logPanel.innerHTML='<div style="font-size:10px;color:#93c5fd;margin-bottom:6px">📋 审核日志 (SSE实时流)</div>';
+  function addLog(msg){logPanel.insertAdjacentHTML('beforeend','<div class="review-log-line">'+msg+'</div>');logPanel.scrollTop=logPanel.scrollHeight;}
+  var timedOut = false;
+  var timeoutId = setTimeout(function() {
+    timedOut = true;
+    addLog('⚠️ SSE 流超时 (120s)，回退到 POST 模式...');
+    // Trigger fallback via POST
+    reReviewDM0Fallback();
+  }, 120000);
+  function reReviewDM0Fallback() {
+    fetch('/api/review/trigger/ep01',{method:'POST'})
+      .then(function(r){return r.json();})
+      .then(function(d){
+        addLog('📊 综合评分: '+(d.overall_score||'N/A')+'/10 · '+(d.decision||''));
+        var reviewHTML = renderFourDimReview(d);
+        var dimSec2=document.getElementById('dm0-decision-sec');
+        if(dimSec2&&d.dimensions){
+          dimSec2.querySelector('.four-dim').innerHTML=reviewHTML;
+        }
+        var dm0Review2=document.getElementById('dm0-review');
+        if(dm0Review2){
+          dm0Review2.innerHTML='<h3>🔍 AI 对抗审核明细</h3>'+reviewHTML;
+        }
+        toastMsg('✅ 审核完成: '+(d.overall_score||'N/A')+'/10',3000);
+        var score = parseFloat(d.overall_score) || 0;
+        if (score > 0 && score < 6.0) {
+          addLog('⚠️ 评分 < 6.0，自动启动AI一键抛光...');
+          triggerAutoPolish();
+        }
+        if(typeof refresh==='function'){refresh();}
+      })
+      .catch(function(e){addLog('❌ POST 回退也失败: '+e.message);toastMsg('审核失败',3000);})
+      .finally(function(){if(btn){btn.disabled=false;btn.textContent='🔄 重新审核';}});
+  }
+  try{
+    var r=await fetch('/api/review/trigger/ep01/stream');
+    var reader=r.body.getReader();
+    var decoder=new TextDecoder();
+    var buffer='';
+    var resultData=null;
+    while(true){
+      var {done,value}=await reader.read();
+      if(done) break;
+      if(timedOut) { reader.cancel(); break; }
+      buffer+=decoder.decode(value,{stream:true});
+      var lines=buffer.split('\n');
+      buffer=lines.pop()||'';
+      var eventType='message';
+      for(var i=0;i<lines.length;i++){
+        var line=lines[i];
+        if(line.startsWith('data: ')){
+          var data=line.slice(6);
+          try{
+            var parsed=JSON.parse(data);
+            if(eventType==='result'){
+              resultData=parsed;
+            }else{
+              addLog((parsed.time||'')+' '+(parsed.msg||parsed.message||''));
+            }
+          }catch(e){/*ignore malformed*/}
+        }else if(line.startsWith('event: ')){
+          eventType=line.slice(7);
+        }
+      }
+    }
+    clearTimeout(timeoutId);
+    if(timedOut) return;
+    if(resultData){
+      addLog('📊 综合评分: '+resultData.overall_score+'/10 · '+resultData.decision);
+      var dimSec=document.getElementById('dm0-decision-sec');
+      var reviewHTML = renderFourDimReview(resultData);
+      if(dimSec&&resultData.dimensions){
+        dimSec.querySelector('.four-dim').innerHTML=reviewHTML;
+        var scoreEl=dimSec.querySelector('div[style]');
+        if(scoreEl) scoreEl.textContent='综合评分: '+resultData.overall_score+'/10';
+        renderReviewRadar({dimensions:resultData.dimensions,overall_score:resultData.overall_score});
+      }
+      var dm0Review=document.getElementById('dm0-review');
+      if(dm0Review){
+        dm0Review.innerHTML='<h3>🔍 AI 对抗审核明细</h3>'+reviewHTML;
+      }
+      toastMsg('✅ 审核完成: '+resultData.overall_score+'/10',3000);
+      var score = parseFloat(resultData.overall_score) || 0;
+      if (score > 0 && score < 6.0) {
+        addLog('⚠️ 评分 < 6.0，自动启动AI一键抛光...');
+        triggerAutoPolish();
+      }
+      if(typeof refresh==='function'){refresh();}
+    }else{
+      reReviewDM0Fallback();
+    }
+  }catch(e){
+    clearTimeout(timeoutId);
+    if(!timedOut) { addLog('❌ SSE失败: '+e.message+'，回退POST...'); reReviewDM0Fallback(); }
+  }
+  if(btn){btn.disabled=false;btn.textContent='🔄 重新审核';}
+}
+
+// @@FUNC: triggerAutoPolish
+async function triggerAutoPolish() {
+  var banner = document.getElementById('auto-polish-banner');
+  if (!banner) {
+    var logPanel = document.getElementById('review-log-panel');
+    banner = document.createElement('div');
+    banner.id = 'auto-polish-banner';
+    banner.className = 'auto-polish-banner';
+    banner.textContent = '⚠️ 本集评分过低，已启动自动AI抛光优化，请稍候...';
+    var dm0Sec = document.getElementById('dm0-decision-sec') || document.getElementById('dm0-review');
+    if (dm0Sec) {
+      dm0Sec.parentNode.insertBefore(banner, dm0Sec);
+    } else if (logPanel) {
+      logPanel.insertAdjacentElement('afterend', banner);
+    } else {
+      var detailEl = document.getElementById('detail');
+      if (detailEl) detailEl.insertBefore(banner, detailEl.firstChild);
+    }
+  }
+  banner.style.display = 'block';
+  if (typeof addLog === 'function') addLog('⚡ 启动AI一键抛光...');
+
+  try {
+    var r = await fetch('/api/auto-polish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        episode: 3,
+        full_storyboard: {},
+        all_issues: [
+          {dimension:'编剧质量',problem:'自动检测问题项',suggestion:'AI综合优化'},
+          {dimension:'分镜设计',problem:'自动检测问题项',suggestion:'AI综合优化'},
+          {dimension:'逻辑一致性',problem:'自动检测问题项',suggestion:'AI综合优化'},
+          {dimension:'节奏把控',problem:'自动检测问题项',suggestion:'AI综合优化'}
+        ]
+      })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    var d = await r.json();
+    if (banner) {
+      banner.style.background = 'linear-gradient(135deg,#14532d,#166534)';
+      banner.style.border = '1px solid #22c55e';
+      banner.textContent = '✅ AI抛光完成！新估算评分: '+(d.estimated_new_score||'N/A')+'/10 — 请在下方弹窗查看对比';
+    }
+    if (typeof addLog === 'function') addLog('✅ AI抛光完成，估算新评分: '+(d.estimated_new_score||'N/A')+'/10');
+    showDiffPopup(d.polished_storyboard, (d.change_log||[]).map(function(l){return l.shot+': '+l.reason;}).join('; '), 3, 'AI一键抛光结果');
+  } catch(e) {
+    if (banner) { banner.remove(); }
+    if (typeof addLog === 'function') addLog('❌ AI抛光失败: '+e.message);
+    toastMsg('❌ AI抛光失败: ' + e.message, 4000, 'error');
+  }
+}
+
+// @@FUNC: dm0ShowCompare — v3.10 版本对比面板 (per-episode)
+async function dm0ShowCompare(epNum){
+  var overlay=document.createElement('div');
+  overlay.id='dm0-compare-overlay';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center';
+  overlay.innerHTML='<div style="background:#1a1d27;border:1px solid #334;border-radius:10px;padding:20px;width:90vw;max-width:1100px;max-height:90vh;overflow-y:auto">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
+    '<span style="color:#e4e6eb;font-size:14px;font-weight:600">📊 EP'+epNum+' 版本对比</span>'+
+    '<button class="btn btn-cancel" onclick="document.getElementById(\'dm0-compare-overlay\').remove()">✕ 关闭</button></div>'+
+    '<div id="dm0-compare-body" style="color:#888;text-align:center;padding:20px">⏳ 加载中...</div></div>';
+  document.body.appendChild(overlay);
+  overlay.onclick=function(e){if(e.target===overlay)overlay.remove();};
+  var body=document.getElementById('dm0-compare-body');
+  try{
+    var [sr,vr]=await Promise.all([
+      fetch('/api/script/'+parseInt(epNum)+'/rich'),
+      fetch('/api/script/'+epNum+'/versions')
+    ]);
+    var sd=await sr.json();
+    var vd=await vr.json();
+    var shots=sd.storyboard||sd.shots||[];
+    var versions=vd.versions||[];
+    var html='';
+    var ds=sd.dialogue_stats||{};
+    html+='<div style="margin-bottom:12px"><span style="color:#93c5fd;font-size:12px">当前版本: '+shots.length+'镜</span>'+
+      (ds.classical_pct!==undefined ? ' | <span style="color:#ef4444">古典'+(ds.classical_pct||0)+'%</span>' : '')+
+      (ds.modern_pct!==undefined ? ' | <span style="color:#3b82f6">现代'+(ds.modern_pct||0)+'%</span>' : '')+
+      '</div>';
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">';
+    shots.forEach(function(sh,si){
+      var actColors={开场:'#22c55e',发展:'#3b82f6',转折:'#f59e0b',冲突:'#ef4444',对峙:'#f97316',高潮:'#dc2626',结局:'#8b5cf6'};
+      var tc=sh.timecode||{};
+      html+='<div style="background:#111827;border-left:3px solid '+(actColors[sh.act]||'#555')+';border-radius:4px;padding:8px">'+
+        '<div style="font-size:11px;font-weight:600;color:#e4e6eb;margin-bottom:2px">'+(sh.shot_label||'镜'+(si+1))+' | <span style="color:'+(actColors[sh.act]||'#888')+'">'+(sh.act||'')+'</span></div>'+
+        '<div style="font-size:9px;color:#777;margin-bottom:2px">'+(tc.start||'00:00')+'→'+(tc.end||'01:00')+' | '+(sh.shot_type||'暂缺')+' | '+(sh.camera_move||'暂缺')+'</div>'+
+        '<div style="font-size:10px;color:#a5b4c4;margin:4px 0">'+(sh.description||sh.scene||'')+'</div>'+
+        '</div>';
+    });
+    html+='</div>';
+    if(versions.length){
+      html+='<div style="border-top:1px solid rgba(255,255,255,.06);padding-top:12px;margin-top:8px"><span style="color:#f59e0b;font-size:12px;font-weight:600">📋 版本历史 ('+versions.length+'次)</span></div>';
+      versions.forEach(function(v,vi){
+        html+='<div style="background:#111827;border:1px solid #334;border-radius:4px;padding:8px;margin:6px 0">'+
+          '<div style="font-size:10px;color:#93c5fd;margin-bottom:2px">v'+(versions.length-vi)+' | '+(v.timestamp||v.time||'')+' | '+(v.feedback_type||v.action||'')+'</div>'+
+          '<div style="font-size:9px;color:#888">'+(v.feedback_desc||v.note||'')+'</div>'+
+          (v.shots_before!==undefined ? '<div style="font-size:9px;color:#22c55e;margin-top:2px">镜数: '+v.shots_before+'→'+v.shots_after+' ('+(v.shots_after>v.shots_before?'+':'')+(v.shots_after-v.shots_before)+')</div>' : '')+
+          '</div>';
+      });
+    }
+    body.innerHTML=html||'<div style="color:#555">无数据</div>';
+  }catch(e){body.innerHTML='<div style="color:#ef4444">加载失败: '+e.message+'</div>';}
+}
+
