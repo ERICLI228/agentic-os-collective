@@ -7,6 +7,7 @@ var CHARACTER_VOICES={};
 var CHAR_ROLES={};
 var CHAR_NAMES=['武松','鲁智深','林冲','宋江','李逵','吴用','杨志','晁盖'];
 var pipelineFilter='all', chartMode='status', chartInstance=null;
+var dlPanelOpen=false;
 
 // @@FUNC: showLoading / hideLoading
 function showLoading(){document.getElementById('loadingBar').classList.add('on')}
